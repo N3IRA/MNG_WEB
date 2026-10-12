@@ -8,41 +8,10 @@
   onclick="A11y.toggle()"
   aria-label="Opciones de accesibilidad"
   aria-expanded="false"
-  class="btn btn-success a11y-btn-main position-fixed shadow-lg p-0 d-flex align-items-center justify-content-center rounded-circle"
-  style="
-    bottom: 25px !important;
-    right: 25px !important;
-    width: 50px !important;
-    height: 50px !important;
-    z-index: 999999 !important;
-    display: flex !important;
-    visibility: visible !important;
-  "
+  class="btn a11y-btn-main position-fixed shadow-lg p-0 d-flex align-items-center justify-content-center rounded-circle"
 >
   <i class="bi bi-universal-access fs-4" aria-hidden="true"></i>
 </button>
-
-<style>
-  /* Edge panel para móviles */
-  @media (max-width: 768px) {
-    #a11y-btn {
-      bottom: 20px !important;
-      right: 15px !important;
-      transform: translateX(35px);
-      opacity: 0.7;
-      border-radius: 30px 0 0 30px !important;
-      transition:
-        transform 0.3s ease,
-        opacity 0.3s ease,
-        border-radius 0.3s ease !important;
-    }
-    #a11y-btn[aria-expanded="true"] {
-      transform: translateX(0);
-      opacity: 1;
-      border-radius: 50% !important;
-    }
-  }
-</style>
 
 <!-- ── Panel de Accesibilidad ── -->
 <div
@@ -51,30 +20,34 @@
   role="dialog"
   aria-modal="true"
   aria-label="Panel de accesibilidad"
-  style="
-    bottom: 85px;
-    right: 25px;
-    width: 320px;
-    max-width: 90vw;
-    z-index: 99999 !important;
-  "
 >
-  <!-- Header del Panel con Botón Reset -->
+  <!-- Header del Panel con Botón Reset y Cerrar -->
   <div
     class="a11y-panel-header d-flex justify-content-between align-items-center px-3 py-2 border-bottom"
   >
-    <span class="small fw-semibold d-flex align-items-center gap-2">
-      <i class="bi bi-universal-access fs-5" aria-hidden="true"></i>
-      <span class="d-none d-sm-inline">Accesibilidad</span>
-    </span>
-    <button
-      class="btn btn-sm py-0 px-2 u-style-bc9efe64"
-      id="btn-reset"
-      title="Restablecer todas las opciones"
-    >
-      <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i
-      ><span class="d-none d-sm-inline">Restablecer</span>
-    </button>
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-universal-access fs-5 text-info" aria-hidden="true"></i>
+      <span class="fw-bold">Accesibilidad</span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button
+        class="btn btn-sm btn-outline-light py-1 px-2 border-0 opacity-75"
+        id="btn-reset"
+        title="Restablecer todas las opciones"
+      >
+        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+        <span class="d-none d-sm-inline ms-1">Restablecer</span>
+      </button>
+      <button
+        class="btn btn-sm btn-outline-light py-1 px-2 border-0 a11y-panel-close-btn opacity-75"
+        id="btn-close-a11y"
+        onclick="A11y.toggle()"
+        title="Cerrar panel de accesibilidad"
+        aria-label="Cerrar panel de accesibilidad"
+      >
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </div>
   </div>
 
   <!-- Barra de Navegación (Tabs) -->
@@ -87,7 +60,7 @@
       aria-controls="panel-tamano"
     >
       <i class="bi bi-fonts"></i>
-      <span class="d-none d-sm-inline">Tamaño</span>
+      <span>Tamaño</span>
     </button>
     <button
       class="a11y-tab-btn"
@@ -97,7 +70,7 @@
       aria-controls="panel-visualizacion"
     >
       <i class="bi bi-palette"></i>
-      <span class="d-none d-sm-inline">Color</span>
+      <span>Color</span>
     </button>
     <button
       class="a11y-tab-btn"
@@ -107,7 +80,7 @@
       aria-controls="panel-lectura"
     >
       <i class="bi bi-book"></i>
-      <span class="d-none d-sm-inline">Lectura</span>
+      <span>Lectura</span>
     </button>
     <button
       class="a11y-tab-btn"
@@ -117,7 +90,7 @@
       aria-controls="panel-animaciones"
     >
       <i class="bi bi-play-circle"></i>
-      <span class="d-none d-sm-inline">Animaciones</span>
+      <span>Animaciones</span>
     </button>
   </div>
 
