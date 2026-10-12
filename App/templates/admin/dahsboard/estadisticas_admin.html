@@ -1,743 +1,1149 @@
-{% extends "admin/base-admin.html" %}
-{% load static %}
-{% load humanize %}
-
-{% block title %}Estadísticas Administrativas | Monagua{% endblock %}
-
-{% block content %}
+{% extends "admin/base-admin.html" %} {% load static %} {% load humanize %} {%
+block title %}Estadísticas Administrativas | Monagua{% endblock %} {% block
+extra_head %}
+<script src="{% static 'js/librerias/html2canvas.min.js' %}"></script>
+<script src="{% static 'js/librerias/jspdf.umd.min.js' %}"></script>
+{% endblock %} {% block content %}
 <div class="container-fluid py-4 px-3 px-md-5">
+  <!-- ── Top Bar ── -->
+  <div
+    class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4"
+  >
+    <div>
+      <h2 class="fw-bold mb-0 text-success">
+        {{ analitica_titulo|default:"Estadísticas Generales de Administración"
+        }}
+      </h2>
+      <p class="text-muted mb-0 small">
+        {{ analitica_subtitulo|default:"Consolidado métrico y operativo de todas
+        las reservas, finanzas, PQRS y destinos en Monagua." }}
+      </p>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <a
+        href="{% url 'gestion_promociones' %}"
+        class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1"
+      >
+        <i class="bi bi-megaphone-fill"></i> Promociones
+      </a>
+      <a
+        href="{% url 'gestion_reservas' %}"
+        class="btn btn-outline-secondary btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1"
+      >
+        <i class="bi bi-calendar2-check-fill"></i> Reservas
+      </a>
+      <span
+        class="badge bg-white text-secondary border d-none d-md-inline-flex align-items-center gap-1 px-3 py-2 shadow-sm"
+        title="Fecha actual"
+      >
+        <i class="bi bi-calendar3 text-success"></i>
+        <span id="currentDate">{% now "D, j \d\e M. Y" %}</span>
+      </span>
+      <button
+        class="btn btn-success text-white btn-sm d-flex align-items-center gap-1"
+        id="btnExportPdf"
+      >
+        <i class="bi bi-file-earmark-pdf-fill text-white"></i>
+        <span id="exportLabel" class="text-white">Exportar PDF</span>
+      </button>
+    </div>
+  </div>
 
-    <div class="row align-items-center mb-5 g-3">
-        <div class="col-12 col-md-8">
-            <h1 class="fw-bold text-dark mb-1">
-                {% if analitica_titulo %}
-                <i class="bi {% if admin_mode %}bi-speedometer2{% else %}bi-person-badge{% endif %} text-success me-2"></i>{{ analitica_titulo }}
-                {% else %}
-                <i class="bi bi-bar-chart-line text-success me-2"></i>Panel de Estadísticas
-                {% endif %}
-            </h1>
-            <p class="opacity-75 mb-0">{{ analitica_subtitulo|default:'Consolidado métrico avanzado e histórico de comportamiento de viajes, transacciones y soporte en Monagua.' }}</p>
+  <div class="row g-4 mb-5">
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift"
+        style="cursor: pointer"
+        onclick="navegarPanel('#panel-transacciones', 'esta-green')"
+        title="Revisa el balance general, historial de fondos y transacciones validadas"
+        data-bs-toggle="tooltip"
+      >
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="text-esta-green small fw-bold text-uppercase"
+            >Inversión Total</span
+          >
+          <div class="p-2 bg-esta-green-soft text-esta-green rounded-3">
+            <i class="bi bi-wallet2 fs-4"></i>
+          </div>
         </div>
-        <div class="col-12 col-md-4 text-md-end d-flex justify-content-md-end align-items-center gap-2">
-            <span
-                class="badge rounded-pill bg-success bg-opacity-10 text-success px-4 py-2 fs-6 fw-semibold border border-success border-opacity-25">
-                <i class="bi bi-shield-check me-1"></i>
-                {% if user.is_staff %}Rol: Administrador{% else %}Rol: Viajero Activo{% endif %}
+        <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">
+          COP ${{ total_invertido|floatformat:0|intcomma|default:"0" }}
+        </h3>
+        <div class="text-esta-green small">
+          <i class="bi bi-check-circle-fill text-esta-green me-1"></i>Solo
+          fondos validados
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift"
+        style="cursor: pointer"
+        onclick="navegarPanel('#panel-mensual', 'esta-blue')"
+        title="Accede a la matriz comparativa de ocupación y viajes mes a mes"
+        data-bs-toggle="tooltip"
+      >
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="text-esta-blue small fw-bold text-uppercase"
+            >Volumen de Reservas</span
+          >
+          <div class="p-2 bg-esta-blue-soft text-esta-blue rounded-3">
+            <i class="bi bi-journal-bookmark-fill fs-4"></i>
+          </div>
+        </div>
+        <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">
+          {{ total_reservas|default:"0" }}
+        </h3>
+        <div class="text-esta-blue small">
+          <i class="bi bi-arrow-up-right text-esta-blue me-1"></i>Historial
+          completo activo
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift"
+        style="cursor: pointer"
+        onclick="navegarPanel('#panel-anual', 'esta-cyan')"
+        title="Consulta el margen de ganancias y el valor promedio anual por experiencia"
+        data-bs-toggle="tooltip"
+      >
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="text-esta-cyan small fw-bold text-uppercase"
+            >Ticket Promedio</span
+          >
+          <div class="p-2 bg-esta-cyan-soft text-esta-cyan rounded-3">
+            <i class="bi bi-calculator fs-4"></i>
+          </div>
+        </div>
+        <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">
+          COP ${{ promedio_por_reserva|floatformat:0|intcomma|default:"0" }}
+        </h3>
+        <div class="text-esta-cyan small">
+          <i class="bi bi-info-circle me-1"></i>Valor medio por experiencia
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift"
+        style="cursor: pointer"
+        onclick="navegarPanel('#panel-destinos', 'esta-yellow')"
+        title="Analiza cuáles rutas ecológicas son las más frecuentadas"
+        data-bs-toggle="tooltip"
+      >
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="text-esta-yellow small fw-bold text-uppercase"
+            >Índice del Destino</span
+          >
+          <div class="p-2 bg-esta-yellow-soft text-esta-yellow rounded-3">
+            <i class="bi bi-geo-alt-fill fs-4"></i>
+          </div>
+        </div>
+        <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">
+          {{ destinos_total|default:"0" }}
+        </h3>
+        <div class="text-esta-yellow small">
+          <i class="bi bi-map me-1"></i>Rutas ecológicas exploradas
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-5">
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift"
+        style="cursor: pointer"
+        onclick="navegarPanel('#panel-mensual', 'esta-teal')"
+        title="Mide el porcentaje de reservas confirmadas frente a las canceladas"
+        data-bs-toggle="tooltip"
+      >
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="text-esta-teal small fw-bold text-uppercase"
+            >Tasa de Éxito</span
+          >
+          <div class="p-2 bg-esta-teal-soft text-esta-teal rounded-3">
+            <i class="bi bi-graph-up-arrow fs-4"></i>
+          </div>
+        </div>
+        <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">
+          {{ tasa_exito|default:"0" }}%
+        </h3>
+        <div class="progress rounded-pill mb-2">
+          <div
+            class="progress-bar bg-esta-teal text-white"
+            style="background-color: var(--estadisticas-teal); width: {{ tasa_exito|default:'0' }}%;"
+            role="progressbar"
+          ></div>
+        </div>
+        <div class="text-esta-teal small">Reservas confirmadas / total</div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift"
+        style="cursor: pointer"
+        onclick="navegarPanel('#panel-soporte', 'esta-red')"
+        title="Gestiona casos, reclamos y solicitudes que requieren tu atención urgente"
+        data-bs-toggle="tooltip"
+      >
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="text-esta-red small fw-bold text-uppercase"
+            >PQRS Activas</span
+          >
+          <div class="p-2 bg-esta-red-soft text-esta-red rounded-3">
+            <i class="bi bi-headset fs-4"></i>
+          </div>
+        </div>
+        <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">
+          {{ pqrs_abiertas|default:"0" }}
+        </h3>
+        <div class="text-esta-red small">
+          <i class="bi bi-exclamation-circle text-esta-red me-1"></i>Requieren
+          atención
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift"
+        style="cursor: pointer"
+        onclick="navegarPanel('#panel-calificaciones', 'esta-orange')"
+        title="Consulta las valoraciones y calificaciones de las experiencias"
+        data-bs-toggle="tooltip"
+      >
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="text-esta-orange small fw-bold text-uppercase"
+            >Calificaciones</span
+          >
+          <div class="p-2 bg-esta-orange-soft text-esta-orange rounded-3">
+            <i class="bi bi-star-fill fs-4"></i>
+          </div>
+        </div>
+        <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">
+          {{ total_calificaciones|default:total_resenas|default:"0" }}
+        </h3>
+        <div class="text-esta-orange small">
+          <i class="bi bi-star me-1"></i>Puntuaciones registradas
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift"
+        title="Fidelidad y tiempo transcurrido desde tu registro en la plataforma"
+        data-bs-toggle="tooltip"
+      >
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="text-esta-purple small fw-bold text-uppercase"
+            >Días como Miembro</span
+          >
+          <div class="p-2 bg-esta-purple-soft text-esta-purple rounded-3">
+            <i class="bi bi-person-check-fill fs-4"></i>
+          </div>
+        </div>
+        <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">
+          {{ dias_como_miembro|default:"0" }}
+        </h3>
+        <div class="text-esta-purple small">
+          <i class="bi bi-calendar3 me-1"></i>Desde {{ user.date_joined|date:"d
+          M Y" }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-5">
+    <div class="col-12 col-lg-7">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white"
+      >
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="fw-bold text-dark mb-0">
+            <i class="bi bi-award text-warning me-2"></i>Estatus de Fidelización
+            y Nivel de Experiencia
+          </h5>
+          <span
+            class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1"
+            >Programa Monagua Core</span
+          >
+        </div>
+        <div class="row align-items-center g-3">
+          <div class="col-sm-3 text-center border-end border-light">
+            <span class="display-4 d-block mb-1">
+              {% if nivel_viajero == "Explorador" %}🥉 {% elif nivel_viajero ==
+              "Aventurero" %}🥈 {% elif nivel_viajero == "Expedicionista" %}🥇
+              {% else %}{% endif %}
             </span>
-            <button class="btn btn-success btn-sm d-flex align-items-center gap-1" id="btnExportPdf">
-              <i class="bi bi-file-earmark-pdf-fill"></i>
-              <span id="exportLabel">Exportar PDF</span>
-            </button>
+            <h6 class="fw-bold text-dark mb-0">
+              {{ nivel_viajero|default:"Iniciando" }}
+            </h6>
+          </div>
+          <div class="col-sm-9 ps-md-4">
+            <p class="opacity-75 small mb-3">
+              {{ descripcion_nivel|default:"Continúa recorriendo las rutas del
+              Páramo de Mongua para desbloquear nuevos beneficios y
+              reconocimientos." }}
+            </p>
+            {% if progreso_nivel is not None %}
+            <div class="d-flex justify-content-between opacity-75 small mb-1">
+              <span>Progreso técnico al siguiente rango</span>
+              <span class="fw-bold">{{ progreso_nivel }}%</span>
+            </div>
+            <div class="progress rounded-pill mb-0">
+              <div
+                class="progress-bar bg-warning"
+                role="progressbar"
+                style="width: {{ progreso_nivel|default:'0' }}%;"
+              ></div>
+            </div>
+            {% endif %}
+          </div>
         </div>
+        <hr class="my-4 opacity-75 opacity-25" />
+        <div class="row g-2 text-center">
+          <div class="col-4">
+            <small class="opacity-75 d-block">Comunidad desde</small>
+            <span class="fw-bold text-dark small"
+              >{{ user.date_joined|date:"M Y" }}</span
+            >
+          </div>
+          <div class="col-4 border-start border-light">
+            <small class="opacity-75 d-block">Último Acceso</small>
+            <span class="fw-bold text-dark small"
+              >{{ user.last_login|date:"d M Y"|default:"—" }}</span
+            >
+          </div>
+          <div class="col-4 border-start border-light">
+            <small class="opacity-75 d-block">Promedio Mensual</small>
+            <span class="fw-bold text-dark small"
+              >{{ promedio_mensual_reservas|default:"0" }} reservas</span
+            >
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="row g-4 mb-5">
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift" style="cursor: pointer;" onclick="navegarPanel('#panel-transacciones', 'esta-green')" title="Revisa el balance general, historial de fondos y transacciones validadas" data-bs-toggle="tooltip">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <span class="text-esta-green small fw-bold text-uppercase">Inversión Total</span>
-                    <div class="p-2 bg-esta-green-soft text-esta-green rounded-3">
-                        <i class="bi bi-wallet2 fs-4"></i>
-                    </div>
-                </div>
-                <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">COP ${{ total_invertido|floatformat:0|intcomma|default:"0" }}</h3>
-                <div class="text-esta-green small"><i class="bi bi-check-circle-fill text-esta-green me-1"></i>Solo fondos
-                    validados</div>
-            </div>
+    <div class="col-12 col-lg-5">
+      <div
+        class="card border-0 shadow-sm rounded-4 p-3 p-xl-4 h-100 text-white bg-success bg-gradient"
+      >
+        <h5 class="fw-bold mb-3">
+          <i class="bi bi-tree-fill me-2"></i>Impacto Ecológico Estimado
+        </h5>
+        <p class="small mb-4 text-white text-opacity-75">
+          Tu interacción con nuestra plataforma apoya de forma directa a la
+          conservación ambiental del Páramo de Mongua y los guías nativos
+          locales.
+        </p>
+        <div class="bg-white bg-opacity-10 rounded-3 p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="small fw-semibold">Contribución Comunitaria</span>
+            <span class="small badge bg-white text-success fw-bold"
+              >Nivel Alto</span
+            >
+          </div>
+          <div class="progress bg-white bg-opacity-25 rounded-pill">
+            <div class="progress-bar bg-white w-75" role="progressbar"></div>
+          </div>
         </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift" style="cursor: pointer;" onclick="navegarPanel('#panel-mensual', 'esta-blue')" title="Accede a la matriz comparativa de ocupación y viajes mes a mes" data-bs-toggle="tooltip">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <span class="text-esta-blue small fw-bold text-uppercase">Volumen de Reservas</span>
-                    <div class="p-2 bg-esta-blue-soft text-esta-blue rounded-3">
-                        <i class="bi bi-journal-bookmark-fill fs-4"></i>
-                    </div>
-                </div>
-                <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">{{ total_reservas|default:"0" }}</h3>
-                <div class="text-esta-blue small"><i class="bi bi-arrow-up-right text-esta-blue me-1"></i>Historial completo
-                    activo</div>
-            </div>
+        <div class="bg-white bg-opacity-10 rounded-3 p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="small fw-semibold">Árboles estimados conservados</span>
+            <span class="small badge bg-white text-success fw-bold"
+              >{{ arboles_conservados|default:"—" }}</span
+            >
+          </div>
+          <div class="progress bg-white bg-opacity-25 rounded-pill">
+            <div class="progress-bar bg-white w-50" role="progressbar"></div>
+          </div>
         </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift" style="cursor: pointer;" onclick="navegarPanel('#panel-anual', 'esta-cyan')" title="Consulta el margen de ganancias y el valor promedio anual por experiencia" data-bs-toggle="tooltip">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <span class="text-esta-cyan small fw-bold text-uppercase">Ticket Promedio</span>
-                    <div class="p-2 bg-esta-cyan-soft text-esta-cyan rounded-3">
-                        <i class="bi bi-calculator fs-4"></i>
-                    </div>
-                </div>
-                <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">COP ${{ promedio_por_reserva|floatformat:0|intcomma|default:"0" }}</h3>
-                <div class="text-esta-cyan small"><i class="bi bi-info-circle me-1"></i>Valor medio por experiencia</div>
-            </div>
+        <div
+          class="d-flex align-items-center gap-2 small text-white text-opacity-75 mt-auto"
+        >
+          <i class="bi bi-heart-pulse-fill"></i>
+          <span>Gracias por ser parte del ecoturismo responsable.</span>
         </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift" style="cursor: pointer;" onclick="navegarPanel('#panel-destinos', 'esta-yellow')" title="Analiza cuáles rutas ecológicas son las más frecuentadas" data-bs-toggle="tooltip">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <span class="text-esta-yellow small fw-bold text-uppercase">Índice del Destino</span>
-                    <div class="p-2 bg-esta-yellow-soft text-esta-yellow rounded-3">
-                        <i class="bi bi-geo-alt-fill fs-4"></i>
-                    </div>
-                </div>
-                <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">{{ destinos_total|default:"0" }}</h3>
-                <div class="text-esta-yellow small"><i class="bi bi-map me-1"></i>Rutas ecológicas exploradas</div>
-            </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-5">
+    <div class="col-12 col-xl-8">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white"
+      >
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="fw-bold text-dark mb-0">
+            <i class="bi bi-activity text-primary me-2"></i>Evolución Mensual de
+            Reservas e Inversión
+          </h5>
+          <span class="opacity-75 small">Año en curso</span>
         </div>
+        <canvas id="chartEvolucionMensual" class="w-100"></canvas>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white"
+      >
+        <h5 class="fw-bold text-dark mb-4">
+          <i class="bi bi-pie-chart-fill text-success me-2"></i>Distribución de
+          Estados de Reserva
+        </h5>
+        <div
+          class="mx-auto position-relative"
+          style="max-width: 300px; width: 100%"
+        >
+          <canvas id="chartEstadosPie"></canvas>
+        </div>
+        <div class="row g-2 text-center mt-3">
+          <div class="col-6">
+            <span class="d-block fw-bold text-success"
+              >{{ reservas_confirmadas|default:"0" }}</span
+            >
+            <small class="opacity-75">Confirmadas</small>
+          </div>
+          <div class="col-6">
+            <span class="d-block fw-bold text-warning"
+              >{{ reservas_pendientes|default:"0" }}</span
+            >
+            <small class="opacity-75">Pendientes</small>
+          </div>
+          <div class="col-6">
+            <span class="d-block fw-bold text-danger"
+              >{{ reservas_canceladas|default:"0" }}</span
+            >
+            <small class="opacity-75">Canceladas</small>
+          </div>
+          <div class="col-6">
+            <span class="d-block fw-bold text-esta-blue"
+              >{{ reservas_completadas|default:"0" }}</span
+            >
+            <small class="text-esta-blue opacity-75">Completadas</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-5">
+    <div class="col-12 col-md-6 col-xl-4">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white"
+      >
+        <h5 class="fw-bold text-dark mb-4">
+          <i class="bi bi-bar-chart-steps text-warning me-2"></i>Inversión
+          Anualizada
+        </h5>
+        <canvas id="chartInversionAnual" class="w-100"></canvas>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white"
+      >
+        <h5 class="fw-bold text-dark mb-4">
+          <i class="bi bi-calendar-week text-info me-2"></i>Preferencia por Día
+          de la Semana
+        </h5>
+        <canvas id="chartDiasSemana" class="w-100"></canvas>
+      </div>
+    </div>
+    <div class="col-12 col-xl-4">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white"
+      >
+        <h5 class="fw-bold text-dark mb-4">
+          <i class="bi bi-headset text-danger me-2"></i>Estadísticas de PQRS
+        </h5>
+        <canvas id="chartPqrsEstados" class="w-100 mb-3"></canvas>
+        <div class="row g-2 text-center border-top pt-3">
+          <div class="col-6 mb-2">
+            <span class="d-block fw-bold text-primary"
+              >{{ pqrs_abiertas|default:"0" }}</span
+            >
+            <small class="opacity-75">Abiertas</small>
+          </div>
+          <div class="col-6 mb-2">
+            <span class="d-block fw-bold text-success"
+              >{{ pqrs_cerradas|default:"0" }}</span
+            >
+            <small class="opacity-75">Resueltas</small>
+          </div>
+          <div class="col-6">
+            <span class="d-block fw-bold text-warning"
+              >{{ pqrs_quejas|add:pqrs_reclamos|default:"0" }}</span
+            >
+            <small class="opacity-75">Quejas/Reclamos</small>
+          </div>
+          <div class="col-6">
+            <span class="d-block fw-bold text-info"
+              >{{ pqrs_anonimos|default:"0" }}</span
+            >
+            <small class="opacity-75">Anónimos</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-5">
+    <div class="col-12 col-md-6">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white"
+      >
+        <h5 class="fw-bold text-dark mb-4">
+          <i class="bi bi-layers-fill text-esta-blue me-2"></i>Comparativa
+          Anual: Reservas vs Cancelaciones
+        </h5>
+        <canvas id="chartComparativaAnual" class="w-100"></canvas>
+      </div>
+    </div>
+    <div class="col-12 col-md-6">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white"
+      >
+        <h5 class="fw-bold text-dark mb-4">
+          <i class="bi bi-geo-fill text-success me-2"></i>Top Destinos por
+          Frecuencia de Reserva
+        </h5>
+        <canvas id="chartTopDestinos" class="w-100"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-5">
+    <div class="col-12 col-md-5">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white"
+      >
+        <h5 class="fw-bold text-dark mb-4">
+          <i class="bi bi-radar text-primary me-2"></i>Perfil de Comportamiento
+          del Viajero
+        </h5>
+        <div
+          class="mx-auto position-relative"
+          style="max-width: 350px; width: 100%"
+        >
+          <canvas id="chartRadarPerfil"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-7">
+      <div
+        class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white"
+      >
+        <h5 class="fw-bold text-dark mb-4">
+          <i class="bi bi-graph-up text-info me-2"></i>Tendencia Acumulada de
+          Inversión (Mensual)
+        </h5>
+        <canvas id="chartInversionAcumulada" class="w-100"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border border-light shadow-sm rounded-4 p-4 mb-5 bg-white">
+    <div
+      class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-3"
+    >
+      <div>
+        <h5 class="fw-bold text-dark mb-1">
+          <i class="bi bi-file-earmark-bar-graph text-esta-blue me-2"></i
+          >Módulos de Auditoría e Informes Consolidados
+        </h5>
+        <p class="opacity-75 small mb-0">
+          Selecciona las pestañas inferiores para desglosar la matriz de datos
+          históricos.
+        </p>
+      </div>
     </div>
 
-    <div class="row g-4 mb-5">
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift" style="cursor: pointer;" onclick="navegarPanel('#panel-mensual', 'esta-teal')" title="Mide el porcentaje de reservas confirmadas frente a las canceladas" data-bs-toggle="tooltip">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <span class="text-esta-teal small fw-bold text-uppercase">Tasa de Éxito</span>
-                    <div class="p-2 bg-esta-teal-soft text-esta-teal rounded-3">
-                        <i class="bi bi-graph-up-arrow fs-4"></i>
+    <ul
+      class="nav nav-pills bg-light p-2 rounded-3 mb-4 gap-2 flex-wrap"
+      id="vistasMatrizTab"
+      role="tablist"
+    >
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link active rounded-3 fw-medium"
+          id="tab-mensual"
+          data-bs-toggle="tab"
+          data-bs-target="#panel-mensual"
+          type="button"
+          role="tab"
+        >
+          <i class="bi bi-calendar3 me-2"></i>Reporte Mensual
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link rounded-3 fw-medium"
+          id="tab-anual"
+          data-bs-toggle="tab"
+          data-bs-target="#panel-anual"
+          type="button"
+          role="tab"
+        >
+          <i class="bi bi-calendar-range me-2"></i>Reporte Anual
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link rounded-3 fw-medium"
+          id="tab-destinos"
+          data-bs-toggle="tab"
+          data-bs-target="#panel-destinos"
+          type="button"
+          role="tab"
+        >
+          <i class="bi bi-compass me-2"></i>Análisis de Rutas Frecuentes
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link rounded-3 fw-medium"
+          id="tab-soporte"
+          data-bs-toggle="tab"
+          data-bs-target="#panel-soporte"
+          type="button"
+          role="tab"
+        >
+          <i class="bi bi-headset me-2"></i>Trazabilidad de PQRS
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link rounded-3 fw-medium"
+          id="tab-transacciones"
+          data-bs-toggle="tab"
+          data-bs-target="#panel-transacciones"
+          type="button"
+          role="tab"
+        >
+          <i class="bi bi-credit-card me-2"></i>Historial de Pagos
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link rounded-3 fw-medium"
+          id="tab-calificaciones"
+          data-bs-toggle="tab"
+          data-bs-target="#panel-calificaciones"
+          type="button"
+          role="tab"
+        >
+          <i class="bi bi-star-fill me-2"></i>Calificaciones
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="vistasMatrizTabContent">
+      <div class="tab-pane fade show active" id="panel-mensual" role="tabpanel">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle border-0 mb-0">
+            <thead class="table-light border-bottom">
+              <tr>
+                <th class="py-3 border-0">Período Fiscal</th>
+                <th class="py-3 border-0 text-center">Reservas Creadas</th>
+                <th class="py-3 border-0 text-center">Confirmadas</th>
+                <th class="py-3 border-0 text-center">Canceladas</th>
+                <th class="py-3 border-0 text-center">Completadas</th>
+                <th class="py-3 border-0 text-center">Tasa Éxito</th>
+                <th class="py-3 border-0 text-end">Inversión Recaudada</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for reporte in reporte_mensual %}
+              <tr class="border-bottom border-light">
+                <td class="fw-semibold text-dark py-3">
+                  {{ reporte.mes_nombre }} / {{ reporte.anio }}
+                </td>
+                <td class="text-center py-3">
+                  <span class="badge bg-light text-dark"
+                    >{{ reporte.total_creadas }}</span
+                  >
+                </td>
+                <td class="text-center py-3">
+                  <span class="badge bg-success bg-opacity-10 text-success"
+                    >{{ reporte.total_confirmadas }}</span
+                  >
+                </td>
+                <td class="text-center py-3">
+                  <span class="badge bg-danger bg-opacity-10 text-danger"
+                    >{{ reporte.total_canceladas }}</span
+                  >
+                </td>
+                <td class="text-center py-3">
+                  <span class="badge bg-esta-blue bg-opacity-10 text-esta-blue"
+                    >{{ reporte.total_completadas|default:"0" }}</span
+                  >
+                </td>
+                <td class="text-center py-3">
+                  <div
+                    class="d-flex align-items-center gap-1 justify-content-center"
+                  >
+                    <div
+                      class="progress rounded-pill bg-light"
+                      style="width: 100px"
+                    >
+                      <div
+                        class="progress-bar"
+                        style="background-color: #10b981 !important; width: {{ reporte.porcentaje_exito|default:'0' }}%;"
+                        role="progressbar"
+                      ></div>
                     </div>
-                </div>
-                <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">{{ tasa_exito|default:"0" }}%</h3>
-                <div class="progress rounded-pill mb-2">
-                    <div class="progress-bar bg-esta-teal text-white" style="background-color: var(--estadisticas-teal); width: {{ tasa_exito|default:'0' }}%;" role="progressbar"></div>
-                </div>
-                <div class="text-esta-teal small">Reservas confirmadas / total</div>
-            </div>
+                    <small class="text-success fw-semibold"
+                      >{{ reporte.porcentaje_exito|default:"0" }}%</small
+                    >
+                  </div>
+                </td>
+                <td class="text-end fw-bold text-dark py-3">
+                  COP ${{ reporte.inversion|floatformat:0|intcomma }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift" style="cursor: pointer;" onclick="navegarPanel('#panel-soporte', 'esta-red')" title="Gestiona casos, reclamos y solicitudes que requieren tu atención urgente" data-bs-toggle="tooltip">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <span class="text-esta-red small fw-bold text-uppercase">PQRS Activas</span>
-                    <div class="p-2 bg-esta-red-soft text-esta-red rounded-3">
-                        <i class="bi bi-headset fs-4"></i>
+      </div>
+
+      <div class="tab-pane fade" id="panel-anual" role="tabpanel">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle border-0 mb-0">
+            <thead class="table-light border-bottom">
+              <tr>
+                <th class="py-3 border-0">Año</th>
+                <th class="py-3 border-0 text-center">Volumen Operativo</th>
+                <th class="py-3 border-0 text-center">Confirmadas</th>
+                <th class="py-3 border-0 text-center">Canceladas</th>
+                <th class="py-3 border-0 text-center">Completadas</th>
+                <th class="py-3 border-0 text-center">Ticket Promedio</th>
+                <th class="py-3 border-0 text-center">Tasa de Éxito</th>
+                <th class="py-3 border-0 text-end">Caja Acumulada</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for reporte in reporte_anual %}
+              <tr class="border-bottom border-light">
+                <td class="fw-bold text-dark py-3">{{ reporte.anio }}</td>
+                <td class="text-center py-3">
+                  {{ reporte.total_reservas }} viajes
+                </td>
+                <td class="text-center py-3">
+                  <span class="badge bg-success bg-opacity-10 text-success"
+                    >{{ reporte.total_confirmadas|default:"—" }}</span
+                  >
+                </td>
+                <td class="text-center py-3">
+                  <span class="badge bg-danger bg-opacity-10 text-danger"
+                    >{{ reporte.total_canceladas|default:"—" }}</span
+                  >
+                </td>
+                <td class="text-center py-3">
+                  <span class="badge bg-esta-blue bg-opacity-10 text-esta-blue"
+                    >{{ reporte.total_completadas|default:"—" }}</span
+                  >
+                </td>
+                <td class="text-center py-3 opacity-75">
+                  COP ${{
+                  reporte.ticket_promedio|floatformat:0|intcomma|default:"—" }}
+                </td>
+                <td class="text-center py-3">
+                  <div
+                    class="d-flex align-items-center gap-2 justify-content-center"
+                  >
+                    <div
+                      class="progress rounded-pill bg-light"
+                      style="width: 100px"
+                    >
+                      <div
+                        class="progress-bar"
+                        style="background-color: #10b981 !important; width: {{ reporte.porcentaje_exito|default:'0' }}%;"
+                        role="progressbar"
+                      ></div>
                     </div>
-                </div>
-                <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">{{ pqrs_abiertas|default:"0" }}</h3>
-                <div class="text-esta-red small"><i class="bi bi-exclamation-circle text-esta-red me-1"></i>Requieren
-                    atención</div>
-            </div>
+                    <span class="small fw-semibold text-success"
+                      >{{ reporte.porcentaje_exito }}%</span
+                    >
+                  </div>
+                </td>
+                <td class="text-end fw-bold text-success py-3">
+                  COP ${{ reporte.inversion|floatformat:0|intcomma }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift" style="cursor: pointer;" onclick="navegarPanel('#panel-calificaciones', 'esta-orange')" title="Consulta las valoraciones y calificaciones de las experiencias" data-bs-toggle="tooltip">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <span class="text-esta-orange small fw-bold text-uppercase">Calificaciones</span>
-                    <div class="p-2 bg-esta-orange-soft text-esta-orange rounded-3">
-                        <i class="bi bi-star-fill fs-4"></i>
+      </div>
+
+      <div class="tab-pane fade" id="panel-destinos" role="tabpanel">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle border-0 mb-0">
+            <thead class="table-light border-bottom">
+              <tr>
+                <th class="py-3 border-0">Ruta / Destino Turístico</th>
+                <th class="py-3 border-0 text-center">Frecuencia de Reserva</th>
+                <th class="py-3 border-0 text-center">Inversión Generada</th>
+                <th class="py-3 border-0 text-end">Último Acceso Registrado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for destino in destinos_frecuentes %}
+              <tr class="border-bottom border-light">
+                <td class="py-3">
+                  <div class="d-flex align-items-center gap-3">
+                    <div
+                      class="p-2 bg-light text-dark rounded-circle small fw-bold text-center u-style-c3eb2113"
+                    >
+                      {{ forloop.counter }}
                     </div>
-                </div>
-                <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">{{ total_calificaciones|default:total_resenas|default:"0" }}</h3>
-                <div class="text-esta-orange small"><i class="bi bi-star me-1"></i>Puntuaciones registradas</div>
-            </div>
+                    <span class="fw-semibold text-dark"
+                      >{{ destino.nombre }}</span
+                    >
+                  </div>
+                </td>
+                <td class="text-center py-3">
+                  <span class="badge bg-primary px-3 py-1 rounded-pill"
+                    >{{ destino.total_reservas }}</span
+                  >
+                </td>
+                <td class="text-center py-3 opacity-75">
+                  COP ${{
+                  destino.inversion_total|floatformat:0|intcomma|default:"—" }}
+                </td>
+                <td class="text-end opacity-75 py-3">
+                  {{ destino.ultima_visita|date:"d M Y"|default:"—" }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift" title="Fidelidad y tiempo transcurrido desde tu registro en la plataforma" data-bs-toggle="tooltip">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <span class="text-esta-purple small fw-bold text-uppercase">Días como Miembro</span>
-                    <div class="p-2 bg-esta-purple-soft text-esta-purple rounded-3">
-                        <i class="bi bi-person-check-fill fs-4"></i>
+      </div>
+
+      <div class="tab-pane fade" id="panel-soporte" role="tabpanel">
+        <div class="row g-4 p-2">
+          <div class="col-12 col-md-4">
+            <div class="bg-light p-4 rounded-3 h-100">
+              <h6 class="fw-bold text-dark mb-3">Balance Operativo de Casos</h6>
+              <div class="vstack gap-3">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="small opacity-75"
+                    ><i class="bi bi-envelope-open text-primary me-2"></i
+                    >Abiertos / En Proceso:</span
+                  >
+                  <span class="badge bg-primary text-white font-monospace"
+                    >{{ pqrs_abiertas|add:pqrs_en_gestion|default:"0" }}</span
+                  >
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="small opacity-75"
+                    ><i class="bi bi-check-all text-success me-2"></i>Cerrados /
+                    Resueltos:</span
+                  >
+                  <span class="badge bg-success text-white font-monospace"
+                    >{{ pqrs_cerradas|default:"0" }}</span
+                  >
+                </div>
+                <hr class="my-1" />
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="small opacity-75"
+                    ><i class="bi bi-person-fill text-info me-2"></i>Usuarios
+                    Registrados:</span
+                  >
+                  <span class="badge bg-info text-dark font-monospace"
+                    >{{ pqrs_registrados|default:"0" }}</span
+                  >
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="small opacity-75"
+                    ><i class="bi bi-incognito text-secondary me-2"></i
+                    >Visitantes Anónimos:</span
+                  >
+                  <span class="badge bg-secondary text-white font-monospace"
+                    >{{ pqrs_anonimos|default:"0" }}</span
+                  >
+                </div>
+                <hr class="my-1" />
+                <div class="row g-2 text-center small mb-2">
+                  <div class="col-4 border-end">
+                    <div class="fw-bold text-dark">
+                      {{ pqrs_peticiones|default:"0" }}
                     </div>
+                    <div class="opacity-75" style="font-size: 0.75rem">
+                      Peticiones
+                    </div>
+                  </div>
+                  <div class="col-4 border-end">
+                    <div class="fw-bold text-danger">
+                      {{ pqrs_quejas|add:pqrs_reclamos|default:"0" }}
+                    </div>
+                    <div class="opacity-75" style="font-size: 0.75rem">
+                      Quejas/Rec
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="fw-bold text-success">
+                      {{ pqrs_sugerencias|default:"0" }}
+                    </div>
+                    <div class="opacity-75" style="font-size: 0.75rem">
+                      Sugerencias
+                    </div>
+                  </div>
                 </div>
-                <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">{{ dias_como_miembro|default:"0" }}</h3>
-                <div class="text-esta-purple small"><i class="bi bi-calendar3 me-1"></i>Desde {{ user.date_joined|date:"d M Y" }}</div>
+                <div
+                  class="d-flex justify-content-between align-items-center bg-light p-2 rounded"
+                >
+                  <span class="small fw-bold text-dark">Total Histórico:</span>
+                  <span class="badge bg-dark text-white font-monospace"
+                    >{{ pqrs_total|default:"0" }}</span
+                  >
+                </div>
+                <div
+                  class="d-flex justify-content-between align-items-center px-2"
+                >
+                  <span class="small opacity-75">Tasa de resolución:</span>
+                  <span class="small fw-bold text-success"
+                    >{{ pqrs_tasa_resolucion|default:"0" }}%</span
+                  >
+                </div>
+              </div>
             </div>
+          </div>
+          <div class="col-12 col-md-8">
+            <div class="border border-light rounded-3 p-3 bg-body">
+              <h6 class="fw-bold text-dark mb-3">
+                Auditoría Breve de Actividad Reciente
+              </h6>
+              <div class="vstack gap-2">
+                {% for evento in actividad_reciente|slice:":6" %}
+                <div
+                  class="p-2 border-bottom border-light d-flex justify-content-between align-items-center small"
+                >
+                  <span class="text-dark"
+                    ><i class="bi bi-clock me-2 opacity-75"></i>{{
+                    evento.descripcion }}</span
+                  >
+                  <span class="opacity-75 font-monospace"
+                    >{{ evento.fecha|date:"d M Y" }}</span
+                  >
+                </div>
+                {% empty %}
+                <p class="opacity-75 small text-center py-4 mb-0">
+                  Sin trazas operativas recientes en la cuenta.
+                </p>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div class="tab-pane fade" id="panel-transacciones" role="tabpanel">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle border-0 mb-0">
+            <thead class="table-light border-bottom">
+              <tr>
+                <th class="py-3 border-0"># Transacción</th>
+                <th class="py-3 border-0">Reserva Asociada</th>
+                <th class="py-3 border-0 text-center">Método de Pago</th>
+                <th class="py-3 border-0 text-center">Estado</th>
+                <th class="py-3 border-0 text-center">Fecha</th>
+                <th class="py-3 border-0 text-end">Monto</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for pago in historial_pagos %}
+              <tr class="border-bottom border-light">
+                <td class="py-3 font-monospace opacity-75 small">
+                  {{ pago.codigo|default:"#—" }}
+                </td>
+                <td class="py-3 fw-semibold text-dark">
+                  {{ pago.reserva_nombre|default:"—" }}
+                </td>
+                <td class="text-center py-3">
+                  <span class="badge bg-light text-dark border border-light">
+                    <i class="bi bi-credit-card me-1"></i>{{
+                    pago.metodo|default:"—" }}
+                  </span>
+                </td>
+                <td class="text-center py-3">
+                  {% if pago.estado_transaccion == "aprobado" %}
+                  <span class="badge bg-success bg-opacity-10 text-success"
+                    >Aprobado</span
+                  >
+                  {% elif pago.estado_transaccion == "pendiente" %}
+                  <span class="badge bg-warning bg-opacity-10 text-warning"
+                    >Pendiente</span
+                  >
+                  {% elif pago.estado_transaccion == "rechazado" %}
+                  <span class="badge bg-danger bg-opacity-10 text-danger"
+                    >Rechazado</span
+                  >
+                  {% else %}
+                  <span class="badge bg-esta-blue bg-opacity-10 text-esta-blue"
+                    >{{ pago.estado_transaccion|default:"—" }}</span
+                  >
+                  {% endif %}
+                </td>
+                <td class="text-center py-3 opacity-75 small">
+                  {{ pago.fecha|date:"d M Y"|default:"—" }}
+                </td>
+                <td class="text-end fw-bold text-dark py-3">
+                  {% if pago.monto %} COP ${{ pago.monto|floatformat:0|intcomma
+                  }} {% elif pago.reserva %} COP ${{
+                  pago.reserva.monto_total|floatformat:0|intcomma }} {% else %}
+                  COP $0 {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="panel-calificaciones" role="tabpanel">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle border-0 mb-0">
+            <thead class="table-light border-bottom">
+              <tr>
+                <th class="py-3 border-0">Destino / Experiencia</th>
+                <th class="py-3 border-0 text-center">Puntaje</th>
+                <th class="py-3 border-0">Título / Observación</th>
+                <th class="py-3 border-0 text-center">Estado</th>
+                <th class="py-3 border-0 text-end">Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for calificacion in mis_calificaciones|default:mis_resenas %}
+              <tr class="border-bottom border-light">
+                <td class="py-3 fw-semibold text-dark">
+                  {{ calificacion.destino|default:"—" }}
+                </td>
+                <td class="text-center py-3">
+                  <div class="d-flex justify-content-center gap-1">
+                    {% for i in "12345" %} {% if forloop.counter <=
+                    calificacion.puntaje_estrellas|default:calificacion.calificacion
+                    %} <i class="bi bi-star-fill text-warning small"></i>
+                    {% else %}
+                    <i class="bi bi-star opacity-75 small"></i>
+                    {% endif %} {% endfor %}
+                  </div>
+                </td>
+                <td class="py-3 opacity-75 small">
+                  {{
+                  calificacion.titulo|default:calificacion.comentario|truncatechars:80|default:"—"
+                  }}
+                </td>
+                <td class="text-center py-3">
+                  {% if calificacion.visible or calificacion.publicada %}
+                  <span class="badge bg-success bg-opacity-10 text-success"
+                    >Visible</span
+                  >
+                  {% else %}
+                  <span class="badge bg-warning bg-opacity-10 text-warning"
+                    >Oculto</span
+                  >
+                  {% endif %}
+                </td>
+                <td class="text-end opacity-75 py-3 small">
+                  {{
+                  calificacion.fecha_calificacion|default:calificacion.fecha|date:"d
+                  M Y"|default:"—" }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <div class="row g-4 mb-5">
-        <div class="col-12 col-lg-7">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold text-dark mb-0">
-                        <i class="bi bi-award text-warning me-2"></i>Estatus de Fidelización y Nivel de Experiencia
-                    </h5>
-                    <span
-                        class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1">Programa
-                        Monagua Core</span>
-                </div>
-                <div class="row align-items-center g-3">
-                    <div class="col-sm-3 text-center border-end border-light">
-                        <span class="display-4 d-block mb-1">
-                            {% if nivel_viajero == "Explorador" %}🥉
-                            {% elif nivel_viajero == "Aventurero" %}🥈
-                            {% elif nivel_viajero == "Expedicionista" %}🥇
-                            {% else %}{% endif %}
-                        </span>
-                        <h6 class="fw-bold text-dark mb-0">{{ nivel_viajero|default:"Iniciando" }}</h6>
-                    </div>
-                    <div class="col-sm-9 ps-md-4">
-                        <p class="opacity-75 small mb-3">{{ descripcion_nivel|default:"Continúa recorriendo las rutas del Páramo de Mongua para desbloquear nuevos beneficios y reconocimientos." }}</p>
-                        {% if progreso_nivel is not None %}
-                        <div class="d-flex justify-content-between opacity-75 small mb-1">
-                            <span>Progreso técnico al siguiente rango</span>
-                            <span class="fw-bold">{{ progreso_nivel }}%</span>
-                        </div>
-                        <div class="progress rounded-pill mb-0">
-                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ progreso_nivel|default:'0' }}%;"></div>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-                <hr class="my-4 opacity-75 opacity-25">
-                <div class="row g-2 text-center">
-                    <div class="col-4">
-                        <small class="opacity-75 d-block">Comunidad desde</small>
-                        <span class="fw-bold text-dark small">{{ user.date_joined|date:"M Y" }}</span>
-                    </div>
-                    <div class="col-4 border-start border-light">
-                        <small class="opacity-75 d-block">Último Acceso</small>
-                        <span class="fw-bold text-dark small">{{ user.last_login|date:"d M Y"|default:"—" }}</span>
-                    </div>
-                    <div class="col-4 border-start border-light">
-                        <small class="opacity-75 d-block">Promedio Mensual</small>
-                        <span class="fw-bold text-dark small">{{ promedio_mensual_reservas|default:"0" }}
-                            reservas</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-lg-5">
-            <div class="card border-0 shadow-sm rounded-4 p-3 p-xl-4 h-100 text-white bg-success bg-gradient">
-                <h5 class="fw-bold mb-3"><i class="bi bi-tree-fill me-2"></i>Impacto Ecológico Estimado</h5>
-                <p class="small mb-4 text-white text-opacity-75">Tu interacción con nuestra plataforma apoya de forma
-                    directa a la conservación ambiental del Páramo de Mongua y los guías nativos locales.</p>
-                <div class="bg-white bg-opacity-10 rounded-3 p-3 mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="small fw-semibold">Contribución Comunitaria</span>
-                        <span class="small badge bg-white text-success fw-bold">Nivel Alto</span>
-                    </div>
-                    <div class="progress bg-white bg-opacity-25 rounded-pill">
-                        <div class="progress-bar bg-white w-75" role="progressbar"></div>
-                    </div>
-                </div>
-                <div class="bg-white bg-opacity-10 rounded-3 p-3 mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="small fw-semibold">Árboles estimados conservados</span>
-                        <span class="small badge bg-white text-success fw-bold">{{ arboles_conservados|default:"—" }}</span>
-                    </div>
-                    <div class="progress bg-white bg-opacity-25 rounded-pill">
-                        <div class="progress-bar bg-white w-50" role="progressbar"></div>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center gap-2 small text-white text-opacity-75 mt-auto">
-                    <i class="bi bi-heart-pulse-fill"></i>
-                    <span>Gracias por ser parte del ecoturismo responsable.</span>
-                </div>
-            </div>
-        </div>
+  <div
+    class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 bg-white mb-4"
+  >
+    <h6 class="fw-bold text-dark mb-3 text-uppercase small">
+      Accesos Rápidos de Gestión y Operaciones
+    </h6>
+    <div class="row g-3">
+      <div class="col-6 col-md-3">
+        <a
+          href="#"
+          class="btn btn-light border-light text-dark w-100 py-2 text-start rounded-3 small"
+          data-bs-toggle="tooltip"
+          title="Consulta y gestiona tus reservas actuales"
+        >
+          <i class="bi bi-calendar-plus text-success me-2"></i>Mis Reservas
+        </a>
+      </div>
+      <div class="col-6 col-md-3">
+        <a
+          href="#"
+          class="btn btn-light border-light text-dark w-100 py-2 text-start rounded-3 small"
+          data-bs-toggle="tooltip"
+          title="Descarga o revisa tus comprobantes de pago"
+        >
+          <i class="bi bi-receipt text-primary me-2"></i>Comprobantes
+        </a>
+      </div>
+      <div class="col-6 col-md-3">
+        <a
+          href="#"
+          class="btn btn-light border-light text-dark w-100 py-2 text-start rounded-3 small"
+          data-bs-toggle="tooltip"
+          title="Consulta las calificaciones registradas"
+        >
+          <i class="bi bi-star-fill text-warning me-2"></i>Calificaciones
+        </a>
+      </div>
+      <div class="col-6 col-md-3">
+        <a
+          href="#"
+          class="btn btn-light border-light text-dark w-100 py-2 text-start rounded-3 small"
+          data-bs-toggle="tooltip"
+          title="Abre un ticket de soporte para asistencia"
+        >
+          <i class="bi bi-chat-dots text-danger me-2"></i>Radicar PQRS
+        </a>
+      </div>
     </div>
-
-    <div class="row g-4 mb-5">
-        <div class="col-12 col-xl-8">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold text-dark mb-0">
-                        <i class="bi bi-activity text-primary me-2"></i>Evolución Mensual de Reservas e Inversión
-                    </h5>
-                    <span class="opacity-75 small">Año en curso</span>
-                </div>
-                <canvas id="chartEvolucionMensual" class="w-100"></canvas>
-            </div>
-        </div>
-        <div class="col-12 col-md-6 col-xl-4">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white">
-                <h5 class="fw-bold text-dark mb-4">
-                    <i class="bi bi-pie-chart-fill text-success me-2"></i>Distribución de Estados de Reserva
-                </h5>
-                <div class="mx-auto position-relative" style="max-width: 300px; width: 100%;">
-                    <canvas id="chartEstadosPie"></canvas>
-                </div>
-                <div class="row g-2 text-center mt-3">
-                    <div class="col-6">
-                        <span class="d-block fw-bold text-success">{{ reservas_confirmadas|default:"0" }}</span>
-                        <small class="opacity-75">Confirmadas</small>
-                    </div>
-                    <div class="col-6">
-                        <span class="d-block fw-bold text-warning">{{ reservas_pendientes|default:"0" }}</span>
-                        <small class="opacity-75">Pendientes</small>
-                    </div>
-                    <div class="col-6">
-                        <span class="d-block fw-bold text-danger">{{ reservas_canceladas|default:"0" }}</span>
-                        <small class="opacity-75">Canceladas</small>
-                    </div>
-                    <div class="col-6">
-                        <span class="d-block fw-bold text-esta-blue">{{ reservas_completadas|default:"0" }}</span>
-                        <small class="text-esta-blue opacity-75">Completadas</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-5">
-        <div class="col-12 col-md-6 col-xl-4">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white">
-                <h5 class="fw-bold text-dark mb-4">
-                    <i class="bi bi-bar-chart-steps text-warning me-2"></i>Inversión Anualizada
-                </h5>
-                <canvas id="chartInversionAnual" class="w-100"></canvas>
-            </div>
-        </div>
-        <div class="col-12 col-md-6 col-xl-4">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white">
-                <h5 class="fw-bold text-dark mb-4">
-                    <i class="bi bi-calendar-week text-info me-2"></i>Preferencia por Día de la Semana
-                </h5>
-                <canvas id="chartDiasSemana" class="w-100"></canvas>
-            </div>
-        </div>
-        <div class="col-12 col-xl-4">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white">
-                <h5 class="fw-bold text-dark mb-4">
-                    <i class="bi bi-headset text-danger me-2"></i>Estadísticas de PQRS
-                </h5>
-                <canvas id="chartPqrsEstados" class="w-100 mb-3"></canvas>
-                <div class="row g-2 text-center border-top pt-3">
-                    <div class="col-6 mb-2">
-                        <span class="d-block fw-bold text-primary">{{ pqrs_abiertas|default:"0" }}</span>
-                        <small class="opacity-75">Abiertas</small>
-                    </div>
-                    <div class="col-6 mb-2">
-                        <span class="d-block fw-bold text-success">{{ pqrs_cerradas|default:"0" }}</span>
-                        <small class="opacity-75">Resueltas</small>
-                    </div>
-                    <div class="col-6">
-                        <span class="d-block fw-bold text-warning">{{ pqrs_quejas|add:pqrs_reclamos|default:"0" }}</span>
-                        <small class="opacity-75">Quejas/Reclamos</small>
-                    </div>
-                    <div class="col-6">
-                        <span class="d-block fw-bold text-info">{{ pqrs_anonimos|default:"0" }}</span>
-                        <small class="opacity-75">Anónimos</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-5">
-        <div class="col-12 col-md-6">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white">
-                <h5 class="fw-bold text-dark mb-4">
-                    <i class="bi bi-layers-fill text-esta-blue me-2"></i>Comparativa Anual: Reservas vs Cancelaciones
-                </h5>
-                <canvas id="chartComparativaAnual" class="w-100"></canvas>
-            </div>
-        </div>
-        <div class="col-12 col-md-6">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white">
-                <h5 class="fw-bold text-dark mb-4">
-                    <i class="bi bi-geo-fill text-success me-2"></i>Top Destinos por Frecuencia de Reserva
-                </h5>
-                <canvas id="chartTopDestinos" class="w-100"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-5">
-        <div class="col-12 col-md-5">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white">
-                <h5 class="fw-bold text-dark mb-4">
-                    <i class="bi bi-radar text-primary me-2"></i>Perfil de Comportamiento del Viajero
-                </h5>
-                <div class="mx-auto position-relative" style="max-width: 350px; width: 100%;">
-                    <canvas id="chartRadarPerfil"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-md-7">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white">
-                <h5 class="fw-bold text-dark mb-4">
-                    <i class="bi bi-graph-up text-info me-2"></i>Tendencia Acumulada de Inversión (Mensual)
-                </h5>
-                <canvas id="chartInversionAcumulada" class="w-100"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <div class="card border border-light shadow-sm rounded-4 p-4 mb-5 bg-white">
-        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-3">
-            <div>
-                <h5 class="fw-bold text-dark mb-1">
-                    <i class="bi bi-file-earmark-bar-graph text-esta-blue me-2"></i>Módulos de Auditoría e Informes
-                    Consolidados
-                </h5>
-                <p class="opacity-75 small mb-0">Selecciona las pestañas inferiores para desglosar la matriz de datos
-                    históricos.</p>
-            </div>
-        </div>
-
-        <ul class="nav nav-pills bg-light p-2 rounded-3 mb-4 gap-2 flex-wrap" id="vistasMatrizTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active rounded-3 fw-medium" id="tab-mensual" data-bs-toggle="tab" data-bs-target="#panel-mensual"
-                    type="button" role="tab">
-                    <i class="bi bi-calendar3 me-2"></i>Reporte Mensual
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link rounded-3 fw-medium" id="tab-anual" data-bs-toggle="tab" data-bs-target="#panel-anual"
-                    type="button" role="tab">
-                    <i class="bi bi-calendar-range me-2"></i>Reporte Anual
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link rounded-3 fw-medium" id="tab-destinos" data-bs-toggle="tab" data-bs-target="#panel-destinos"
-                    type="button" role="tab">
-                    <i class="bi bi-compass me-2"></i>Análisis de Rutas Frecuentes
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link rounded-3 fw-medium" id="tab-soporte" data-bs-toggle="tab" data-bs-target="#panel-soporte"
-                    type="button" role="tab">
-                    <i class="bi bi-headset me-2"></i>Trazabilidad de PQRS
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link rounded-3 fw-medium" id="tab-transacciones" data-bs-toggle="tab" data-bs-target="#panel-transacciones"
-                    type="button" role="tab">
-                    <i class="bi bi-credit-card me-2"></i>Historial de Pagos
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link rounded-3 fw-medium" id="tab-calificaciones" data-bs-toggle="tab" data-bs-target="#panel-calificaciones"
-                    type="button" role="tab">
-                    <i class="bi bi-star-fill me-2"></i>Calificaciones
-                </button>
-            </li>
-        </ul>
-
-        <div class="tab-content" id="vistasMatrizTabContent">
-
-            <div class="tab-pane fade show active" id="panel-mensual" role="tabpanel">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle border-0 mb-0">
-                        <thead class="table-light border-bottom">
-                            <tr>
-                                <th class="py-3 border-0">Período Fiscal</th>
-                                <th class="py-3 border-0 text-center">Reservas Creadas</th>
-                                <th class="py-3 border-0 text-center">Confirmadas</th>
-                                <th class="py-3 border-0 text-center">Canceladas</th>
-                                <th class="py-3 border-0 text-center">Completadas</th>
-                                <th class="py-3 border-0 text-center">Tasa Éxito</th>
-                                <th class="py-3 border-0 text-end">Inversión Recaudada</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for reporte in reporte_mensual %}
-                            <tr class="border-bottom border-light">
-                                <td class="fw-semibold text-dark py-3">{{ reporte.mes_nombre }} / {{ reporte.anio }}</td>
-                                <td class="text-center py-3"><span class="badge bg-light text-dark">{{ reporte.total_creadas }}</span></td>
-                                <td class="text-center py-3"><span class="badge bg-success bg-opacity-10 text-success">{{ reporte.total_confirmadas }}</span></td>
-                                <td class="text-center py-3"><span class="badge bg-danger bg-opacity-10 text-danger">{{ reporte.total_canceladas }}</span></td>
-                                <td class="text-center py-3"><span class="badge bg-esta-blue bg-opacity-10 text-esta-blue">{{ reporte.total_completadas|default:"0" }}</span></td>
-                                <td class="text-center py-3">
-                                    <div class="d-flex align-items-center gap-1 justify-content-center">
-                                        <div class="progress rounded-pill bg-light" style="width: 100px;">
-                                            <div class="progress-bar" style="background-color: #10b981 !important; width: {{ reporte.porcentaje_exito|default:'0' }}%;" role="progressbar"></div>
-                                        </div>
-                                        <small class="text-success fw-semibold">{{ reporte.porcentaje_exito|default:"0" }}%</small>
-                                    </div>
-                                </td>
-                                <td class="text-end fw-bold text-dark py-3">COP ${{ reporte.inversion|floatformat:0|intcomma }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="tab-pane fade" id="panel-anual" role="tabpanel">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle border-0 mb-0">
-                        <thead class="table-light border-bottom">
-                            <tr>
-                                <th class="py-3 border-0">Año</th>
-                                <th class="py-3 border-0 text-center">Volumen Operativo</th>
-                                <th class="py-3 border-0 text-center">Confirmadas</th>
-                                <th class="py-3 border-0 text-center">Canceladas</th>
-                                <th class="py-3 border-0 text-center">Completadas</th>
-                                <th class="py-3 border-0 text-center">Ticket Promedio</th>
-                                <th class="py-3 border-0 text-center">Tasa de Éxito</th>
-                                <th class="py-3 border-0 text-end">Caja Acumulada</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for reporte in reporte_anual %}
-                            <tr class="border-bottom border-light">
-                                <td class="fw-bold text-dark py-3">{{ reporte.anio }}</td>
-                                <td class="text-center py-3">{{ reporte.total_reservas }} viajes</td>
-                                <td class="text-center py-3"><span class="badge bg-success bg-opacity-10 text-success">{{ reporte.total_confirmadas|default:"—" }}</span></td>
-                                <td class="text-center py-3"><span class="badge bg-danger bg-opacity-10 text-danger">{{ reporte.total_canceladas|default:"—" }}</span></td>
-                                <td class="text-center py-3"><span class="badge bg-esta-blue bg-opacity-10 text-esta-blue">{{ reporte.total_completadas|default:"—" }}</span></td>
-                                <td class="text-center py-3 opacity-75">COP ${{ reporte.ticket_promedio|floatformat:0|intcomma|default:"—" }}</td>
-                                <td class="text-center py-3">
-                                    <div class="d-flex align-items-center gap-2 justify-content-center">
-                                        <div class="progress rounded-pill bg-light" style="width: 100px;">
-                                            <div class="progress-bar" style="background-color: #10b981 !important; width: {{ reporte.porcentaje_exito|default:'0' }}%;" role="progressbar"></div>
-                                        </div>
-                                        <span class="small fw-semibold text-success">{{ reporte.porcentaje_exito }}%</span>
-                                    </div>
-                                </td>
-                                <td class="text-end fw-bold text-success py-3">COP ${{ reporte.inversion|floatformat:0|intcomma }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="tab-pane fade" id="panel-destinos" role="tabpanel">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle border-0 mb-0">
-                        <thead class="table-light border-bottom">
-                            <tr>
-                                <th class="py-3 border-0">Ruta / Destino Turístico</th>
-                                <th class="py-3 border-0 text-center">Frecuencia de Reserva</th>
-                                <th class="py-3 border-0 text-center">Inversión Generada</th>
-                                <th class="py-3 border-0 text-end">Último Acceso Registrado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for destino in destinos_frecuentes %}
-                            <tr class="border-bottom border-light">
-                                <td class="py-3">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="p-2 bg-light text-dark rounded-circle small fw-bold text-center u-style-c3eb2113">{{ forloop.counter }}</div>
-                                        <span class="fw-semibold text-dark">{{ destino.nombre }}</span>
-                                    </div>
-                                </td>
-                                <td class="text-center py-3"><span class="badge bg-primary px-3 py-1 rounded-pill">{{ destino.total_reservas }}</span></td>
-                                <td class="text-center py-3 opacity-75">COP ${{ destino.inversion_total|floatformat:0|intcomma|default:"—" }}</td>
-                                <td class="text-end opacity-75 py-3">{{ destino.ultima_visita|date:"d M Y"|default:"—" }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="tab-pane fade" id="panel-soporte" role="tabpanel">
-                <div class="row g-4 p-2">
-                    <div class="col-12 col-md-4">
-                        <div class="bg-light p-4 rounded-3 h-100">
-                            <h6 class="fw-bold text-dark mb-3">Balance Operativo de Casos</h6>
-                            <div class="vstack gap-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small opacity-75"><i class="bi bi-envelope-open text-primary me-2"></i>Abiertos / En Proceso:</span>
-                                    <span class="badge bg-primary text-white font-monospace">{{ pqrs_abiertas|add:pqrs_en_gestion|default:"0" }}</span>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small opacity-75"><i class="bi bi-check-all text-success me-2"></i>Cerrados / Resueltos:</span>
-                                    <span class="badge bg-success text-white font-monospace">{{ pqrs_cerradas|default:"0" }}</span>
-                                </div>
-                                <hr class="my-1">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small opacity-75"><i class="bi bi-person-fill text-info me-2"></i>Usuarios Registrados:</span>
-                                    <span class="badge bg-info text-dark font-monospace">{{ pqrs_registrados|default:"0" }}</span>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small opacity-75"><i class="bi bi-incognito text-secondary me-2"></i>Visitantes Anónimos:</span>
-                                    <span class="badge bg-secondary text-white font-monospace">{{ pqrs_anonimos|default:"0" }}</span>
-                                </div>
-                                <hr class="my-1">
-                                <div class="row g-2 text-center small mb-2">
-                                    <div class="col-4 border-end">
-                                        <div class="fw-bold text-dark">{{ pqrs_peticiones|default:"0" }}</div>
-                                        <div class="opacity-75" style="font-size: 0.75rem;">Peticiones</div>
-                                    </div>
-                                    <div class="col-4 border-end">
-                                        <div class="fw-bold text-danger">{{ pqrs_quejas|add:pqrs_reclamos|default:"0" }}</div>
-                                        <div class="opacity-75" style="font-size: 0.75rem;">Quejas/Rec</div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="fw-bold text-success">{{ pqrs_sugerencias|default:"0" }}</div>
-                                        <div class="opacity-75" style="font-size: 0.75rem;">Sugerencias</div>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded">
-                                    <span class="small fw-bold text-dark">Total Histórico:</span>
-                                    <span class="badge bg-dark text-white font-monospace">{{ pqrs_total|default:"0" }}</span>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center px-2">
-                                    <span class="small opacity-75">Tasa de resolución:</span>
-                                    <span class="small fw-bold text-success">{{ pqrs_tasa_resolucion|default:"0" }}%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-8">
-                        <div class="border border-light rounded-3 p-3 bg-body">
-                            <h6 class="fw-bold text-dark mb-3">Auditoría Breve de Actividad Reciente</h6>
-                            <div class="vstack gap-2">
-                                {% for evento in actividad_reciente|slice:":6" %}
-                                <div class="p-2 border-bottom border-light d-flex justify-content-between align-items-center small">
-                                    <span class="text-dark"><i class="bi bi-clock me-2 opacity-75"></i>{{ evento.descripcion }}</span>
-                                    <span class="opacity-75 font-monospace">{{ evento.fecha|date:"d M Y" }}</span>
-                                </div>
-                                {% empty %}
-                                <p class="opacity-75 small text-center py-4 mb-0">Sin trazas operativas recientes en la
-                                    cuenta.</p>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="tab-pane fade" id="panel-transacciones" role="tabpanel">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle border-0 mb-0">
-                        <thead class="table-light border-bottom">
-                            <tr>
-                                <th class="py-3 border-0"># Transacción</th>
-                                <th class="py-3 border-0">Reserva Asociada</th>
-                                <th class="py-3 border-0 text-center">Método de Pago</th>
-                                <th class="py-3 border-0 text-center">Estado</th>
-                                <th class="py-3 border-0 text-center">Fecha</th>
-                                <th class="py-3 border-0 text-end">Monto</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for pago in historial_pagos %}
-                            <tr class="border-bottom border-light">
-                                <td class="py-3 font-monospace opacity-75 small">{{ pago.codigo|default:"#—" }}</td>
-                                <td class="py-3 fw-semibold text-dark">{{ pago.reserva_nombre|default:"—" }}</td>
-                                <td class="text-center py-3">
-                                    <span class="badge bg-light text-dark border border-light">
-                                        <i class="bi bi-credit-card me-1"></i>{{ pago.metodo|default:"—" }}
-                                    </span>
-                                </td>
-                                <td class="text-center py-3">
-                                    {% if pago.estado_transaccion == "aprobado" %}
-                                    <span class="badge bg-success bg-opacity-10 text-success">Aprobado</span>
-                                    {% elif pago.estado_transaccion == "pendiente" %}
-                                    <span class="badge bg-warning bg-opacity-10 text-warning">Pendiente</span>
-                                    {% elif pago.estado_transaccion == "rechazado" %}
-                                    <span class="badge bg-danger bg-opacity-10 text-danger">Rechazado</span>
-                                    {% else %}
-                                    <span class="badge bg-esta-blue bg-opacity-10 text-esta-blue">{{ pago.estado_transaccion|default:"—" }}</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center py-3 opacity-75 small">{{ pago.fecha|date:"d M Y"|default:"—" }}</td>
-                                <td class="text-end fw-bold text-dark py-3">
-                                    {% if pago.monto %}
-                                        COP ${{ pago.monto|floatformat:0|intcomma }}
-                                    {% elif pago.reserva %}
-                                        COP ${{ pago.reserva.monto_total|floatformat:0|intcomma }}
-                                    {% else %}
-                                        COP $0
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="tab-pane fade" id="panel-calificaciones" role="tabpanel">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle border-0 mb-0">
-                        <thead class="table-light border-bottom">
-                            <tr>
-                                <th class="py-3 border-0">Destino / Experiencia</th>
-                                <th class="py-3 border-0 text-center">Puntaje</th>
-                                <th class="py-3 border-0">Título / Observación</th>
-                                <th class="py-3 border-0 text-center">Estado</th>
-                                <th class="py-3 border-0 text-end">Fecha</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for calificacion in mis_calificaciones|default:mis_resenas %}
-                            <tr class="border-bottom border-light">
-                                <td class="py-3 fw-semibold text-dark">{{ calificacion.destino|default:"—" }}</td>
-                                <td class="text-center py-3">
-                                    <div class="d-flex justify-content-center gap-1">
-                                        {% for i in "12345" %}
-                                        {% if forloop.counter <= calificacion.puntaje_estrellas|default:calificacion.calificacion %} <i
-                                            class="bi bi-star-fill text-warning small"></i>
-                                            {% else %}
-                                            <i class="bi bi-star opacity-75 small"></i>
-                                            {% endif %}
-                                            {% endfor %}
-                                    </div>
-                                </td>
-                                <td class="py-3 opacity-75 small">{{ calificacion.titulo|default:calificacion.comentario|truncatechars:80|default:"—" }}</td>
-                                <td class="text-center py-3">
-                                    {% if calificacion.visible or calificacion.publicada %}
-                                    <span class="badge bg-success bg-opacity-10 text-success">Visible</span>
-                                    {% else %}
-                                    <span class="badge bg-warning bg-opacity-10 text-warning">Oculto</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-end opacity-75 py-3 small">{{ calificacion.fecha_calificacion|default:calificacion.fecha|date:"d M Y"|default:"—" }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 bg-white mb-4">
-        <h6 class="fw-bold text-dark mb-3 text-uppercase small">Accesos Rápidos de Gestión y Operaciones</h6>
-        <div class="row g-3">
-            <div class="col-6 col-md-3">
-                <a href="#"
-                    class="btn btn-light border-light text-dark w-100 py-2 text-start rounded-3 small" data-bs-toggle="tooltip" title="Consulta y gestiona tus reservas actuales">
-                    <i class="bi bi-calendar-plus text-success me-2"></i>Mis Reservas
-                </a>
-            </div>
-            <div class="col-6 col-md-3">
-                <a href="#"
-                    class="btn btn-light border-light text-dark w-100 py-2 text-start rounded-3 small" data-bs-toggle="tooltip" title="Descarga o revisa tus comprobantes de pago">
-                    <i class="bi bi-receipt text-primary me-2"></i>Comprobantes
-                </a>
-            </div>
-            <div class="col-6 col-md-3">
-                <a href="#"
-                    class="btn btn-light border-light text-dark w-100 py-2 text-start rounded-3 small" data-bs-toggle="tooltip" title="Consulta las calificaciones registradas">
-                    <i class="bi bi-star-fill text-warning me-2"></i>Calificaciones
-                </a>
-            </div>
-            <div class="col-6 col-md-3">
-                <a href="#"
-                    class="btn btn-light border-light text-dark w-100 py-2 text-start rounded-3 small" data-bs-toggle="tooltip" title="Abre un ticket de soporte para asistencia">
-                    <i class="bi bi-chat-dots text-danger me-2"></i>Radicar PQRS
-                </a>
-            </div>
-        </div>
-    </div>
-
+  </div>
 </div>
 
 <script src="{% static 'js/librerias/html2canvas.min.js' %}"></script>
 <script src="{% static 'js/librerias/jspdf.umd.min.js' %}"></script>
 <script src="{% static 'js/librerias/graficos_chart.min.js' %}"></script>
-<div id="estadisticas-data-container"
-    data-meses-labels="{{ meses_labels|default:'[]' }}"
-    data-meses-datos="{{ meses_datos|default:'[]' }}"
-    data-meses-inversion="{{ meses_inversion|default:'[]' }}"
-    data-anios-labels="{{ anios_labels|default:'[]' }}"
-    data-anios-datos="{{ anios_datos|default:'[]' }}"
-    data-anios-reservas="{{ anios_reservas|default:'[]' }}"
-    data-anios-canceladas="{{ anios_canceladas|default:'[]' }}"
-    data-dias-datos="{{ dias_datos|default:'[]' }}"
-    data-pqrs-abiertas="{{ pqrs_abiertas|default:0 }}"
-    data-pqrs-gestion="{{ pqrs_en_gestion|default:0 }}"
-    data-pqrs-cerradas="{{ pqrs_cerradas|default:0 }}"
-    data-pqrs-peticiones="{{ pqrs_peticiones|default:0 }}"
-    data-pqrs-quejas="{{ pqrs_quejas|default:0 }}"
-    data-pqrs-reclamos="{{ pqrs_reclamos|default:0 }}"
-    data-pqrs-sugerencias="{{ pqrs_sugerencias|default:0 }}"
-    data-reservas-conf="{{ reservas_confirmadas|default:0 }}"
-    data-reservas-pend="{{ reservas_pendientes|default:0 }}"
-    data-reservas-can="{{ reservas_canceladas|default:0 }}"
-    data-reservas-comp="{{ reservas_completadas|default:0 }}"
-    data-destinos-labels="{{ destinos_top_labels|default:'[]' }}"
-    data-destinos-datos="{{ destinos_top_datos|default:'[]' }}"
-    data-tasa-exito="{{ tasa_exito|default:0 }}"
-    data-progreso="{{ progreso_nivel|default:0 }}"
-    data-radar-datos="{{ radar_datos|default:'[]' }}"
-    style="display: none;">
-</div>
+<div
+  id="estadisticas-data-container"
+  data-meses-labels="{{ meses_labels|default:'[]' }}"
+  data-meses-datos="{{ meses_datos|default:'[]' }}"
+  data-meses-inversion="{{ meses_inversion|default:'[]' }}"
+  data-anios-labels="{{ anios_labels|default:'[]' }}"
+  data-anios-datos="{{ anios_datos|default:'[]' }}"
+  data-anios-reservas="{{ anios_reservas|default:'[]' }}"
+  data-anios-canceladas="{{ anios_canceladas|default:'[]' }}"
+  data-dias-datos="{{ dias_datos|default:'[]' }}"
+  data-pqrs-abiertas="{{ pqrs_abiertas|default:0 }}"
+  data-pqrs-gestion="{{ pqrs_en_gestion|default:0 }}"
+  data-pqrs-cerradas="{{ pqrs_cerradas|default:0 }}"
+  data-pqrs-peticiones="{{ pqrs_peticiones|default:0 }}"
+  data-pqrs-quejas="{{ pqrs_quejas|default:0 }}"
+  data-pqrs-reclamos="{{ pqrs_reclamos|default:0 }}"
+  data-pqrs-sugerencias="{{ pqrs_sugerencias|default:0 }}"
+  data-reservas-conf="{{ reservas_confirmadas|default:0 }}"
+  data-reservas-pend="{{ reservas_pendientes|default:0 }}"
+  data-reservas-can="{{ reservas_canceladas|default:0 }}"
+  data-reservas-comp="{{ reservas_completadas|default:0 }}"
+  data-destinos-labels="{{ destinos_top_labels|default:'[]' }}"
+  data-destinos-datos="{{ destinos_top_datos|default:'[]' }}"
+  data-tasa-exito="{{ tasa_exito|default:0 }}"
+  data-progreso="{{ progreso_nivel|default:0 }}"
+  data-radar-datos="{{ radar_datos|default:'[]' }}"
+  style="display: none"
+></div>
 <script src="{% static 'js/estadisticas.js' %}"></script>
 {% endblock %}
