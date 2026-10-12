@@ -7,19 +7,25 @@
 
 {% block content %}
 {% include "partials/breadcrumbs.html" with current_title="Administración de Actividades" current_icon="bi bi-activity" %}
-<div class="container-fluid py-4">
+<div class="container-fluid px-0">
     
-    <!-- 1. Encabezado -->
-    <div class="card admin-page-header p-4 mb-4 rounded-4">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <div>
-                <h1 class="display-6 admin-page-title mb-2 d-flex align-items-center">
-                    <i class="bi bi-activity me-3"></i>Administración de Actividades
-                </h1>
-                <p class="text-muted mb-0">Gestiona las actividades que pueden asociarse a los paquetes turísticos de Monagua.</p>
-            </div>
-            <a href="{% url 'agregar_actividad' %}" class="btn btn-success fw-bold rounded-pill shadow-sm px-4 py-2">
-                <i class="bi bi-plus-circle me-2"></i>Nueva Actividad
+    <!-- ── Top Bar (Estilo Dashboard Admin) ── -->
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-0 text-success d-flex align-items-center gap-2">
+                <i class="bi bi-activity"></i>Administración de Actividades
+            </h2>
+            <p class="text-muted mb-0 small">Gestiona las actividades que pueden asociarse a los paquetes turísticos de Monagua.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap me-lg-5 pe-lg-2">
+            <a href="{% url 'dashboard_admin' %}" class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 shadow-sm">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <a href="{% url 'listar_paquetes' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-none d-md-inline-flex align-items-center gap-1 shadow-sm">
+                <i class="bi bi-box"></i> Paquetes
+            </a>
+            <a href="{% url 'agregar_actividad' %}" class="btn btn-success text-white btn-sm fw-semibold rounded-pill shadow-sm px-3 py-2 d-inline-flex align-items-center gap-1">
+                <i class="bi bi-plus-circle me-1"></i>Nueva Actividad
             </a>
         </div>
     </div>

@@ -7,16 +7,24 @@
 
 {% block content %}
 {% include "partials/breadcrumbs.html" with current_title="Administración de PQRS" current_icon="bi bi-chat-square-text-fill" %}
-<div class="container-fluid py-4">
+<div class="container-fluid px-0">
     
-    <div class="card admin-page-header p-4 mb-4 rounded-4">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <div>
-                <h1 class="display-6 admin-page-title mb-2 d-flex align-items-center">
-                    <i class="bi bi-chat-square-text-fill me-3"></i>Administración de PQRS
-                </h1>
-                <p class="text-muted mb-0">Gestiona y responde las Peticiones, Quejas, Reclamos y Sugerencias de los clientes.</p>
-            </div>
+    <!-- ── Top Bar (Estilo Dashboard Admin) ── -->
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-0 text-success d-flex align-items-center gap-2">
+                <i class="bi bi-chat-square-text-fill"></i>Administración de PQRS
+            </h2>
+            <p class="text-muted mb-0 small">Gestiona y responde las Peticiones, Quejas, Reclamos y Sugerencias de los clientes.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap me-lg-5 pe-lg-2">
+            <a href="{% url 'dashboard_admin' %}" class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 shadow-sm">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <span class="badge bg-white text-secondary border d-none d-md-inline-flex align-items-center gap-1 px-3 py-2 shadow-sm" title="Fecha actual">
+                <i class="bi bi-calendar3 text-success"></i>
+                <span>{% now "D, j \d\e M. Y" %}</span>
+            </span>
         </div>
     </div>
 

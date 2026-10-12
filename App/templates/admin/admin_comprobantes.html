@@ -11,35 +11,49 @@
 
 {% block content %}
 {% include "partials/breadcrumbs.html" with current_title="Gestión de Comprobantes" current_icon="bi bi-receipt-cutoff" %}
-<div class="container-fluid py-4">
+<div class="container-fluid px-0">
 
-    <!-- 1. Encabezado -->
-    <div class="card bg-success bg-opacity-10 border-0 shadow-sm p-4 mb-4 rounded-4">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <div>
-                <h1 class="h3 text-success fw-bold mb-1 d-flex align-items-center">
-                    <i class="bi bi-receipt-cutoff me-2"></i>
-                    {% if estado_filtro == 'rechazado' %}Pagos Rechazados{% else %}Gestión de Comprobantes de Pago{% endif %}
-                </h1>
-                <p class="text-muted mb-0 small">
-                    {% if estado_filtro == 'rechazado' %}
-                        Historial de comprobantes de pago declinados por la administración.
-                    {% else %}
-                        Revisa, aprueba o rechaza los comprobantes cargados por los usuarios.
-                    {% endif %}
-                </p>
-            </div>
-            <div class="d-flex align-items-center gap-2">
+    <!-- ── Top Bar (Estilo Dashboard Admin) ── -->
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-0 text-success d-flex align-items-center gap-2">
+                <i class="bi bi-receipt-cutoff"></i>
+                {% if estado_filtro == 'rechazado' %}Pagos Rechazados{% else %}Gestión de Comprobantes de Pago{% endif %}
+            </h2>
+            <p class="text-muted mb-0 small">
                 {% if estado_filtro == 'rechazado' %}
-                    <a href="{% url 'admin_comprobantes' %}" class="btn btn-outline-secondary fw-semibold rounded-pill shadow-sm px-4 py-2">
-                        <i class="bi bi-arrow-left me-1"></i>Ver Todos
-                    </a>
+                    Historial y auditoría de comprobantes de pago declinados por la administración.
                 {% else %}
-                    <a href="?estado=rechazado" class="btn btn-outline-danger fw-semibold rounded-pill shadow-sm px-4 py-2">
-                        <i class="bi bi-x-circle me-1"></i>Ver Rechazados
-                    </a>
+                    Revisión, aprobación y validación de transferencias y comprobantes en el sistema.
                 {% endif %}
-            </div>
+            </p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap me-lg-5 pe-lg-2">
+            <a href="{% url 'dashboard_admin' %}" class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 shadow-sm">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <a href="{% url 'gestion_reservas' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 shadow-sm">
+                <i class="bi bi-calendar2-check-fill"></i> Reservas
+            </a>
+            {% if total_pendientes > 0 %}
+                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-3 py-2 d-inline-flex align-items-center gap-1 shadow-sm" title="Comprobantes pendientes de validación">
+                    <i class="bi bi-hourglass-split"></i>
+                    <span><strong>{{ total_pendientes }}</strong> Pendientes</span>
+                </span>
+            {% endif %}
+            <span class="badge bg-white text-secondary border d-none d-md-inline-flex align-items-center gap-1 px-3 py-2 shadow-sm" title="Fecha actual">
+                <i class="bi bi-calendar3 text-success"></i>
+                <span id="currentDate">{% now "D, j \d\e M. Y" %}</span>
+            </span>
+            {% if estado_filtro == 'rechazado' %}
+                <a href="{% url 'admin_comprobantes' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 d-inline-flex align-items-center gap-1 shadow-sm fw-semibold">
+                    <i class="bi bi-arrow-left me-1"></i>Ver Todos
+                </a>
+            {% else %}
+                <a href="?estado=rechazado" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-2 d-inline-flex align-items-center gap-1 shadow-sm fw-semibold">
+                    <i class="bi bi-x-circle me-1"></i>Ver Rechazados
+                </a>
+            {% endif %}
         </div>
     </div>
 

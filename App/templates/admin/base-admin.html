@@ -64,12 +64,9 @@
 
     {% include 'partials/aside-admin.html' %}
     {% include 'partials/accesibilidad.html' %}
+    {% include 'partials/notificacion/notificaciones.html' %}
 
     <main id="mainContent" class="p-4 position-relative">
-      <div class="d-flex justify-content-end mb-3">
-        {% include 'partials/notificacion/notificaciones.html' %}
-      </div>
-
       {% block content %}{% endblock %}
     </main>
 
