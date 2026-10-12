@@ -1,44 +1,36 @@
-$(document).ready(function() {
-    $('#tablaComprobantes').DataTable({
+function initTablaComprobantes() {
+    var $tabla = $('#tablaComprobantes');
+    if (!$tabla.length) return;
+
+    if ($.fn.DataTable.isDataTable('#tablaComprobantes')) {
+        $('#tablaComprobantes').DataTable().destroy();
+    }
+
+    $tabla.DataTable({
         order: [],
         autoWidth: false,
         columnDefs: [
             { orderable: false, targets: [0, 7] }, // No ordenar imagen ni acciones
             { className: "text-center", targets: [0, 3, 4, 5, 6, 7] }
         ],
-        // 1. ESTRUCTURA VISUAL: Mantiene botones y buscador alineados en la misma fila
-        dom: "<'row mb-3 align-items-center'<'col-md-6'B><'col-md-6 d-flex justify-content-md-end justify-content-center mt-2 mt-md-0'f>>" +
+        // 1. ESTRUCTURA VISUAL: Mantiene botones y buscador alineados
+        dom: "<'row mb-3 align-items-center'<'col-12 d-flex justify-content-end'f>>" +
              "<'row'<'col-sm-12'tr>>" +
              "<'row mt-3 align-items-center'<'col-md-5 text-center text-md-start'i><'col-md-7 d-flex justify-content-md-end justify-content-center'p>>",
 
-        // 2. BOTONES DE EXPORTACIÓN
+        // 2. BOTONES DE EXPORTACIÓN (Conectados al dropdown nativo Bootstrap 5)
         buttons: [
             {
                 extend: 'excelHtml5',
-                text: '<i class="bi bi-file-earmark-excel-fill text-success fs-5"></i>',
-                titleAttr: 'Exportar a Excel',
-                className: 'btn btn-light rounded-circle shadow-sm border-0 mx-1 d-flex align-items-center justify-content-center p-0',
-                attr: {
-                    style: 'width:44px;height:44px;flex-shrink: 0;'
-                }
+                className: 'd-none btn-export-excel-hidden'
             },
             {
                 extend: 'pdfHtml5',
-                text: '<i class="bi bi-file-earmark-pdf-fill text-dark fs-5"></i>',
-                titleAttr: 'Exportar a PDF',
-                className: 'btn btn-light rounded-circle shadow-sm border-0 mx-1 d-flex align-items-center justify-content-center p-0',
-                attr: {
-                    style: 'width:44px;height:44px; flex-shrink: 0;'
-                }
+                className: 'd-none btn-export-pdf-hidden'
             },
             {
                 extend: 'print',
-                text: '<i class="bi bi-printer-fill text-dark fs-5"></i>',
-                titleAttr: 'Imprimir',
-                className: 'btn btn-light rounded-circle shadow-sm border-0 mx-1 d-flex align-items-center justify-content-center p-0',
-                attr: {
-                    style: 'width:44px;height:44px; flex-shrink: 0;'
-                }
+                className: 'd-none btn-export-print-hidden'
             }
         ],
 
@@ -73,5 +65,32 @@ $(document).ready(function() {
         scrollX: false,
         scrollCollapse: false
     });
+}
+
+$(document).ready(function() {
+    initTablaComprobantes();
+});
+
+// Vincular botones del Dropdown nativo Bootstrap 5 con las acciones de exportación de DataTables
+$(document).on('click', '#btn-export-excel', function(e) {
+    e.preventDefault();
+    $('.btn-export-excel-hidden').trigger('click');
+});
+
+$(document).on('click', '#btn-export-pdf', function(e) {
+    e.preventDefault();
+    $('.btn-export-pdf-hidden').trigger('click');
+});
+
+$(document).on('click', '#btn-export-print', function(e) {
+    e.preventDefault();
+    $('.btn-export-print-hidden').trigger('click');
+});
+
+// Reinicializar DataTables tras actualización asíncrona de HTMX
+document.addEventListener('htmx:afterSwap', function(evt) {
+    if (evt.detail && evt.detail.target && (evt.detail.target.id === 'admin-comprobantes-container' || evt.detail.target.querySelector('#tablaComprobantes'))) {
+        initTablaComprobantes();
+    }
 });
 

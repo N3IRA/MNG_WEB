@@ -24,6 +24,7 @@ from App.views.tarifa import views as tarifa_views
 from App.views.guias import views as guias_views
 from App.views.promocion import views as promocion_views
 from App.views.comprobante_pago import views as comprobante_pago_views
+from App.views.pagos_rechazados import views as pagos_rechazados_views
 from App.views.reserva.views import listar_cancelaciones_admin
 
 
@@ -127,6 +128,13 @@ urlpatterns = [
     path('admin/comprobantes/', comprobante_pago_views.admin_comprobantes, name='admin_comprobantes'),
     path('admin/comprobantes/revisar/<int:pk>/', comprobante_pago_views.admin_revisar_comprobante, name='admin_revisar_comprobante'),
     path('admin/comprobantes/eliminar/<int:pk>/', comprobante_pago_views.admin_eliminar_comprobante, name='admin_eliminar_comprobante'),
+
+    # Pagos Rechazados (Auditoría y Gestión Dedicada)
+    path('admin/pagos-rechazados/', pagos_rechazados_views.admin_pagos_rechazados, name='admin_pagos_rechazados'),
+    path('admin/pagos-rechazados/reconsiderar/<int:pk>/', pagos_rechazados_views.admin_reconsiderar_pago, name='admin_reconsiderar_pago'),
+    path('admin/pagos-rechazados/reabrir/<int:pk>/', pagos_rechazados_views.admin_reabrir_pago, name='admin_reabrir_pago'),
+    path('admin/pagos-rechazados/actualizar-nota/<int:pk>/', pagos_rechazados_views.admin_actualizar_nota_rechazo, name='admin_actualizar_nota_rechazo'),
+    path('admin/pagos-rechazados/cancelar-reserva/<int:pk>/', pagos_rechazados_views.admin_cancelar_reserva_rechazada, name='admin_cancelar_reserva_rechazada'),
 
     # Notificaciones
     path('notificaciones/', notificacion_views.listar_notificaciones, name='listar_notificaciones'),

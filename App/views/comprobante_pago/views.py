@@ -19,17 +19,23 @@ def es_admin(user):
 def admin_comprobantes(request):
     """
     Vista administrativa para listar, filtrar y buscar los comprobantes de pago subidos por los usuarios.
+    Los comprobantes rechazados se gestionan exclusivamente en su apartado dedicado.
     """
     estado_filtro = request.GET.get('estado', '').strip().lower()
 
-    comprobantes = Pago.objects.select_related(
+    # Si se intenta filtrar por 'rechazado', redirigir directamente al apartado dedicado
+    if estado_filtro == 'rechazado':
+        return redirect('admin_pagos_rechazados')
+
+    # Excluir comprobantes rechazados del listado general
+    comprobantes = Pago.objects.exclude(estado_transaccion='rechazado').select_related(
         'reserva', 'reserva__usuario', 'reserva__paquete'
     ).order_by('-fecha_envio')
 
-    if estado_filtro in ['pendiente', 'aprobado', 'rechazado']:
+    if estado_filtro in ['pendiente', 'aprobado']:
         comprobantes = comprobantes.filter(estado_transaccion=estado_filtro)
 
-    total = Pago.objects.count()
+    total = Pago.objects.exclude(estado_transaccion='rechazado').count()
     total_pendientes = Pago.objects.filter(estado_transaccion='pendiente').count()
     total_aprobados = Pago.objects.filter(estado_transaccion='aprobado').aggregate(total=Sum('monto'))['total'] or Decimal('0.00')
     total_rechazados = Pago.objects.filter(estado_transaccion='rechazado').count()
@@ -118,6 +124,8 @@ def admin_revisar_comprobante(request, pk):
                             'comprobante': comprobante,
                             'success_msg': f"¡Comprobante #{comprobante.pk} actualizado correctamente!",
                         })
+                    if estado_transaccion == 'rechazado':
+                        return redirect('admin_pagos_rechazados')
                     return redirect('admin_comprobantes')
                 except ValidationError as ve:
                     if hasattr(ve, 'message_dict'):
@@ -155,3 +163,4 @@ def admin_eliminar_comprobante(request, pk):
         comprobante.delete()
         messages.success(request, f"El comprobante #{pago_id} ha sido eliminado correctamente.")
     return redirect('admin_comprobantes')
+
