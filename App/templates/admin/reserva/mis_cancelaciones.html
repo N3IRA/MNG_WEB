@@ -46,15 +46,15 @@
                     <!-- Badge de Estado de Revisión del Admin -->
                     <div>
                         {% if item.estado_cancelacion == 'aprobada' %}
-                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold">
-                                <i class="bi bi-check-circle me-1"></i> Cancelación Aprobada
+                            <span class="badge bg-success text-white px-3 py-2 rounded-pill fw-bold shadow-sm">
+                                <i class="bi bi-check-circle me-1 text-white"></i> Cancelación Aprobada
                             </span>
                         {% elif item.estado_cancelacion == 'rechazada' %}
-                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill fw-bold">
-                                <i class="bi bi-x-circle me-1"></i> Solicitud Rechazada
+                            <span class="badge bg-danger text-white px-3 py-2 rounded-pill fw-bold shadow-sm">
+                                <i class="bi bi-x-circle me-1 text-white"></i> Solicitud Rechazada
                             </span>
                         {% else %}
-                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 rounded-pill fw-bold">
+                            <span class="badge bg-warning text-dark border border-warning rounded-pill px-3 py-2 fw-bold shadow-sm">
                                 <i class="bi bi-clock-history me-1"></i> Pendiente de revisión
                             </span>
                         {% endif %}

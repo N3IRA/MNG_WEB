@@ -5,28 +5,30 @@
 {% block title %}Estadísticas Administrativas | Monagua{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4 px-3 px-md-5">
+<div class="container-fluid px-0">
 
-    <div class="row align-items-center mb-5 g-3">
-        <div class="col-12 col-md-8">
-            <h1 class="fw-bold text-dark mb-1">
-                {% if analitica_titulo %}
-                <i class="bi {% if admin_mode %}bi-speedometer2{% else %}bi-person-badge{% endif %} text-success me-2"></i>{{ analitica_titulo }}
-                {% else %}
-                <i class="bi bi-bar-chart-line text-success me-2"></i>Panel de Estadísticas
-                {% endif %}
-            </h1>
-            <p class="opacity-75 mb-0">{{ analitica_subtitulo|default:'Consolidado métrico avanzado e histórico de comportamiento de viajes, transacciones y soporte en Monagua.' }}</p>
+    <!-- ── Top Bar ── -->
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-0 text-success d-flex align-items-center">
+                <i class="bi bi-graph-up-arrow text-success me-2"></i>{{ analitica_titulo|default:'Panel de Estadísticas' }}
+            </h2>
+            <p class="text-muted mb-0 small">{{ analitica_subtitulo|default:'Consolidado métrico avanzado e histórico de comportamiento de viajes, transacciones y soporte en Monagua.' }}</p>
         </div>
-        <div class="col-12 col-md-4 text-md-end d-flex justify-content-md-end align-items-center gap-2">
-            <span
-                class="badge rounded-pill bg-success bg-opacity-10 text-success px-4 py-2 fs-6 fw-semibold border border-success border-opacity-25">
-                <i class="bi bi-shield-check me-1"></i>
-                {% if user.is_staff %}Rol: Administrador{% else %}Rol: Viajero Activo{% endif %}
+        <div class="d-flex align-items-center gap-2 flex-wrap me-lg-5 pe-lg-2">
+            <a href="{% url 'gestion_promociones' %}" class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1">
+                <i class="bi bi-megaphone-fill"></i> Promociones
+            </a>
+            <a href="{% url 'gestion_reservas' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1">
+                <i class="bi bi-calendar2-check-fill"></i> Reservas
+            </a>
+            <span class="badge bg-white text-secondary border d-none d-md-inline-flex align-items-center gap-1 px-3 py-2 shadow-sm" title="Fecha actual">
+                <i class="bi bi-calendar3 text-success"></i>
+                <span id="currentDate">{% now "D, j \d\e M. Y" %}</span>
             </span>
-            <button class="btn btn-success btn-sm d-flex align-items-center gap-1" id="btnExportPdf">
-              <i class="bi bi-file-earmark-pdf-fill"></i>
-              <span id="exportLabel">Exportar PDF</span>
+            <button class="btn btn-success text-white btn-sm d-flex align-items-center gap-1" id="btnExportPdf">
+                <i class="bi bi-file-earmark-pdf-fill text-white"></i>
+                <span id="exportLabel" class="text-white">Exportar PDF</span>
             </button>
         </div>
     </div>
@@ -193,7 +195,7 @@
         </div>
 
         <div class="col-12 col-lg-5">
-            <div class="card border-0 shadow-sm rounded-4 p-3 p-xl-4 h-100 text-white bg-success bg-gradient">
+            <div class="card border-0 shadow-sm rounded-4 p-3 p-xl-4 h-100 text-white" style="background-color: #2C6E3C;">
                 <h5 class="fw-bold mb-3"><i class="bi bi-tree-fill me-2"></i>Impacto Ecológico Estimado</h5>
                 <p class="small mb-4 text-white text-opacity-75">Tu interacción con nuestra plataforma apoya de forma
                     directa a la conservación ambiental del Páramo de Mongua y los guías nativos locales.</p>

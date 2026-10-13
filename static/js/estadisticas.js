@@ -460,14 +460,20 @@ function navegarPanel(panelId, colorClass) {
     }
 }
 
-/* Exportar PDF */
+/* Exportar PDF y Fecha */
 document.addEventListener('DOMContentLoaded', function() {
+    /* Fecha actual */
+    const dateElement = document.getElementById('currentDate');
+    if (dateElement) {
+        dateElement.textContent = new Date().toLocaleDateString('es-CO', { weekday:'short', year:'numeric', month:'short', day:'numeric' });
+    }
+
     const btnExportPdf = document.getElementById('btnExportPdf');
     if (btnExportPdf) {
         btnExportPdf.addEventListener('click', async function () {
           const btn = this;
           btn.disabled = true;
-          btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Generando…';
+          btn.innerHTML = '<i class="bi bi-hourglass-split text-white"></i> <span class="text-white">Generando…</span>';
           try {
             const target = document.getElementById('mainContent') || document.body;
             const canvas = await html2canvas(target, {
@@ -488,8 +494,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const header = (n, t) => {
               pdf.setFillColor(33, 37, 41); pdf.rect(0, 0, pW, 10, 'F');
               pdf.setTextColor(255, 255, 255); pdf.setFontSize(8); pdf.setFont('helvetica', 'bold');
-              pdf.text('MONAGUA — Estadisticas Administrativas', 8, 6.5);
-              pdf.text('Generado: ' + new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) + '   Pag ' + n + '/' + t, pW - 8, 6.5, { align: 'right' });
+              pdf.text('MONAGUA — Estadísticas Administrativas', 8, 6.5);
+              pdf.text('Generado: ' + new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) + '   Pág ' + n + '/' + t, pW - 8, 6.5, { align: 'right' });
             };
 
             while (posY < totalH - 1 && loopLimit < 50) {
@@ -508,11 +514,11 @@ document.addEventListener('DOMContentLoaded', function() {
           } catch (e) {
             console.error(e);
             if (typeof window.mostrarToast === 'function') {
-              window.mostrarToast('error', 'Error en Exportacion', 'Ocurrio un error al generar el archivo PDF.', 5000);
+              window.mostrarToast('error', 'Error de exportación', 'Ocurrió un error al generar el archivo PDF.', 5000);
             }
           } finally {
             btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-file-earmark-pdf-fill"></i> Exportar PDF';
+            btn.innerHTML = '<i class="bi bi-file-earmark-pdf-fill text-white"></i> <span id="exportLabel" class="text-white">Exportar PDF</span>';
           }
         });
     }

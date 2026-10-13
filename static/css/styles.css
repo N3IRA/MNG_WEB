@@ -165,6 +165,12 @@ html, body {
     font-family: 'Poppins', sans-serif;
 }
 
+/* Tamaño base del proyecto: equivale al "100%" del widget de accesibilidad
+   (16px * 0.85 = 13.6px). Mantener sincronizado con FONT_BASE_SCALE en accesibilidad.js */
+html {
+    font-size: 85%;
+}
+
 main.wrapper,
 .content-wrapper,
 .scroller-wrapper {
@@ -1050,6 +1056,7 @@ body:has(.menu-hamburguesa-premium.show) {
     padding: 5px 10px !important;
     margin-left: 10px !important;
 }
+
 
 /* Estilos de Contenedor Principal & Notificaciones */
 .titulo-premium {

@@ -20,7 +20,7 @@
     />
     <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2.4" />
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=2.0" />
-    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <script src="{% static 'js/htmx.min.js' %}"></script>
     <style>
       .btn-admin-primary {
         background-color: #198754 !important;
@@ -35,6 +35,53 @@
       .btn-admin-primary.show {
         background-color: #157347 !important;
         border-color: #146c43 !important;
+        color: #ffffff !important;
+      }
+
+      /* ==========================================================================
+         REGLAS GLOBALES DE CONTRASTE: TEXTO BLANCO EN BLOQUES Y CAMPOS VERDES
+         ========================================================================== */
+      .bg-success:not(.bg-opacity-10):not(.bg-opacity-25),
+      .badge.bg-success,
+      .badge.bg-success-subtle,
+      .btn-success,
+      .alert.bg-success,
+      .card.bg-success {
+        background-color: #198754 !important;
+        color: #ffffff !important;
+      }
+
+      .bg-success:not(.bg-opacity-10):not(.bg-opacity-25) *,
+      .badge.bg-success *,
+      .badge.bg-success-subtle *,
+      .btn-success *,
+      .alert.bg-success *,
+      .card.bg-success * {
+        color: #ffffff !important;
+      }
+
+      /* Tarjetas selectoras de estado (ej: Opción Aprobar activa) */
+      .btn-check:checked + .btn-outline-success {
+        background-color: #198754 !important;
+        border-color: #198754 !important;
+        color: #ffffff !important;
+      }
+
+      .btn-check:checked + .btn-outline-success * {
+        color: #ffffff !important;
+      }
+
+      .btn-check:checked + .btn-outline-success .text-muted,
+      .btn-check:checked + .btn-outline-success small {
+        color: rgba(255, 255, 255, 0.9) !important;
+      }
+
+      .btn-outline-success:hover,
+      .btn-outline-success:active {
+        color: #ffffff !important;
+      }
+      .btn-outline-success:hover *,
+      .btn-outline-success:active * {
         color: #ffffff !important;
       }
     </style>
@@ -64,12 +111,9 @@
 
     {% include 'partials/aside-admin.html' %}
     {% include 'partials/accesibilidad.html' %}
+    {% include 'partials/notificacion/notificaciones.html' %}
 
     <main id="mainContent" class="p-4 position-relative">
-      <div class="d-flex justify-content-end mb-3">
-        {% include 'partials/notificacion/notificaciones.html' %}
-      </div>
-
       {% block content %}{% endblock %}
     </main>
 
