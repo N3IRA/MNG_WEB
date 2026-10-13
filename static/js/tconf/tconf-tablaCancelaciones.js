@@ -6,35 +6,7 @@ $(document).ready(function () {
              "<'row'<'col-sm-12'tr>>" +
              "<'row mt-3'<'col-md-5'i><'col-md-7 d-flex justify-content-end'p>>",
 
-       buttons: [
-    {
-        extend: 'excelHtml5',
-        text: '<i class="bi bi-file-earmark-excel-fill text-success fs-5"></i>',
-        titleAttr: 'Exportar a Excel',
-        className: 'btn btn-light rounded-circle shadow-sm border-0 mx-1 d-flex align-items-center justify-content-center p-0',
-        attr: {
-            style: 'width:48px;height:48px;flex-shrink: 0;'
-        }
-    },
-    {
-        extend: 'pdfHtml5',
-        text: '<i class="bi bi-file-earmark-pdf-fill text-dark fs-5"></i>',
-        titleAttr: 'Exportar a PDF',
-        className: 'btn btn-light rounded-circle shadow-sm border-0 mx-1 d-flex align-items-center justify-content-center p-0',
-        attr: {
-            style: 'width:48px;height:48px; flex-shrink: 0;'
-        }
-    },
-    {
-        extend: 'print',
-        text: '<i class="bi bi-printer-fill text-dark fs-5"></i>',
-        titleAttr: 'Imprimir',
-        className: 'btn btn-light rounded-circle shadow-sm border-0 mx-1 d-flex align-items-center justify-content-center p-0',
-        attr: {
-            style: 'width:48px;height:48px; flex-shrink: 0;'
-        }
-    }
-],
+       buttons: buildMonaguaExportButtons('Cancelaciones', 'cancelaciones'),
 
         language: {
             sSearch: "Buscar:",
