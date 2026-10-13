@@ -14,12 +14,12 @@ function initTablaComprobantes() {
             { className: "text-center", targets: [0, 3, 4, 5, 6, 7] }
         ],
         // 1. ESTRUCTURA VISUAL: Mantiene botones y buscador alineados
-        dom: "<'row mb-3 align-items-center'<'col-12 d-flex justify-content-end'f>>" +
+        dom: "<'row mb-3 align-items-center'<'d-none'B><'col-12 d-flex justify-content-end'f>>" +
              "<'row'<'col-sm-12'tr>>" +
              "<'row mt-3 align-items-center'<'col-md-5 text-center text-md-start'i><'col-md-7 d-flex justify-content-md-end justify-content-center'p>>",
 
         // 2. BOTONES DE EXPORTACIÓN
-        buttons: buildMonaguaExportButtons('Comprobantes', 'comprobantes'),
+        buttons: buildMonaguaExportButtons('Comprobantes', 'comprobantes', true),
 
         // 3. TRADUCCIÓN COMPLETA DE TU PROYECTO MONAGUA
         language: {
@@ -80,4 +80,3 @@ document.addEventListener('htmx:afterSwap', function(evt) {
         initTablaComprobantes();
     }
 });
-

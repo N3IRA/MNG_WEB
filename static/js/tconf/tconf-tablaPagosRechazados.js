@@ -15,25 +15,12 @@ function initTablaPagosRechazados() {
             { className: "text-start", targets: [1, 2, 5] }
         ],
         // 1. ESTRUCTURA VISUAL: Buscador alineado a la derecha
-        dom: "<'row mb-3 align-items-center'<'col-12 d-flex justify-content-end'f>>" +
+        dom: "<'row mb-3 align-items-center'<'d-none'B><'col-12 d-flex justify-content-end'f>>" +
              "<'row'<'col-sm-12'tr>>" +
              "<'row mt-3 align-items-center'<'col-md-5 text-center text-md-start'i><'col-md-7 d-flex justify-content-md-end justify-content-center'p>>",
 
         // 2. BOTONES DE EXPORTACIÓN (Conectados al dropdown nativo Bootstrap 5)
-        buttons: [
-            {
-                extend: 'excelHtml5',
-                className: 'd-none btn-export-excel-hidden'
-            },
-            {
-                extend: 'pdfHtml5',
-                className: 'd-none btn-export-pdf-hidden'
-            },
-            {
-                extend: 'print',
-                className: 'd-none btn-export-print-hidden'
-            }
-        ],
+        buttons: buildMonaguaExportButtons('Pagos rechazados', 'pagos-rechazados', true),
 
         // 3. TRADUCCIÓN COMPLETA DE MONAGUA
         language: {

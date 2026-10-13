@@ -83,7 +83,7 @@
     <!-- Tabla -->
     <div class="card admin-list-panel overflow-hidden">
         <div class="table-responsive">
-            <table class="table align-middle mb-0 admin-data-table">
+            <table id="tablaCancelaciones" class="table align-middle mb-0 admin-data-table">
                 <thead>
                     <tr class="text-uppercase small fw-bold text-secondary">
                         <th class="ps-4 py-3 border-0">CLIENTE</th>
@@ -176,4 +176,8 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/tconf/tconf-tablaCancelaciones.js' %}"></script>
 {% endblock %}
