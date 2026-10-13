@@ -22,10 +22,10 @@
 
     <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=2.0" />
-    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <script src="{% static 'js/htmx.min.js' %}"></script>
     {% block extra_head %}{% endblock %}
   </head>
-  <body class="u-style-0e1c2a89 bg-body">
+  <body class="u-style-0e1c2a89 bg-body" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     <a href="#mainContent" class="visually-hidden-focusable p-3 bg-primary text-white position-absolute z-3">Saltar al contenido principal</a>
     <!-- ── Menú de hamburguesa (solo móvil) ── -->
     <button
@@ -132,6 +132,27 @@
         } else {
           initTooltips();
         }
+
+        // Listener global para Toasts de Bitácora activados por HTMX
+        document.addEventListener('mostrarNotificacionBitacora', function(evt) {
+          var data = evt.detail || {};
+          if (typeof window.mostrarToast === 'function') {
+            window.mostrarToast(
+              data.tipo || 'info',
+              data.titulo || 'Notificación del Sistema',
+              data.mensaje || '',
+              5000
+            );
+          }
+        });
+
+        // Limpieza de modales y backdrops residuales tras swaps de HTMX
+        document.addEventListener('htmx:afterSwap', function(evt) {
+          document.querySelectorAll('.modal-backdrop').forEach(function(el) { el.remove(); });
+          document.body.classList.remove('modal-open');
+          document.body.style.removeProperty('padding-right');
+          document.body.style.removeProperty('overflow');
+        });
       })();
     </script>
   </body>

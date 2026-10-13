@@ -1,3 +1,4 @@
+import json
 from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
@@ -254,28 +255,48 @@ def normalizar_estados_cancelacion_usuario(usuario):
     ).update(estado_reserva='confirmada')
 
 
-@login_required(login_url='login')
-@solo_turistas_requerido
-def mis_reservas_usuario(request):
-    normalizar_estados_cancelacion_usuario(request.user)
+def obtener_contexto_mis_reservas(usuario, estado_filtro=''):
+    normalizar_estados_cancelacion_usuario(usuario)
 
-    reservas = Reserva.objects.filter(
-        usuario=request.user
+    estado_filtro = (estado_filtro or '').strip().lower()
+
+    # Reservas activas o en proceso de cancelación
+    # Se excluyen únicamente las reservas que ya fueron efectivamente canceladas y aprobadas
+    reservas_base = Reserva.objects.filter(
+        usuario=usuario
     ).exclude(
-        Q(estado_reserva='cancelada') |
-        Q(estado_cancelacion='aprobada')
-    ).order_by('-fecha_registro')
+        Q(estado_reserva='cancelada', estado_cancelacion='aprobada')
+    )
 
-    context = {
-        'reservas': reservas
+    total_todas = reservas_base.count()
+    total_pendientes = reservas_base.filter(estado_reserva='pendiente').count()
+    total_confirmadas = reservas_base.filter(estado_reserva='confirmada').count()
+
+    reservas = reservas_base
+    if estado_filtro in ['pendiente', 'confirmada']:
+        reservas = reservas.filter(estado_reserva=estado_filtro)
+
+    reservas = reservas.select_related('paquete').order_by('-fecha_registro')
+
+    return {
+        'reservas': reservas,
+        'estado_filtro': estado_filtro,
+        'total_todas': total_todas,
+        'total_pendientes': total_pendientes,
+        'total_confirmadas': total_confirmadas,
     }
+
+
+@login_required(login_url='login')
+def mis_reservas_usuario(request):
+    estado_filtro = request.GET.get('estado', '')
+    context = obtener_contexto_mis_reservas(request.user, estado_filtro)
     return render(request, 'admin/reserva/mis_reservas.html', context)
 
 
 @login_required(login_url='login')
-@solo_turistas_requerido
 def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
-    """Procesa la cancelación enviada desde el modal, calcula la penalidad numérica y aplica políticas."""
+    """Procesa la cancelación enviada desde el modal o formulario inline, calcula la penalidad numérica y aplica políticas."""
     
     # 1. Validación de método HTTP
     if request.method != 'POST':
@@ -284,19 +305,58 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
     real_id = reserva_id or pk
     reserva = get_object_or_404(Reserva, id=real_id, usuario=request.user)
 
-    # 2. La solicitud no puede repetirse ni aplicarse a una reserva cancelada
-    if reserva.estado_reserva == 'cancelada':
+    # 2. La solicitud no puede repetirse si ya está aprobada
+    if reserva.estado_reserva == 'cancelada' and reserva.estado_cancelacion == 'aprobada':
+        if request.headers.get('HX-Request'):
+            context = obtener_contexto_mis_reservas(request.user)
+            response = render(request, 'admin/reserva/mis_reservas.html', context)
+            response['HX-Trigger'] = json.dumps({
+                'mostrarNotificacionBitacora': {
+                    'tipo': 'warning',
+                    'titulo': 'Atención',
+                    'mensaje': f'La reserva #{reserva.id} ya se encuentra cancelada.'
+                }
+            })
+            return response
         messages.warning(request, "Esta reserva ya se encuentra cancelada.")
         return redirect('mis_cancelaciones')
 
-    pago = getattr(reserva, 'pago', None)
+    if reserva.estado_cancelacion == 'pendiente':
+        if request.headers.get('HX-Request'):
+            context = obtener_contexto_mis_reservas(request.user)
+            response = render(request, 'admin/reserva/mis_reservas.html', context)
+            response['HX-Trigger'] = json.dumps({
+                'mostrarNotificacionBitacora': {
+                    'tipo': 'warning',
+                    'titulo': 'Solicitud en Revisión',
+                    'mensaje': f'Ya tienes una solicitud de cancelación en revisión para la reserva #{reserva.id}.'
+                }
+            })
+            return response
+        messages.warning(request, "Ya tienes una solicitud de cancelación en revisión para esta reserva.")
+        return redirect('mis_cancelaciones')
+
     motivo = request.POST.get('motivo_cancelacion', '').strip()
+    if not motivo:
+        if request.headers.get('HX-Request'):
+            context = obtener_contexto_mis_reservas(request.user)
+            response = render(request, 'admin/reserva/mis_reservas.html', context)
+            response['HX-Trigger'] = json.dumps({
+                'mostrarNotificacionBitacora': {
+                    'tipo': 'warning',
+                    'titulo': 'Campo Requerido',
+                    'mensaje': 'Debes ingresar un motivo válido para cancelar la reserva.'
+                }
+            })
+            return response
+        messages.error(request, "Debes ingresar un motivo válido para cancelar la reserva.")
+        return redirect('mis_reservas_usuario')
 
-    if not pago:
-        if not motivo:
-            messages.error(request, "Debes ingresar un motivo para descartar la reserva.")
-            return redirect('mis_reservas_usuario')
+    pago = getattr(reserva, 'pago', None)
+    tiene_pago_valido = pago is not None and pago.estado_transaccion in ['pendiente', 'aprobado']
 
+    # CASO A: Reserva sin pago o con comprobante rechazado -> Cancelación inmediata sin penalidad
+    if not tiene_pago_valido:
         reserva.motivo_cancelacion = motivo
         reserva.penalidad = Decimal('0.00')
         reserva.estado_cancelacion = 'aprobada'
@@ -306,32 +366,35 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
         crear_notificacion_sistema(
             usuario=request.user,
             reserva=reserva,
-            mensaje=f"Descartaste tu reserva #{reserva.id} sin pago registrado. Motivo: '{motivo}'.",
+            mensaje=f"Cancelaste tu reserva #{reserva.id} sin pago registrado. Motivo: '{motivo}'.",
             tipo="Reserva",
             prioridad="media"
         )
 
-        messages.info(
+        if request.headers.get('HX-Request'):
+            context = obtener_contexto_mis_reservas(request.user)
+            response = render(request, 'admin/reserva/mis_reservas.html', context)
+            response['HX-Trigger'] = json.dumps({
+                'mostrarNotificacionBitacora': {
+                    'tipo': 'success',
+                    'titulo': '¡Reserva Cancelada!',
+                    'mensaje': f'La reserva #{reserva.id} ha sido cancelada exitosamente sin ninguna penalidad.'
+                }
+            })
+            return response
+
+        messages.success(
             request,
-            "La reserva fue descartada y registrada como cancelación aprobada sin penalidad."
+            f"La reserva #{reserva.id} ha sido cancelada exitosamente sin ninguna penalidad."
         )
         return redirect('mis_cancelaciones')
 
-    if reserva.estado_cancelacion == 'pendiente':
-        messages.warning(request, "Ya tienes una solicitud de cancelación pendiente de revisión.")
-        return redirect('mis_reservas_usuario')
-
-    # 3. Validar motivo ingresado por el usuario
-    if not motivo:
-        messages.error(request, "Debes ingresar un motivo válido para solicitar la cancelación.")
-        return redirect('mis_reservas_usuario')
-
+    # CASO B: Reserva con pago registrado (pendiente o aprobado) -> Aplica cálculo de políticas y revisión
     monto_total = Decimal(reserva.monto_total or 0)
     if monto_total <= 0 and pago:
         monto_total = Decimal(getattr(pago, 'monto', 0) or 0)
 
     fecha_tour = getattr(reserva, 'fecha_inicio', None)
-    
     penalidad_calculada = Decimal('0.00')
     politica_reembolso = "Sujeto a evaluación administrativa."
 
@@ -339,19 +402,16 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
         fecha_tour_date = fecha_tour.date() if hasattr(fecha_tour, 'date') else fecha_tour
         dias_para_tour = (fecha_tour_date - date.today()).days
 
-        if dias_para_tour < 2:
-            messages.error(
-                request,
-                "No se puede cancelar una reserva cuando faltan menos de 2 días para el viaje."
-            )
-            return redirect('mis_reservas_usuario')
-
         if dias_para_tour > 15:
             penalidad_calculada = monto_total * Decimal('0.10')
             politica_reembolso = "Favorable (Reembolso del 90% / Penalidad del 10%)."
         elif dias_para_tour >= 2:
             penalidad_calculada = monto_total * Decimal('0.50')
             politica_reembolso = "Parcial (Reembolso del 50% / Penalidad del 50%)."
+        else:
+            # Menos de 2 días (menos de 48 horas) antes: 100% penalidad
+            penalidad_calculada = monto_total * Decimal('1.00')
+            politica_reembolso = "Sin reembolso (Penalidad del 100% por menos de 48 horas de anticipación)."
 
     reserva.motivo_cancelacion = motivo
     reserva.penalidad = penalidad_calculada
@@ -364,12 +424,24 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
         crear_notificacion_sistema(
             usuario=request.user,
             reserva=reserva,
-            mensaje=f"Tu cancelación de la reserva #{reserva.id} fue aprobada automáticamente porque no aplica multa. Motivo: '{motivo}'.",
+            mensaje=f"Tu cancelación de la reserva #{reserva.id} fue aprobada automáticamente porque no aplica penalidad. Motivo: '{motivo}'.",
             tipo="Reserva",
             prioridad="media"
         )
 
-        messages.success(request, f"La cancelación de la reserva #{reserva.id} fue aprobada automáticamente por no tener penalidad.")
+        if request.headers.get('HX-Request'):
+            context = obtener_contexto_mis_reservas(request.user)
+            response = render(request, 'admin/reserva/mis_reservas.html', context)
+            response['HX-Trigger'] = json.dumps({
+                'mostrarNotificacionBitacora': {
+                    'tipo': 'success',
+                    'titulo': '¡Cancelación Aprobada!',
+                    'mensaje': f'La cancelación de la reserva #{reserva.id} fue procesada exitosamente sin penalidad.'
+                }
+            })
+            return response
+
+        messages.success(request, f"La cancelación de la reserva #{reserva.id} fue procesada exitosamente sin penalidad.")
         return redirect('mis_cancelaciones')
 
     reserva.estado_reserva = 'cancelada'
@@ -379,18 +451,17 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
     crear_notificacion_sistema(
         usuario=request.user,
         reserva=reserva,
-        mensaje=f"Solicitaste la cancelación de tu reserva #{reserva.id}. Motivo: '{motivo}'. Penalidad estimada: COP ${penalidad_calculada:,.0f}",
+        mensaje=f"Solicitaste la cancelación de tu reserva #{reserva.id}. Motivo: '{motivo}'. Penalidad calculada: COP ${penalidad_calculada:,.0f}",
         tipo="Reserva",
         prioridad="alta"
     )
 
-    
     try:
         asunto = f"Solicitud de cancelación recibida - Reserva #{reserva.id} | Monagua"
         mensaje = (
             f"Hola {request.user.get_full_name() or request.user.username},\n\n"
             f"Recibimos tu solicitud de cancelación para la reserva #{reserva.id}.\n"
-            f"La reserva quedó marcada como cancelada y su solicitud está en revisión administrativa.\n\n"
+            f"La reserva se encuentra en revisión administrativa.\n\n"
             f"- Motivo: {motivo}\n"
             f"- Penalidad calculada: COP ${penalidad_calculada:,.0f}\n"
             f"- Política aplicada: {politica_reembolso}\n\n"
@@ -400,23 +471,34 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
     except Exception:
         pass
 
-    messages.success(request, f"La solicitud de cancelación de la reserva #{reserva.id} fue enviada para revisión.")
+    if request.headers.get('HX-Request'):
+        context = obtener_contexto_mis_reservas(request.user)
+        response = render(request, 'admin/reserva/mis_reservas.html', context)
+        response['HX-Trigger'] = json.dumps({
+            'mostrarNotificacionBitacora': {
+                'tipo': 'info',
+                'titulo': 'Solicitud Enviada',
+                'mensaje': f'Tu solicitud de cancelación para la reserva #{reserva.id} está en revisión administrativa.'
+            }
+        })
+        return response
+
+    messages.success(request, f"Tu solicitud de cancelación para la reserva #{reserva.id} fue enviada para revisión administrativa.")
     return redirect('mis_cancelaciones')
 
 @login_required(login_url='login')
 def mis_cancelaciones(request):
     """
-    Vista para que el usuario consulte el historial de sus cancelaciones pendientes o aprobadas.
+    Vista para que el usuario consulte el historial de sus cancelaciones pendientes, aprobadas o rechazadas.
     """
-
     normalizar_estados_cancelacion_usuario(request.user)
 
     cancelaciones = Reserva.objects.filter(
-        usuario=request.user,
-        estado_cancelacion__in=['pendiente', 'aprobada']
-    ).exclude(
-        Q(estado_reserva='cancelada') & Q(estado_cancelacion='pendiente')
-    ).select_related('paquete').order_by('-id')
+        usuario=request.user
+    ).filter(
+        Q(estado_cancelacion__in=['pendiente', 'aprobada', 'rechazada']) |
+        Q(estado_reserva='cancelada')
+    ).select_related('paquete').order_by('-fecha_registro')
 
     context = {
         'cancelaciones': cancelaciones

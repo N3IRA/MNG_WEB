@@ -114,8 +114,8 @@
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_filtro == 'aprobado' %}border-success shadow-sm border-2{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-success small fw-bold text-uppercase">Total Aprobado</span>
-                        <div class="p-2 bg-success bg-opacity-10 text-success rounded-3">
-                            <i class="bi bi-check-circle-fill fs-4"></i>
+                        <div class="p-2 bg-success text-white rounded-3 shadow-sm">
+                            <i class="bi bi-check-circle-fill fs-4 text-white"></i>
                         </div>
                     </div>
                     <h3 class="fw-bold text-success mb-1 fs-5 fs-xl-4 text-nowrap">COP ${{ total_aprobados|floatformat:0|intcomma|default:"0" }}</h3>
@@ -315,9 +315,16 @@
                         <!-- Cliente -->
                         <td class="py-3">
                             <div class="d-flex align-items-center gap-2">
-                                <div class="rounded-circle bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
-                                    <i class="bi bi-person-fill fs-5"></i>
-                                </div>
+                                {% if c.usuario and c.usuario.imagen_perfil %}
+                                    <img src="{{ c.usuario.imagen_perfil.url }}" 
+                                         alt="{{ c.usuario.get_full_name|default:c.usuario.username }}" 
+                                         class="rounded-circle object-fit-cover flex-shrink-0 border shadow-sm" 
+                                         style="width: 38px; height: 38px;">
+                                {% else %}
+                                    <div class="rounded-circle bg-light text-secondary border shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
+                                        <i class="bi bi-person-fill fs-5 text-secondary"></i>
+                                    </div>
+                                {% endif %}
                                 <div class="text-truncate" style="max-width: 200px;">
                                     <span class="fw-bold text-dark d-block text-truncate" title="{{ c.usuario.get_full_name|default:c.usuario.username }}">
                                         {{ c.usuario.get_full_name|default:c.usuario.username }}
@@ -379,8 +386,8 @@
                         <!-- Estado -->
                         <td class="text-center py-3 text-nowrap">
                             {% if c.estado_transaccion == 'aprobado' %}
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2 fw-semibold text-nowrap">
-                                    <i class="bi bi-check-circle-fill me-1"></i>Aprobado
+                                <span class="badge bg-success text-white border-0 shadow-sm rounded-pill px-3 py-2 fw-semibold text-nowrap">
+                                    <i class="bi bi-check-circle-fill me-1 text-white"></i>Aprobado
                                 </span>
                             {% else %}
                                 <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-3 py-2 fw-semibold text-nowrap">
@@ -445,7 +452,12 @@
                     <div class="card border border-light shadow-sm rounded-4 p-3 bg-white">
                         <div class="d-flex justify-content-between align-items-start gap-2 mb-3 border-bottom pb-2">
                             <div class="d-flex align-items-center gap-2 min-w-0">
-                                {% if c.imagen_comprobante %}
+                                {% if c.usuario and c.usuario.imagen_perfil %}
+                                    <img src="{{ c.usuario.imagen_perfil.url }}"
+                                         alt="{{ c.usuario.get_full_name|default:c.usuario.username }}"
+                                         class="rounded-circle border shadow-sm object-fit-cover flex-shrink-0"
+                                         style="width: 44px; height: 44px;">
+                                {% elif c.imagen_comprobante %}
                                     <img src="{{ c.imagen_comprobante.url }}"
                                          alt="Comprobante"
                                          class="rounded-3 border shadow-sm object-fit-cover flex-shrink-0"
@@ -454,9 +466,9 @@
                                          data-bs-target="#modalComp{{ c.id }}"
                                          title="Clic para ampliar">
                                 {% else %}
-                                    <div class="rounded-3 border bg-light d-flex align-items-center justify-content-center text-secondary flex-shrink-0"
+                                    <div class="rounded-circle bg-light text-secondary border shadow-sm d-flex align-items-center justify-content-center flex-shrink-0"
                                          style="width: 44px; height: 44px;">
-                                        <i class="bi bi-image"></i>
+                                        <i class="bi bi-person-fill fs-4 text-secondary"></i>
                                     </div>
                                 {% endif %}
                                 <div class="min-w-0">
@@ -466,8 +478,8 @@
                             </div>
                             <div class="flex-shrink-0">
                                 {% if c.estado_transaccion == 'aprobado' %}
-                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2 fw-semibold text-nowrap">
-                                        <i class="bi bi-check-circle-fill me-1"></i>Aprobado
+                                    <span class="badge bg-success text-white border-0 shadow-sm rounded-pill px-3 py-2 fw-semibold text-nowrap">
+                                        <i class="bi bi-check-circle-fill me-1 text-white"></i>Aprobado
                                     </span>
                                 {% else %}
                                     <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-3 py-2 fw-semibold text-nowrap">
@@ -590,7 +602,21 @@
                                 </h6>
                                 <dl class="row small mb-0">
                                     <dt class="col-5 text-muted">Usuario</dt>
-                                    <dd class="col-7 fw-bold">{{ c.usuario.get_full_name|default:c.usuario.username }}</dd>
+                                    <dd class="col-7">
+                                        <div class="d-flex align-items-center gap-2">
+                                            {% if c.usuario and c.usuario.imagen_perfil %}
+                                                <img src="{{ c.usuario.imagen_perfil.url }}" 
+                                                     alt="{{ c.usuario.username }}" 
+                                                     class="rounded-circle object-fit-cover border shadow-sm flex-shrink-0" 
+                                                     style="width: 26px; height: 26px;">
+                                            {% else %}
+                                                <div class="rounded-circle bg-light text-secondary border shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" style="width: 26px; height: 26px;">
+                                                    <i class="bi bi-person-fill small text-secondary"></i>
+                                                </div>
+                                            {% endif %}
+                                            <span class="fw-bold text-dark text-truncate">{{ c.usuario.get_full_name|default:c.usuario.username }}</span>
+                                        </div>
+                                    </dd>
 
                                     <dt class="col-5 text-muted">Email</dt>
                                     <dd class="col-7">{{ c.usuario.email }}</dd>
@@ -616,7 +642,7 @@
                                     <dt class="col-5 text-muted">Estado</dt>
                                     <dd class="col-7">
                                         {% if c.estado_transaccion == 'aprobado' %}
-                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-1">Aprobado</span>
+                                            <span class="badge bg-success text-white border-0 shadow-sm rounded-pill px-2.5 py-1">Aprobado</span>
                                         {% else %}
                                             <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2 py-1">Pendiente</span>
                                         {% endif %}

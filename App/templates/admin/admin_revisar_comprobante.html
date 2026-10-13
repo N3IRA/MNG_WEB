@@ -5,179 +5,517 @@
 {% block title %}Admin | Revisar Comprobante #{{ comprobante.pk }}{% endblock %}
 
 {% block extra_head %}
-<!-- Rediseño completo en base a Bootstrap 5, sin CSS personalizado -->
+<!-- 100% Bootstrap 5 nativo con integración limpia de HTMX -->
 {% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <!-- Back Button & Title -->
-    <div class="mb-4">
-        {% if comprobante.estado_transaccion == 'rechazado' %}
-            <a href="{% url 'admin_pagos_rechazados' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 mb-3 fw-semibold shadow-sm">
-                <i class="bi bi-arrow-left me-1"></i> Volver a Pagos Rechazados
-            </a>
-        {% else %}
-            <a href="{% url 'admin_comprobantes' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 mb-3 fw-semibold shadow-sm">
-                <i class="bi bi-arrow-left me-1"></i> Volver a Comprobantes
-            </a>
-        {% endif %}
-        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-2 fw-bold d-block w-fit">ACCION REQUERIDA</span>
-        <h2 class="display-6 fw-bold text-dark mb-1">Revisión de Comprobante #{{ comprobante.pk }}</h2>
-        <p class="text-muted">Verifica los detalles del depósito y actualiza el estado de la reserva.</p>
-    </div>
+<!-- Contenedor dinámico SPA para HTMX -->
+<div id="revisar-comprobante-content" class="container-fluid px-0 py-3">
 
-    <div class="row g-4">
-        <!-- Voucher Image Column -->
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white text-center">
-                <span class="fw-bold text-secondary text-uppercase small mb-3 d-block text-start u-style-e2eb0d8e">
-                    <i class="bi bi-image text-primary me-2"></i>Imagen del Comprobante
-                </span>
-                {% if comprobante.imagen_comprobante %}
-                    <a href="{{ comprobante.imagen_comprobante.url }}" target="_blank" title="Ver imagen completa" class="d-block rounded-4 overflow-hidden shadow-sm">
-                        <img src="{{ comprobante.imagen_comprobante.url }}" alt="Comprobante de Pago" class="img-fluid rounded-4 transition-all u-style-d0c65112">
+    <!-- ── 1. Barra Superior y Navegación ── -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                {% if comprobante.estado_transaccion == 'rechazado' %}
+                    <a href="{% url 'admin_pagos_rechazados' %}" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1.5 fw-semibold shadow-sm d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-arrow-left"></i> Volver a Pagos Rechazados
                     </a>
-                    <div class="form-text text-muted mt-3">
-                        <i class="bi bi-zoom-in me-1"></i> Haz clic en la imagen para abrirla en tamaño completo en otra pestaña
-                    </div>
                 {% else %}
-                    <div class="text-center py-5 bg-light rounded-4 text-muted border border-dashed">
-                        <i class="bi bi-file-earmark-image fs-1 d-block mb-2"></i>
-                        No se ha cargado ninguna imagen de comprobante
-                    </div>
+                    <a href="{% url 'admin_comprobantes' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1.5 fw-semibold shadow-sm d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-arrow-left"></i> Volver a Comprobantes
+                    </a>
+                {% endif %}
+
+                {% if comprobante.estado_transaccion == 'aprobado' and comprobante.reserva %}
+                    <a href="{% url 'ver_factura' comprobante.reserva.id %}" target="_blank" class="btn btn-outline-success btn-sm rounded-pill px-3 py-1.5 fw-semibold shadow-sm d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-file-earmark-text"></i> Ver Factura Oficial
+                    </a>
                 {% endif %}
             </div>
+
+            <h2 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2 flex-wrap">
+                <i class="bi bi-receipt text-success"></i>
+                Revisión de Comprobante #{{ comprobante.pk }}
+                {% if comprobante.estado_transaccion == 'aprobado' %}
+                    <span class="badge bg-success text-white border-0 shadow-sm rounded-pill fs-6 px-3 py-1">
+                        <i class="bi bi-check-circle-fill me-1 text-white"></i>Aprobado
+                    </span>
+                {% elif comprobante.estado_transaccion == 'rechazado' %}
+                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill fs-6 px-3 py-1">
+                        <i class="bi bi-x-circle-fill me-1"></i>Rechazado
+                    </span>
+                {% else %}
+                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill fs-6 px-3 py-1">
+                        <i class="bi bi-hourglass-split me-1"></i>Pendiente
+                    </span>
+                {% endif %}
+            </h2>
+            <p class="text-muted small mb-0">Valida la información del depósito y define el estado oficial de la transacción en la plataforma.</p>
         </div>
 
-        <!-- Details & Review Action Form Column -->
-        <div class="col-lg-6">
-            <!-- User & Booking Info -->
-            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
-                <span class="fw-bold text-secondary text-uppercase small mb-4 d-block u-style-e2eb0d8e">
-                    <i class="bi bi-info-circle text-primary me-2"></i>Detalles de la Transacción
-                </span>
-                
-                <div class="border-bottom border-light pb-3 mb-3 d-flex justify-content-between align-items-center">
-                    <span class="text-muted small">Usuario:</span>
-                    <span class="fw-bold text-dark">{{ comprobante.usuario.get_full_name|default:comprobante.usuario.username }}</span>
-                </div>
-                <div class="border-bottom border-light pb-3 mb-3 d-flex justify-content-between align-items-center">
-                    <span class="text-muted small">Correo Electrónico:</span>
-                    <span class="text-dark">{{ comprobante.usuario.email }}</span>
-                </div>
-                <div class="border-bottom border-light pb-3 mb-3 d-flex justify-content-between align-items-center">
-                    <span class="text-muted small">Reserva Asociada:</span>
-                    {% if comprobante.reserva %}
-                        <span class="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-2 rounded-pill">Reserva #{{ comprobante.reserva.id }}</span>
-                    {% else %}
-                        <span class="text-muted italic">Ninguna</span>
-                    {% endif %}
-                </div>
-                {% if comprobante.reserva %}
-                    <div class="border-bottom border-light pb-3 mb-3 d-flex justify-content-between align-items-center">
-                        <span class="text-muted small">Paquete:</span>
-                        <span class="text-secondary fw-semibold">{{ comprobante.reserva.paquete.nombre }}</span>
-                    </div>
-                    <div class="border-bottom border-light pb-3 mb-3 d-flex justify-content-between align-items-center">
-                        <span class="text-muted small">Fecha Reserva:</span>
-                        <span class="text-secondary">{{ comprobante.reserva.fecha }}</span>
-                    </div>
-                    <div class="border-bottom border-light pb-3 mb-3 d-flex justify-content-between align-items-center">
-                        <span class="text-muted small">Costo Total Reserva:</span>
-                        <span class="fw-bold text-dark">COP ${{ comprobante.reserva.monto_total|floatformat:0|intcomma }}</span>
-                    </div>
-                {% endif %}
-                <div class="border-bottom border-light pb-3 mb-3 d-flex justify-content-between align-items-center">
-                    <span class="text-muted small">Monto Declarado en Pago:</span>
-                    <span class="fw-bold text-success">
-                        {% if comprobante.monto %}
-                            COP ${{ comprobante.monto|floatformat:0|intcomma }}
-                        {% elif comprobante.reserva %}
-                            COP ${{ comprobante.reserva.monto_total|floatformat:0|intcomma }}
-                        {% else %}
-                            No especificado
-                        {% endif %}
-                    </span>
-                </div>
-                <div class="border-bottom border-light pb-3 mb-3 d-flex justify-content-between align-items-center">
-                    <span class="text-muted small">Medio de Pago / Banco:</span>
-                    <span class="text-dark fw-semibold">{{ comprobante.banco_origen|default:"—" }}</span>
-                </div>
-                <div class="border-bottom border-light pb-3 mb-3 d-flex justify-content-between align-items-center">
-                    <span class="text-muted small">Nº Referencia / Transacción:</span>
-                    <span class="text-dark font-monospace">{{ comprobante.referencia|default:"—" }}</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="text-muted small">Fecha Envío Comprobante:</span>
-                    <span class="text-dark">{{ comprobante.fecha_envio|date:"d/m/Y H:i" }}</span>
-                </div>
-            </div>
-
-            <!-- Review Action Card -->
-            <div class="card border-0 shadow rounded-4 p-4 bg-white" id="review-action-card">
-                <span class="fw-bold text-secondary text-uppercase small mb-4 d-block u-style-e2eb0d8e">
-                    <i class="bi bi-shield-check text-primary me-2"></i>Tomar Decisión
-                </span>
-
-                {% if success_msg %}
-                <div class="alert alert-success shadow-sm mb-3 rounded-4">
-                    <i class="bi bi-check-circle-fill me-1"></i> {{ success_msg }}
-                    <a href="{% url 'admin_comprobantes' %}" class="btn btn-sm btn-outline-success mt-2 d-block">Volver a la lista</a>
-                </div>
-                {% endif %}
-
-                <form hx-post="{% url 'admin_revisar_comprobante' comprobante.pk %}" hx-target="#review-action-card" hx-swap="outerHTML">
-                    {% csrf_token %}
-                    
-                    <!-- Errores Globales -->
-                    {% if error_msg %}
-                    <div class="alert alert-danger shadow-sm mb-3 rounded-4">
-                        <ul class="mb-0">
-                            <li><i class="bi bi-exclamation-triangle-fill me-1"></i> {{ error_msg }}</li>
-                        </ul>
-                    </div>
-                    {% endif %}
-
-                    <!-- Banco de Origen -->
-                    <div class="form-floating mb-3">
-                        <input type="text" name="banco_origen" value="{{ comprobante.banco_origen|default:comprobante.banco_origen_pago|default:'' }}" class="form-control rounded-4 shadow-sm" placeholder="Banco o Medio de Pago" id="id_banco_origen">
-                        <label for="id_banco_origen">Banco / Medio de Pago</label>
-                        <div class="form-text text-muted mt-1 ps-2">Corrígelo o agrégalo si el usuario no lo suministró.</div>
-                    </div>
-
-                    <!-- Monto -->
-                    <div class="form-floating mb-3">
-                        <input type="number" name="monto" value="{% if comprobante.monto and comprobante.monto > 0 %}{{ comprobante.monto }}{% elif comprobante.reserva %}{{ comprobante.reserva.monto_total }}{% else %}0.00{% endif %}" step="0.01" min="0" class="form-control rounded-4 shadow-sm" placeholder="Monto Verificado" id="id_monto">
-                        <label for="id_monto">Monto Verificado (COP)</label>
-                        <div class="form-text text-muted mt-1 ps-2">Debe ser igual o mayor al total de la reserva para aprobar.</div>
-                    </div>
-
-                    <!-- Estado de Pago -->
-                    <div class="form-floating mb-3">
-                        <select name="estado_transaccion" class="form-select rounded-4 shadow-sm" id="id_estado_transaccion">
-                            <option value="pendiente" {% if comprobante.estado_transaccion == 'pendiente' or comprobante.estado_pago == 'pendiente' %}selected{% endif %}>Pendiente</option>
-                            <option value="aprobado" {% if comprobante.estado_transaccion == 'aprobado' or comprobante.estado_pago == 'aprobado' %}selected{% endif %}>Aprobado</option>
-                            <option value="rechazado" {% if comprobante.estado_transaccion == 'rechazado' or comprobante.estado_pago == 'rechazado' %}selected{% endif %}>Rechazado</option>
-                        </select>
-                        <label for="id_estado_transaccion">Estado del Pago *</label>
-                    </div>
-
-                    <!-- Nota del Administrador -->
-                    <div class="form-floating mb-4">
-                        <textarea name="nota_admin" class="form-control rounded-4 shadow-sm" rows="3" placeholder="Motivo de rechazo o nota aclaratoria..." id="id_nota_admin" style="height: 100px">{{ comprobante.nota_admin|default:comprobante.nota_admin_pago|default:'' }}</textarea>
-                        <label for="id_nota_admin">Nota del Administrador</label>
-                        <div class="form-text text-muted mt-2 ps-2">Visible para el usuario en su historial. Obligatorio si se rechaza.</div>
-                    </div>
-
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-success py-3 rounded-pill fw-bold shadow-sm fs-6">
-                            <i class="bi bi-save-fill me-2"></i> Guardar y Aplicar Decisión
-                        </button>
-                    </div>
-                </form>
-            </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-white text-secondary border px-3 py-2 rounded-pill shadow-sm">
+                <i class="bi bi-clock-history text-secondary me-1"></i>Enviado: {{ comprobante.fecha_envio|date:"d/m/Y H:i" }}
+            </span>
         </div>
     </div>
+
+    <!-- ── 2. Mensajes de Error de Validación ── -->
+    {% if error_msg %}
+        <div class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm mb-4 border border-danger border-opacity-25" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill fs-5 text-danger flex-shrink-0"></i>
+                <div class="small fw-semibold">{{ error_msg }}</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
+    <!-- ── 3. Contenedor Principal en 2 Columnas ── -->
+    <div class="row g-4">
+        
+        <!-- Columna Izquierda: Evidencia del Comprobante (Con Zoom Modal) -->
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden">
+                <div class="card-header bg-light bg-opacity-50 border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+                    <span class="fw-bold text-dark d-flex align-items-center gap-2 small text-uppercase">
+                        <i class="bi bi-image text-primary"></i> Evidencia del Comprobante
+                    </span>
+                    {% if comprobante.imagen_comprobante %}
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="{{ comprobante.imagen_comprobante.url }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm" title="Abrir imagen en alta resolución">
+                                <i class="bi bi-box-arrow-up-right"></i> Ver en Pantalla Completa
+                            </a>
+                            <a href="{{ comprobante.imagen_comprobante.url }}" download class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm" title="Descargar comprobante">
+                                <i class="bi bi-download"></i> Descargar
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="card-body p-4 d-flex flex-column align-items-center justify-content-center text-center">
+                    {% if comprobante.imagen_comprobante %}
+                        <div class="p-2 bg-light rounded-4 border w-100 mb-3 d-flex align-items-center justify-content-center position-relative" style="min-height: 440px; max-height: 580px; overflow: hidden;">
+                            <a href="{{ comprobante.imagen_comprobante.url }}" target="_blank" title="Clic para abrir comprobante en tamaño completo">
+                                <img src="{{ comprobante.imagen_comprobante.url }}" 
+                                     alt="Comprobante de Pago #{{ comprobante.pk }}" 
+                                     class="img-fluid rounded-3 shadow-sm" 
+                                     style="max-height: 540px; object-fit: contain;">
+                            </a>
+                        </div>
+                        <div class="text-muted small d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-info-circle text-primary"></i>
+                            <span>Haz clic en la imagen para abrir el comprobante en alta definición en una nueva pestaña.</span>
+                        </div>
+                    {% else %}
+                        <div class="py-5 text-center text-muted">
+                            <i class="bi bi-file-earmark-x display-1 text-secondary opacity-25 mb-3 d-block"></i>
+                            <h5 class="fw-bold text-dark">Sin Imagen de Comprobante</h5>
+                            <p class="small text-muted mb-0">El usuario no adjuntó una captura de pago en este registro.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Información de la Reserva y Formulario con HTMX -->
+        <div class="col-12 col-lg-6">
+            <div class="d-flex flex-column gap-4">
+                
+                <!-- Tarjeta 1: Detalles de la Transacción -->
+                <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                        <span class="fw-bold text-dark small text-uppercase d-flex align-items-center gap-2">
+                            <i class="bi bi-info-circle text-primary"></i> Datos del Comprador y Reserva
+                        </span>
+                        {% if comprobante.reserva %}
+                            <span class="badge bg-success text-white border-0 shadow-sm rounded-pill px-3 py-1 fw-bold">
+                                Reserva #{{ comprobante.reserva.id }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Usuario -->
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded-3 border d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2 min-w-0">
+                                    {% if comprobante.usuario and comprobante.usuario.imagen_perfil %}
+                                        <img src="{{ comprobante.usuario.imagen_perfil.url }}" 
+                                             alt="{{ comprobante.usuario.username }}" 
+                                             class="rounded-circle object-fit-cover border shadow-sm flex-shrink-0" 
+                                             style="width: 42px; height: 42px;">
+                                    {% else %}
+                                        <div class="rounded-circle bg-light text-secondary border shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px;">
+                                            <i class="bi bi-person-fill fs-5 text-secondary"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div class="min-w-0">
+                                        <span class="fw-bold text-dark d-block text-truncate">{{ comprobante.usuario.get_full_name|default:comprobante.usuario.username }}</span>
+                                        <small class="text-muted d-block text-truncate">{{ comprobante.usuario.email }}</small>
+                                    </div>
+                                </div>
+                                <span class="badge bg-white text-secondary border rounded-pill px-2.5 py-1 small">Cliente</span>
+                            </div>
+                        </div>
+
+                        <!-- Paquete / Tour Vinculado -->
+                        {% if comprobante.reserva %}
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <span class="small text-muted fw-semibold">Tour / Paquete Turístico</span>
+                                    <span class="badge bg-white text-dark border rounded-pill px-2 py-0.5 small">{{ comprobante.reserva.get_estado_reserva_display }}</span>
+                                </div>
+                                <div class="fw-bold text-dark">{{ comprobante.reserva.paquete.nombre }}</div>
+                                <small class="text-muted d-block mt-1">
+                                    <i class="bi bi-calendar-event me-1"></i>Fecha de Viaje: {{ comprobante.reserva.fecha_inicio|date:"d/m/Y"|default:"Por definir" }}
+                                </small>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Comparativa de Montos -->
+                        <div class="col-12 col-sm-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted d-block fw-semibold mb-1">Monto de la Reserva</small>
+                                <span class="fw-bold text-dark fs-5 text-nowrap">
+                                    {% if comprobante.reserva and comprobante.reserva.monto_total %}
+                                        COP ${{ comprobante.reserva.monto_total|floatformat:0|intcomma }}
+                                    {% else %}
+                                        COP $0
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <div class="p-3 bg-success text-white rounded-3 h-100 shadow-sm">
+                                <small class="fw-bold d-block mb-1 text-white" style="color: rgba(255, 255, 255, 0.9) !important;">Monto Reportado en Pago</small>
+                                <span class="fw-bold text-white fs-5 text-nowrap">
+                                    {% if comprobante.monto %}
+                                        COP ${{ comprobante.monto|floatformat:0|intcomma }}
+                                    {% elif comprobante.reserva %}
+                                        COP ${{ comprobante.reserva.monto_total|floatformat:0|intcomma }}
+                                    {% else %}
+                                        No especificado
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Banco y Referencia Bancaria -->
+                        <div class="col-12 col-sm-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted d-block fw-semibold mb-1">Medio / Banco Origen</small>
+                                <span class="fw-bold text-dark d-block text-truncate" title="{{ comprobante.banco_origen|default:'—' }}">
+                                    <i class="bi bi-bank me-1 text-secondary"></i>{{ comprobante.banco_origen|default:"No especificado" }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted d-block fw-semibold mb-1">Referencia / Transacción</small>
+                                <div class="d-flex align-items-center justify-content-between gap-1">
+                                    <span class="font-monospace fw-bold text-dark text-truncate small" id="refText" title="{{ comprobante.referencia|default:'—' }}">
+                                        {{ comprobante.referencia|default:"Sin referencia" }}
+                                    </span>
+                                    {% if comprobante.referencia %}
+                                        <button type="button" class="btn btn-sm btn-white border rounded-pill px-2 py-0.5 text-secondary shadow-sm" onclick="copiarReferencia('{{ comprobante.referencia }}')" title="Copiar referencia">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 2: Panel de Decisión y Formulario con HTMX Seguro -->
+                <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                        <span class="fw-bold text-dark small text-uppercase d-flex align-items-center gap-2">
+                            <i class="bi bi-shield-check text-success"></i> Panel de Decisión Administrativa
+                        </span>
+                        <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1 small">Actualización en vivo</span>
+                    </div>
+
+                    <!-- Mensaje de Error en Validación -->
+                    {% if error_msg %}
+                        <div class="alert alert-danger rounded-4 shadow-sm py-2.5 px-3 mb-3 d-flex align-items-center gap-2" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0"></i>
+                            <div class="small fw-semibold">{{ error_msg }}</div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Formulario con HTMX implementado con precisión de target y select -->
+                    <form hx-post="{% url 'admin_revisar_comprobante' comprobante.pk %}" 
+                          hx-target="#revisar-comprobante-content" 
+                          hx-select="#revisar-comprobante-content" 
+                          hx-swap="outerHTML" 
+                          id="formRevisarComprobante">
+                        {% csrf_token %}
+
+                        <!-- 1. SELECTOR VISUAL DE ESTADO (Radio Cards Segmentadas de Bootstrap 5) -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark small mb-2 d-flex align-items-center gap-1">
+                                <i class="bi bi-ui-checks text-success"></i> Selecciona la Decisión Oficial *
+                            </label>
+                            
+                            <div class="row g-2">
+                                <!-- Opción: APROBADO -->
+                                <div class="col-12 col-md-4">
+                                    <input type="radio" 
+                                           class="btn-check" 
+                                           name="estado_transaccion" 
+                                           id="radio_aprobado" 
+                                           value="aprobado" 
+                                           {% if comprobante.estado_transaccion == 'aprobado' %}checked{% endif %} 
+                                           required>
+                                    <label class="btn btn-outline-success w-100 p-3 rounded-4 text-start h-100 d-flex flex-column justify-content-between shadow-sm" for="radio_aprobado">
+                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                            <span class="fw-bold fs-6">Aprobar</span>
+                                            <i class="bi bi-check-circle-fill fs-5"></i>
+                                        </div>
+                                        <small class="text-muted" style="font-size: 0.74rem; line-height: 1.2;">Confirma fondos y aprueba la reserva.</small>
+                                    </label>
+                                </div>
+
+                                <!-- Opción: PENDIENTE -->
+                                <div class="col-12 col-md-4">
+                                    <input type="radio" 
+                                           class="btn-check" 
+                                           name="estado_transaccion" 
+                                           id="radio_pendiente" 
+                                           value="pendiente" 
+                                           {% if comprobante.estado_transaccion == 'pendiente' or not comprobante.estado_transaccion %}checked{% endif %} 
+                                           required>
+                                    <label class="btn btn-outline-warning w-100 p-3 rounded-4 text-start h-100 d-flex flex-column justify-content-between shadow-sm" for="radio_pendiente">
+                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                            <span class="fw-bold fs-6 text-dark">Pendiente</span>
+                                            <i class="bi bi-hourglass-split fs-5 text-warning"></i>
+                                        </div>
+                                        <small class="text-muted" style="font-size: 0.74rem; line-height: 1.2;">Mantiene el pago en revisión.</small>
+                                    </label>
+                                </div>
+
+                                <!-- Opción: RECHAZADO -->
+                                <div class="col-12 col-md-4">
+                                    <input type="radio" 
+                                           class="btn-check" 
+                                           name="estado_transaccion" 
+                                           id="radio_rechazado" 
+                                           value="rechazado" 
+                                           {% if comprobante.estado_transaccion == 'rechazado' %}checked{% endif %} 
+                                           required>
+                                    <label class="btn btn-outline-danger w-100 p-3 rounded-4 text-start h-100 d-flex flex-column justify-content-between shadow-sm" for="radio_rechazado">
+                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                            <span class="fw-bold fs-6">Rechazar</span>
+                                            <i class="bi bi-x-circle-fill fs-5"></i>
+                                        </div>
+                                        <small class="text-muted" style="font-size: 0.74rem; line-height: 1.2;">Declina el pago. Exige nota explicativa.</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Banner Contextual Dinámico según la decisión -->
+                        <div id="bannerDecision" class="alert py-2.5 px-3 rounded-3 mb-3 small d-flex align-items-center gap-2">
+                            <i id="bannerIcon" class="bi fs-5 flex-shrink-0"></i>
+                            <span id="bannerTexto">Selecciona una decisión para continuar.</span>
+                        </div>
+
+                        <!-- 2. DATOS FINANCIEROS VERIFICADOS -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-md-6">
+                                <label for="id_banco_origen" class="form-label small fw-bold text-dark mb-1">
+                                    Banco / Medio Verificado *
+                                </label>
+                                <input type="text" 
+                                       name="banco_origen" 
+                                       id="id_banco_origen" 
+                                       value="{{ comprobante.banco_origen|default:comprobante.banco_origen_pago|default:'' }}" 
+                                       class="form-control rounded-pill px-3 shadow-sm" 
+                                       placeholder="Ej: Bancolombia, Nequi, Daviplata" 
+                                       required>
+                                <div class="form-text text-muted" style="font-size: 0.74rem;">Especifica la entidad que emitió la transferencia.</div>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label for="id_monto" class="form-label small fw-bold text-dark mb-1">
+                                    Monto Verificado (COP) *
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light rounded-start-pill border-end-0 fw-bold text-muted">$</span>
+                                    <input type="number" 
+                                           name="monto" 
+                                           id="id_monto" 
+                                           value="{% if comprobante.monto and comprobante.monto > 0 %}{{ comprobante.monto }}{% elif comprobante.reserva %}{{ comprobante.reserva.monto_total }}{% else %}0.00{% endif %}" 
+                                           step="0.01" 
+                                           min="0" 
+                                           class="form-control rounded-end-pill px-3 shadow-sm border-start-0" 
+                                           placeholder="0.00" 
+                                           required>
+                                </div>
+                                <div class="form-text text-muted" style="font-size: 0.74rem;">Debe cubrir la reserva para poder aprobar.</div>
+                            </div>
+                        </div>
+
+                        <!-- 3. NOTA DEL ADMINISTRADOR (OBLIGATORIA EN RECHAZO) -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <label for="id_nota_admin" class="form-label small fw-bold text-dark mb-0">
+                                    Nota / Justificación del Administrador <span id="labelNotaBadge" class="badge bg-secondary-subtle text-secondary rounded-pill ms-1">Opcional</span>
+                                </label>
+                            </div>
+                            <textarea name="nota_admin" 
+                                      id="id_nota_admin" 
+                                      class="form-control rounded-4 shadow-sm" 
+                                      rows="3" 
+                                      placeholder="Si apruebas puedes dejar una observación; si rechazas, explica el motivo detallado (ej: imagen ilegible, monto incompleto, etc.)...">{{ comprobante.nota_admin|default:comprobante.nota_admin_pago|default:'' }}</textarea>
+                            <div id="notaAyuda" class="form-text text-muted mt-1" style="font-size: 0.74rem;">
+                                Esta nota será visible para el cliente en su panel de comprobantes.
+                            </div>
+                        </div>
+
+                        <!-- 4. BOTONES DE ACCIÓN -->
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <button type="submit" id="btnSubmitDecision" class="btn btn-success text-white flex-grow-1 py-2.5 rounded-pill fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2">
+                                <i class="bi bi-check2-circle fs-5 text-white"></i>
+                                <span id="btnSubmitTexto" class="text-white">Guardar y Aplicar Decisión</span>
+                            </button>
+                            
+                            {% if comprobante.estado_transaccion == 'rechazado' %}
+                                <a href="{% url 'admin_pagos_rechazados' %}" class="btn btn-outline-secondary py-2.5 px-4 rounded-pill fw-semibold">
+                                    Cancelar
+                                </a>
+                            {% else %}
+                                <a href="{% url 'admin_comprobantes' %}" class="btn btn-outline-secondary py-2.5 px-4 rounded-pill fw-semibold">
+                                    Cancelar
+                                </a>
+                            {% endif %}
+                        </div>
+
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
 </div>
+
 {% endblock %}
 
+{% block scripts %}
+<script>
+// Notificación Toast de alerta al realizar cambios vía HTMX
+document.addEventListener('mostrarNotificacionBitacora', function(evt) {
+    const data = evt.detail || {};
+    if (typeof window.mostrarToast === 'function') {
+        window.mostrarToast(
+            data.tipo || 'info',
+            data.titulo || 'Notificación del Sistema',
+            data.mensaje || 'Se han guardado los cambios correctamente.',
+            5000
+        );
+    }
+});
+
+// Lógica interactiva nativa para selector de estado UI/UX
+function actualizarDecisionUI(estado) {
+    const banner = document.getElementById('bannerDecision');
+    const icon = document.getElementById('bannerIcon');
+    const texto = document.getElementById('bannerTexto');
+    const btnSubmit = document.getElementById('btnSubmitDecision');
+    const btnTexto = document.getElementById('btnSubmitTexto');
+    const labelBadge = document.getElementById('labelNotaBadge');
+    const notaInput = document.getElementById('id_nota_admin');
+
+    if (!banner || !btnSubmit) return;
+
+    if (estado === 'aprobado') {
+        banner.className = 'alert bg-success text-white py-2.5 px-3 rounded-3 mb-3 small d-flex align-items-center gap-2 border-0 shadow-sm';
+        icon.className = 'bi bi-check-circle-fill text-white fs-5 flex-shrink-0';
+        texto.className = 'text-white fw-medium';
+        texto.innerText = 'Los fondos serán confirmados y la reserva vinculada pasará a estado Confirmada automáticamente.';
+        
+        btnSubmit.className = 'btn btn-success text-white flex-grow-1 py-2.5 rounded-pill fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2';
+        btnTexto.className = 'text-white';
+        btnTexto.innerText = 'Aprobar Pago y Confirmar Reserva';
+        
+        labelBadge.className = 'badge bg-success text-white rounded-pill ms-1';
+        labelBadge.innerText = 'Opcional';
+        notaInput.required = false;
+        notaInput.placeholder = 'Observación opcional de aprobación (ej: Transacción verificada en extracto bancario)...';
+    } else if (estado === 'rechazado') {
+        banner.className = 'alert alert-danger py-2.5 px-3 rounded-3 mb-3 small d-flex align-items-center gap-2 border border-danger border-opacity-25';
+        icon.className = 'bi bi-exclamation-octagon-fill text-danger fs-5 flex-shrink-0';
+        texto.innerText = 'El comprobante será declinado y derivado al módulo de Pagos Rechazados. Es obligatorio ingresar el motivo.';
+        
+        btnSubmit.className = 'btn btn-danger flex-grow-1 py-2.5 rounded-pill fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2';
+        btnTexto.innerText = 'Rechazar Comprobante de Pago';
+        
+        labelBadge.className = 'badge bg-danger text-white rounded-pill ms-1';
+        labelBadge.innerText = 'Obligatorio';
+        notaInput.required = true;
+        notaInput.placeholder = 'Ingresa el motivo del rechazo para que el usuario pueda corregirlo (ej: Monto menor al total, imagen ilegible)...';
+    } else {
+        banner.className = 'alert alert-warning py-2.5 px-3 rounded-3 mb-3 small d-flex align-items-center gap-2 border border-warning border-opacity-25';
+        icon.className = 'bi bi-hourglass-split text-warning-emphasis fs-5 flex-shrink-0';
+        texto.innerText = 'El comprobante permanecerá en espera en la bandeja principal de comprobantes para futuras revisiones.';
+        
+        btnSubmit.className = 'btn btn-warning text-dark flex-grow-1 py-2.5 rounded-pill fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2';
+        btnTexto.innerText = 'Guardar como Pendiente';
+        
+        labelBadge.className = 'badge bg-secondary-subtle text-secondary rounded-pill ms-1';
+        labelBadge.innerText = 'Opcional';
+        notaInput.required = false;
+        notaInput.placeholder = 'Nota interna o aclaratoria de revisión pendiente...';
+    }
+}
+
+// Inicializar listeners en los radios
+function inicializarDecisionListeners() {
+    const radios = document.querySelectorAll('input[name="estado_transaccion"]');
+    radios.forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                actualizarDecisionUI(this.value);
+            }
+        });
+        if (radio.checked) {
+            actualizarDecisionUI(radio.value);
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    inicializarDecisionListeners();
+});
+
+// Reactivar listeners tras el swap seguro de HTMX
+document.addEventListener('htmx:afterSwap', function(evt) {
+    if (evt.detail && evt.detail.target && evt.detail.target.id === 'revisar-comprobante-content') {
+        inicializarDecisionListeners();
+    }
+});
+
+// Función auxiliar para copiar referencia
+function copiarReferencia(texto) {
+    if (!navigator.clipboard) {
+        const dummy = document.createElement("input");
+        document.body.appendChild(dummy);
+        dummy.value = texto;
+        dummy.select();
+        document.execCommand("copy");
+        document.body.removeChild(dummy);
+    } else {
+        navigator.clipboard.writeText(texto);
+    }
+    alert("Referencia copiada: " + texto);
+}
+</script>
+{% endblock %}

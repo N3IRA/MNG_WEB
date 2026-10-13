@@ -105,17 +105,26 @@ def enviar_comprobante(request):
 def mis_comprobantes(request):
     """
     Vista para que el turista consulte el historial y estado de sus comprobantes de pago.
+    Soporta filtrado dinámico y actualización asíncrona mediante HTMX sin recargar la página.
     """
+    estado_filtro = request.GET.get('estado', '').strip().lower()
     comprobantes = Pago.objects.filter(reserva__usuario=request.user).select_related('reserva', 'reserva__paquete').order_by('-fecha_envio')
     
+    total = comprobantes.count()
     total_pendientes = Pago.objects.filter(reserva__usuario=request.user, estado_transaccion='pendiente').count()
     total_aprobados = Pago.objects.filter(reserva__usuario=request.user, estado_transaccion='aprobado').aggregate(total=Sum('monto'))['total'] or 0
     total_rechazados = Pago.objects.filter(reserva__usuario=request.user, estado_transaccion='rechazado').count()
 
+    if estado_filtro in ['pendiente', 'aprobado', 'rechazado']:
+        comprobantes = comprobantes.filter(estado_transaccion=estado_filtro)
+
     context = {
         'comprobantes': comprobantes,
+        'estado_filtro': estado_filtro,
+        'total': total,
         'total_pendientes': total_pendientes,
         'total_aprobados': total_aprobados,
         'total_rechazados': total_rechazados,
     }
     return render(request, 'usuario/pago/mis_comprobantes.html', context)
+
