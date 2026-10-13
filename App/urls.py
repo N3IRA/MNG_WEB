@@ -12,7 +12,7 @@ from App.views.pqrs.views import PQRSListView, contestar_pqrs, mis_pqrs_view, gu
 from App.views.usuario import views as usuario_views
 from App.views.dashboard import views as dashboard_views
 from App.views.calificacion import views as calificacion_views
-from App.views.chat_views import condy_chat_api
+from App.views.condy.views import condy_chat_api
 from App.views.categoria.views import CategoriaListView, CategoriaCreateView, CategoriaUpdateView, CategoriaDeleteView
 from App.views.actividades.views import ActividadesListView, ActividadesCreateView, ActividadesUpdateView, ActividadesDeleteView
 from App.views.temporada.views import TemporadaListView, TemporadaCreateView, TemporadaUpdateView
