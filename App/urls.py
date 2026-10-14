@@ -94,7 +94,9 @@ urlpatterns = [
     path('reservas/comprobante-multiple/', reserva_views.comprobante_multiple, name='comprobante_multiple'),
     
     # Reservas (Administración / Staff)
-    path('admin/reservas/',reserva_views.GestionReservasListView.as_view(), name='listar_reservas'),
+    path('admin/reservas/', reserva_views.GestionReservasListView.as_view(), name='gestion_reservas'),
+    path('admin/reservas/agregar/', reserva_views.CrearReservaAdminView.as_view(), name='agregar_reserva'),
+    path('admin/reservas/crear/', reserva_views.CrearReservaAdminView.as_view(), name='crear_reserva'),
     path('admin/reservas/editar/<int:pk>/', reserva_views.EditarReservaAdminView.as_view(), name='editar_reserva'),
     path('admin/reservas/eliminar/<int:pk>/', reserva_views.EliminarReservaAdminView.as_view(), name='eliminar_reserva'),
     
@@ -148,12 +150,6 @@ urlpatterns = [
     path('bitacora/<int:bitacora_id>/', bitacora_views.detalle_bitacora, name='detalle_bitacora'),
 
     # Gestión de Reservas (Administración / Staff)
-    path('admin/reservas/', reserva_views.GestionReservasListView.as_view(), name='gestion_reservas'),
-    path('admin/reservas/agregar/', reserva_views.CrearReservaAdminView.as_view(), name='agregar_reserva'),
-    path('admin/reservas/crear/', reserva_views.CrearReservaAdminView.as_view(), name='crear_reserva'),
-    path('admin/reservas/editar/<int:pk>/', reserva_views.EditarReservaAdminView.as_view(), name='editar_reserva'),
-    path('admin/reservas/eliminar/<int:pk>/', reserva_views.EliminarReservaAdminView.as_view(), name='eliminar_reserva'),
-
     # Dashboard Admin
     path('admin/dashboard/', dashboard_views.dashboard_admin, name='dashboard_admin'),
     path('admin/estadisticas/', dashboard_views.estadisticas_admin, name='estadisticas_admin'),
@@ -183,33 +179,10 @@ urlpatterns = [
     path('pqrs/', pqrs, name='pqrs'),
     path('contactanos/', pqrs_publica, name='pqrs_publica'),
     path('api/pqrs/', api_guardar_pqrs, name='api_guardar_pqrs'),
-    
+
     #cancelaciones
     path('mis_cancelaciones/', reserva_views.mis_cancelaciones, name='mis_cancelaciones'),
-    
-    #categorias
-    path('admin/categorias/', CategoriaListView.as_view(), name='listar_categorias'),
-    path('admin/categorias/nueva/', CategoriaCreateView.as_view(), name='crear_categoria'),
-    path('admin/categorias/editar/<int:pk>/', CategoriaUpdateView.as_view(), name='editar_categoria'),
-    path('admin/categorias/eliminar/<int:pk>/', CategoriaDeleteView.as_view(), name='eliminar_categoria'),
-    
-    # actividades
-    path('admin/actividades/', ActividadesListView.as_view(), name='listar_actividades'),
-    path('admin/actividades/nueva/', ActividadesCreateView.as_view(), name='crear_actividad'),
-    path('admin/actividades/editar/<int:pk>/', ActividadesUpdateView.as_view(), name='editar_actividad'),
-    path('admin/actividades/eliminar/<int:pk>/', ActividadesDeleteView.as_view(), name='eliminar_actividad'),
 
-    # temporadas
-    path('admin/temporadas/', TemporadaListView.as_view(), name='listar_temporadas'),
-    path('admin/temporadas/nueva/', TemporadaCreateView.as_view(), name='crear_temporada'),
-    path('admin/temporadas/editar/<int:pk>/', TemporadaUpdateView.as_view(), name='editar_temporada'),
-
-    # tarifas
-    path('admin/tarifas/', TarifaListView.as_view(), name='listar_tarifas'),
-    path('admin/tarifas/crear/', TarifaCreateView.as_view(), name='crear_tarifa'),
-    path('admin/tarifas/editar/<int:pk>/', TarifaUpdateView.as_view(), name='editar_tarifa'),
-    
- 
   #cancelaciones
   path('admin/reserva/', listar_cancelaciones_admin, name='listar_cancelaciones'),
   path('admin/cancelaciones/editar/<int:reserva_id>/', reserva_views.editar_cancelacion_admin, name='editar_cancelacion_admin'),
