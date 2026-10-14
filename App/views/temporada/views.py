@@ -44,28 +44,29 @@ class TemporadaListView(StaffRequiredMixin, ListView):
                 pass
 
         return queryset.order_by('-id')
-def get_context_data(self, **kwargs):
-    context = super().get_context_data(**kwargs)
-    
-    hoy = timezone.localdate()
-    stats = Temporada.objects.aggregate(
-        total=Count('id'),
-        activas=Count('id', filter=Q(estado=True)),
-        inactivas=Count('id', filter=Q(estado=False)),
-        programadas=Count('id', filter=Q(fecha_inicio__gt=hoy)),
-        finalizadas=Count('id', filter=Q(fecha_fin__lt=hoy))
-    )
 
-    context.update(stats)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
-    context['stats_list'] = [
-        ('Total Temporadas', stats['total'], 'text-dark'),
-        ('Activas', stats['activas'], 'text-success'),
-        ('Inactivas', stats['inactivas'], 'text-danger'),
-    ]
-    
+        hoy = timezone.localdate()
+        stats = Temporada.objects.aggregate(
+            total=Count('id'),
+            activas=Count('id', filter=Q(estado=True)),
+            inactivas=Count('id', filter=Q(estado=False)),
+            programadas=Count('id', filter=Q(fecha_inicio__gt=hoy)),
+            finalizadas=Count('id', filter=Q(fecha_fin__lt=hoy))
+        )
 
-    return context
+        context.update(stats)
+
+        context['stats_list'] = [
+            ('Total Temporadas', stats['total'], 'text-dark'),
+            ('Activas', stats['activas'], 'text-success'),
+            ('Inactivas', stats['inactivas'], 'text-danger'),
+        ]
+
+
+        return context
 class TemporadaCreateView(StaffRequiredMixin, CreateView):
     model = Temporada
     form_class = TemporadaForm
@@ -85,7 +86,7 @@ class TemporadaCreateView(StaffRequiredMixin, CreateView):
             usuario=self.request.user,
             mensaje=f"Se ha creado una nueva temporada: '{self.object.nombre}' con fecha de inicio {self.object.fecha_inicio} y fecha de fin {self.object.fecha_fin}.",
             tipo="Temporada",
-            prioridad="Media",
+            prioridad="media",
         )
         return response
 
@@ -115,7 +116,7 @@ class TemporadaUpdateView(StaffRequiredMixin, UpdateView):
             usuario=self.request.user,
             mensaje=f"Se ha editado la temporada '{self.object.nombre}'. Detalles previos: {valor_viejo}. Nuevos detalles: {valor_nuevo}.",
             tipo="Temporada",
-            prioridad="Media",
+            prioridad="media",
         )
         return response
 
@@ -131,9 +132,9 @@ class TemporadaDeleteView(StaffRequiredMixin, DeleteView):
 
         self.object = self.get_object()
 
-        if self.object.tarifa_set.exists():
+        if self.object.tarifas.exists():
             messages.error(request, f"No se puede eliminar la temporada '{self.object.nombre}' porque contiene tarifas asociadas.")
-            return render(request, self.template_name, {'object': self.object, 'temporada': self.object})
+            return redirect('listar_temporadas')
 
         nombre_temporada = self.object.nombre
         valor_viejo = f"ID: {self.object.id}, Nombre: {self.object.nombre}"
@@ -144,6 +145,6 @@ class TemporadaDeleteView(StaffRequiredMixin, DeleteView):
             usuario=request.user,
             mensaje=f"Se ha eliminado la temporada '{nombre_temporada}'. Detalles previos: {valor_viejo}.",
             tipo="Temporada",
-            prioridad="Media"
+            prioridad="media"
         )
         return response

@@ -3,6 +3,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.db.models import Count, Q
 from django.contrib import messages
+from datetime import date
 from App.forms.paquete.forms import PaqueteForm
 from App.utils import crear_notificacion_sistema
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -32,24 +33,30 @@ def tours(request):
     if busqueda and len(busqueda) <= 100:
         lista_tours = lista_tours.filter(nombre__icontains=busqueda)
 
-    # 2. Filtro de precio máximo permitido
+    # 2. Filtro de precio máximo permitido (solo tarifas activas y vigentes)
     precio_max = request.GET.get('precio_max', '').strip()
     if precio_max:
         try:
             precio_decimal = Decimal(precio_max)
             if precio_decimal >= 0:
                 lista_tours = lista_tours.filter(
+                    tarifas__estado=True,
+                    tarifas__temporada__estado=True,
+                    tarifas__temporada__fecha_inicio__lte=date.today(),
+                    tarifas__temporada__fecha_fin__gte=date.today(),
                     tarifas__precio_adulto__lte=precio_decimal
                 ).distinct()
         except (InvalidOperation, TypeError):
             pass
 
     # 3. Filtro según aptitud para menores de edad
+    # 'si'  -> paquetes donde NINGUNA actividad es no-apta para menores
+    # 'no'  -> paquetes que tienen al menos una actividad no apta para menores
     apto_menores = request.GET.get('apto_menores', '').strip().lower()
     if apto_menores == 'si':
         lista_tours = lista_tours.exclude(actividades__apto_menores=False).distinct()
     elif apto_menores == 'no':
-        lista_tours = lista_tours.exclude(actividades__apto_menores=True).distinct()
+        lista_tours = lista_tours.filter(actividades__apto_menores=False).distinct()
 
     # 4. Filtro por categoría del tour
     categoria_id = request.GET.get('categoria', '').strip()
@@ -184,11 +191,11 @@ class PaqueteDeleteView(StaffRequiredMixin, DeleteView):
         # Validar integridad referencial: Prevenir borrado si el paquete tiene tarifas asociadas
         if self.object.tarifas.exists():
             messages.error(request, f"No se puede eliminar el paquete '{self.object.nombre}' porque tiene tarifas asociadas. Elimina las tarifas primero.")
-            return render(request, self.template_name, {'object': self.object, 'paquete': self.object})
+            return redirect('listar_paquetes')
 
-        if hasattr(self.object, 'reservas') and self.object.reservas.exists():
+        if self.object.reservas.exists():
             messages.error(request, f"No se puede eliminar el paquete '{self.object.nombre}' porque tiene reservas vinculadas.")
-            return render(request, self.template_name, {'object': self.object, 'paquete': self.object})
+            return redirect('listar_paquetes')
 
         nombre_paquete = self.object.nombre
         valor_viejo = f"ID: {self.object.id}, Nombre: {self.object.nombre}, Categoría: {self.object.categoria}"

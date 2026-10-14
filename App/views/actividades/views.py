@@ -129,7 +129,7 @@ class ActividadesDeleteView(StaffRequiredMixin, DeleteView):
         tiene_paquetes = PaqueteActividad.objects.filter(actividad=self.object).exists()
         if tiene_paquetes:
             messages.error(request, f"No se puede eliminar la actividad '{self.object.nombre}' porque está vinculada a uno o más paquetes turísticos.")
-            return render(request, self.template_name, {'object': self.object, 'actividad': self.object})
+            return redirect('listar_actividades')
 
         nombre_actividad = self.object.nombre
         valor_viejo = f"ID: {self.object.id}, Nombre: {self.object.nombre}"

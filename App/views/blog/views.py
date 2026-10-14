@@ -17,7 +17,7 @@ class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     """
     def test_func(self):
         return self.request.user.is_active and (
-            self.request.user.is_staff or getattr(self.request.user, 'rol', None) == 'admin' or getattr(self.request.user, 'rol', None) == 1
+            self.request.user.is_staff or getattr(self.request.user, 'rol', None) == 1
         )
 
 
@@ -37,7 +37,11 @@ def blog(request):
 
 def detalle_blog(request, id):
     """Vista pública de detalle de un artículo de blog."""
-    post = get_object_or_404(Blog.objects.select_related('usuario'), id=id)
+    # Los borradores solo son visibles para staff/administradores
+    if request.user.is_authenticated and (request.user.is_staff or getattr(request.user, 'rol', None) == 1):
+        post = get_object_or_404(Blog.objects.select_related('usuario'), id=id)
+    else:
+        post = get_object_or_404(Blog.objects.filter(estado=True).select_related('usuario'), id=id)
     otros_blogs = Blog.objects.filter(estado=True).exclude(id=id).select_related('usuario').order_by('-fecha_publicacion')[:3]
     context = {
         'post': post,

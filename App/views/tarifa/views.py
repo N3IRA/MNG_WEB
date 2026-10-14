@@ -81,7 +81,7 @@ class TarifaCreateView(StaffRequiredMixin, CreateView):
             usuario=self.request.user,
             mensaje=f"Se ha creado una nueva tarifa para el paquete '{self.object.paquete.nombre}' en la temporada '{self.object.temporada.nombre}'.",
             tipo="Tarifa",
-            prioridad="Media",
+            prioridad="media",
             
             )
         return response
@@ -116,7 +116,7 @@ class TarifaUpdateView(StaffRequiredMixin, UpdateView):
               usuario=self.request.user,
               mensaje=f"se ha editado correctamente la tarifa",
               tipo="Tarifa",
-              prioridad="Media",
+              prioridad="media",
         )
         return response
 
@@ -138,7 +138,7 @@ class TarifaDeleteView(StaffRequiredMixin, DeleteView):
             usuario=request.user,
             mensaje=f"Se ha eliminado la tarifa para el paquete '{nombre_paquete}' en la temporada '{nombre_temporada}'. Detalles previos: {valor_viejo}",
             tipo="Tarifa",
-            prioridad="Media"
+            prioridad="media"
         )
         return response
 
