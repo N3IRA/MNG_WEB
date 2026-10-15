@@ -35,6 +35,8 @@ class TemporadaForm(ModelForm):
         nombre = str(self.cleaned_data.get('nombre', '')).strip()
         if not re.search(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ]', nombre):
             raise ValidationError("El nombre de la temporada debe contener letras (ej: 'Temporada Alta 2026').")
+        if nombre.isdigit():
+            raise ValidationError("El nombre de la temporada no puede contener únicamente números.")
         return nombre
 
     def clean(self):

@@ -1,6 +1,7 @@
 from django import forms
 from App.models import PQRS
 from App.models import Seguimiento, Reserva
+import re
 
 class PqrsForm(forms.ModelForm):
     tipo = forms.ChoiceField(
@@ -49,6 +50,43 @@ class PqrsForm(forms.ModelForm):
             self.fields['reserva'].required = False
             self.fields['nombre_completo'].required = True
             self.fields['correo'].required = True
+
+    def clean_asunto(self):
+        asunto = str(self.cleaned_data.get('asunto', '')).strip()
+        if not asunto:
+            raise forms.ValidationError("El asunto de la solicitud es obligatorio.")
+        if len(asunto) < 5:
+            raise forms.ValidationError("El asunto debe contener al menos 5 caracteres.")
+        if asunto.isdigit():
+            raise forms.ValidationError("El asunto no puede contener únicamente números. Describe brevemente tu solicitud.")
+        if not re.search(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ]', asunto):
+            raise forms.ValidationError("El asunto debe contener texto descriptivo con letras.")
+        return asunto
+
+    def clean_descripcion(self):
+        descripcion = str(self.cleaned_data.get('descripcion', '')).strip()
+        if not descripcion:
+            raise forms.ValidationError("El detalle de la solicitud es obligatorio.")
+        if len(descripcion) < 10:
+            raise forms.ValidationError("El detalle debe tener al menos 10 caracteres para poder atender tu solicitud.")
+        if descripcion.isdigit():
+            raise forms.ValidationError("El detalle no puede contener únicamente números. Explica tu solicitud con texto.")
+        if not re.search(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ]', descripcion):
+            raise forms.ValidationError("El detalle debe contener texto descriptivo con letras.")
+        return descripcion
+
+    def clean_nombre_completo(self):
+        nombre = str(self.cleaned_data.get('nombre_completo', '') or '').strip()
+        # Si el usuario está autenticado el campo viene oculto/vacío y se toma del perfil
+        if not nombre:
+            return nombre
+        if nombre.isdigit():
+            raise forms.ValidationError("El nombre no puede contener únicamente números.")
+        if not re.search(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ]', nombre):
+            raise forms.ValidationError("El nombre debe contener letras (ej: 'Juan Pérez').")
+        if not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\.]+$', nombre):
+            raise forms.ValidationError("El nombre solo puede contener letras, espacios y puntos.")
+        return nombre
 
 class SeguimientoForm(forms.ModelForm):
     reserva = forms.ModelChoiceField(

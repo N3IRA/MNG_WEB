@@ -64,4 +64,9 @@ class BlogForm(forms.ModelForm):
             raise forms.ValidationError("El contenido del artículo es obligatorio.")
         if len(contenido) < 20:
             raise forms.ValidationError("El contenido debe tener al menos 20 caracteres para aportar información valiosa.")
+        if contenido.isdigit():
+            raise forms.ValidationError("El contenido no puede contener únicamente números. Escribe el texto del artículo.")
+        import re as _re
+        if not _re.search(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ]', contenido):
+            raise forms.ValidationError("El contenido debe contener texto con letras.")
         return contenido

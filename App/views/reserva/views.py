@@ -1,3 +1,5 @@
+import json
+import re
 from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
@@ -288,6 +290,53 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
     if reserva.estado_reserva == 'cancelada':
         messages.warning(request, "Esta reserva ya se encuentra cancelada.")
         return redirect('mis_cancelaciones')
+
+    if reserva.estado_cancelacion == 'pendiente':
+        if request.headers.get('HX-Request'):
+            context = obtener_contexto_mis_reservas(request.user)
+            response = render(request, 'admin/reserva/mis_reservas.html', context)
+            response['HX-Trigger'] = json.dumps({
+                'mostrarNotificacionBitacora': {
+                    'tipo': 'warning',
+                    'titulo': 'Solicitud en Revisión',
+                    'mensaje': f'Ya tienes una solicitud de cancelación en revisión para la reserva #{reserva.id}.'
+                }
+            })
+            return response
+        messages.warning(request, "Ya tienes una solicitud de cancelación en revisión para esta reserva.")
+        return redirect('mis_cancelaciones')
+
+    motivo = request.POST.get('motivo_cancelacion', '').strip()
+    if not motivo:
+        if request.headers.get('HX-Request'):
+            context = obtener_contexto_mis_reservas(request.user)
+            response = render(request, 'admin/reserva/mis_reservas.html', context)
+            response['HX-Trigger'] = json.dumps({
+                'mostrarNotificacionBitacora': {
+                    'tipo': 'warning',
+                    'titulo': 'Campo Requerido',
+                    'mensaje': 'Debes ingresar un motivo válido para cancelar la reserva.'
+                }
+            })
+            return response
+        messages.error(request, "Debes ingresar un motivo válido para cancelar la reserva.")
+        return redirect('mis_reservas_usuario')
+
+    # El motivo debe ser texto real, no solo números
+    if motivo.isdigit() or not re.search(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ]', motivo):
+        if request.headers.get('HX-Request'):
+            context = obtener_contexto_mis_reservas(request.user)
+            response = render(request, 'admin/reserva/mis_reservas.html', context)
+            response['HX-Trigger'] = json.dumps({
+                'mostrarNotificacionBitacora': {
+                    'tipo': 'warning',
+                    'titulo': 'Motivo Inválido',
+                    'mensaje': 'El motivo de cancelación debe ser un texto descriptivo, no solo números.'
+                }
+            })
+            return response
+        messages.error(request, "El motivo de cancelación debe ser un texto descriptivo, no solo números.")
+        return redirect('mis_reservas_usuario')
 
     pago = getattr(reserva, 'pago', None)
     motivo = request.POST.get('motivo_cancelacion', '').strip()

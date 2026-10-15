@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.views.generic import ListView
 from django.db.models import Count, Q
+import re
 
 from App.models import PQRS, Seguimiento, Reserva
 from App.forms.pqrs.forms import PqrsForm
@@ -76,6 +77,12 @@ def contestar_pqrs(request, pqrs_id):
         reserva_obj = Reserva.objects.filter(id=reserva_id).first() if reserva_id else None
 
         if respuesta_texto:
+            respuesta_limpia = respuesta_texto.strip()
+            # La respuesta debe ser texto real, no solo números
+            if respuesta_limpia.isdigit() or not re.search(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ]', respuesta_limpia):
+                messages.error(request, "La respuesta debe ser un texto descriptivo, no solo números.")
+                return redirect('contestar_pqrs', pqrs_id=pqr.id)
+
             seguimiento_creado = Seguimiento.objects.create(
                 pqrs=pqr,
                 usuario=request.user,

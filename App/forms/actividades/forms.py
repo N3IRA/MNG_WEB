@@ -40,3 +40,33 @@ class ActividadesForm(ModelForm):
             raise ValidationError("El nombre de la actividad debe contener letras.")
 
         return nombre
+
+    def clean_descripcion(self):
+        descripcion = str(self.cleaned_data.get('descripcion', '')).strip()
+
+        if not descripcion:
+            raise ValidationError("La descripción es obligatoria.")
+
+        if descripcion.isdigit():
+            raise ValidationError("La descripción no puede contener únicamente números.")
+
+        if not re.search(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ]', descripcion):
+            raise ValidationError("La descripción debe incluir un texto explicativo con letras.")
+
+        return descripcion
+
+    def clean_equipo_requerimiento(self):
+        equipo = str(self.cleaned_data.get('equipo_requerimiento', '') or '').strip()
+        if equipo and equipo.isdigit():
+            raise ValidationError("El equipo requerido no puede contener únicamente números. Describe los elementos necesarios.")
+        if equipo and not re.search(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ]', equipo):
+            raise ValidationError("El equipo requerido debe incluir texto descriptivo con letras.")
+        return equipo
+
+    def clean_recomendaciones(self):
+        recomendaciones = str(self.cleaned_data.get('recomendaciones', '') or '').strip()
+        if recomendaciones and recomendaciones.isdigit():
+            raise ValidationError("Las recomendaciones no pueden contener únicamente números. Escribe indicaciones en texto.")
+        if recomendaciones and not re.search(r'[a-zA-ZáéíóúÁÉÍÓÚñÑ]', recomendaciones):
+            raise ValidationError("Las recomendaciones deben incluir texto descriptivo con letras.")
+        return recomendaciones
