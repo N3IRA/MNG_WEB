@@ -115,9 +115,9 @@ class CategoriaDeleteView(StaffRequiredMixin, DeleteView):
         self.object = self.get_object()
 
         # Validar integridad: No eliminar categoría si está asignada a algún paquete
-        if self.object.paquete_set.exists():
+        if self.object.paquetes.exists():
             messages.error(request, f"No se puede eliminar la categoría '{self.object.nombre}' porque contiene paquetes asociados.")
-            return render(request, self.template_name, {'object': self.object})
+            return redirect('listar_categorias')
 
         nombre_categoria = self.object.nombre
         valor_viejo = f"ID: {self.object.id}, Nombre: {self.object.nombre}"

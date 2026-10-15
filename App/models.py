@@ -258,43 +258,38 @@ class Paquete(models.Model):
 
     @property
     def precio_minimo(self):
+        """
+        Retorna el precio por adulto vigente del paquete.
+        Prioridad: 1) temporada activa que cubre la fecha de hoy,
+        2) temporada activa más reciente, 3) cualquier tarifa activa.
+        """
         fecha_hoy = timezone.now().date()
         all_tarifas = list(self.tarifas.all())
 
-        # 1. Tarifa vigente según temporada actual
-        validas = [
-            t for t in all_tarifas
-            if getattr(t, 'estado', False)
-            and getattr(t, 'temporada', None)
-            and getattr(t.temporada, 'estado', False)
-            and t.temporada.fecha_inicio <= fecha_hoy <= t.temporada.fecha_fin
-            and (getattr(t, 'precio_adulto', 0) or 0) > 0
-        ]
-
-        if validas:
-            return min(t.precio_adulto for t in validas)
-
-        # 2. Tarifa estándar o regular
-        estandar = next(
-            (
-                t for t in all_tarifas
-                if getattr(t, 'estado', False)
-                and t.temporada
-                and any(w in (t.temporada.nombre.lower() if t.temporada.nombre else "") for w in ["estándar", "estandar", "regular", "general", "baja", "media", "alta"])
+        def _es_vigente(t):
+            return (
+                getattr(t, 'estado', False)
+                and getattr(t, 'temporada', None)
+                and getattr(t.temporada, 'estado', False)
                 and (getattr(t, 'precio_adulto', 0) or 0) > 0
-            ),
-            None
-        )
+            )
 
-        if estandar:
-            return estandar.precio_adulto
+        # 1. Tarifa de temporada activa que cubre la fecha actual
+        vigentes = [
+            t for t in all_tarifas
+            if _es_vigente(t)
+            and t.temporada.fecha_inicio <= fecha_hoy <= t.temporada.fecha_fin
+        ]
+        if vigentes:
+            return min(t.precio_adulto for t in vigentes)
 
-        # 3. Cualquier tarifa activa con precio válido
-        activas = [t for t in all_tarifas if getattr(t, 'estado', False) and (getattr(t, 'precio_adulto', 0) or 0) > 0]
+        # 2. Tarifa de la temporada activa más reciente (inicio más cercano a hoy por debajo)
+        activas = [t for t in all_tarifas if _es_vigente(t)]
         if activas:
-            return min(t.precio_adulto for t in activas)
+            activas.sort(key=lambda t: abs((t.temporada.fecha_inicio - fecha_hoy).days))
+            return activas[0].precio_adulto
 
-        # 4. Cualquier tarifa existente
+        # 3. Cualquier tarifa con precio válido
         con_precio = [t for t in all_tarifas if (getattr(t, 'precio_adulto', 0) or 0) > 0]
         if con_precio:
             return min(t.precio_adulto for t in con_precio)
@@ -545,59 +540,62 @@ class Reserva(models.Model):
 
     def save(self, *args, **kwargs):
         self.clean()
-        if self.paquete and self.fecha_inicio:
+
+        # El monto solo se calcula al crear la reserva; nunca se recalcula en
+        # guardados posteriores para no alterar el precio ya acordado con el cliente.
+        calcular_monto = self._state.adding or not self.monto_total
+
+        if calcular_monto and self.paquete and self.fecha_inicio:
             try:
-                temporada = Temporada.objects.filter(
-                    fecha_inicio__lte=self.fecha_inicio, 
+                # Busca entre TODAS las temporadas activas que cubren la fecha
+                # (pueden solaparse) hasta encontrar una con tarifa activa válida.
+                temporadas = Temporada.objects.filter(
+                    estado=True,
+                    fecha_inicio__lte=self.fecha_inicio,
                     fecha_fin__gte=self.fecha_inicio
-                ).first()
+                ).order_by('-fecha_inicio')
 
-                if temporada:
+                tarifa = None
+                for temporada in temporadas:
                     tarifa = Tarifa.objects.filter(
-                        paquete=self.paquete, 
-                        temporada=temporada
+                        paquete=self.paquete,
+                        temporada=temporada,
+                        estado=True
                     ).first()
-
                     if tarifa:
-                        num_adultos = self.numero_adultos or 0
-                        num_menores = self.numero_menores or 0
-                        base_monto = (tarifa.precio_adulto * num_adultos) + (tarifa.precio_menor * num_menores)
+                        break
 
-                        # Buscar si existe una promoción activa para este paquete y fecha
-                        pp = PaquetePromocion.objects.filter(
-                            paquete=self.paquete,
-                            promocion__activa=True,
-                            promocion__fecha_inicio__lte=self.fecha_inicio,
-                            promocion__fecha_fin__gte=self.fecha_inicio
-                        ).select_related('promocion').first()
+                if tarifa:
+                    num_adultos = self.numero_adultos or 0
+                    num_menores = self.numero_menores or 0
+                    base_monto = (tarifa.precio_adulto * num_adultos) + (tarifa.precio_menor * num_menores)
 
-                        if not pp:
-                            # Fallback a promoción asignada y activa
-                            pp = PaquetePromocion.objects.filter(
-                                paquete=self.paquete,
-                                promocion__activa=True
-                            ).select_related('promocion').first()
+                    # Promoción activa y vigente para la fecha del viaje
+                    pp = PaquetePromocion.objects.filter(
+                        paquete=self.paquete,
+                        promocion__activa=True,
+                        promocion__fecha_inicio__lte=self.fecha_inicio,
+                        promocion__fecha_fin__gte=self.fecha_inicio
+                    ).select_related('promocion').first()
 
-                        if pp:
-                            if pp.valor_adulto_condescuento and pp.valor_adulto_condescuento > 0 and pp.valor_menor_condescuento and pp.valor_menor_condescuento > 0:
-                                self.monto_total = (pp.valor_adulto_condescuento * num_adultos) + (pp.valor_menor_condescuento * num_menores)
-                            elif pp.promocion and pp.promocion.porcentaje_descuento:
-                                desc = Decimal(pp.promocion.porcentaje_descuento) / Decimal(100)
-                                self.monto_total = round(base_monto * (Decimal(1) - desc), 2)
-                            else:
-                                self.monto_total = base_monto
+                    if pp:
+                        if pp.valor_adulto_condescuento and pp.valor_adulto_condescuento > 0 and pp.valor_menor_condescuento and pp.valor_menor_condescuento > 0:
+                            self.monto_total = (pp.valor_adulto_condescuento * num_adultos) + (pp.valor_menor_condescuento * num_menores)
+                        elif pp.promocion and pp.promocion.porcentaje_descuento:
+                            desc = Decimal(pp.promocion.porcentaje_descuento) / Decimal(100)
+                            self.monto_total = round(base_monto * (Decimal(1) - desc), 2)
                         else:
                             self.monto_total = base_monto
                     else:
-                        self.monto_total = 0.00
+                        self.monto_total = base_monto
                 else:
-                    self.monto_total = 0.00
+                    self.monto_total = Decimal('0.00')
 
             except Exception:
-                self.monto_total = 0.00
+                self.monto_total = Decimal('0.00')
 
         elif not getattr(self, 'monto_total', None):
-            self.monto_total = 0.00
+            self.monto_total = Decimal('0.00')
 
         super().save(*args, **kwargs)
     

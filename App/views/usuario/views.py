@@ -336,7 +336,7 @@ def usuarios_guardar(request):
                 usuario=request.user,
                 mensaje=f"Se ha actualizado la información del usuario '{user_obj.username}'.",
                 tipo="Usuario",
-                prioridad="Media"
+                prioridad="media"
             )
             messages.success(request, f"Usuario '{user_obj.username}' actualizado correctamente.")
         else:
@@ -373,7 +373,7 @@ def usuarios_guardar(request):
                 usuario=request.user,
                 mensaje=f"Se ha creado un nuevo usuario '{user_obj.username}' con rol '{user_obj.get_rol_display()}'.",
                 tipo="Usuario",
-                prioridad="Media"
+                prioridad="media"
             )
             messages.success(request, f"Usuario '{user_obj.username}' creado exitosamente.")
 
@@ -397,7 +397,7 @@ def usuarios_toggle_estado(request, id):
             usuario=request.user,
             mensaje=f"La cuenta de '{user_obj.username}' ha sido {estado_txt}.",
             tipo="Usuario",
-            prioridad="Media"
+            prioridad="media"
         )
         messages.success(request, f"La cuenta de '{user_obj.username}' ha sido {estado_txt}.")
 

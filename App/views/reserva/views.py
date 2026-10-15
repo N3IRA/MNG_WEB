@@ -118,6 +118,27 @@ class CrearReservaAdminView(SuccessMessageMixin, CreateView):
             form.add_error('fecha_inicio', 'No puedes crear reservas en fechas pasadas.')
             return self.form_invalid(form)
 
+        # Validar que exista una tarifa activa vigente para la fecha seleccionada
+        paquete = form.cleaned_data.get('paquete')
+        if paquete and fecha:
+            from App.models import Temporada as _Temporada
+            tiene_tarifa = False
+            for temporada in _Temporada.objects.filter(
+                estado=True,
+                fecha_inicio__lte=fecha,
+                fecha_fin__gte=fecha
+            ):
+                if Tarifa.objects.filter(
+                    paquete=paquete,
+                    temporada=temporada,
+                    estado=True
+                ).exists():
+                    tiene_tarifa = True
+                    break
+            if not tiene_tarifa:
+                form.add_error('fecha_inicio', 'No hay una tarifa activa vigente para este paquete en la fecha seleccionada. Crea o ajusta la tarifa primero.')
+                return self.form_invalid(form)
+
         response = super().form_valid(form)
 
         if self.object.usuario:
@@ -158,7 +179,7 @@ class EditarReservaAdminView(UpdateView):
 
         response = super().form_valid(form)
         reserva = self.object
-        nombre_cliente = reserva.usuario.first_name or reserva.usuario.username
+        nombre_cliente = (reserva.usuario.first_name or reserva.usuario.username) if reserva.usuario else 'Cliente'
         
         valor_nuevo = f"Estado: {reserva.estado_reserva}, Fecha: {reserva.fecha_inicio}, Adultos: {reserva.numero_adultos}, Menores: {reserva.numero_menores}"
 
@@ -207,13 +228,13 @@ class EliminarReservaAdminView(DeleteView):
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         reserva_id = self.object.id
+        usuario_reserva = self.object.usuario
         valor_viejo = f"ID: {self.object.id}, Cliente: {self.object.usuario}, Paquete: {self.object.paquete.nombre if self.object.paquete else 'N/A'}, Estado: {self.object.estado_reserva}"
         response = super().delete(request, *args, **kwargs)
 
-        if self.object.usuario:
+        if usuario_reserva:
             crear_notificacion_sistema(
-                usuario=self.object.usuario,
-                reserva=self.object,
+                usuario=usuario_reserva,
                 mensaje=f"Tu reserva #{reserva_id} ha sido eliminada del sistema. Detalles previos: {valor_viejo}",
                 tipo="Reserva",
                 prioridad="alta"
@@ -223,10 +244,13 @@ class EliminarReservaAdminView(DeleteView):
 
 def normalizar_estados_cancelacion_usuario(usuario):
     """Corrige inconsistencias de estado para que la reserva y la cancelación siempre estén alineadas."""
-    # Caso 1: siempre que el usuario haya solicitado cancelar, la reserva debe quedar cancelada.
+    # Caso 1: si el usuario solicitó cancelar SIN penalidad (flujo de auto-aprobación),
+    # la reserva debe quedar cancelada. Con penalidad > 0 la reserva se mantiene activa
+    # hasta que el administrador revise la solicitud.
     Reserva.objects.filter(
         usuario=usuario,
-        estado_cancelacion='pendiente'
+        estado_cancelacion='pendiente',
+        penalidad__lte=0
     ).exclude(
         estado_reserva='cancelada'
     ).update(estado_reserva='cancelada')
@@ -248,11 +272,18 @@ def normalizar_estados_cancelacion_usuario(usuario):
     ).update(estado_reserva='cancelada')
 
     # Caso 4: una cancelación rechazada no puede dejar la reserva en estado cancelado si fue reactivada.
-    Reserva.objects.filter(
+    # Al reactivar, solo se confirma si existe pago aprobado; si no, vuelve a 'pendiente'.
+    for reserva in Reserva.objects.filter(
         usuario=usuario,
         estado_cancelacion='rechazada',
         estado_reserva='cancelada'
-    ).update(estado_reserva='confirmada')
+    ):
+        pago = getattr(reserva, 'pago', None)
+        if pago and pago.estado_transaccion == 'aprobado':
+            reserva.estado_reserva = 'confirmada'
+        else:
+            reserva.estado_reserva = 'pendiente'
+        reserva.save(update_fields=['estado_reserva'])
 
 
 def obtener_contexto_mis_reservas(usuario, estado_filtro=''):
@@ -444,7 +475,9 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
         messages.success(request, f"La cancelación de la reserva #{reserva.id} fue procesada exitosamente sin penalidad.")
         return redirect('mis_cancelaciones')
 
-    reserva.estado_reserva = 'cancelada'
+    # Con penalidad > 0 la reserva NO se marca cancelada todavía: queda en su
+    # estado actual (pendiente/confirmada) con la solicitud 'pendiente' de revisión
+    # administrativa. Solo cuando el admin apruebe pasará a 'cancelada'.
     reserva.estado_cancelacion = 'pendiente'
     reserva.save()
 
@@ -737,7 +770,7 @@ def ver_factura(request, reserva_id):
     
     logo_base64 = get_image_base64('static/img/logo_monagua.webp')
     
-    cliente_nombre = getattr(reserva.usuario, 'nombre_completo', None)
+    cliente_nombre = getattr(reserva.usuario, 'nombre_completo', None) if reserva.usuario else None
     if not cliente_nombre and reserva.usuario:
         cliente_nombre = reserva.usuario.get_full_name() or reserva.usuario.username
     
@@ -769,7 +802,7 @@ def descargar_factura(request, reserva_id):
         messages.error(request, "La factura solo se puede descargar para reservas confirmadas.")
         return redirect('mis_reservas_usuario')
         
-    password = reserva.usuario.numero_documento
+    password = getattr(reserva.usuario, 'numero_documento', None) if reserva.usuario else None
     if password:
         password = str(password).strip()
         
@@ -845,7 +878,13 @@ def editar_cancelacion_admin(request, reserva_id):
         if estado == 'aprobada':
             reserva.estado_reserva = 'cancelada'
         elif estado == 'rechazada' and reserva.estado_reserva == 'cancelada':
-            reserva.estado_reserva = 'confirmada'
+            # Al reactivar la reserva solo se confirma si tiene pago aprobado;
+            # en caso contrario vuelve a 'pendiente' a la espera del pago.
+            pago = getattr(reserva, 'pago', None)
+            if pago and pago.estado_transaccion == 'aprobado':
+                reserva.estado_reserva = 'confirmada'
+            else:
+                reserva.estado_reserva = 'pendiente'
 
         reserva.save()
 
