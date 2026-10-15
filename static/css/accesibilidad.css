@@ -411,15 +411,6 @@ html[data-a11y-spacing="true"] th {
     word-spacing: 0.16em !important;
 }
 
-/* Pausar Animaciones */
-html[data-a11y-animations="false"] *,
-html[data-a11y-animations="false"] *::before,
-html[data-a11y-animations="false"] *::after {
-    animation-play-state: paused !important;
-    animation: none !important;
-    transition: none !important;
-    scroll-behavior: auto !important;
-}
 
 /* ════════════════════════════════════════════════════════════════════════════
    MEJORAS GLOBALES DE FOCO VISIBLE (KEYBOARD ACCESSIBILITY)

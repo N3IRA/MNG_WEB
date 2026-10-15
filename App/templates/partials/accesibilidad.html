@@ -1,5 +1,5 @@
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/accesibilidad.css' %}?v=4.0">
+<link rel="stylesheet" href="{% static 'css/accesibilidad.css' %}?v=4.1">
 {% csrf_token %}
 {{ request.session.a11y_settings|json_script:"a11y-session-data" }}
 <!-- ── Botón flotante de Accesibilidad ── -->
@@ -71,16 +71,6 @@
     >
       <i class="bi bi-book"></i>
       <span>Lectura</span>
-    </button>
-    <button
-      class="a11y-tab-btn"
-      id="tab-animaciones"
-      role="tab"
-      aria-selected="false"
-      aria-controls="panel-animaciones"
-    >
-      <i class="bi bi-play-circle"></i>
-      <span>Animaciones</span>
     </button>
   </div>
 
@@ -168,19 +158,6 @@
         <label class="form-check-label small" for="tog-cursor"><i class="bi bi-cursor a11y-green-icon"></i> Cursor Grande</label>
       </div>
     </div>
-
-    <!-- TAB 3: Animaciones -->
-    <div
-      id="panel-animaciones"
-      class="a11y-tab-panel"
-      role="tabpanel"
-      aria-labelledby="tab-animaciones"
-    >
-      <div class="form-check form-switch mb-2">
-        <input class="form-check-input" type="checkbox" role="switch" id="tog-animations" />
-        <label class="form-check-label small" for="tog-animations"><i class="bi bi-pause-circle a11y-green-icon"></i> Pausar Animaciones</label>
-      </div>
-    </div>
   </div>
 
   <!-- Footer del Panel -->
@@ -216,4 +193,4 @@
   </div>
 </div>
 
-<script src="{% static 'js/accesibilidad.js' %}"></script>
+<script src="{% static 'js/accesibilidad.js' %}?v=4.1"></script>

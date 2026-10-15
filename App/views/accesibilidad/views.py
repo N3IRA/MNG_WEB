@@ -13,7 +13,7 @@ def guardar_accesibilidad(request):
         # Solo guardamos llaves esperadas para evitar inyección de basura en la sesión
         llaves_esperadas = [
             "darkMode", "bright", "font", "fv", "bigCursor", "hlLinks",
-            "dyslexic", "spacing", "animations", "focus"
+            "dyslexic", "spacing", "focus"
         ]
         
         ajustes_seguros = {k: data[k] for k in llaves_esperadas if k in data}

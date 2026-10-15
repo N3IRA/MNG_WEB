@@ -16,7 +16,6 @@
       hlLinks: false,
       dyslexic: false,
       spacing: false,
-      animations: true,
       focus: false,
     };
     var s = Object.assign({}, D);
@@ -64,6 +63,7 @@
           delete s.saturate;
           delete s.monochrome;
           delete s.invert;
+          delete s.animations;
 
           // Migración: los valores guardados con la escala anterior (sin "fv")
           // se reinician al nuevo 100%, que equivale al antiguo 85%.
@@ -74,6 +74,14 @@
           }
         }
       } catch (_) {}
+    }
+
+    function cleanLegacyColorAttributes() {
+      document.documentElement.removeAttribute("data-a11y-theme");
+      document.documentElement.removeAttribute("data-a11y-saturate");
+      document.documentElement.removeAttribute("data-a11y-monochrome");
+      document.documentElement.removeAttribute("data-a11y-invert");
+      document.documentElement.removeAttribute("data-a11y-animations");
     }
 
     function applyDarkMode(on) {
@@ -204,6 +212,7 @@
       document.documentElement.removeAttribute("data-a11y-theme");
       document.documentElement.removeAttribute("data-a11y-monochrome");
       document.documentElement.removeAttribute("data-a11y-invert");
+      document.documentElement.removeAttribute("data-a11y-animations");
       var oldSaturate = document.getElementById("a11y-saturate-style");
       if (oldSaturate) oldSaturate.remove();
     }
@@ -238,12 +247,6 @@
         }[id];
         el.checked = s[key];
       });
-
-      var togAnim = document.getElementById("tog-animations");
-      if (togAnim) {
-        // tog-animations es "Pausar animaciones", por lo que si s.animations es true, el checkbox está desmarcado
-        togAnim.checked = !s.animations;
-      }
     }
 
     function showToast(msg) {
@@ -298,7 +301,6 @@
       applyLinks(false);
       applyToggleAttr("data-a11y-dyslexic", false);
       applyToggleAttr("data-a11y-spacing", false);
-      applyToggleAttr("data-a11y-animations", true);
       applyFocus(false);
       cleanLegacyColorAttributes();
       syncUI();
@@ -316,7 +318,6 @@
       applyLinks(s.hlLinks);
       applyToggleAttr("data-a11y-dyslexic", s.dyslexic);
       applyToggleAttr("data-a11y-spacing", s.spacing);
-      applyToggleAttr("data-a11y-animations", s.animations);
       applyFocus(s.focus);
       syncUI();
 
@@ -430,17 +431,6 @@
           applyFocus(s.focus);
           save();
           showToast("🎯 Guía de lectura " + (s.focus ? "activada" : "desactivada"));
-        });
-      }
-
-      // Pausar animaciones
-      var togAnim = document.getElementById("tog-animations");
-      if (togAnim) {
-        togAnim.addEventListener("change", function(e) {
-          s.animations = !e.target.checked; 
-          applyToggleAttr("data-a11y-animations", s.animations);
-          save();
-          showToast("⏸️ Animaciones " + (e.target.checked ? "pausadas" : "reanudadas"));
         });
       }
 
