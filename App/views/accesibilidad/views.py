@@ -12,8 +12,8 @@ def guardar_accesibilidad(request):
         data = json.loads(request.body)
         # Solo guardamos llaves esperadas para evitar inyección de basura en la sesión
         llaves_esperadas = [
-            "bright", "font", "fv", "theme", "saturate", "bigCursor", "hlLinks",
-            "dyslexic", "spacing", "animations", "focus", "monochrome", "invert"
+            "darkMode", "bright", "font", "fv", "bigCursor", "hlLinks",
+            "dyslexic", "spacing", "focus"
         ]
         
         ajustes_seguros = {k: data[k] for k in llaves_esperadas if k in data}

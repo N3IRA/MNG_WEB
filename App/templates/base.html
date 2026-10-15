@@ -1,9 +1,22 @@
 {% load static %}
 <!doctype html>
-<html lang="{{ request.LANGUAGE_CODE|default:'es' }}">
+<html lang="{{ request.LANGUAGE_CODE|default:'es' }}" {% if request.session.a11y_settings.darkMode %}data-bs-theme="dark"{% endif %}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function(){
+        try {
+          var a = localStorage.getItem('a11y');
+          if (a) {
+            var d = JSON.parse(a);
+            if (d && d.darkMode) {
+              document.documentElement.setAttribute('data-bs-theme', 'dark');
+            }
+          }
+        } catch(e){}
+      })();
+    </script>
 
     <link
       rel="preload"
@@ -31,6 +44,7 @@
       href="{% static 'css/librerias/animaciones_scroll_aos.css' %}"
     />
     <link rel="stylesheet" href="{% static 'css/condy_chat.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/accesibilidad.css' %}?v=4.1" />
 
     <link rel="icon" type="image/x-icon" href="{% static 'img/monagua_log.ico' %}" />
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/monagua_log.ico' %}" />

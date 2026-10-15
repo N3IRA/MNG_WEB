@@ -1,5 +1,5 @@
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/accesibilidad.css' %}">
+<link rel="stylesheet" href="{% static 'css/accesibilidad.css' %}?v=4.1">
 {% csrf_token %}
 {{ request.session.a11y_settings|json_script:"a11y-session-data" }}
 <!-- ── Botón flotante de Accesibilidad ── -->
@@ -26,12 +26,12 @@
     class="a11y-panel-header d-flex justify-content-between align-items-center px-3 py-2 border-bottom"
   >
     <div class="d-flex align-items-center gap-2">
-      <i class="bi bi-universal-access fs-5 text-info" aria-hidden="true"></i>
-      <span class="fw-bold">Accesibilidad</span>
+      <i class="bi bi-universal-access fs-5 a11y-header-icon" aria-hidden="true"></i>
+      <span class="fw-bold text-white">Accesibilidad</span>
     </div>
     <div class="d-flex align-items-center gap-2">
       <button
-        class="btn btn-sm btn-outline-light py-1 px-2 border-0 opacity-75"
+        class="btn btn-sm btn-a11y-action py-1 px-2 border-0"
         id="btn-reset"
         title="Restablecer todas las opciones"
       >
@@ -39,7 +39,7 @@
         <span class="d-none d-sm-inline ms-1">Restablecer</span>
       </button>
       <button
-        class="btn btn-sm btn-outline-light py-1 px-2 border-0 a11y-panel-close-btn opacity-75"
+        class="btn btn-sm btn-a11y-action py-1 px-2 border-0 a11y-panel-close-btn"
         id="btn-close-a11y"
         onclick="A11y.toggle()"
         title="Cerrar panel de accesibilidad"
@@ -59,18 +59,8 @@
       aria-selected="true"
       aria-controls="panel-tamano"
     >
-      <i class="bi bi-fonts"></i>
-      <span>Tamaño</span>
-    </button>
-    <button
-      class="a11y-tab-btn"
-      id="tab-visualizacion"
-      role="tab"
-      aria-selected="false"
-      aria-controls="panel-visualizacion"
-    >
-      <i class="bi bi-palette"></i>
-      <span>Color</span>
+      <i class="bi bi-display"></i>
+      <span>Pantalla</span>
     </button>
     <button
       class="a11y-tab-btn"
@@ -82,29 +72,27 @@
       <i class="bi bi-book"></i>
       <span>Lectura</span>
     </button>
-    <button
-      class="a11y-tab-btn"
-      id="tab-animaciones"
-      role="tab"
-      aria-selected="false"
-      aria-controls="panel-animaciones"
-    >
-      <i class="bi bi-play-circle"></i>
-      <span>Animaciones</span>
-    </button>
   </div>
 
   <!-- Contenido del Panel -->
   <div class="a11y-panel-content p-3 d-flex flex-column gap-3">
-    <!-- TAB 1: Tamaño -->
+    <!-- TAB 1: Pantalla & Tamaño -->
     <div
       id="panel-tamano"
       class="a11y-tab-panel a11y-tab-panel-active"
       role="tabpanel"
       aria-labelledby="tab-tamano"
     >
+      <!-- Modo Oscuro -->
+      <div class="form-check form-switch mb-3 p-2 rounded-3 a11y-darkmode-box" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(76, 175, 112, 0.25);">
+        <input class="form-check-input ms-0 me-2" type="checkbox" role="switch" id="tog-dark-mode" />
+        <label class="form-check-label small fw-semibold d-inline-flex align-items-center gap-1" for="tog-dark-mode">
+          <i class="bi bi-moon-stars a11y-green-icon"></i> Modo Oscuro
+        </label>
+      </div>
+
       <!-- Brillo -->
-      <div class="mb-2">
+      <div class="mb-3">
         <div class="d-flex justify-content-between align-items-center mb-1">
           <label for="sl-bright" class="form-label small mb-0"
             ><i class="bi bi-brightness-high text-warning"></i> Brillo</label
@@ -126,7 +114,7 @@
       <div class="mb-2">
         <div class="d-flex justify-content-between align-items-center mb-1">
           <label for="sl-font" class="form-label small mb-0"
-            ><i class="bi bi-textbox text-info"></i> Texto</label
+            ><i class="bi bi-textbox a11y-green-icon"></i> Texto</label
           >
           <span class="small fw-bold" id="val-font">100%</span>
         </div>
@@ -142,138 +130,67 @@
       </div>
     </div>
 
-    <!-- TAB 2: Visualización -->
-    <div
-      id="panel-visualizacion"
-      class="a11y-tab-panel u-style-cb458930"
-      role="tabpanel"
-      aria-labelledby="tab-visualizacion"
-    >
-      <!-- Tema de Colores -->
-      <div class="mb-2">
-        <label for="sel-theme" class="form-label small mb-1"
-          ><i class="bi bi-palette text-primary"></i> Tema</label
-        >
-        <select id="sel-theme" class="form-select form-select-sm">
-          <option value="auto">Automático</option>
-          <option value="light">Claro</option>
-          <option value="dark">Oscuro</option>
-          <option value="high-contrast">Alto Contraste</option>
-        </select>
-      </div>
-
-      <!-- Saturación -->
-      <div class="mb-2">
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <label for="sl-saturate" class="form-label small mb-0"
-            ><i class="bi bi-circle-fill text-success"></i> Saturación</label
-          >
-          <span class="small fw-bold" id="val-saturate">100%</span>
-        </div>
-        <input
-          type="range"
-          class="form-range form-range-sm"
-          id="sl-saturate"
-          min="0"
-          max="100"
-          value="100"
-          step="5"
-        />
-      </div>
-
-      <div class="row g-2">
-        <div class="col-6">
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" id="tog-monochrome" />
-            <label class="form-check-label small" for="tog-monochrome"><i class="bi bi-circle-half"></i> Grises</label>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" id="tog-invert" />
-            <label class="form-check-label small" for="tog-invert"><i class="bi bi-arrow-down-up"></i> Invertir</label>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" id="tog-cursor" />
-            <label class="form-check-label small" for="tog-cursor"><i class="bi bi-cursor"></i> Cursor</label>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" id="tog-links" />
-            <label class="form-check-label small" for="tog-links"><i class="bi bi-link-45deg"></i> Enlaces</label>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 3: Lectura -->
+    <!-- TAB 2: Lectura -->
     <div
       id="panel-lectura"
       class="a11y-tab-panel"
       role="tabpanel"
       aria-labelledby="tab-lectura"
     >
-      <div class="form-check form-switch mb-2">
-        <input class="form-check-input" type="checkbox" role="switch" id="tog-dyslexic" />
-        <label class="form-check-label small" for="tog-dyslexic"><i class="bi bi-fonts"></i> Fuente Dislexia</label>
-      </div>
-      <div class="form-check form-switch mb-2">
-        <input class="form-check-input" type="checkbox" role="switch" id="tog-spacing" />
-        <label class="form-check-label small" for="tog-spacing"><i class="bi bi-distribute-vertical"></i> Espaciado de Texto</label>
-      </div>
-      <div class="form-check form-switch mb-2">
+      <div class="form-check form-switch mb-3">
         <input class="form-check-input" type="checkbox" role="switch" id="tog-focus" />
-        <label class="form-check-label small" for="tog-focus"><i class="bi bi-align-center"></i> Guía de Lectura</label>
+        <label class="form-check-label small" for="tog-focus"><i class="bi bi-align-center a11y-green-icon"></i> Guía de Lectura</label>
       </div>
-    </div>
-
-    <!-- TAB 4: Animaciones -->
-    <div
-      id="panel-animaciones"
-      class="a11y-tab-panel"
-      role="tabpanel"
-      aria-labelledby="tab-animaciones"
-    >
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" role="switch" id="tog-dyslexic" />
+        <label class="form-check-label small" for="tog-dyslexic"><i class="bi bi-fonts a11y-green-icon"></i> Fuente Dislexia</label>
+      </div>
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" role="switch" id="tog-spacing" />
+        <label class="form-check-label small" for="tog-spacing"><i class="bi bi-distribute-vertical a11y-green-icon"></i> Espaciado de Texto</label>
+      </div>
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" role="switch" id="tog-links" />
+        <label class="form-check-label small" for="tog-links"><i class="bi bi-link-45deg a11y-green-icon"></i> Resaltar Enlaces</label>
+      </div>
       <div class="form-check form-switch mb-2">
-        <input class="form-check-input" type="checkbox" role="switch" id="tog-animations" />
-        <label class="form-check-label small" for="tog-animations"><i class="bi bi-pause-circle"></i> Pausar Animaciones</label>
+        <input class="form-check-input" type="checkbox" role="switch" id="tog-cursor" />
+        <label class="form-check-label small" for="tog-cursor"><i class="bi bi-cursor a11y-green-icon"></i> Cursor Grande</label>
       </div>
     </div>
   </div>
-
-  <!-- Contenedor para Guía de Lectura -->
-  <div id="a11y-reading-guide" class="d-none" style="position:fixed; top:50%; left:0; width:100%; height:4px; background:#ffeb3b; z-index:999998; box-shadow: 0 0 10px rgba(0,0,0,0.5); pointer-events:none; transform: translateY(-50%);"></div>
-  <div id="a11y-focus-backdrop" class="d-none" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:999997; pointer-events:none; background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.7) 40%, transparent 40%, transparent 60%, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.7) 100%);"></div>
 
   <!-- Footer del Panel -->
   <div
-    class="a11y-panel-footer border-top d-flex align-items-center justify-content-between px-3 py-2 u-style-8cba01a2"
+    class="a11y-panel-footer border-top d-flex align-items-center justify-content-between px-3 py-2"
   >
     <div class="d-flex align-items-center gap-2">
-      <span class="badge rounded-circle p-1 u-style-3fa034ce"></span>
-      <span>Guardado automáticamente</span>
+      <span class="badge rounded-circle p-1 a11y-status-dot"></span>
+      <span class="small text-white-50">Guardado automáticamente</span>
     </div>
-    <div class="d-none d-sm-block"><kbd>Alt</kbd>+<kbd>A</kbd></div>
+    <div class="d-none d-sm-block text-white-50 small"><kbd class="bg-dark text-white border border-secondary">Alt</kbd>+<kbd class="bg-dark text-white border border-secondary">A</kbd></div>
   </div>
 </div>
+
+<!-- ── Contenedores Globales para Guía de Lectura a Pantalla Completa ── -->
+<div id="a11y-reading-guide" class="d-none" aria-hidden="true"></div>
+<div id="a11y-focus-backdrop" class="d-none" aria-hidden="true"></div>
 
 <!-- ── Toast de confirmación ── -->
 <div
   id="a11y-toast"
-  class="toast position-fixed border-0 u-style-d67f9080"
+  class="toast position-fixed border-0"
   role="status"
   aria-live="polite"
 >
-  <div class="d-flex">
+  <div class="d-flex align-items-center">
     <div class="toast-body small fw-semibold" id="a11y-toast-msg"></div>
     <button
       class="btn-close btn-close-white me-2 m-auto"
       data-bs-dismiss="toast"
+      aria-label="Cerrar notificación"
     ></button>
   </div>
 </div>
 
-<script src="{% static 'js/accesibilidad.js' %}"></script>
+<script src="{% static 'js/accesibilidad.js' %}?v=4.1"></script>
