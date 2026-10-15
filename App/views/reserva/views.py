@@ -231,8 +231,9 @@ class EliminarReservaAdminView(DeleteView):
         reserva_id = self.object.id
         usuario_reserva = self.object.usuario
         valor_viejo = f"ID: {self.object.id}, Cliente: {self.object.usuario}, Paquete: {self.object.paquete.nombre if self.object.paquete else 'N/A'}, Estado: {self.object.estado_reserva}"
-        response = super().delete(request, *args, **kwargs)
 
+        # La notificación se crea ANTES de eliminar la reserva: el borrado en
+        # cascada de notificaciones asociadas la eliminaría si se creara después.
         if usuario_reserva:
             crear_notificacion_sistema(
                 usuario=usuario_reserva,
@@ -240,6 +241,8 @@ class EliminarReservaAdminView(DeleteView):
                 tipo="Reserva",
                 prioridad="alta"
             )
+
+        response = super().delete(request, *args, **kwargs)
         return response
 
 
