@@ -2,20 +2,27 @@
 {% load static %}
 
 {% block content %}
-{% include "partials/breadcrumbs.html" with current_title="Gestión de Cancelaciones" current_icon="bi bi-star-fill" %}
-<div class="container-fluid px-4 py-4">
-    <!-- Subtítulo Superior -->
-    <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 fw-semibold text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">Panel de Control</span>
-    
-    <!-- Encabezado -->
-    <div class="card admin-page-header p-4 mb-4 rounded-4">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <div>
-                <h2 class="display-6 admin-page-title mb-2 d-flex align-items-center">
-                    <i class="bi bi-x-circle me-3"></i>Gestión de Cancelaciones
-                </h2>
-                <p class="text-muted mb-0">Histórico de reservas canceladas, revisión y penalidades aplicadas.</p>
-            </div>
+{% include "partials/breadcrumbs.html" with current_title="Gestión de Cancelaciones" current_icon="bi bi-x-circle" %}
+<div class="container-fluid px-0">
+    <!-- ── Top Bar (Estilo Dashboard Admin) ── -->
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-0 text-success d-flex align-items-center gap-2">
+                <i class="bi bi-x-circle"></i>Gestión de Cancelaciones
+            </h2>
+            <p class="text-muted mb-0 small">Histórico de reservas canceladas, revisión y penalidades aplicadas.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap me-lg-5 pe-lg-2">
+            <a href="{% url 'dashboard_admin' %}" class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 shadow-sm">
+                <i class="bi bi-grid-1x2"></i> Dashboard
+            </a>
+            <a href="{% url 'gestion_reservas' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-none d-md-inline-flex align-items-center gap-1 shadow-sm">
+                <i class="bi bi-calendar2-check-fill"></i> Reservas
+            </a>
+            <span class="badge bg-white text-secondary border d-none d-md-inline-flex align-items-center gap-1 px-3 py-2 shadow-sm" title="Fecha actual">
+                <i class="bi bi-calendar3 text-success"></i>
+                <span>{% now "D, j \d\e M. Y" %}</span>
+            </span>
         </div>
     </div>
 
@@ -76,7 +83,7 @@
     <!-- Tabla -->
     <div class="card admin-list-panel overflow-hidden">
         <div class="table-responsive">
-            <table class="table align-middle mb-0 admin-data-table">
+            <table id="tablaCancelaciones" class="table align-middle mb-0 admin-data-table">
                 <thead>
                     <tr class="text-uppercase small fw-bold text-secondary">
                         <th class="ps-4 py-3 border-0">CLIENTE</th>
@@ -169,4 +176,8 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/tconf/tconf-tablaCancelaciones.js' %}"></script>
 {% endblock %}

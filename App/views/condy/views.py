@@ -1,7 +1,7 @@
 import json
 from django.http import JsonResponse
-from App.services.condy_nlp import procesar_mensaje
 from django.views.decorators.csrf import ensure_csrf_cookie
+from .condy_nlp import procesar_mensaje
 
 @ensure_csrf_cookie
 def condy_chat_api(request):

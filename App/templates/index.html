@@ -7,7 +7,7 @@
 <section id="hero-reveal-section" class="position-relative w-100 overflow-hidden bg-white d-flex align-items-center" style="height: 90vh;">
   <!-- Imagen de Fondo con animación de Zoom -->
   <div class="bg-image bg-zoom-anim position-absolute top-0 start-0 w-100 h-100"
-       style="background-image: url('{% static "img/20250326_093123.jpg" %}'); background-size: cover; background-position: center;"></div>
+       style="background-image: url('{% static "img/hero_bg.webp" %}');"></div>
 
   <!-- Overlay Oscuro más claro (para suavizar la imagen revelada) -->
   <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0, 0, 0, 0.2); z-index: 1;"></div>
@@ -181,7 +181,7 @@
 
                 <!-- Imagen 2: Frailejones -->
                 <div class="w-100 overflow-hidden" style="border-radius: 2px;" data-aos="fade-up">
-                    <img src="{% static 'img/frailejones.jpg' %}" 
+                    <img src="{% static 'img/frailejones.webp' %}" 
                          class="img-fluid w-100 d-block" 
                          alt="Frailejones en el Páramo"
                          loading="lazy"
@@ -226,7 +226,7 @@
             <div class="col-12 col-md-3 sticky-md-top mt-4 mt-md-0 d-flex flex-column" 
                  style="top: 55vh; height: fit-content; z-index: 5;" data-aos="fade-left">
                 <div class="ps-lg-3 text-start">
-                    <p class="mb-0 lh-base" style="font-size: 0.9rem; color: #55534e; font-weight: 400; text-align: justify;">
+                    <p class="mb-0 lh-base" style="font-size: 1.14rem; color: #55534e; font-weight: 400; text-align: justify;">
                         Monagua te guía a través de paisajes auténticos, fomentando el ecoturismo y el respeto por las tradiciones locales. Sumérgete en la riqueza natural y patrimonial de Boyacá con nosotros, descubriendo historias grabadas en piedra y valles que respiran vida.
                     </p>
                 </div>
@@ -239,7 +239,7 @@
 
 <!-- SECCIÓN NUESTRO EQUIPO (ESTILO PREMIUM - BOOTSTRAP 5) -->
 <section class="py-5" style="background-color: #ffffffff; color: #1c1c1a;">
-    <div class="container py-5">
+    <div class="container-fluid py-5 px-4 px-md-5" style="max-width: 1600px;">
         
         <!-- PARTE SUPERIOR: Titular y Espacio para Imagen -->
         <div class="row align-items-end mb-4 g-4">
@@ -249,7 +249,7 @@
                 <h2 class="display-6 fw-normal mb-4" style="letter-spacing: -1.5px; line-height: 1.2; max-width: 680px;">
                     Somos una comunidad apasionada por la conservación, guías locales y amantes de la cultura, dedicados a mostrarte lo mejor de Mongua.
                 </h2>
-                <p class="mb-0" style="font-size: 0.85rem; font-weight: 500; color: #1c1c1a;">
+                <p class="mb-0" style="font-size: 0.95rem; font-weight: 500; color: #1c1c1a;">
                     Nuestros pilares ↓
                 </p>
             </div>
@@ -261,7 +261,6 @@
                     <img src="{% static 'img/logo_monagua.webp' %}" alt="Logo Monagua" class="img-fluid" style="max-height: 180px; object-fit: contain; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));">
                 </div>
             </div>
-
         </div>
 
         <!-- LÍNEA DIVISORIA PRINCIPAL -->
@@ -275,29 +274,29 @@
                 
                 <!-- Item 1 -->
                 <div class="py-4" data-aos="fade-up" data-aos-delay="100">
-                    <h4 class="fs-6 fw-normal mb-1">Ecoturismo Sostenible</h4>
-                    <p class="mb-0" style="font-size: 0.85rem; color: #55534e;">Diseñamos rutas que respetan el medio ambiente y promueven la conservación del páramo.</p>
+                    <h4 class="fw-normal mb-1" style="font-size: 1.1rem;">Ecoturismo Sostenible</h4>
+                    <p class="mb-0" style="font-size: 0.95rem; color: #55534e; line-height: 1.55;">Diseñamos rutas que respetan el medio ambiente y promueven la conservación del páramo.</p>
                 </div>
                 <div style="border-top: 1px solid rgba(28, 28, 26, 0.15);"></div>
                 
                 <!-- Item 2 -->
                 <div class="py-4" data-aos="fade-up" data-aos-delay="200">
-                    <h4 class="fs-6 fw-normal mb-1">Guías Locales</h4>
-                    <p class="mb-0" style="font-size: 0.85rem; color: #55534e;">Acompañamiento por expertos nativos que conocen cada sendero, historia y leyenda de Mongua.</p>
+                    <h4 class="fw-normal mb-1" style="font-size: 1.1rem;">Guías Locales</h4>
+                    <p class="mb-0" style="font-size: 0.95rem; color: #55534e; line-height: 1.55;">Acompañamiento por expertos nativos que conocen cada sendero, historia y leyenda de Mongua.</p>
                 </div>
                 <div style="border-top: 1px solid rgba(28, 28, 26, 0.15);"></div>
                 
                 <!-- Item 3 -->
                 <div class="py-4" data-aos="fade-up" data-aos-delay="300">
-                    <h4 class="fs-6 fw-normal mb-1">Cultura y Tradición</h4>
-                    <p class="mb-0" style="font-size: 0.85rem; color: #55534e;">Sumérgete en las costumbres locales, la gastronomía y el invaluable legado ancestral.</p>
+                    <h4 class="fw-normal mb-1" style="font-size: 1.1rem;">Cultura y Tradición</h4>
+                    <p class="mb-0" style="font-size: 0.95rem; color: #55534e; line-height: 1.55;">Sumérgete en las costumbres locales, la gastronomía y el invaluable legado ancestral.</p>
                 </div>
                 <div style="border-top: 1px solid rgba(28, 28, 26, 0.15);"></div>
                 
                 <!-- Item 4 -->
                 <div class="py-4" data-aos="fade-up" data-aos-delay="400">
-                    <h4 class="fs-6 fw-normal mb-1">Aventura y Naturaleza</h4>
-                    <p class="mb-0" style="font-size: 0.85rem; color: #55534e;">Desde caminatas tranquilas hasta expediciones desafiantes en la majestuosa geografía boyacense.</p>
+                    <h4 class="fw-normal mb-1" style="font-size: 1.1rem;">Aventura y Naturaleza</h4>
+                    <p class="mb-0" style="font-size: 0.95rem; color: #55534e; line-height: 1.55;">Desde caminatas tranquilas hasta expediciones desafiantes en la majestuosa geografía boyacense.</p>
                 </div>
 
             </div>
@@ -307,29 +306,29 @@
                 
                 <!-- Item 1 -->
                 <div class="py-4" data-aos="fade-up" data-aos-delay="150">
-                    <h4 class="fs-6 fw-normal mb-1">Impacto Social</h4>
-                    <p class="mb-0" style="font-size: 0.85rem; color: #55534e;">Trabajamos de la mano con las familias campesinas para generar desarrollo económico en la región.</p>
+                    <h4 class="fw-normal mb-1" style="font-size: 1.1rem;">Impacto Social</h4>
+                    <p class="mb-0" style="font-size: 0.95rem; color: #55534e; line-height: 1.55;">Trabajamos de la mano con las familias campesinas para generar desarrollo económico en la región.</p>
                 </div>
                 <div style="border-top: 1px solid rgba(28, 28, 26, 0.15);"></div>
                 
                 <!-- Item 2 -->
                 <div class="py-4" data-aos="fade-up" data-aos-delay="250">
-                    <h4 class="fs-6 fw-normal mb-1">Atención Personalizada</h4>
-                    <p class="mb-0" style="font-size: 0.85rem; color: #55534e;">Experiencias adaptadas a tus intereses, asegurando un viaje seguro, cómodo e inolvidable.</p>
+                    <h4 class="fw-normal mb-1" style="font-size: 1.1rem;">Atención Personalizada</h4>
+                    <p class="mb-0" style="font-size: 0.95rem; color: #55534e; line-height: 1.55;">Experiencias adaptadas a tus intereses, asegurando un viaje seguro, cómodo e inolvidable.</p>
                 </div>
                 <div style="border-top: 1px solid rgba(28, 28, 26, 0.15);"></div>
                 
                 <!-- Item 3 -->
                 <div class="py-4" data-aos="fade-up" data-aos-delay="350">
-                    <h4 class="fs-6 fw-normal mb-1">Preservación del Patrimonio</h4>
-                    <p class="mb-0" style="font-size: 0.85rem; color: #55534e;">Valoramos y protegemos sitios históricos, arqueológicos y maravillas naturales únicas.</p>
+                    <h4 class="fw-normal mb-1" style="font-size: 1.1rem;">Preservación del Patrimonio</h4>
+                    <p class="mb-0" style="font-size: 0.95rem; color: #55534e; line-height: 1.55;">Valoramos y protegemos sitios históricos, arqueológicos y maravillas naturales únicas.</p>
                 </div>
                 <div style="border-top: 1px solid rgba(28, 28, 26, 0.15);"></div>
                 
                 <!-- Item 4 -->
                 <div class="py-4" data-aos="fade-up" data-aos-delay="450">
-                    <h4 class="fs-6 fw-normal mb-1">Logística Integral</h4>
-                    <p class="mb-0" style="font-size: 0.85rem; color: #55534e;">Nos encargamos de tu transporte, alojamiento y alimentación para que solo te preocupes por disfrutar.</p>
+                    <h4 class="fw-normal mb-1" style="font-size: 1.1rem;">Logística Integral</h4>
+                    <p class="mb-0" style="font-size: 0.95rem; color: #55534e; line-height: 1.55;">Nos encargamos de tu transporte, alojamiento y alimentación para que solo te preocupes por disfrutar.</p>
                 </div>
 
             </div>

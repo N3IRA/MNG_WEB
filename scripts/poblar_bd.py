@@ -8,7 +8,7 @@ from App.models import (
     Usuario, Temporada, Categoria, Actividades, Paquete, Tarifa,
     PaqueteActividad, PaquetePromocion, Blog, Reserva, PQRS,
     Seguimiento, Notificacion, PlanGuia, Pago,
-    Promocion, PolizaViaje, Aseguradora, Bitacora
+    Promocion, PolizaViaje, Aseguradora, Bitacora, Calificacion
 )
 import random
 import shutil
@@ -16,6 +16,7 @@ from datetime import timedelta, date, datetime
 from django.utils import timezone
 from decimal import Decimal
 from django.conf import settings
+from django.db import transaction
 
 
 def generar_documento_unico(prefijo):
@@ -35,11 +36,13 @@ def generar_email_unico(username):
             return email
 
 
+@transaction.atomic
 def poblar_base_datos():
     print("Iniciando el poblado de la base de datos...")
     print("0. Limpiando la base de datos...")
 
     Bitacora.objects.all().delete()
+    Calificacion.objects.all().delete()
     Pago.objects.all().delete()
     Notificacion.objects.all().delete()
     PlanGuia.objects.all().delete()
@@ -59,6 +62,7 @@ def poblar_base_datos():
     Categoria.objects.all().delete()
     Usuario.objects.all().delete()
 
+    anio = timezone.localdate().year
     nombres = ['Carlos', 'Ana', 'Luis', 'Marta', 'Pedro',
                'Sofia', 'Jorge', 'Lucia', 'Diego', 'Elena']
     apellidos = ['Gomez', 'Perez', 'Rodriguez', 'Lopez',
@@ -86,21 +90,21 @@ def poblar_base_datos():
     ]
 
     fechas_temporadas = [
-        (date(2026, 6, 4),   date(2026, 7, 15)),
-        (date(2026, 7, 16),  date(2026, 8, 15)),
-        (date(2026, 8, 16),  date(2026, 8, 31)),
-        (date(2026, 9, 1),   date(2026, 9, 30)),
-        (date(2026, 10, 1),  date(2026, 10, 15)),
-        (date(2026, 10, 16), date(2026, 10, 31)),
-        (date(2026, 11, 1),  date(2026, 11, 16)),
-        (date(2026, 11, 17), date(2026, 11, 30)),
-        (date(2026, 12, 1),  date(2026, 12, 15)),
-        (date(2026, 12, 16), date(2026, 12, 31)),
+        (date(anio, 6, 4),   date(anio, 7, 15)),
+        (date(anio, 7, 16),  date(anio, 8, 15)),
+        (date(anio, 8, 16),  date(anio, 8, 31)),
+        (date(anio, 9, 1),   date(anio, 9, 30)),
+        (date(anio, 10, 1),  date(anio, 10, 15)),
+        (date(anio, 10, 16), date(anio, 10, 31)),
+        (date(anio, 11, 1),  date(anio, 11, 16)),
+        (date(anio, 11, 17), date(anio, 11, 30)),
+        (date(anio, 12, 1),  date(anio, 12, 15)),
+        (date(anio, 12, 16), date(anio, 12, 31)),
     ]
 
     print("1. Creando Usuarios (Admin, Clientes/Turista, Guías)...")
     admin_user = Usuario.objects.create_superuser(
-        username='ADMIN',
+        username='admin',
         password='admin1234',
         email='admin@gmail.com',
         first_name='Admin',
@@ -267,16 +271,14 @@ def poblar_base_datos():
         dst_path = os.path.join(destinos_media_dir, img_name)
         imagen_path = f"destinos/{img_name}"
         if os.path.exists(src_path):
-            try:
-                shutil.copy(src_path, dst_path)
-            except Exception as e:
-                print(f"Error al copiar imagen: {e}")
+            shutil.copy(src_path, dst_path)
 
+        dias_duracion = random.randint(2, 7)
         p = Paquete.objects.create(
             nombre=nombre,
             descripcion=descripcion,
-            dias_duracion=random.randint(2, 7),
-            noches_duracion=random.randint(1, 6),
+            dias_duracion=dias_duracion,
+            noches_duracion=dias_duracion - 1,
             punto_encuentro="Plaza principal de Mongua",
             hora_encuentro=timezone.now().time(),
             categoria=random.choice(categorias_creadas),
@@ -292,16 +294,16 @@ def poblar_base_datos():
         paquetes_creados.append(p)
 
     temporada_estandar = Temporada.objects.create(
-        nombre="Temporada Estándar 2026",
-        fecha_inicio=date(2026, 1, 1),
-        fecha_fin=date(2026, 12, 31),
+        nombre=f"Temporada Estándar {anio}",
+        fecha_inicio=date(anio, 1, 1),
+        fecha_fin=date(anio, 12, 31),
         estado=True
     )
 
     temporadas_creadas = []
     for i in range(len(nombres_temporadas)):
         t = Temporada.objects.create(
-            nombre=f"{nombres_temporadas[i]} 2026",
+            nombre=f"{nombres_temporadas[i]} {anio}",
             fecha_inicio=fechas_temporadas[i][0],
             fecha_fin=fechas_temporadas[i][1],
             estado=True
@@ -328,7 +330,23 @@ def poblar_base_datos():
         )
         tarifas_creadas.append(tarifa_base)
 
-    print("4. Creando Reservas...")
+    print("4. Creando Planes de Guía...")
+    planes_creados = []
+    fecha_primer_plan = timezone.localdate() + timedelta(days=14)
+    for i, guia in enumerate(guias_creados):
+        paquete = paquetes_creados[i % len(paquetes_creados)]
+        fecha_inicio_plan = fecha_primer_plan + timedelta(days=i * 3)
+        plan = PlanGuia.objects.create(
+            usuario=guia,
+            paquete=paquete,
+            idioma_servicio=random.choice(["Español", "Inglés"]),
+            fecha_inicio_plan=fecha_inicio_plan,
+            fecha_fin_plan=fecha_inicio_plan + timedelta(days=paquete.dias_duracion - 1),
+            estado=True
+        )
+        planes_creados.append(plan)
+
+    print("5. Creando Reservas...")
     reservas_creadas = []
     estados_reserva = ['pendiente', 'confirmada', 'cancelada']
     combinaciones_unicas = set()
@@ -372,7 +390,41 @@ def poblar_base_datos():
 
     print(f"  -> {len(reservas_creadas)} reservas creadas.")
 
-    print("5. Creando Pagos...")
+    print("6. Creando Pólizas y Seguros...")
+    polizas_config = [
+        ("Aventura Protegida", "Cobertura médica y asistencia durante actividades de aventura.", Decimal("50000000"), True, True, Decimal("12000")),
+        ("Naturaleza Segura", "Asistencia médica para recorridos ecoturísticos.", Decimal("30000000"), True, False, Decimal("9000")),
+        ("Viaje Tranquilo", "Protección básica para viajeros y equipaje.", Decimal("20000000"), True, True, Decimal("7000")),
+        ("Asistencia Boyacá", "Cobertura de emergencias durante la estadía en Boyacá.", Decimal("25000000"), False, True, Decimal("8000")),
+    ]
+    polizas_creadas = []
+    for nombre, descripcion, cobertura, equipaje, cancelacion, precio in polizas_config:
+        polizas_creadas.append(PolizaViaje.objects.create(
+            nombre_poliza=nombre,
+            descripcion=descripcion,
+            cobertura_medica_max=cobertura,
+            cubre_perdida_equipaje=equipaje,
+            cubre_cancelacion_vuelo=cancelacion,
+            precio_diario=precio,
+            condiciones_generales="Válida durante las fechas de cobertura registradas.",
+            estado=True
+        ))
+
+    aseguradoras_creadas = []
+    for i, reserva in enumerate(reservas_creadas[:min(8, len(reservas_creadas))]):
+        fecha_inicio_cobertura = reserva.fecha_inicio
+        aseguradoras_creadas.append(Aseguradora.objects.create(
+            reserva=reserva,
+            poliza_viaje=polizas_creadas[i % len(polizas_creadas)],
+            nombre_empresa=random.choice(["Seguros Bolívar", "SURA", "Allianz"]),
+            numero_poliza=f"MON-{anio}-{i + 1:05d}",
+            fecha_inicio_cobertura=fecha_inicio_cobertura,
+            fecha_fin_cobertura=fecha_inicio_cobertura + timedelta(days=reserva.paquete.dias_duracion - 1),
+            telefono_emergencia="+573001234567",
+            estado_emision="Emitida"
+        ))
+
+    print("7. Creando Pagos...")
     bancos = [
         'Bancolombia', 'Banco de Bogotá', 'Davivienda', 'BBVA Colombia',
         'Nequi', 'Daviplata', 'Banco Popular', 'Banco de Occidente'
@@ -384,7 +436,7 @@ def poblar_base_datos():
         estado_comprobante = random.choice(['pendiente', 'aprobado', 'rechazado'])
         fake_envio = r.fecha_registro + timedelta(hours=random.randint(1, 48))
 
-        Pago.objects.create(
+        pago = Pago.objects.create(
             reserva=r,
             referencia=f"REF-{random.randint(100000, 999999)}",
             banco_origen=random.choice(bancos),
@@ -392,14 +444,51 @@ def poblar_base_datos():
             monto=Decimal(str(r.monto_total)) if r.monto_total else Decimal('150000'),
             imagen_comprobante='comprobantes/placeholder.jpg',
             estado_transaccion=estado_comprobante,
-            nota_admin="Revisado por administración." if estado_comprobante != 'pendiente' else "Pendiente de revisión",
-            fecha_pago=fake_envio
+            nota_admin="Comprobante rechazado: imagen ilegible." if estado_comprobante == 'rechazado'
+            else ("Revisado por administración." if estado_comprobante == 'aprobado' else ""),
+            fecha_pago=fake_envio,
+            fecha_revision=fake_envio + timedelta(hours=2) if estado_comprobante != 'pendiente' else None
         )
+        Pago.objects.filter(pk=pago.pk).update(fecha_envio=fake_envio)
         comprobantes_creados += 1
 
     print(f"  -> {comprobantes_creados} pagos creados.")
 
-    print("6. Creando Comunidad (Blogs, PQRS, Seguimiento)...")
+    print("8. Creando Notificaciones...")
+    notificaciones_creadas = []
+    for cliente in clientes_creados:
+        reservas_cliente = [reserva for reserva in reservas_creadas if reserva.usuario_id == cliente.id]
+        reserva_cliente = random.choice(reservas_cliente) if reservas_cliente else None
+        notificaciones_creadas.append(Notificacion.objects.create(
+            usuario=cliente,
+            reserva=reserva_cliente,
+            mensaje="Gracias por elegir Monagua. Revisa los detalles de tus experiencias y reservas.",
+            leido=random.choice([True, False]),
+            tipo="reserva",
+            prioridad=random.choice(["alta", "media", "baja"])
+        ))
+
+    print("9. Creando Calificaciones...")
+    calificaciones_creadas = []
+    comentarios_calificacion = [
+        "Una experiencia excelente, el guía conocía muy bien la ruta.",
+        "Paisajes increíbles y organización muy amable.",
+        "Disfrutamos mucho el recorrido y aprendimos sobre la región.",
+        "Una aventura inolvidable para compartir en familia.",
+        "Muy buena atención durante toda la experiencia."
+    ]
+    for i, reserva in enumerate(reservas_creadas[:min(10, len(reservas_creadas))]):
+        calificaciones_creadas.append(Calificacion.objects.create(
+            reserva=reserva,
+            tipo="experiencia",
+            titulo=f"Experiencia en {reserva.paquete.nombre}",
+            puntaje_estrellas=random.randint(4, 5),
+            comentario=comentarios_calificacion[i % len(comentarios_calificacion)],
+            visible=True,
+            admin_respuesta="Gracias por compartir tu experiencia con Monagua."
+        ))
+
+    print("10. Creando Comunidad (Blogs, PQRS, Seguimiento)...")
     blogs_reales = [
         {
             "titulo": "Laguna Negra",
@@ -473,7 +562,7 @@ def poblar_base_datos():
                 respuesta="Hemos recibido tu solicitud y se encuentra en revisión por el equipo de Monagua."
             )
 
-    print("7. Creando Promociones...")
+    print("11. Creando Promociones...")
     nombres_promociones = [
         "Descuento de Temporada", "Oferta Flash de Verano", "Promo Familiar",
         "Aventura 2x1", "Descuento para Grupos", "Early Bird Navideño",
@@ -494,7 +583,7 @@ def poblar_base_datos():
     ]
     promociones_creadas = []
     for i in range(10):
-        f_fin = date(2026, 12, 31) - timedelta(days=random.randint(0, 180))
+        f_fin = date(anio, 12, 31) - timedelta(days=random.randint(0, 180))
         f_inicio = f_fin - timedelta(days=random.randint(15, 60))
         promo = Promocion.objects.create(
             nombre=nombres_promociones[i],
@@ -515,16 +604,16 @@ def poblar_base_datos():
             valor_menor_condescuento=Decimal('50000')
         )
 
-    print("8. Creando Bitácoras...")
+    print("12. Creando Bitácoras...")
     auditoria_data = [
         ("LOGIN", "usuarios_usuario", "El cliente inició sesión desde la web."),
-        ("INSERT", "reservas_reserva", "Se registró una nueva reserva para paquete turístico."),
-        ("INSERT", "pago", "El usuario adjuntó comprobante de pago."),
-        ("INSERT", "pqrs", "Se generó una solicitud de PQRS en la plataforma."),
-        ("UPDATE", "usuarios_usuario", "El usuario actualizó sus datos de contacto."),
-        ("UPDATE", "reservas_reserva", "El cliente solicitó la cancelación de su reserva."),
-        ("INSERT", "calificacion", "El usuario valoró una actividad turística."),
-        ("INSERT", "blog", "Se agregó un nuevo post en la sección del blog."),
+        ("ACCESO", "reservas_reserva", "Se consultaron las reservas de paquetes turísticos."),
+        ("NOTIFICACION", "pago", "El usuario adjuntó un comprobante de pago."),
+        ("RESPUESTA", "pqrs", "Se respondió una solicitud de PQRS."),
+        ("ACCESO", "usuarios_usuario", "El usuario consultó sus datos de contacto."),
+        ("RESPUESTA", "reservas_reserva", "El cliente solicitó la cancelación de su reserva."),
+        ("ACCESO", "comunidad_calificacion", "El usuario consultó las calificaciones."),
+        ("ACCESO", "blog", "Se consultó una publicación de la sección del blog."),
         ("INSERT", "usuarios_usuario", "Creación de cuenta en la plataforma Monagua."),
         ("ACCESO", "catalogo_paquete", "Búsqueda y visualización de paquetes turísticos.")
     ]
@@ -541,8 +630,8 @@ def poblar_base_datos():
     print("\n" + "=" * 60)
     print("[OK] Poblado de base de datos finalizado con éxito!")
     print("   • Usuarios de prueba disponibles:")
-    print("     - ADMIN:   username='admin'   | password='adminpassword'")
-    print("     - TURISTA: username='turista' | password='turistapassword'")
+    print("     - ADMIN:   username='admin'   | password='admin1234'")
+    print("     - TURISTA: username='turista' | password='turista1234'")
     print(f"   • {len(clientes_creados)} Clientes / Turistas")
     print(f"   • {len(guias_creados)} Guías Turísticos")
     print(f"   • {len(categorias_creadas)} Categorías")
@@ -552,6 +641,11 @@ def poblar_base_datos():
     print(f"   • {len(tarifas_creadas)} Tarifas")
     print(f"   • {len(reservas_creadas)} Reservas")
     print(f"   • {comprobantes_creados} Pagos")
+    print(f"   • {len(planes_creados)} Planes de guía")
+    print(f"   • {len(polizas_creadas)} Pólizas de viaje")
+    print(f"   • {len(aseguradoras_creadas)} Seguros emitidos")
+    print(f"   • {len(notificaciones_creadas)} Notificaciones")
+    print(f"   • {len(calificaciones_creadas)} Calificaciones")
     print(f"   • 4 Blogs")
     print(f"   • 10 PQRS")
     print(f"   • 10 Promociones")

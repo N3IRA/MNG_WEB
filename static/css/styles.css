@@ -165,6 +165,12 @@ html, body {
     font-family: 'Poppins', sans-serif;
 }
 
+/* Tamaño base del proyecto: equivale al "100%" del widget de accesibilidad
+   (16px * 0.85 = 13.6px). Mantener sincronizado con FONT_BASE_SCALE en accesibilidad.js */
+html {
+    font-size: 85%;
+}
+
 main.wrapper,
 .content-wrapper,
 .scroller-wrapper {
@@ -475,18 +481,22 @@ main .breadcrumb-item.active {
 .bg-image {
     background-size: cover;
     background-position: center;
-    background-attachment: fixed;
+    background-repeat: no-repeat;
     z-index: 1;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 @keyframes smoothZoom {
-    0% { transform: scale(1); }
-    100% { transform: scale(1.1); }
+    0% { transform: scale(1) translateZ(0); }
+    100% { transform: scale(1.08) translateZ(0); }
 }
 
 .bg-zoom-anim {
-    animation: smoothZoom 12s ease-in-out infinite alternate;
+    animation: smoothZoom 14s ease-in-out infinite alternate;
     will-change: transform;
+    transform-origin: center center;
 }
 
 .canvas-container {
@@ -1046,6 +1056,7 @@ body:has(.menu-hamburguesa-premium.show) {
     padding: 5px 10px !important;
     margin-left: 10px !important;
 }
+
 
 /* Estilos de Contenedor Principal & Notificaciones */
 .titulo-premium {

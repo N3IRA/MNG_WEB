@@ -5,34 +5,77 @@
 
 {% block content %}
 {% include "partials/breadcrumbs.html" with current_title="Mis Reservas" current_icon="bi bi-calendar-check-fill" %}
-<div class="container py-4 mx-auto u-style-f694cf53">
 
+<!-- Contenedor dinámico SPA para HTMX -->
+<div id="mis-reservas-container" class="container py-4 mx-auto u-style-f694cf53">
+
+    <!-- ── 1. Encabezado y Filtros Rápidos en Vivo con HTMX ── -->
     <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
         <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
                 <h2 class="fw-bold text-success mb-1">
                     <i class="bi bi-archive text-success me-2"></i>Mis Aventuras Reservadas
                 </h2>
-                <p class="text-muted mb-0">Solo las reservas con pago pueden solicitar cancelación. Si aún no hay pago, la reserva se descarta y no aparece como cancelación.</p>
+                <p class="text-muted mb-0">Gestiona tus reservas activas, visualiza tus comprobantes o cancela si se te presentó un imprevisto sin recargar la página.</p>
+            </div>
+
+            <!-- Botones de Filtro en Vivo con HTMX -->
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <a href="{% url 'mis_reservas_usuario' %}"
+                   hx-get="{% url 'mis_reservas_usuario' %}"
+                   hx-target="#mis-reservas-container"
+                   hx-select="#mis-reservas-container"
+                   hx-swap="outerHTML"
+                   hx-push-url="true"
+                   class="btn btn-sm rounded-pill px-3 py-1.5 fw-semibold transition-all {% if not estado_filtro %}btn-success text-white shadow-sm{% else %}btn-light text-secondary border{% endif %}">
+                    Todas ({{ total_todas|default:"0" }})
+                </a>
+
+                <a href="{% url 'mis_reservas_usuario' %}?estado=pendiente"
+                   hx-get="{% url 'mis_reservas_usuario' %}?estado=pendiente"
+                   hx-target="#mis-reservas-container"
+                   hx-select="#mis-reservas-container"
+                   hx-swap="outerHTML"
+                   hx-push-url="true"
+                   class="btn btn-sm rounded-pill px-3 py-1.5 fw-semibold transition-all {% if estado_filtro == 'pendiente' %}btn-warning text-dark shadow-sm{% else %}btn-light text-secondary border{% endif %}">
+                    Pendientes ({{ total_pendientes|default:"0" }})
+                </a>
+
+                <a href="{% url 'mis_reservas_usuario' %}?estado=confirmada"
+                   hx-get="{% url 'mis_reservas_usuario' %}?estado=confirmada"
+                   hx-target="#mis-reservas-container"
+                   hx-select="#mis-reservas-container"
+                   hx-swap="outerHTML"
+                   hx-push-url="true"
+                   class="btn btn-sm rounded-pill px-3 py-1.5 fw-semibold transition-all {% if estado_filtro == 'confirmada' %}btn-success text-white shadow-sm{% else %}btn-light text-secondary border{% endif %}">
+                    Confirmadas ({{ total_confirmadas|default:"0" }})
+                </a>
+
+                <a href="{% url 'mis_cancelaciones' %}" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1.5 fw-semibold shadow-sm">
+                    <i class="bi bi-x-circle me-1"></i>Ver Mis Cancelaciones
+                </a>
             </div>
         </div>
     </div>
 
+    <!-- ── 2. Listado de Reservas ── -->
     {% if reservas %}
         <div class="row g-4">
             {% for reserva in reservas %}
-                <div class="col-12">
+                <div class="col-12" id="reserva-card-{{ reserva.id }}">
                     <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
                         <div class="row g-0 align-items-stretch">
                             
-                            <div class="col-md-4 position-relative u-style-47f2ed6c">
+                            <!-- Foto del Paquete -->
+                            <div class="col-md-4 position-relative u-style-47f2ed6c" style="min-height: 240px;">
                                 {% if reserva.paquete.imagen %}
-                                    <img src="{{ reserva.paquete.imagen.url }}" class="w-100 h-100 position-absolute start-0 top-0 u-style-ca362336" alt="{{ reserva.paquete.nombre }}">
+                                    <img src="{{ reserva.paquete.imagen.url }}" class="w-100 h-100 position-absolute start-0 top-0 u-style-ca362336" style="object-fit: cover;" alt="{{ reserva.paquete.nombre }}">
                                 {% else %}
-                                    <img src="{% static 'img/Fondo.webp' %}" class="w-100 h-100 position-absolute start-0 top-0 u-style-ca362336" alt="Imagen por defecto">
+                                    <img src="{% static 'img/Fondo.webp' %}" class="w-100 h-100 position-absolute start-0 top-0 u-style-ca362336" style="object-fit: cover;" alt="Imagen por defecto">
                                 {% endif %}
                             </div>
 
+                            <!-- Contenido de la Reserva -->
                             <div class="col-md-8 d-flex flex-column">
                                 <div class="card-body p-4 d-flex flex-column h-100">
                                     
@@ -45,7 +88,7 @@
                                         <div>
                                             {% with estado=reserva.estado_reserva %}
                                                 {% if estado == 'pendiente' %}
-                                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2"><i class="bi bi-clock me-1"></i> Pendiente</span>
+                                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2"><i class="bi bi-clock me-1"></i> Pendiente de Pago</span>
                                                 {% elif estado == 'confirmada' %}
                                                     <span class="badge bg-success text-white rounded-pill px-3 py-2"><i class="bi bi-check-circle me-1"></i> Confirmada</span>
                                                 {% elif estado == 'cancelada' %}
@@ -55,6 +98,7 @@
                                         </div>
                                     </div>
 
+                                    <!-- Fila de Datos Rápidos -->
                                     <div class="row g-2 mb-3">
                                         <div class="col-sm-4">
                                             <div class="border rounded-4 p-3 bg-light h-100">
@@ -77,140 +121,177 @@
                                         </div>
 
                                         <div class="col-sm-4">
-                                            <div class="border rounded-4 p-3 h-100 u-style-ae701efb">
+                                            <div class="border rounded-4 p-3 h-100 u-style-ae701efb bg-success bg-opacity-10">
                                                 <small class="text-success-emphasis d-block mb-1 fw-medium">Total de Reserva</small>
                                                 <h5 class="fw-bold text-success mb-0">COP ${{ reserva.monto_total|floatformat:0|intcomma }}</h5>
                                             </div>
                                         </div>
                                     </div>
 
+                                    <!-- Sección de Pago y Visualización del Comprobante (Sin recargar) -->
                                     {% if reserva.pago %}
-                                        <div class="mb-4 border-top pt-3">
-                                            <h6 class="fw-bold text-secondary mb-2 u-style-1952029f">
-                                                <i class="bi bi-credit-card me-1"></i> Comprobante de pago enviado
-                                            </h6>
-                                            <div class="d-flex flex-column gap-2">
-                                                <div class="d-flex align-items-center justify-content-between p-2 rounded-3 border bg-light flex-wrap gap-2">
-                                                    <div class="d-flex align-items-center gap-2">
-                                                        {% if reserva.pago.imagen_comprobante %}
-                                                            <img src="{{ reserva.pago.imagen_comprobante.url }}" alt="Comprobante" class="img-fluid rounded border u-style-35afc132" style="max-width: 100%; height: auto; object-fit: contain; max-height: 120px;">
-                                                        {% endif %}
-                                                        <div>
-                                                            <div class="small fw-semibold text-dark">Referencia: {{ reserva.pago.referencia|default:"—" }}</div>
-                                                            <div class="text-muted u-style-e58064fd">{{ reserva.pago.banco_origen|default:"Medio desconocido" }} · {{ reserva.pago.fecha_envio|date:"d M Y" }}</div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="d-flex align-items-center gap-2">
-                                                        {% if reserva.pago.monto %}
-                                                            <span class="small fw-bold text-success">COP ${{ reserva.pago.monto|floatformat:0|intcomma }}</span>
-                                                        {% else %}
-                                                            <span class="small fw-bold text-success">COP ${{ reserva.monto_total|floatformat:0|intcomma }}</span>
-                                                        {% endif %}
-                                                        <span class="badge {% if reserva.pago.estado_transaccion == 'aprobado' %}bg-success{% elif reserva.pago.estado_transaccion == 'pendiente' %}bg-warning text-dark{% else %}bg-danger{% endif %} u-style-dd8eb2f6">
-                                                            {{ reserva.pago.get_estado_transaccion_display }}
-                                                        </span>
-                                                    </div>
+                                        <div class="mb-3 border-top pt-3">
+                                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                                                <h6 class="fw-bold text-secondary mb-0">
+                                                    <i class="bi bi-credit-card me-1"></i> Comprobante de pago enviado
+                                                </h6>
+                                                
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="badge {% if reserva.pago.estado_transaccion == 'aprobado' %}bg-success text-white{% elif reserva.pago.estado_transaccion == 'pendiente' %}bg-warning text-dark{% else %}bg-danger text-white{% endif %} rounded-pill px-2.5 py-1">
+                                                        {{ reserva.pago.get_estado_transaccion_display }}
+                                                    </span>
+
+                                                    {% if reserva.pago.imagen_comprobante %}
+                                                        <!-- Botón para ver comprobante en vivo sin recargar -->
+                                                        <button type="button" 
+                                                                class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm"
+                                                                onclick="var box = document.getElementById('comprobante-preview-{{ reserva.id }}'); box.classList.toggle('d-none');">
+                                                            <i class="bi bi-receipt"></i>
+                                                            <span>Ver Comprobante</span>
+                                                        </button>
+                                                    {% endif %}
                                                 </div>
                                             </div>
+
+                                            <div class="d-flex align-items-center justify-content-between p-2.5 rounded-3 border bg-light flex-wrap gap-2">
+                                                <div class="d-flex align-items-center gap-2.5">
+                                                    {% if reserva.pago.imagen_comprobante %}
+                                                        <img src="{{ reserva.pago.imagen_comprobante.url }}" alt="Comprobante" class="rounded-3 border shadow-sm object-fit-cover" style="width: 44px; height: 44px; cursor: pointer;" onclick="var box = document.getElementById('comprobante-preview-{{ reserva.id }}'); box.classList.toggle('d-none');">
+                                                    {% else %}
+                                                        <div class="rounded-3 bg-white border text-secondary d-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px;">
+                                                            <i class="bi bi-image"></i>
+                                                        </div>
+                                                    {% endif %}
+                                                    <div>
+                                                        <div class="small fw-semibold text-dark">Referencia: {{ reserva.pago.referencia|default:"—" }}</div>
+                                                        <div class="text-muted small">{{ reserva.pago.banco_origen|default:"Medio desconocido" }} · {{ reserva.pago.fecha_envio|date:"d M Y" }}</div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <span class="small fw-bold text-success">
+                                                        COP ${% if reserva.pago.monto %}{{ reserva.pago.monto|floatformat:0|intcomma }}{% else %}{{ reserva.monto_total|floatformat:0|intcomma }}{% endif %}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Previsualización en vivo del comprobante (toggle sin recarga) -->
+                                            {% if reserva.pago.imagen_comprobante %}
+                                                <div id="comprobante-preview-{{ reserva.id }}" class="mt-3 p-3 bg-light rounded-4 border d-none">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="small fw-bold text-dark"><i class="bi bi-image text-success me-1"></i> Comprobante adjunto</span>
+                                                        <div class="d-flex gap-2">
+                                                            <a href="{{ reserva.pago.imagen_comprobante.url }}" target="_blank" class="btn btn-sm btn-white border rounded-pill px-2.5 py-0.5 text-secondary">
+                                                                <i class="bi bi-box-arrow-up-right me-1"></i>Pestaña nueva
+                                                            </a>
+                                                            <button type="button" class="btn-close btn-sm" onclick="document.getElementById('comprobante-preview-{{ reserva.id }}').classList.add('d-none');" aria-label="Cerrar"></button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-center bg-white p-2 rounded-3 border">
+                                                        <img src="{{ reserva.pago.imagen_comprobante.url }}" class="img-fluid rounded-2 shadow-sm" style="max-height: 380px; object-fit: contain;" alt="Comprobante #{{ reserva.id }}">
+                                                    </div>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     {% endif %}
 
-                                    <!-- ACCIONES Y MODAL DE CANCELACIÓN -->
-                                    <div class="mt-auto d-flex gap-2 flex-wrap pt-2 border-top align-items-center">
-                                        {% with estado=reserva.estado_reserva %}
+                                    <!-- Panel Inline de Cancelación (HTMX Directo sin Modales) -->
+                                    <div id="cancelar-panel-{{ reserva.id }}" class="d-none mt-3 p-3.5 bg-danger bg-opacity-10 rounded-4 border border-danger border-opacity-25">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="fw-bold text-danger mb-0">
+                                                <i class="bi bi-exclamation-triangle-fill me-1"></i> Cancelar Reserva #{{ reserva.id }}
+                                            </h6>
+                                            <button type="button" class="btn btn-sm btn-link text-secondary text-decoration-none p-0" onclick="document.getElementById('cancelar-panel-{{ reserva.id }}').classList.add('d-none');">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </div>
 
-                                            {% if not reserva.pago %}
-                                                {% if estado == 'pendiente' %}
-                                                    <a href="{% url 'enviar_comprobante' %}?reserva_id={{ reserva.id }}&tipo=reserva" class="btn btn-success rounded-pill px-4 py-2 shadow-sm fw-semibold">
-                                                        <i class="bi bi-wallet2 me-1"></i> Pagar reserva
-                                                    </a>
-                                                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalDescartar{{ reserva.id }}">
-                                                        <i class="bi bi-trash me-1"></i> Descartar reserva
-                                                    </button>
+                                        <form method="POST"
+                                              action="{% url 'cancelar_reserva_usuario' reserva.id %}"
+                                              hx-post="{% url 'cancelar_reserva_usuario' reserva.id %}"
+                                              hx-target="#mis-reservas-container"
+                                              hx-select="#mis-reservas-container"
+                                              hx-swap="outerHTML">
+                                            {% csrf_token %}
 
-                                                    <div class="modal fade" id="modalDescartar{{ reserva.id }}" tabindex="-1" aria-labelledby="modalDescartarLabel{{ reserva.id }}" aria-hidden="true">
-                                                        <div class="modal-dialog modal-dialog-centered">
-                                                            <div class="modal-content border-0 shadow rounded-4">
-                                                                <div class="modal-header bg-secondary text-white border-0 py-3">
-                                                                    <h5 class="modal-title fw-bold" id="modalDescartarLabel{{ reserva.id }}">
-                                                                        <i class="bi bi-trash me-2"></i>Descartar reserva #{{ reserva.id }}
-                                                                    </h5>
-                                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                                </div>
-
-                                                                <form method="POST" action="{% url 'cancelar_reserva_usuario' reserva.id %}">
-                                                                    {% csrf_token %}
-                                                                    <div class="modal-body text-start p-4">
-                                                                        <div class="alert alert-light border rounded-3 small mb-3">
-                                                                            Esta acción descarta la reserva sin pago registrado y la registra como cancelación aprobada sin penalidad.
-                                                                        </div>
-                                                                        <div class="mb-0">
-                                                                            <label for="motivo_descartar_{{ reserva.id }}" class="form-label fw-bold">Motivo por el cual se descarta <span class="text-danger">*</span></label>
-                                                                            <textarea name="motivo_cancelacion" id="motivo_descartar_{{ reserva.id }}" class="form-control rounded-3" rows="3" placeholder="Escribe el motivo de la baja..." required></textarea>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div class="modal-footer border-0 bg-light rounded-bottom-4 py-3">
-                                                                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Volver</button>
-                                                                        <button type="submit" class="btn btn-secondary rounded-pill px-4 fw-semibold shadow-sm">Confirmar descarte</button>
-                                                                    </div>
-                                                                </form>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                {% endif %}
+                                            {% if not reserva.pago or reserva.pago.estado_transaccion == 'rechazado' %}
+                                                <div class="alert alert-success bg-white border border-success border-opacity-25 rounded-3 small py-2 px-3 mb-2.5 text-dark">
+                                                    <i class="bi bi-shield-check text-success me-1"></i>
+                                                    Esta reserva aún no tiene un pago confirmado. <strong>Se cancelará de inmediato sin penalidad ni costo alguno</strong>.
+                                                </div>
                                             {% else %}
-                                                {% if estado == 'pendiente' or estado == 'confirmada' %}
-                                                    {% if reserva.estado_cancelacion != 'pendiente' %}
-                                                        <button type="button" class="btn btn-danger rounded-pill px-4 py-2 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalCancelar{{ reserva.id }}">
+                                                {% include "partials/politicas_cancelacion.html" %}
+                                            {% endif %}
+
+                                            <div class="mb-3 text-start">
+                                                <label for="motivo_{{ reserva.id }}" class="form-label fw-bold text-dark small mb-1">
+                                                    Motivo de la cancelación <span class="text-danger">*</span>
+                                                </label>
+                                                <textarea name="motivo_cancelacion" id="motivo_{{ reserva.id }}" class="form-control rounded-3" rows="2" placeholder="Cuéntanos brevemente la razón de la cancelación..." required></textarea>
+                                            </div>
+
+                                            <div class="d-flex justify-content-end gap-2">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="document.getElementById('cancelar-panel-{{ reserva.id }}').classList.add('d-none');">
+                                                    Descartar
+                                                </button>
+                                                <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3.5 fw-semibold shadow-sm">
+                                                    <i class="bi bi-trash3-fill me-1"></i> Confirmar Cancelación
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    <!-- Acciones y Botones Principales -->
+                                    <div class="mt-auto d-flex gap-2 flex-wrap pt-3 border-top align-items-center justify-content-between">
+                                        <div class="d-flex gap-2 flex-wrap align-items-center">
+                                            {% with estado=reserva.estado_reserva %}
+
+                                                <!-- CASO 1: SIN PAGO O CON PAGO RECHAZADO -->
+                                                {% if not reserva.pago or reserva.pago.estado_transaccion == 'rechazado' %}
+                                                    {% if estado == 'pendiente' %}
+                                                        <a href="{% url 'enviar_comprobante' %}?reserva_id={{ reserva.id }}&tipo=reserva" class="btn btn-success rounded-pill px-4 py-2 shadow-sm fw-semibold">
+                                                            <i class="bi bi-wallet2 me-1"></i> {% if reserva.pago.estado_transaccion == 'rechazado' %}Corregir pago{% else %}Pagar reserva{% endif %}
+                                                        </a>
+                                                        
+                                                        <button type="button" 
+                                                                class="btn btn-outline-danger rounded-pill px-4 py-2 shadow-sm fw-semibold"
+                                                                onclick="var p = document.getElementById('cancelar-panel-{{ reserva.id }}'); p.classList.toggle('d-none');">
                                                             <i class="bi bi-x-circle me-1"></i> Cancelar reserva
                                                         </button>
-                                                    {% else %}
-                                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-2">
-                                                            <i class="bi bi-clock me-1"></i> Cancelación en revisión
-                                                        </span>
                                                     {% endif %}
 
-                                                    <div class="modal fade" id="modalCancelar{{ reserva.id }}" tabindex="-1" aria-labelledby="modalLabel{{ reserva.id }}" aria-hidden="true">
-                                                        <div class="modal-dialog modal-dialog-centered">
-                                                            <div class="modal-content border-0 shadow rounded-4">
-                                                                <div class="modal-header bg-danger text-white border-0 py-3">
-                                                                    <h5 class="modal-title fw-bold" id="modalLabel{{ reserva.id }}">
-                                                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Cancelar Reserva #{{ reserva.id }}
-                                                                    </h5>
-                                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                                </div>
+                                                <!-- CASO 2: CON PAGO REGISTRADO -->
+                                                {% else %}
+                                                    {% if estado == 'pendiente' or estado == 'confirmada' or reserva.estado_cancelacion == 'pendiente' %}
+                                                        {% if reserva.estado_cancelacion != 'pendiente' %}
+                                                            <button type="button" 
+                                                                    class="btn btn-danger rounded-pill px-4 py-2 shadow-sm fw-semibold"
+                                                                    onclick="var p = document.getElementById('cancelar-panel-{{ reserva.id }}'); p.classList.toggle('d-none');">
+                                                                <i class="bi bi-x-circle me-1"></i> Cancelar reserva
+                                                            </button>
+                                                        {% else %}
+                                                            <span class="badge bg-warning text-dark border border-warning rounded-pill px-3 py-2 fw-semibold">
+                                                                <i class="bi bi-clock-history me-1"></i> Cancelación en revisión
+                                                            </span>
+                                                            <a href="{% url 'mis_cancelaciones' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1.5 fw-semibold">
+                                                                <i class="bi bi-eye me-1"></i> Ver en Mis Cancelaciones
+                                                            </a>
+                                                        {% endif %}
+                                                    {% endif %}
 
-                                                                <form method="POST" action="{% url 'cancelar_reserva_usuario' reserva.id %}">
-                                                                    {% csrf_token %}
-                                                                    <div class="modal-body text-start p-4">
-                                                                        {% include "partials/politicas_cancelacion.html" %}
-
-                                                                        <div class="mb-3">
-                                                                            <label for="motivo_{{ reserva.id }}" class="form-label fw-bold">Ingresa el motivo de la cancelación <span class="text-danger">*</span></label>
-                                                                            <textarea name="motivo_cancelacion" id="motivo_{{ reserva.id }}" class="form-control rounded-3" rows="3" placeholder="Escribe la razón aquí..." required></textarea>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div class="modal-footer border-0 bg-light rounded-bottom-4 py-3">
-                                                                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Volver</button>
-                                                                        <button type="submit" class="btn btn-danger rounded-pill px-4 fw-semibold shadow-sm">Confirmar Cancelación</button>
-                                                                    </div>
-                                                                </form>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                    <!-- FACTURA SI YA ESTÁ CONFIRMADA -->
+                                                    {% if estado == 'confirmada' and reserva.pago and reserva.pago.estado_transaccion == 'aprobado' %}
+                                                        <a href="{% url 'ver_factura' reserva.id %}" target="_blank" class="btn btn-success rounded-pill px-4 py-2 shadow-sm fw-semibold">
+                                                            <i class="bi bi-file-earmark-ruled me-1"></i> Ver Factura
+                                                        </a>
+                                                    {% endif %}
                                                 {% endif %}
-                                            {% endif %}
 
-                                            {% if estado == 'confirmada' and reserva.pago %}
-                                                <a href="#" class="btn btn-success rounded-pill px-4 py-2 shadow-sm fw-semibold">
-                                                    <i class="bi bi-file-earmark-ruled me-1"></i> Ver Factura
-                                                </a>
-                                                <span class="text-muted small ms-2"><i class="bi bi-shield-check me-1 text-success"></i> Reserva confirmada</span>
-                                            {% endif %}
+                                            {% endwith %}
+                                        </div>
 
-                                        {% endwith %}
+                                        <div class="text-muted small">
+                                            <i class="bi bi-clock me-1"></i> Registrada el {{ reserva.fecha_registro|date:"d/m/Y H:i" }}
+                                        </div>
                                     </div>
 
                                 </div>
@@ -225,11 +306,25 @@
             <div class="mb-3 text-muted">
                 <i class="bi bi-airplane display-3 opacity-50"></i>
             </div>
-            <h3 class="fw-bold text-dark">Aún no tienes reservas</h3>
+            <h3 class="fw-bold text-dark">No hay aventuras {% if estado_filtro %}{{ estado_filtro }}s{% else %}reservadas{% endif %}</h3>
             <p class="text-muted">Explora experiencias increíbles y planifica tu próxima aventura en Mongua.</p>
-            <a href="{% url 'tours' %}" class="btn btn-success rounded-pill px-4 py-2 mt-2">Explorar destinos</a>
+            <div class="d-flex justify-content-center gap-2">
+                {% if estado_filtro %}
+                    <a href="{% url 'mis_reservas_usuario' %}"
+                       hx-get="{% url 'mis_reservas_usuario' %}" 
+                       hx-target="#mis-reservas-container" 
+                       hx-select="#mis-reservas-container"
+                       hx-swap="outerHTML" 
+                       hx-push-url="true" 
+                       class="btn btn-outline-secondary rounded-pill px-4 py-2">
+                        Ver todas
+                    </a>
+                {% endif %}
+                <a href="{% url 'tours' %}" class="btn btn-success rounded-pill px-4 py-2">Explorar destinos</a>
+            </div>
         </div>
     {% endif %}
 
 </div>
+
 {% endblock %}

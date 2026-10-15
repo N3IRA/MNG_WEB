@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
           } catch (e) {
             console.error(e);
             if (typeof window.mostrarToast === 'function') {
-              window.mostrarToast('error', 'Error en Exportación', 'Ocurrió un error al generar el archivo PDF.', 5000);
+              window.mostrarToast('error', 'Error de exportación', 'Ocurrió un error al generar el archivo PDF.', 5000);
             }
           } finally {
             btn.disabled = false;

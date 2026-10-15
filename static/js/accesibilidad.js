@@ -1,9 +1,16 @@
   /* ── Widget Avanzado de Accesibilidad ── */
   (function () {
+    // Escala base del texto: el 100% del widget equivale al 85% del tamaño
+    // nativo del navegador (16px * 0.85 = 13.6px). Debe coincidir con styles.css.
+    var FONT_BASE_SCALE = 0.85;
+    // Versión de la calibración de fuente (para migrar valores antiguos)
+    var FONT_VERSION = 2;
+
     // Valores por defecto
     var D = {
       bright: 100,
       font: 100,
+      fv: FONT_VERSION,
       theme: "auto",
       saturate: 100,
       bigCursor: false,
@@ -53,8 +60,11 @@
         
         if (activeData) {
           s = Object.assign({}, D, activeData);
-          if (s.font === 85) {
+          // Migración: los valores guardados con la escala anterior (sin "fv")
+          // se reinician al nuevo 100%, que equivale al antiguo 85%.
+          if (activeData.fv !== FONT_VERSION) {
             s.font = 100;
+            s.fv = FONT_VERSION;
             save();
           }
         }
@@ -107,7 +117,7 @@
     }
 
     function applyFont(v) {
-      var baseSize = 16;
+      var baseSize = 16 * FONT_BASE_SCALE;
       document.documentElement.style.fontSize = (v / 100) * baseSize + "px";
     }
 

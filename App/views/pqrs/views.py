@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView
 from django.db.models import Count, Q
 import re
@@ -9,6 +10,17 @@ import re
 from App.models import PQRS, Seguimiento, Reserva
 from App.forms.pqrs.forms import PqrsForm
 from App.utils import registrar_bitacora, crear_notificacion_sistema
+
+
+def es_admin(user):
+    """Verifica si el usuario tiene permisos de administrador."""
+    return user.is_authenticated and (user.is_staff or getattr(user, 'rol', None) == 1)
+
+
+class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    """Solo staff/administradores pueden acceder a la gestión de PQRS."""
+    def test_func(self):
+        return es_admin(self.request.user)
 
 
 def notificar_admines_pqrs(pqrs):
@@ -40,7 +52,7 @@ def pqrs(request):
     return render(request, 'admin/pqrs/pqrs_usuario.html', context)
 
 
-class PQRSListView(ListView):
+class PQRSListView(StaffRequiredMixin, ListView):
     model = PQRS
     template_name = 'admin/pqrs/pqrs.html'
     context_object_name = 'todas_las_pqrs'
@@ -50,10 +62,12 @@ class PQRSListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # Las estadísticas usan el campo 'estado' de la PQRS (no la existencia de
+        # seguimientos, porque al radicar ya se crea un seguimiento de apertura).
         stats = PQRS.objects.aggregate(
-            total=Count('id'),
-            respondidas=Count('id', filter=Q(seguimientos__isnull=False)),
-            pendientes=Count('id', filter=Q(seguimientos__isnull=True))
+            total=Count('id', distinct=True),
+            respondidas=Count('id', filter=Q(estado='cerrado'), distinct=True),
+            pendientes=Count('id', filter=Q(estado__in=['abierto', 'en_proceso']), distinct=True)
         )
         context['stats_list'] = [
             ('Total PQRS', stats['total'], 'text-dark'),
@@ -66,6 +80,11 @@ class PQRSListView(ListView):
 @login_required
 def contestar_pqrs(request, pqrs_id):
     pqr = get_object_or_404(PQRS, id=pqrs_id)
+
+    # Solo administradores pueden responder PQRS
+    if not es_admin(request.user):
+        messages.error(request, "No tienes permisos para responder solicitudes PQRS.")
+        return redirect('listar_pqrs')
 
     if pqr.estado == 'cerrado':
         messages.warning(request, "Esta solicitud ya ha sido respondida y se encuentra cerrada.")
