@@ -23,6 +23,7 @@ let lastInteractionTime = 0;
 // Variables para escalas dinámicas de tamaños entre piloto automático e interacción
 let currentMainScaleFactor = 1.0;
 let currentTrailScaleFactor = 1.0;
+let heroThemeIsDark = false;
 
 function resizeCanvas() {
   canvas.width = document.documentElement.clientWidth || window.innerWidth;
@@ -67,7 +68,7 @@ class MainParticle {
   }
 
   draw(scale) {
-    ctx.fillStyle = '#000000';
+    ctx.fillStyle = heroThemeIsDark ? '#ffffff' : '#000000';
     ctx.beginPath();
     ctx.arc(this.x, this.y, Math.max(0, this.size * scale * currentMainScaleFactor), 0, Math.PI * 2);
     ctx.fill();
@@ -108,7 +109,7 @@ class TrailParticle {
   }
 
   draw() {
-    ctx.fillStyle = '#000000';
+    ctx.fillStyle = heroThemeIsDark ? '#ffffff' : '#000000';
     ctx.beginPath();
     ctx.arc(this.x, this.y, Math.max(0, this.size * currentTrailScaleFactor), 0, Math.PI * 2);
     ctx.fill();
@@ -141,7 +142,7 @@ class BackgroundBubble {
   }
 
   draw() {
-    ctx.fillStyle = '#000000';
+    ctx.fillStyle = heroThemeIsDark ? '#ffffff' : '#000000';
     ctx.beginPath();
     ctx.arc(this.x, this.y, Math.max(0, this.size), 0, Math.PI * 2);
     ctx.fill();
@@ -199,7 +200,8 @@ function animate() {
     }
   }
 
-  ctx.fillStyle = '#ffffff';
+  heroThemeIsDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+  ctx.fillStyle = heroThemeIsDark ? '#000000' : '#ffffff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   mouse.vx = mouse.x - mouse.lastX;

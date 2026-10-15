@@ -501,4 +501,573 @@ html[data-a11y-animations="false"] *::after {
     }
 }
 
+/* ════════════════════════════════════════════════════════════════════════════
+   MODO OSCURO GLOBAL PREMIUM (DARK MODE)
+   ════════════════════════════════════════════════════════════════════════════ */
+
+html[data-bs-theme="dark"] {
+    color-scheme: dark;
+    --bs-body-bg: #121614;
+    --bs-body-color: #e2e8f0;
+    --bs-emphasis-color: #f8fafc;
+    --bs-secondary-color: #94a3b8;
+    --bs-tertiary-color: #64748b;
+    --bs-border-color: rgba(255, 255, 255, 0.12);
+    --bs-card-bg: #18221b;
+    --bs-card-color: #e2e8f0;
+    --bs-card-border-color: rgba(255, 255, 255, 0.1);
+    --bs-dropdown-bg: #18221b;
+    --bs-dropdown-link-color: #e2e8f0;
+    --bs-dropdown-link-hover-color: #ffffff;
+    --bs-dropdown-link-hover-bg: rgba(76, 175, 112, 0.25);
+    --bs-modal-bg: #18221b;
+    --bs-modal-color: #e2e8f0;
+}
+
+html[data-bs-theme="dark"] body {
+    background-color: #121614 !important;
+    color: #e2e8f0 !important;
+}
+
+html[data-bs-theme="dark"] main,
+html[data-bs-theme="dark"] #main-content,
+html[data-bs-theme="dark"] .wrapper,
+html[data-bs-theme="dark"] .content-wrapper {
+    background-color: #121614 !important;
+    color: #e2e8f0 !important;
+}
+
+/* Transición suave al alternar modo oscuro */
+body, .navbar-glass, .card, main, section {
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+/* ── 1. HERO WATER REVEAL CANVAS EN MODO OSCURO ── */
+html[data-bs-theme="dark"] #hero-reveal-section {
+    background-color: #0b0f0d !important;
+}
+
+html[data-bs-theme="dark"] .canvas-container {
+    background: #000000 !important;
+    mix-blend-mode: multiply !important;
+}
+
+html[data-bs-theme="dark"] .interface h1 {
+    color: #ffffff !important;
+    -webkit-text-stroke: 1px rgba(76, 175, 112, 0.6) !important;
+    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.9) !important;
+}
+
+html[data-bs-theme="dark"] .interface p {
+    color: #e2e8f0 !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;
+}
+
+html[data-bs-theme="dark"] .interface .btn {
+    color: #ffffff !important;
+    -webkit-text-stroke: 0px !important;
+    background-color: rgba(44, 110, 60, 0.4) !important;
+    border: 1.5px solid #4caf70 !important;
+    box-shadow: 0 4px 16px rgba(0, 82, 21, 0.4) !important;
+}
+
+html[data-bs-theme="dark"] .interface .btn:hover {
+    background-color: rgba(76, 175, 112, 0.6) !important;
+    border-color: #5aba73 !important;
+    color: #ffffff !important;
+    transform: translateX(4px);
+}
+
+/* ── 2. SECCIONES Y APARTADOS CON SUPERFICIES CLARAS ── */
+html[data-bs-theme="dark"] section,
+html[data-bs-theme="dark"] .bg-white,
+html[data-bs-theme="dark"] .bg-light,
+html[data-bs-theme="dark"] .bg-body,
+html[data-bs-theme="dark"] .bg-body-tertiary,
+html[data-bs-theme="dark"] .bg-body-secondary,
+html[data-bs-theme="dark"] [style*="background-color: #ffffffff"],
+html[data-bs-theme="dark"] [style*="background-color: #ffffff"],
+html[data-bs-theme="dark"] [style*="background-color:#ffffff"],
+html[data-bs-theme="dark"] [style*="background-color:#ffffffff"],
+html[data-bs-theme="dark"] [style*="background-color: rgb(255, 255, 255)"],
+html[data-bs-theme="dark"] [style*="background-color: #f8f9fa"],
+html[data-bs-theme="dark"] [style*="background-color:#f8f9fa"],
+html[data-bs-theme="dark"] [style*="background-color: #fdfdfd"],
+html[data-bs-theme="dark"] [style*="background-color: #fafafa"],
+html[data-bs-theme="dark"] [style*="background: #ffffff"],
+html[data-bs-theme="dark"] [style*="background:#ffffff"] {
+    background-color: #141c16 !important;
+    background-image: none !important;
+    color: #e2e8f0 !important;
+}
+
+/* ── 3. NAVBAR GLASS EN MODO OSCURO ── */
+html[data-bs-theme="dark"] .navbar-glass {
+    background: rgba(18, 26, 20, 0.94) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45) !important;
+}
+
+html[data-bs-theme="dark"] .navbar-glass__link,
+html[data-bs-theme="dark"] .navbar-brand {
+    color: #f1f5f9 !important;
+}
+
+html[data-bs-theme="dark"] .navbar-glass__link:hover {
+    color: #4caf70 !important;
+}
+
+html[data-bs-theme="dark"] .navbar-toggler-icon {
+    filter: invert(1) brightness(200%) !important;
+}
+
+/* ── 4. TARJETAS, MODALES, OFFCANVAS Y DROPDOWNS ── */
+html[data-bs-theme="dark"] .card,
+html[data-bs-theme="dark"] .modal-content,
+html[data-bs-theme="dark"] .offcanvas,
+html[data-bs-theme="dark"] .dropdown-menu,
+html[data-bs-theme="dark"] .search-card-float,
+html[data-bs-theme="dark"] .tarjeta-tour .card {
+    background-color: #18221b !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+html[data-bs-theme="dark"] .card-header,
+html[data-bs-theme="dark"] .card-footer,
+html[data-bs-theme="dark"] .modal-header,
+html[data-bs-theme="dark"] .modal-footer {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #f1f5f9 !important;
+}
+
+html[data-bs-theme="dark"] .dropdown-item {
+    color: #e2e8f0 !important;
+}
+
+html[data-bs-theme="dark"] .dropdown-item:hover,
+html[data-bs-theme="dark"] .dropdown-item:focus {
+    background-color: rgba(76, 175, 112, 0.25) !important;
+    color: #ffffff !important;
+}
+
+html[data-bs-theme="dark"] .dropdown-divider {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ── 5. FORMULARIOS, INPUTS Y CONTROLES ── */
+html[data-bs-theme="dark"] .form-control,
+html[data-bs-theme="dark"] .form-select,
+html[data-bs-theme="dark"] .input-group-text,
+html[data-bs-theme="dark"] input[type="text"],
+html[data-bs-theme="dark"] input[type="number"],
+html[data-bs-theme="dark"] input[type="email"],
+html[data-bs-theme="dark"] input[type="search"],
+html[data-bs-theme="dark"] input[type="date"],
+html[data-bs-theme="dark"] input[type="time"],
+html[data-bs-theme="dark"] input[type="password"],
+html[data-bs-theme="dark"] select,
+html[data-bs-theme="dark"] textarea {
+    background-color: #121814 !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+    color: #f1f5f9 !important;
+}
+
+html[data-bs-theme="dark"] .form-control:focus,
+html[data-bs-theme="dark"] .form-select:focus,
+html[data-bs-theme="dark"] input:focus,
+html[data-bs-theme="dark"] textarea:focus,
+html[data-bs-theme="dark"] select:focus {
+    background-color: #18221b !important;
+    border-color: #4caf70 !important;
+    box-shadow: 0 0 0 3px rgba(76, 175, 112, 0.25) !important;
+    color: #ffffff !important;
+}
+
+html[data-bs-theme="dark"] .form-control::placeholder,
+html[data-bs-theme="dark"] input::placeholder,
+html[data-bs-theme="dark"] textarea::placeholder {
+    color: #94a3b8 !important;
+}
+
+html[data-bs-theme="dark"] select option,
+html[data-bs-theme="dark"] optgroup {
+    background-color: #18221b !important;
+    color: #ffffff !important;
+}
+
+/* ── 6. SISTEMA DE BOTONES TOTALMENTE FUNCIONAL EN MODO OSCURO ── */
+
+/* Botones Claros (.btn-light, .btn-white) -> Estilo Bosque Oscuro con acento Verde */
+html[data-bs-theme="dark"] .btn-light,
+html[data-bs-theme="dark"] .btn-white {
+    background-color: #1c271f !important;
+    border: 1px solid rgba(76, 175, 112, 0.35) !important;
+    color: #4caf70 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+}
+
+html[data-bs-theme="dark"] .btn-light:hover,
+html[data-bs-theme="dark"] .btn-white:hover {
+    background-color: #24352a !important;
+    border-color: #4caf70 !important;
+    color: #5aba73 !important;
+    box-shadow: 0 6px 16px rgba(76, 175, 112, 0.25) !important;
+}
+
+/* Botón Outline Dark -> Visible con borde y texto claro */
+html[data-bs-theme="dark"] .btn-outline-dark {
+    border-color: rgba(255, 255, 255, 0.35) !important;
+    color: #f1f5f9 !important;
+}
+
+html[data-bs-theme="dark"] .btn-outline-dark:hover {
+    background-color: rgba(255, 255, 255, 0.12) !important;
+    border-color: #ffffff !important;
+    color: #ffffff !important;
+}
+
+/* Botón Outline Secondary */
+html[data-bs-theme="dark"] .btn-outline-secondary {
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    color: #cbd5e1 !important;
+}
+
+html[data-bs-theme="dark"] .btn-outline-secondary:hover {
+    background-color: rgba(76, 175, 112, 0.15) !important;
+    border-color: #4caf70 !important;
+    color: #4caf70 !important;
+}
+
+/* Botón Outline Success */
+html[data-bs-theme="dark"] .btn-outline-success {
+    border-color: #4caf70 !important;
+    color: #4caf70 !important;
+}
+
+html[data-bs-theme="dark"] .btn-outline-success:hover {
+    background-color: #2c6e3c !important;
+    border-color: #4caf70 !important;
+    color: #ffffff !important;
+}
+
+/* Botones Success y Primary (Vibrantes y nítidos) */
+html[data-bs-theme="dark"] .btn-success,
+html[data-bs-theme="dark"] .btn-primary {
+    background-color: #2c6e3c !important;
+    border-color: #2c6e3c !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(44, 110, 60, 0.4) !important;
+}
+
+html[data-bs-theme="dark"] .btn-success:hover,
+html[data-bs-theme="dark"] .btn-primary:hover {
+    background-color: #358348 !important;
+    border-color: #4caf70 !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 18px rgba(76, 175, 112, 0.35) !important;
+}
+
+/* Botones en tarjetas de tours */
+html[data-bs-theme="dark"] .tarjeta-tour .btn-light {
+    background-color: #1a251e !important;
+    border: 1px solid rgba(76, 175, 112, 0.3) !important;
+    color: #4caf70 !important;
+}
+
+html[data-bs-theme="dark"] .tarjeta-tour .btn-light:hover {
+    background-color: #223227 !important;
+    border-color: #4caf70 !important;
+    color: #5aba73 !important;
+}
+
+/* Botón del Scroller de Diapositivas */
+html[data-bs-theme="dark"] .panel-btn-action {
+    background-color: #2c6e3c !important;
+    color: #ffffff !important;
+    border: 1px solid #4caf70 !important;
+}
+
+html[data-bs-theme="dark"] .panel-btn-action:hover {
+    background-color: #358348 !important;
+    color: #ffffff !important;
+}
+
+/* Botón Ver más en el Blog del Home */
+html[data-bs-theme="dark"] a[href*="blog"].btn,
+html[data-bs-theme="dark"] .hover-slide-right {
+    color: #ffffff !important;
+    border-color: rgba(76, 175, 112, 0.5) !important;
+    background-color: rgba(44, 110, 60, 0.25) !important;
+}
+
+html[data-bs-theme="dark"] a[href*="blog"].btn:hover,
+html[data-bs-theme="dark"] .hover-slide-right:hover {
+    background-color: rgba(76, 175, 112, 0.45) !important;
+    border-color: #4caf70 !important;
+    color: #ffffff !important;
+}
+
+/* Botones Enlace y Botón Cerrar */
+html[data-bs-theme="dark"] .btn-link {
+    color: #4caf70 !important;
+}
+
+html[data-bs-theme="dark"] .btn-link.text-dark {
+    color: #f1f5f9 !important;
+}
+
+html[data-bs-theme="dark"] .btn-close {
+    filter: invert(1) brightness(180%) !important;
+}
+
+/* ── 7. TIPOGRAFÍA Y TEXTOS DE ALTO CONTRASTE ── */
+html[data-bs-theme="dark"] h1,
+html[data-bs-theme="dark"] h2,
+html[data-bs-theme="dark"] h3,
+html[data-bs-theme="dark"] h4,
+html[data-bs-theme="dark"] h5,
+html[data-bs-theme="dark"] h6,
+html[data-bs-theme="dark"] .display-1,
+html[data-bs-theme="dark"] .display-2,
+html[data-bs-theme="dark"] .display-3,
+html[data-bs-theme="dark"] .display-4,
+html[data-bs-theme="dark"] .display-5,
+html[data-bs-theme="dark"] .display-6,
+html[data-bs-theme="dark"] .card-title {
+    color: #f8fafc !important;
+}
+
+html[data-bs-theme="dark"] [style*="color: #111"],
+html[data-bs-theme="dark"] [style*="color:#111"],
+html[data-bs-theme="dark"] [style*="color: #1c1c1a"],
+html[data-bs-theme="dark"] [style*="color:#1c1c1a"],
+html[data-bs-theme="dark"] [style*="color: #111827"],
+html[data-bs-theme="dark"] [style*="color: #374151"],
+html[data-bs-theme="dark"] [style*="color: #4a5568"],
+html[data-bs-theme="dark"] [style*="color:#4a5568"],
+html[data-bs-theme="dark"] [style*="color: #212529"],
+html[data-bs-theme="dark"] [style*="color:#212529"],
+html[data-bs-theme="dark"] .text-dark,
+html[data-bs-theme="dark"] .text-black {
+    color: #f1f5f9 !important;
+}
+
+html[data-bs-theme="dark"] [style*="color: #55534e"],
+html[data-bs-theme="dark"] [style*="color:#55534e"],
+html[data-bs-theme="dark"] [style*="color: #475569"],
+html[data-bs-theme="dark"] [style*="color:#475569"],
+html[data-bs-theme="dark"] [style*="color: #6c757d"],
+html[data-bs-theme="dark"] [style*="color:#6c757d"],
+html[data-bs-theme="dark"] [style*="color: #718096"],
+html[data-bs-theme="dark"] .text-muted,
+html[data-bs-theme="dark"] .text-secondary {
+    color: #94a3b8 !important;
+}
+
+/* ── 8. ACORDEONES, TIMELINE Y ACTIVIDADES ── */
+html[data-bs-theme="dark"] .accordion-item {
+    background-color: #18221b !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-bs-theme="dark"] .accordion-button {
+    background-color: #18221b !important;
+    color: #f1f5f9 !important;
+}
+
+html[data-bs-theme="dark"] .accordion-button:not(.collapsed) {
+    background-color: rgba(44, 110, 60, 0.25) !important;
+    color: #4caf70 !important;
+    box-shadow: none !important;
+}
+
+html[data-bs-theme="dark"] .accordion-button::after {
+    filter: invert(1) brightness(150%) !important;
+}
+
+html[data-bs-theme="dark"] .accordion-body {
+    background-color: #141c16 !important;
+    color: #cbd5e1 !important;
+}
+
+html[data-bs-theme="dark"] .timeline-content {
+    background-color: #18221b !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+html[data-bs-theme="dark"] .timeline-icon {
+    background-color: #121814 !important;
+    border-color: #4caf70 !important;
+    color: #4caf70 !important;
+    box-shadow: 0 0 0 4px #18221b !important;
+}
+
+html[data-bs-theme="dark"] .timeline-container::before {
+    background: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* ── 9. INSIGNIAS (BADGES), BREADCRUMBS Y PAGINACIÓN ── */
+html[data-bs-theme="dark"] .badge.bg-light,
+html[data-bs-theme="dark"] .badge.bg-white,
+html[data-bs-theme="dark"] .badge.border {
+    background-color: rgba(76, 175, 112, 0.15) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(76, 175, 112, 0.3) !important;
+}
+
+html[data-bs-theme="dark"] .badge.text-dark,
+html[data-bs-theme="dark"] .badge.text-secondary {
+    color: #cbd5e1 !important;
+}
+
+html[data-bs-theme="dark"] .breadcrumb {
+    background-color: transparent !important;
+}
+
+html[data-bs-theme="dark"] .breadcrumb-item,
+html[data-bs-theme="dark"] .breadcrumb-item a {
+    color: #94a3b8 !important;
+}
+
+html[data-bs-theme="dark"] .breadcrumb-item.active {
+    color: #4caf70 !important;
+}
+
+html[data-bs-theme="dark"] .pagination .page-link {
+    background-color: #18221b !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #e2e8f0 !important;
+}
+
+html[data-bs-theme="dark"] .pagination .page-item.active .page-link {
+    background-color: #2c6e3c !important;
+    border-color: #4caf70 !important;
+    color: #ffffff !important;
+}
+
+/* ── 10. TABLAS Y PANELES ADMINISTRATIVOS ── */
+html[data-bs-theme="dark"] .table {
+    --bs-table-bg: transparent !important;
+    --bs-table-color: #e2e8f0 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-bs-theme="dark"] .table th,
+html[data-bs-theme="dark"] .table td {
+    background-color: transparent !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-bs-theme="dark"] .table-striped>tbody>tr:nth-of-type(odd)>* {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+html[data-bs-theme="dark"] .table-hover>tbody>tr:hover>* {
+    background-color: rgba(76, 175, 112, 0.12) !important;
+}
+
+html[data-bs-theme="dark"] .admin-data-table thead,
+html[data-bs-theme="dark"] .admin-data-table thead th {
+    background: #131a15 !important;
+    color: #cbd5e1 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-bs-theme="dark"] .admin-list-panel,
+html[data-bs-theme="dark"] .admin-filter-shell,
+html[data-bs-theme="dark"] .admin-empty-state {
+    background: #18221b !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ── 11. SIDEBAR Y DASHBOARD (TURISTA Y ADMIN) ── */
+html[data-bs-theme="dark"] .sidebar,
+html[data-bs-theme="dark"] .sidebar-wrapper,
+html[data-bs-theme="dark"] #sidebar,
+html[data-bs-theme="dark"] #mainSidebar {
+    background-color: #131a15 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-bs-theme="dark"] .sidebar-nav .nav-link,
+html[data-bs-theme="dark"] .sidebar .nav-link {
+    color: #cbd5e1 !important;
+}
+
+html[data-bs-theme="dark"] .sidebar-nav .nav-link:hover,
+html[data-bs-theme="dark"] .sidebar-nav .nav-link.active,
+html[data-bs-theme="dark"] .sidebar .nav-link:hover,
+html[data-bs-theme="dark"] .sidebar .nav-link.active {
+    background-color: rgba(76, 175, 112, 0.18) !important;
+    color: #4caf70 !important;
+}
+
+/* ── 12. ALERTAS Y PROGRESS ── */
+html[data-bs-theme="dark"] .progress {
+    background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html[data-bs-theme="dark"] .alert-warning {
+    background-color: rgba(255, 193, 7, 0.12) !important;
+    border-color: rgba(255, 193, 7, 0.3) !important;
+    color: #ffe082 !important;
+}
+
+html[data-bs-theme="dark"] .alert-info {
+    background-color: rgba(13, 202, 240, 0.12) !important;
+    border-color: rgba(13, 202, 240, 0.3) !important;
+    color: #80deea !important;
+}
+
+html[data-bs-theme="dark"] .alert-success {
+    background-color: rgba(44, 110, 60, 0.2) !important;
+    border-color: rgba(76, 175, 112, 0.4) !important;
+    color: #a5d6a7 !important;
+}
+
+html[data-bs-theme="dark"] .alert-danger {
+    background-color: rgba(220, 53, 69, 0.2) !important;
+    border-color: rgba(220, 53, 69, 0.4) !important;
+    color: #ef9a9a !important;
+}
+
+/* ── 13. LÍNEAS DIVISORIAS Y BORDES ── */
+html[data-bs-theme="dark"] hr,
+html[data-bs-theme="dark"] [style*="border-top: 1px solid rgba(28, 28, 26"] {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html[data-bs-theme="dark"] .border,
+html[data-bs-theme="dark"] .border-light,
+html[data-bs-theme="dark"] .border-top,
+html[data-bs-theme="dark"] .border-bottom,
+html[data-bs-theme="dark"] .border-start,
+html[data-bs-theme="dark"] .border-end {
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html[data-bs-theme="dark"] .list-group-item {
+    background-color: #18221b !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ── 14. CHATBOT CÓNDY EN MODO OSCURO ── */
+html[data-bs-theme="dark"] .condy-chat-window {
+    background-color: #18221b !important;
+    border: 1px solid rgba(76, 175, 112, 0.3) !important;
+    color: #e2e8f0 !important;
+}
+
+html[data-bs-theme="dark"] .condy-chat-messages {
+    background-color: #121814 !important;
+}
+
+
 

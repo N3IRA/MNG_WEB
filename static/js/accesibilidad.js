@@ -6,8 +6,9 @@
     // Versión de la calibración de fuente (para migrar valores antiguos)
     var FONT_VERSION = 2;
 
-    // Valores por defecto (sin modos de color que causaban fallos)
+    // Valores por defecto
     var D = {
+      darkMode: false,
       bright: 100,
       font: 100,
       fv: FONT_VERSION,
@@ -73,6 +74,14 @@
           }
         }
       } catch (_) {}
+    }
+
+    function applyDarkMode(on) {
+      if (on) {
+        document.documentElement.setAttribute("data-bs-theme", "dark");
+      } else {
+        document.documentElement.removeAttribute("data-bs-theme");
+      }
     }
 
     // ═══ FUNCIONES DE TABS ═══
@@ -192,7 +201,6 @@
     }
 
     function cleanLegacyColorAttributes() {
-      document.documentElement.removeAttribute("data-bs-theme");
       document.documentElement.removeAttribute("data-a11y-theme");
       document.documentElement.removeAttribute("data-a11y-monochrome");
       document.documentElement.removeAttribute("data-a11y-invert");
@@ -201,6 +209,11 @@
     }
 
     function syncUI() {
+      var togDark = document.getElementById("tog-dark-mode");
+      if (togDark) {
+        togDark.checked = !!s.darkMode;
+      }
+
       ["sl-bright", "sl-font"].forEach(function (id) {
         var el = document.getElementById(id);
         if (!el) return;
@@ -278,6 +291,7 @@
       try {
         localStorage.removeItem("a11y");
       } catch (_) {}
+      applyDarkMode(false);
       applyBright(100);
       applyFont(100);
       applyBigCursor(false);
@@ -295,6 +309,7 @@
     function init() {
       cleanLegacyColorAttributes();
       load();
+      applyDarkMode(s.darkMode);
       applyBright(s.bright);
       applyFont(s.font);
       applyBigCursor(s.bigCursor);
@@ -329,6 +344,19 @@
           }
         });
       });
+
+      // Modo Oscuro
+      var togDark = document.getElementById("tog-dark-mode");
+      if (togDark) {
+        togDark.addEventListener("change", function (e) {
+          s.darkMode = e.target.checked;
+          applyDarkMode(s.darkMode);
+          save();
+          showToast(
+            s.darkMode ? "🌙 Modo oscuro activado" : "☀️ Modo claro activado",
+          );
+        });
+      }
 
       // Brillo
       var slBright = document.getElementById("sl-bright");
