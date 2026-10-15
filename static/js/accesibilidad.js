@@ -6,25 +6,22 @@
     // Versión de la calibración de fuente (para migrar valores antiguos)
     var FONT_VERSION = 2;
 
-    // Valores por defecto
+    // Valores por defecto (sin modos de color que causaban fallos)
     var D = {
       bright: 100,
       font: 100,
       fv: FONT_VERSION,
-      theme: "auto",
-      saturate: 100,
       bigCursor: false,
       hlLinks: false,
       dyslexic: false,
       spacing: false,
       animations: true,
       focus: false,
-      monochrome: false,
-      invert: false,
     };
     var s = Object.assign({}, D);
     var _toast = null;
     var currentTab = "tamano";
+    var lastClientY = window.innerHeight / 2;
 
     function save() {
       try {
@@ -44,6 +41,7 @@
         }
       } catch (_) {}
     }
+
     function load() {
       try {
         var serverDataEl = document.getElementById("a11y-session-data");
@@ -60,6 +58,12 @@
         
         if (activeData) {
           s = Object.assign({}, D, activeData);
+          // Eliminar configuraciones obsoletas de colores si existían en datos guardados
+          delete s.theme;
+          delete s.saturate;
+          delete s.monochrome;
+          delete s.invert;
+
           // Migración: los valores guardados con la escala anterior (sin "fv")
           // se reinician al nuevo 100%, que equivale al antiguo 85%.
           if (activeData.fv !== FONT_VERSION) {
@@ -70,8 +74,6 @@
         }
       } catch (_) {}
     }
-
-    // Paletas de colores se eliminaron, ahora es manejado por CSS y Bootstrap nativo
 
     // ═══ FUNCIONES DE TABS ═══
     function switchTab(tabName) {
@@ -121,29 +123,6 @@
       document.documentElement.style.fontSize = (v / 100) * baseSize + "px";
     }
 
-    function applySaturate(v) {
-      var el = document.getElementById("a11y-saturate-style");
-      if (!el) {
-        el = document.createElement("style");
-        el.id = "a11y-saturate-style";
-        document.head.appendChild(el);
-      }
-      el.textContent =
-        +v === 100 ? "" : "html{filter:saturate(" + v + "%)!important}";
-    }
-
-    function applyTheme(theme) {
-      document.documentElement.removeAttribute("data-bs-theme");
-      document.documentElement.removeAttribute("data-a11y-theme");
-      
-      if (theme === "light" || theme === "dark") {
-        document.documentElement.setAttribute("data-bs-theme", theme);
-      } else if (theme === "high-contrast") {
-        document.documentElement.setAttribute("data-bs-theme", "dark");
-        document.documentElement.setAttribute("data-a11y-theme", "high-contrast");
-      }
-    }
-
     function applyBigCursor(on) {
       if (on) {
         document.documentElement.setAttribute("data-a11y-cursor", "true");
@@ -168,6 +147,29 @@
       }
     }
 
+    // ═══ GUÍA DE LECTURA (PANTALLA COMPLETA) ═══
+    function renderFocus(y) {
+      var backdrop = document.getElementById("a11y-focus-backdrop");
+      var guide = document.getElementById("a11y-reading-guide");
+      if (backdrop && guide) {
+        guide.style.top = y + "px";
+        var winH = window.innerHeight || 800;
+        var perc = (y / winH) * 100;
+        backdrop.style.background = "linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.65) calc(" + perc + "% - 55px), transparent calc(" + perc + "% - 55px), transparent calc(" + perc + "% + 55px), rgba(0,0,0,0.65) calc(" + perc + "% + 55px), rgba(0,0,0,0.65) 100%)";
+      }
+    }
+
+    function onFocusMouseMove(e) {
+      if (e && typeof e.clientY === "number") {
+        lastClientY = e.clientY;
+      }
+      renderFocus(lastClientY);
+    }
+
+    function onFocusScroll() {
+      renderFocus(lastClientY);
+    }
+
     function applyFocus(on) {
       var backdrop = document.getElementById("a11y-focus-backdrop");
       var guide = document.getElementById("a11y-reading-guide");
@@ -175,46 +177,43 @@
         if (on) {
           backdrop.classList.remove("d-none");
           guide.classList.remove("d-none");
-          document.addEventListener("mousemove", updateFocusPosition);
+          renderFocus(lastClientY);
+          document.addEventListener("mousemove", onFocusMouseMove, { passive: true });
+          window.addEventListener("scroll", onFocusScroll, { passive: true });
+          window.addEventListener("resize", onFocusScroll, { passive: true });
         } else {
           backdrop.classList.add("d-none");
           guide.classList.add("d-none");
-          document.removeEventListener("mousemove", updateFocusPosition);
+          document.removeEventListener("mousemove", onFocusMouseMove);
+          window.removeEventListener("scroll", onFocusScroll);
+          window.removeEventListener("resize", onFocusScroll);
         }
       }
     }
 
-    function updateFocusPosition(e) {
-      var backdrop = document.getElementById("a11y-focus-backdrop");
-      var guide = document.getElementById("a11y-reading-guide");
-      if (backdrop && guide) {
-        var y = e.clientY;
-        guide.style.top = y + "px";
-        var perc = (y / window.innerHeight) * 100;
-        backdrop.style.background = "linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.7) calc(" + perc + "% - 50px), transparent calc(" + perc + "% - 50px), transparent calc(" + perc + "% + 50px), rgba(0,0,0,0.7) calc(" + perc + "% + 50px), rgba(0,0,0,0.7) 100%)";
-      }
+    function cleanLegacyColorAttributes() {
+      document.documentElement.removeAttribute("data-bs-theme");
+      document.documentElement.removeAttribute("data-a11y-theme");
+      document.documentElement.removeAttribute("data-a11y-monochrome");
+      document.documentElement.removeAttribute("data-a11y-invert");
+      var oldSaturate = document.getElementById("a11y-saturate-style");
+      if (oldSaturate) oldSaturate.remove();
     }
 
     function syncUI() {
-      ["sl-bright", "sl-font", "sl-saturate"].forEach(function (id) {
+      ["sl-bright", "sl-font"].forEach(function (id) {
         var el = document.getElementById(id);
         if (!el) return;
         var key = id.replace("sl-", "");
-        var abbr = { bright: "bright", font: "font", saturate: "saturate" };
-        el.value = s[abbr[key]];
+        el.value = s[key];
       });
 
       var vb = document.getElementById("val-bright");
       if (vb) vb.textContent = s.bright + "%";
       var vf = document.getElementById("val-font");
       if (vf) vf.textContent = s.font + "%";
-      var vsat = document.getElementById("val-saturate");
-      if (vsat) vsat.textContent = s.saturate + "%";
 
-      var selTheme = document.getElementById("sel-theme");
-      if (selTheme) selTheme.value = s.theme;
-
-      ["tog-cursor", "tog-links", "tog-dyslexic", "tog-spacing", "tog-focus", "tog-monochrome", "tog-invert"].forEach(function (id) {
+      ["tog-cursor", "tog-links", "tog-dyslexic", "tog-spacing", "tog-focus"].forEach(function (id) {
         var el = document.getElementById(id);
         if (!el) return;
         var key = { 
@@ -222,16 +221,14 @@
           "tog-links": "hlLinks",
           "tog-dyslexic": "dyslexic",
           "tog-spacing": "spacing",
-          "tog-focus": "focus",
-          "tog-monochrome": "monochrome",
-          "tog-invert": "invert"
+          "tog-focus": "focus"
         }[id];
         el.checked = s[key];
       });
 
       var togAnim = document.getElementById("tog-animations");
       if (togAnim) {
-        // tog-animations is "Pause animations" so if s.animations is true (animations enabled), checkbox is false
+        // tog-animations es "Pausar animaciones", por lo que si s.animations es true, el checkbox está desmarcado
         togAnim.checked = !s.animations;
       }
     }
@@ -283,37 +280,28 @@
       } catch (_) {}
       applyBright(100);
       applyFont(100);
-      applyTheme("auto");
-      applySaturate(100);
       applyBigCursor(false);
       applyLinks(false);
       applyToggleAttr("data-a11y-dyslexic", false);
       applyToggleAttr("data-a11y-spacing", false);
       applyToggleAttr("data-a11y-animations", true);
-      applyToggleAttr("data-a11y-monochrome", false);
-      applyToggleAttr("data-a11y-invert", false);
       applyFocus(false);
+      cleanLegacyColorAttributes();
       syncUI();
-      showToast("Todas las opciones restablecidas ✓");
-    }
-
-    function isMobileView() {
-      return window.innerWidth <= 768;
+      save();
+      showToast("Opciones restablecidas ✓");
     }
 
     function init() {
+      cleanLegacyColorAttributes();
       load();
       applyBright(s.bright);
       applyFont(s.font);
-      applyTheme(s.theme);
-      applySaturate(s.saturate);
       applyBigCursor(s.bigCursor);
       applyLinks(s.hlLinks);
       applyToggleAttr("data-a11y-dyslexic", s.dyslexic);
       applyToggleAttr("data-a11y-spacing", s.spacing);
       applyToggleAttr("data-a11y-animations", s.animations);
-      applyToggleAttr("data-a11y-monochrome", s.monochrome);
-      applyToggleAttr("data-a11y-invert", s.invert);
       applyFocus(s.focus);
       syncUI();
 
@@ -344,7 +332,7 @@
 
       // Brillo
       var slBright = document.getElementById("sl-bright");
-      if (slBright)
+      if (slBright) {
         slBright.addEventListener("input", function (e) {
           s.bright = +e.target.value;
           applyBright(s.bright);
@@ -352,10 +340,11 @@
           if (v) v.textContent = s.bright + "%";
           save();
         });
+      }
 
       // Tamaño de fuente
       var slFont = document.getElementById("sl-font");
-      if (slFont)
+      if (slFont) {
         slFont.addEventListener("input", function (e) {
           s.font = +e.target.value;
           applyFont(s.font);
@@ -363,31 +352,11 @@
           if (v) v.textContent = s.font + "%";
           save();
         });
-
-      // Tema
-      var selTheme = document.getElementById("sel-theme");
-      if (selTheme)
-        selTheme.addEventListener("change", function (e) {
-          s.theme = e.target.value;
-          applyTheme(s.theme);
-          save();
-          showToast("Tema: " + e.target.options[e.target.selectedIndex].text);
-        });
-
-      // Saturación
-      var slSaturate = document.getElementById("sl-saturate");
-      if (slSaturate)
-        slSaturate.addEventListener("input", function (e) {
-          s.saturate = +e.target.value;
-          applySaturate(s.saturate);
-          var v = document.getElementById("val-saturate");
-          if (v) v.textContent = s.saturate + "%";
-          save();
-        });
+      }
 
       // Cursor grande
       var togCursor = document.getElementById("tog-cursor");
-      if (togCursor)
+      if (togCursor) {
         togCursor.addEventListener("change", function (e) {
           s.bigCursor = e.target.checked;
           applyBigCursor(s.bigCursor);
@@ -396,18 +365,20 @@
             s.bigCursor ? "🔍 Cursor grande activado" : "🔍 Cursor normal",
           );
         });
+      }
 
       // Enlaces resaltados
       var togLinks = document.getElementById("tog-links");
-      if (togLinks)
+      if (togLinks) {
         togLinks.addEventListener("change", function (e) {
           s.hlLinks = e.target.checked;
           applyLinks(s.hlLinks);
           save();
           showToast(s.hlLinks ? "🔗 Enlaces resaltados" : "🔗 Enlaces normales");
         });
+      }
 
-      // Nuevas opciones avanzadas
+      // Función auxiliar para toggles con atributos HTML
       function bindToggleAttr(id, key, attr, icon, msgOn, msgOff) {
         var el = document.getElementById(id);
         if (el) {
@@ -422,9 +393,8 @@
 
       bindToggleAttr("tog-dyslexic", "dyslexic", "data-a11y-dyslexic", "🔤", "Fuente dislexia activada", "Fuente normal");
       bindToggleAttr("tog-spacing", "spacing", "data-a11y-spacing", "📏", "Espaciado aumentado", "Espaciado normal");
-      bindToggleAttr("tog-monochrome", "monochrome", "data-a11y-monochrome", "⚫", "Modo escala de grises", "Color restaurado");
-      bindToggleAttr("tog-invert", "invert", "data-a11y-invert", "🔄", "Colores invertidos", "Colores restaurados");
 
+      // Guía de lectura (Focus / Reading Guide)
       var togFocus = document.getElementById("tog-focus");
       if (togFocus) {
         togFocus.addEventListener("change", function(e) {
@@ -435,10 +405,10 @@
         });
       }
 
+      // Pausar animaciones
       var togAnim = document.getElementById("tog-animations");
       if (togAnim) {
         togAnim.addEventListener("change", function(e) {
-          // togAnim is true when animations are PAUSED
           s.animations = !e.target.checked; 
           applyToggleAttr("data-a11y-animations", s.animations);
           save();
@@ -478,7 +448,7 @@
         }
       });
 
-      // Trap focus in panel and allow Escape to close
+      // Atrapamiento de foco en el panel y tecla Escape para cerrar
       var panel = document.getElementById("a11y-panel");
       if (panel) {
         panel.addEventListener("keydown", function(e) {
