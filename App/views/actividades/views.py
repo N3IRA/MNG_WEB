@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.db.models import Count, Q
@@ -122,25 +122,24 @@ class ActividadesDeleteView(StaffRequiredMixin, DeleteView):
     template_name = 'admin/actividades/eliminar_actividad.html'
     success_url = reverse_lazy('listar_actividades')
 
-    def delete(self, request, *args, **kwargs):
+    def form_valid(self, form):
         self.object = self.get_object()
-        
+
         # Validar integridad: Prevenir eliminación si está vinculada a paquetes
         tiene_paquetes = PaqueteActividad.objects.filter(actividad=self.object).exists()
         if tiene_paquetes:
-            messages.error(request, f"No se puede eliminar la actividad '{self.object.nombre}' porque está vinculada a uno o más paquetes turísticos.")
+            messages.error(request=self.request, message=f"No se puede eliminar la actividad '{self.object.nombre}' porque está vinculada a uno o más paquetes turísticos.")
             return redirect('listar_actividades')
 
         nombre_actividad = self.object.nombre
         valor_viejo = f"ID: {self.object.id}, Nombre: {self.object.nombre}"
 
-        response = super().delete(request, *args, **kwargs)
+        response = super().form_valid(form)
 
         crear_notificacion_sistema(
-            usuario=request.user,
+            usuario=self.request.user,
             mensaje=f"Se ha eliminado la actividad: '{nombre_actividad}'.",
             tipo="Actividad",
             prioridad="media"
-            
         )
         return response

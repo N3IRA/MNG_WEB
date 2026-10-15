@@ -221,22 +221,22 @@ class PromocionDeleteView(StaffRequiredMixin, DeleteView):
     template_name = 'admin/promocion/eliminar_promocion.html'
     success_url = reverse_lazy('gestion_promociones')
 
-    def delete(self, request, *args, **kwargs):
+    def form_valid(self, form):
         self.object = self.get_object()
         nombre_promo = self.object.nombre
         codigo_promo = self.object.codigo_promocion
         valor_viejo = f"ID: {self.object.id}, Nombre: {nombre_promo}, Código: {codigo_promo}"
 
-        response = super().delete(request, *args, **kwargs)
+        response = super().form_valid(form)
 
         crear_notificacion_sistema(
-            usuario=request.user,
+            usuario=self.request.user,
             mensaje=f"Se ha eliminado la promoción: '{nombre_promo}'.",
             tipo="Promoción",
             prioridad="media"
         )
 
-        messages.success(request, f"La promoción '{nombre_promo}' fue eliminada del sistema.")
+        messages.success(self.request, f"La promoción '{nombre_promo}' fue eliminada del sistema.")
         return response
 
 

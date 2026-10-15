@@ -226,14 +226,17 @@ class EliminarReservaAdminView(DeleteView):
     template_name = 'admin/reserva/eliminar_reserva.html'
     success_url = reverse_lazy('gestion_reservas')
 
-    def delete(self, request, *args, **kwargs):
+    def form_valid(self, form):
+        """
+        Django 6.1: BaseDeleteView.post() borra el objeto via form_valid(),
+        NO via delete(). La notificación debe crearse aquí (antes del borrado)
+        para que el cliente reciba el aviso de eliminación de su reserva.
+        """
         self.object = self.get_object()
         reserva_id = self.object.id
         usuario_reserva = self.object.usuario
         valor_viejo = f"ID: {self.object.id}, Cliente: {self.object.usuario}, Paquete: {self.object.paquete.nombre if self.object.paquete else 'N/A'}, Estado: {self.object.estado_reserva}"
 
-        # La notificación se crea ANTES de eliminar la reserva: el borrado en
-        # cascada de notificaciones asociadas la eliminaría si se creara después.
         if usuario_reserva:
             crear_notificacion_sistema(
                 usuario=usuario_reserva,
@@ -242,8 +245,7 @@ class EliminarReservaAdminView(DeleteView):
                 prioridad="alta"
             )
 
-        response = super().delete(request, *args, **kwargs)
-        return response
+        return super().form_valid(form)
 
 
 def normalizar_estados_cancelacion_usuario(usuario):

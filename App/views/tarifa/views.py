@@ -126,16 +126,16 @@ class TarifaDeleteView(StaffRequiredMixin, DeleteView):
     template_name = 'admin/tarifa/eliminar_tarifa.html'
     success_url = reverse_lazy('listar_tarifas')
 
-    def delete(self, request, *args, **kwargs):
+    def form_valid(self, form):
         self.object = self.get_object()
         nombre_paquete = self.object.paquete.nombre
         nombre_temporada = self.object.temporada.nombre
         valor_viejo = f"ID: {self.object.id}, Paquete: {nombre_paquete}, Temporada: {nombre_temporada}, Adulto: ${self.object.precio_adulto}, Menor: ${self.object.precio_menor}"
 
-        response = super().delete(request, *args, **kwargs)
+        response = super().form_valid(form)
 
         crear_notificacion_sistema(
-            usuario=request.user,
+            usuario=self.request.user,
             mensaje=f"Se ha eliminado la tarifa para el paquete '{nombre_paquete}' en la temporada '{nombre_temporada}'. Detalles previos: {valor_viejo}",
             tipo="Tarifa",
             prioridad="media"

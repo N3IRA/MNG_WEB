@@ -130,18 +130,18 @@ class BlogDeleteView(StaffRequiredMixin, DeleteView):
     context_object_name = 'blog'
     success_url = reverse_lazy('listar_blog')
 
-    def delete(self, request, *args, **kwargs):
+    def form_valid(self, form):
         self.object = self.get_object()
         titulo_blog = self.object.titulo
         valor_viejo = f"ID: {self.object.id}, Título: {self.object.titulo}"
 
-        response = super().delete(request, *args, **kwargs)
+        response = super().form_valid(form)
 
         crear_notificacion_sistema(
-            usuario=request.user,
+            usuario=self.request.user,
             mensaje=f"Se ha eliminado el artículo de blog: '{titulo_blog}'.",
             tipo='Blog',
             prioridad='media'
         )
-        messages.success(request, f"El artículo '{titulo_blog}' ha sido eliminado exitosamente.")
+        messages.success(self.request, f"El artículo '{titulo_blog}' ha sido eliminado exitosamente.")
         return response

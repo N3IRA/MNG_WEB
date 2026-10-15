@@ -1,5 +1,7 @@
 from App.forms.temporada.forms import TemporadaForm
 from django.db.models import Count, Q
+from django.contrib import messages
+from django.shortcuts import redirect
 from App.models import Temporada, Tarifa
 from App.utils import crear_notificacion_sistema
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -126,23 +128,20 @@ class TemporadaDeleteView(StaffRequiredMixin, DeleteView):
     template_name = 'admin/temporada/eliminar_temporada.html'
     success_url = reverse_lazy('listar_temporadas')
 
-    def delete(self, request, *args, **kwargs):
-        from django.contrib import messages
-        from django.shortcuts import render
-
+    def form_valid(self, form):
         self.object = self.get_object()
 
         if self.object.tarifas.exists():
-            messages.error(request, f"No se puede eliminar la temporada '{self.object.nombre}' porque contiene tarifas asociadas.")
+            messages.error(request=self.request, message=f"No se puede eliminar la temporada '{self.object.nombre}' porque contiene tarifas asociadas.")
             return redirect('listar_temporadas')
 
         nombre_temporada = self.object.nombre
         valor_viejo = f"ID: {self.object.id}, Nombre: {self.object.nombre}"
 
-        response = super().delete(request, *args, **kwargs)
+        response = super().form_valid(form)
 
         crear_notificacion_sistema(
-            usuario=request.user,
+            usuario=self.request.user,
             mensaje=f"Se ha eliminado la temporada '{nombre_temporada}'. Detalles previos: {valor_viejo}.",
             tipo="Temporada",
             prioridad="media"

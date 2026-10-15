@@ -1,5 +1,5 @@
 from django.urls import reverse_lazy
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib import messages
 from django import forms
@@ -111,21 +111,21 @@ class CategoriaDeleteView(StaffRequiredMixin, DeleteView):
     template_name = 'admin/categoria/eliminar_categoria.html'
     success_url = reverse_lazy('listar_categorias')
 
-    def delete(self, request, *args, **kwargs):
+    def form_valid(self, form):
         self.object = self.get_object()
 
         # Validar integridad: No eliminar categoría si está asignada a algún paquete
         if self.object.paquetes.exists():
-            messages.error(request, f"No se puede eliminar la categoría '{self.object.nombre}' porque contiene paquetes asociados.")
+            messages.error(request=self.request, message=f"No se puede eliminar la categoría '{self.object.nombre}' porque contiene paquetes asociados.")
             return redirect('listar_categorias')
 
         nombre_categoria = self.object.nombre
         valor_viejo = f"ID: {self.object.id}, Nombre: {self.object.nombre}"
 
-        response = super().delete(request, *args, **kwargs)
+        response = super().form_valid(form)
 
         crear_notificacion_sistema(
-            usuario=request.user,
+            usuario=self.request.user,
             mensaje=f"Se ha eliminado la categoría: '{nombre_categoria}'.",
             tipo="Categoría",
             prioridad="media"
