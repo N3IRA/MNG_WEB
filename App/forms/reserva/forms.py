@@ -78,10 +78,12 @@ class ReservaForm(forms.ModelForm):
         return fecha_reserva
 
     def clean_numero_adultos(self):
-        adultos = self.cleaned_data.get('numero_adultos')
-        if adultos is None or adultos < 1:
-            raise ValidationError("Debe haber al menos 1 adulto en la reserva.")
-        return adultos
+            adultos = self.cleaned_data.get('numero_adultos')
+            if adultos is None or adultos < 1:
+                raise ValidationError("Debe haber al menos 1 adulto en la reserva.")
+            if adultos > 10:
+                raise ValidationError("El número de adultos no puede superar 10.")
+            return adultos
 
     def clean_numero_menores(self):
         menores = self.cleaned_data.get('numero_menores')

@@ -488,8 +488,8 @@ class Reserva(models.Model):
     id = models.AutoField(primary_key=True)
     ESTADO_CHOICES = [
         ('pendiente', 'Pendiente'),
-        ('confirmada', 'Confirmada'),
-        ('cancelada', 'Cancelada'),
+        ('confirmado', 'Confirmado'),
+        ('rechazado', 'Rechazado'),
     ]
     estado_cancelacion = models.CharField(
         max_length=30,
