@@ -304,40 +304,12 @@ main .breadcrumb-item.active {
     position: relative;
     border: 1px solid rgba(15, 23, 42, 0.06);
     overflow: visible;
-    transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
-                box-shadow 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
-                border-color 0.3s ease,
-                filter 0.3s ease !important;
-    animation: cardFloatIn 0.8s ease both;
-    animation-delay: calc(var(--delay, 0) * 90ms);
-    will-change: transform, box-shadow;
-}
-
-.tour-card-hover::before {
-    content: "";
-    position: absolute;
-    inset: -8px -8px auto auto;
-    width: 58%;
-    height: 4px;
-    background: linear-gradient(90deg, rgba(25,135,84,0), rgba(25,135,84,0.85), rgba(25,135,84,0));
-    border-radius: 999px;
-    opacity: 0;
-    transition: opacity 0.25s ease, transform 0.25s ease;
-    transform: scaleX(0.3);
+    transition: transform 0.35s ease, box-shadow 0.35s ease !important;
 }
 
 .tour-card-hover:hover {
-    transform: translateY(-18px) translateX(6px) scale(1.025) !important;
-    box-shadow: 0 2.4rem 4rem rgba(15, 23, 42, 0.18),
-                0 1rem 2rem rgba(15, 23, 42, 0.10),
-                0 0 0 1px rgba(25, 135, 84, 0.08) !important;
-    border-color: rgba(25, 135, 84, 0.2) !important;
-    filter: drop-shadow(0 12px 18px rgba(25, 135, 84, 0.1));
-}
-
-.tour-card-hover:hover::before {
-    opacity: 1;
-    transform: scaleX(1);
+    transform: translateY(-5px) !important;
+    box-shadow: 0 1.3rem 2.5rem rgba(15, 23, 42, 0.12) !important;
 }
 
 .tour-img-zoom {

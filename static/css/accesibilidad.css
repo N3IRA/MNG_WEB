@@ -614,12 +614,33 @@ html[data-bs-theme="dark"] .card,
 html[data-bs-theme="dark"] .modal-content,
 html[data-bs-theme="dark"] .offcanvas,
 html[data-bs-theme="dark"] .dropdown-menu,
-html[data-bs-theme="dark"] .search-card-float,
-html[data-bs-theme="dark"] .tarjeta-tour .card {
+html[data-bs-theme="dark"] .search-card-float {
     background-color: #18221b !important;
     border-color: rgba(255, 255, 255, 0.12) !important;
     color: #e2e8f0 !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Tarjeta completa de paquete en modo oscuro con fondo más claro, armónico y elegante */
+html[data-bs-theme="dark"] .tarjeta-tour .card,
+html[data-bs-theme="dark"] .tarjeta-destino .card {
+    background-color: #243529 !important;
+    background: linear-gradient(180deg, #27392c 0%, #202d24 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    color: #f8fafc !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(76, 175, 112, 0.15) !important;
+    transition: transform 0.35s ease, 
+                box-shadow 0.35s ease, 
+                border-color 0.35s ease, 
+                background 0.35s ease !important;
+}
+
+html[data-bs-theme="dark"] .tarjeta-tour .card:hover,
+html[data-bs-theme="dark"] .tarjeta-destino .card:hover {
+    transform: translateY(-5px) !important;
+    background: linear-gradient(180deg, #2c4032 0%, #243529 100%) !important;
+    border-color: rgba(76, 175, 112, 0.45) !important;
+    box-shadow: 0 1.3rem 2.5rem rgba(0, 0, 0, 0.55), 0 0 16px rgba(76, 175, 112, 0.25) !important;
 }
 
 html[data-bs-theme="dark"] .card-header,
@@ -758,7 +779,24 @@ html[data-bs-theme="dark"] .btn-primary:hover {
     box-shadow: 0 6px 18px rgba(76, 175, 112, 0.35) !important;
 }
 
-/* Botones en tarjetas de tours */
+/* Botones y títulos/descripciones/precios en tarjetas de tours */
+html[data-bs-theme="dark"] .tarjeta-tour .tour-card-title,
+html[data-bs-theme="dark"] .tarjeta-destino .tour-card-title,
+html[data-bs-theme="dark"] .tarjeta-tour h4,
+html[data-bs-theme="dark"] .tarjeta-destino h4,
+html[data-bs-theme="dark"] .tarjeta-tour .tour-card-desc,
+html[data-bs-theme="dark"] .tarjeta-destino .tour-card-desc,
+html[data-bs-theme="dark"] .tarjeta-tour .card-body p,
+html[data-bs-theme="dark"] .tarjeta-destino .card-body p,
+html[data-bs-theme="dark"] .tarjeta-tour .tour-card-price,
+html[data-bs-theme="dark"] .tarjeta-destino .tour-card-price,
+html[data-bs-theme="dark"] .tarjeta-tour .text-success.fs-4,
+html[data-bs-theme="dark"] .tarjeta-destino .text-success.fs-4,
+html[data-bs-theme="dark"] .tarjeta-tour .text-danger.fs-4,
+html[data-bs-theme="dark"] .tarjeta-destino .text-danger.fs-4 {
+    color: #ffffff !important;
+}
+
 html[data-bs-theme="dark"] .tarjeta-tour .btn-light {
     background-color: #1a251e !important;
     border: 1px solid rgba(76, 175, 112, 0.3) !important;
