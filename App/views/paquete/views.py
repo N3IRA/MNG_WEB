@@ -50,13 +50,14 @@ def tours(request):
             pass
 
     # 3. Filtro según aptitud para menores de edad
-    # 'si'  -> paquetes donde NINGUNA actividad es no-apta para menores
-    # 'no'  -> paquetes que tienen al menos una actividad no apta para menores
+    # 'si'  -> paquetes donde TODAS las actividades son aptas para menores
+    # 'no'  -> paquetes donde ninguna actividad es apta para menores
+    # (todas las actividades son solo para adultos; no puede haber ni una sola)
     apto_menores = request.GET.get('apto_menores', '').strip().lower()
     if apto_menores == 'si':
         lista_tours = lista_tours.exclude(actividades__apto_menores=False).distinct()
     elif apto_menores == 'no':
-        lista_tours = lista_tours.filter(actividades__apto_menores=False).distinct()
+        lista_tours = lista_tours.exclude(actividades__apto_menores=True).distinct()
 
     # 4. Filtro por categoría del tour
     categoria_id = request.GET.get('categoria', '').strip()
