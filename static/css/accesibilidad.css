@@ -608,9 +608,6 @@ html[data-bs-theme="dark"] .navbar-glass__link:hover {
     color: #4caf70 !important;
 }
 
-html[data-bs-theme="dark"] .navbar-toggler-icon {
-    filter: invert(1) brightness(200%) !important;
-}
 
 /* ── 4. TARJETAS, MODALES, OFFCANVAS Y DROPDOWNS ── */
 html[data-bs-theme="dark"] .card,
@@ -1058,6 +1055,25 @@ html[data-bs-theme="dark"] .condy-chat-window {
 
 html[data-bs-theme="dark"] .condy-chat-messages {
     background-color: #121814 !important;
+}
+
+/* ── 15. FONDO DE LOGIN EN MODO OSCURO ── */
+html[data-bs-theme="dark"] .login-hero-bg,
+html[data-bs-theme="dark"] [style*="Fondo6.png"] {
+    background-image: url('/media/destinos/login_oscuro.webp') !important;
+}
+
+/* ── 16. FONDO DE REGISTRO EN MODO OSCURO ── */
+html[data-bs-theme="dark"] .registro-hero-bg,
+html[data-bs-theme="dark"] [style*="difuminado.jpg"] {
+    background-image: url('/static/img/difuminado_oscuro.webp') !important;
+}
+
+/* ── 17. TEXTOS DE BIENVENIDA / SUBTÍTULOS EN MODO OSCURO ── */
+html[data-bs-theme="dark"] .registro-hero-bg .text-muted,
+html[data-bs-theme="dark"] .registro-hero-bg h1.text-dark,
+html[data-bs-theme="dark"] .registro-hero-bg .text-secondary {
+    color: #f1f5f9 !important;
 }
 
 
