@@ -32,31 +32,84 @@
         </div>
     </div>
 
-    <!-- Panel de Estadísticas -->
-    <div class="row g-3 mb-4">
-        {% for label, count, color in stats_list %}
+    <!-- Panel de Estadísticas (Estilo Comprobante de Pago) -->
+    <div class="row g-4 mb-4">
+        <!-- Total Reservas -->
         <div class="col-12 col-sm-6 col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-white">
-                <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                    <div class="text-start">
-                        <span class="text-uppercase text-muted small fw-bold d-block mb-1">{{ label }}</span>
-                        <h3 class="fw-bold mb-0 {% if color == 'text-success' %}text-success{% elif color == 'text-danger' %}text-danger{% elif color == 'text-warning' %}text-warning{% else %}text-dark{% endif %}">{{ count|default:0 }}</h3>
+            <a href="?estado=todas" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Ver todas las reservas registradas">
+                <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'todas' %}border-primary border-opacity-75 shadow-sm ring-1{% endif %}" style="cursor: pointer;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="text-secondary small fw-bold text-uppercase">Total Reservas</span>
+                        <div class="p-2 bg-secondary bg-opacity-10 text-secondary rounded-3">
+                            <i class="bi bi-calendar2-week fs-4"></i>
+                        </div>
                     </div>
-                    <div class="p-3 rounded-4 fs-3 {% if color == 'text-success' %}bg-success bg-opacity-10 text-success{% elif color == 'text-danger' %}bg-danger bg-opacity-10 text-danger{% elif color == 'text-warning' %}bg-warning bg-opacity-10 text-warning{% else %}bg-light text-secondary{% endif %}">
-                        {% if color == 'text-success' %}
-                            <i class="bi bi-check-circle-fill text-white"></i>
-                        {% elif color == 'text-danger' %}
-                            <i class="bi bi-x-circle-fill"></i>
-                        {% elif color == 'text-warning' %}
-                            <i class="bi bi-hourglass-split"></i>
-                        {% else %}
-                            <i class="bi bi-files"></i>
-                        {% endif %}
+                    <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">{{ total|default:0 }}</h3>
+                    <div class="text-muted small">
+                        <i class="bi bi-calendar-check me-1 text-secondary"></i>Historial de reservas
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
-        {% endfor %}
+
+        <!-- Pendientes -->
+        <div class="col-12 col-sm-6 col-md-3">
+            <a href="?estado=pendiente" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar reservas pendientes">
+                <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'pendiente' %}border-warning shadow-sm border-2{% endif %}" style="cursor: pointer;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="text-warning small fw-bold text-uppercase">Pendientes</span>
+                        <div class="p-2 bg-warning bg-opacity-10 text-warning rounded-3">
+                            <i class="bi bi-hourglass-split fs-4"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold text-warning mb-1 fs-4 fs-xl-3">{{ pendientes|default:0 }}</h3>
+                    <div class="text-warning small">
+                        <i class="bi bi-exclamation-circle text-warning me-1"></i>Requieren pago o validación
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Confirmadas -->
+        <div class="col-12 col-sm-6 col-md-3">
+            <a href="?estado=confirmada" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar reservas confirmadas">
+                <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'confirmada' %}border-success shadow-sm border-2{% endif %}" style="cursor: pointer;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="text-success small fw-bold text-uppercase">Confirmadas</span>
+                        <div class="p-2 bg-success text-white rounded-3 shadow-sm">
+                            <i class="bi bi-check-circle-fill fs-4 text-white"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold text-success mb-1 fs-4 fs-xl-3">{{ confirmadas|default:0 }}</h3>
+                    <div class="text-success small">
+                        <i class="bi bi-shield-check text-success me-1"></i>Pagadas y aseguradas
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Canceladas -->
+        <div class="col-12 col-sm-6 col-md-3">
+            <a href="?estado=cancelada" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar reservas canceladas">
+                <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'cancelada' %}border-danger shadow-sm border-2{% endif %}" style="cursor: pointer;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="text-danger small fw-bold text-uppercase">Canceladas</span>
+                        <div class="p-2 bg-danger bg-opacity-10 text-danger rounded-3">
+                            <i class="bi bi-x-circle-fill fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-baseline justify-content-between mb-1">
+                        <h3 class="fw-bold text-danger mb-0 fs-4 fs-xl-3">{{ canceladas|default:0 }}</h3>
+                        <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2.5 py-1 small fw-semibold d-inline-flex align-items-center gap-1">
+                            Canceladas <i class="bi bi-x-circle"></i>
+                        </span>
+                    </div>
+                    <div class="text-muted small">
+                        <i class="bi bi-slash-circle text-danger me-1"></i>Reservas anuladas en sistema
+                    </div>
+                </div>
+            </a>
+        </div>
     </div>
 
     <!-- Filtros -->

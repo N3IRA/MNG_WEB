@@ -23,8 +23,54 @@
     </div>
 
     <div class="row g-4">
-        <!-- Columna Lateral: Consejos y Ayuda -->
+        <!-- Columna Lateral: Vista Previa y Consejos -->
         <div class="col-12 col-lg-4">
+            <!-- Tarjeta de Vista Previa de la Imagen del Destino -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4 text-center">
+                <div class="d-flex align-items-center justify-content-between mb-3 text-start">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="bg-success bg-opacity-10 text-white rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                            <i class="bi bi-image-fill fs-5"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-0">Imagen del Destino</h6>
+                    </div>
+                    <span id="badge-estado-img" class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill small px-2 py-1">Sin archivo</span>
+                </div>
+
+                <!-- Estado Inicial: Placeholder cuando no se ha seleccionado imagen -->
+                <div id="preview-placeholder" class="py-5 bg-light rounded-4 text-muted border border-2 border-dashed d-flex flex-column align-items-center justify-content-center p-3" style="min-height: 220px;">
+                    <div class="p-3 bg-white rounded-circle shadow-sm mb-2 text-secondary">
+                        <i class="bi bi-cloud-arrow-up display-6"></i>
+                    </div>
+                    <span class="fw-semibold small text-dark mb-1">Sin imagen seleccionada</span>
+                    <span class="small text-muted text-center" style="font-size: 0.8rem;">
+                        Sube una fotografía en el campo <strong>Imagen del Destino</strong> para comprobarla aquí en tiempo real antes de guardar.
+                    </span>
+                </div>
+
+                <!-- Estado Activo: Vista Previa Real de la Imagen Seleccionada -->
+                <div id="preview-container" class="d-none text-start">
+                    <div class="position-relative rounded-4 overflow-hidden shadow-sm mb-3 border">
+                        <img id="img-destino-preview" src="#" alt="Vista previa del destino" class="img-fluid w-100" style="height: 200px; object-fit: cover;">
+                        <span class="position-absolute top-0 end-0 m-2 badge bg-dark bg-opacity-75 text-white rounded-pill small px-2 py-1" id="preview-img-size">-- KB</span>
+                    </div>
+                    <div class="bg-light rounded-3 p-3 small mb-3 border border-light">
+                        <div class="d-flex align-items-center justify-content-between mb-1 pb-1 border-bottom border-secondary border-opacity-10">
+                            <span class="text-muted" style="font-size: 0.78rem;">Archivo:</span>
+                            <span id="preview-img-name" class="fw-bold text-dark text-truncate ms-2" style="max-width: 170px; font-size: 0.8rem;">--</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span class="text-muted" style="font-size: 0.78rem;">Dimensiones:</span>
+                            <span id="preview-img-dim" class="fw-semibold text-secondary" style="font-size: 0.8rem;">-- × --</span>
+                        </div>
+                    </div>
+                    <button type="button" id="btn-quitar-imagen" class="btn btn-sm btn-outline-danger w-100 rounded-pill fw-semibold">
+                        <i class="bi bi-trash3 me-1"></i> Quitar selección
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Consejos y Ayuda -->
             <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
@@ -77,7 +123,10 @@
                                 {{ form.nombre|as_crispy_field }}
                                 {{ form.categoria|as_crispy_field }}
                                 {{ form.descripcion|as_crispy_field }}
-                                {{ form.imagen|as_crispy_field }}
+                                
+                                <div class="mb-3">
+                                    {{ form.imagen|as_crispy_field }}
+                                </div>
                             </div>
 
                             <!-- Columna 2: Logística y Actividades -->
@@ -85,12 +134,24 @@
                                 <h6 class="fw-bold text-dark text-uppercase small mb-3 border-bottom pb-2">
                                     <i class="bi bi-clock-history text-success me-1"></i> Logística y Duración
                                 </h6>
-                                <div class="row">
-                                    <div class="col-6">
-                                        {{ form.dias_duracion|as_crispy_field }}
+                                <div class="row g-3 mb-3">
+                                    <div class="col-12 col-sm-6">
+                                        <label for="{{ form.dias_duracion.id_for_label }}" class="form-label fw-bold text-dark small mb-1">
+                                            {{ form.dias_duracion.label }} <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.dias_duracion }}
+                                        {% if form.dias_duracion.errors %}
+                                            <div class="text-danger small mt-1">{{ form.dias_duracion.errors }}</div>
+                                        {% endif %}
                                     </div>
-                                    <div class="col-6">
-                                        {{ form.noches_duracion|as_crispy_field }}
+                                    <div class="col-12 col-sm-6">
+                                        <label for="{{ form.noches_duracion.id_for_label }}" class="form-label fw-bold text-dark small mb-1">
+                                            {{ form.noches_duracion.label }} <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.noches_duracion }}
+                                        {% if form.noches_duracion.errors %}
+                                            <div class="text-danger small mt-1">{{ form.noches_duracion.errors }}</div>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 {{ form.punto_encuentro|as_crispy_field }}
@@ -118,4 +179,81 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const inputImagen = document.querySelector('input[type="file"][name="imagen"]') || document.getElementById('id_imagen');
+    const previewPlaceholder = document.getElementById('preview-placeholder');
+    const previewContainer = document.getElementById('preview-container');
+    const imgDestinoPreview = document.getElementById('img-destino-preview');
+    const previewImgName = document.getElementById('preview-img-name');
+    const previewImgSize = document.getElementById('preview-img-size');
+    const previewImgDim = document.getElementById('preview-img-dim');
+    const badgeEstado = document.getElementById('badge-estado-img');
+    const btnQuitar = document.getElementById('btn-quitar-imagen');
+
+    function formatearTamano(bytes) {
+        if (!bytes || bytes === 0) return '0 B';
+        const k = 1024;
+        const dm = 1;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+
+    function resetearPreview() {
+        if (inputImagen) inputImagen.value = '';
+        if (previewPlaceholder) previewPlaceholder.classList.remove('d-none');
+        if (previewContainer) previewContainer.classList.add('d-none');
+        if (badgeEstado) {
+            badgeEstado.className = 'badge bg-secondary bg-opacity-10 text-secondary rounded-pill small px-2 py-1';
+            badgeEstado.textContent = 'Sin archivo';
+        }
+    }
+
+    if (inputImagen) {
+        inputImagen.addEventListener('change', function(e) {
+            const file = this.files && this.files[0];
+            if (file) {
+                if (!file.type.startsWith('image/')) {
+                    alert('Por favor selecciona un archivo de imagen válido (JPG, PNG, WebP, etc.).');
+                    resetearPreview();
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const dataUrl = event.target.result;
+                    
+                    if (imgDestinoPreview) imgDestinoPreview.src = dataUrl;
+
+                    if (previewImgName) {
+                        previewImgName.textContent = file.name;
+                        previewImgName.title = file.name;
+                    }
+                    if (previewImgSize) previewImgSize.textContent = formatearTamano(file.size);
+
+                    const imgObj = new Image();
+                    imgObj.onload = function() {
+                        if (previewImgDim) previewImgDim.textContent = this.width + ' × ' + this.height + ' px';
+                    };
+                    imgObj.src = dataUrl;
+
+                    if (previewPlaceholder) previewPlaceholder.classList.add('d-none');
+                    if (previewContainer) previewContainer.classList.remove('d-none');
+                    if (badgeEstado) {
+                        badgeEstado.className = 'badge bg-success bg-opacity-10 text-success rounded-pill small px-2 py-1';
+                        badgeEstado.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Seleccionada';
+                    }
+                };
+                reader.readAsDataURL(file);
+            } else {
+                resetearPreview();
+            }
+        });
+    }
+
+    if (btnQuitar) btnQuitar.addEventListener('click', resetearPreview);
+});
+</script>
 {% endblock content %}

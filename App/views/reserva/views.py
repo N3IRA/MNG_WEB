@@ -894,6 +894,7 @@ def listar_cancelaciones_admin(request):
         'stats_list': stats_list,
         'estado_seleccionado': estado_seleccionado,
     }
+    context.update(stats)
 
     return render(request, 'admin/reserva/cancelaciones_admin.html', context)
 
