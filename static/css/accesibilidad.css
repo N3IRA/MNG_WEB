@@ -1065,7 +1065,7 @@ html[data-bs-theme="dark"] [style*="Fondo6.png"] {
 
 /* ── 16. FONDO DE REGISTRO EN MODO OSCURO ── */
 html[data-bs-theme="dark"] .registro-hero-bg,
-html[data-bs-theme="dark"] [style*="difuminado.jpg"] {
+html[data-bs-theme="dark"] [style*="difuminado.webp"] {
     background-image: url('/static/img/difuminado_oscuro.webp') !important;
 }
 
