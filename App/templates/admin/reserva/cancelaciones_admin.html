@@ -26,31 +26,79 @@
         </div>
     </div>
 
-      <div class="row g-4 mb-4">
-        {% for label, count, color in stats_list %}
-        <div class="col-12 col-sm-6 col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-body d-flex align-items-center p-4">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm
-                        {% if color == 'text-success' %} bg-success bg-opacity-10 text-success
-                        {% elif color == 'text-danger' %} bg-danger bg-opacity-10 text-danger
-                        {% else %} bg-secondary bg-opacity-10 text-secondary {% endif %} u-style-c5b9e7ac">
-                        {% if color == 'text-dark' %}
-                            <i class="bi bi-tag-fill"></i>
-                        {% elif color == 'text-success' %}
-                            <i class="bi bi-check-circle-fill"></i>
-                        {% else %}
-                            <i class="bi bi-x-circle-fill"></i>
-                        {% endif %}
+    <!-- Panel de Estadísticas (Estilo Comprobante de Pago) -->
+    <div class="row g-4 mb-4">
+        <!-- Total Solicitudes -->
+        <div class="col-12 col-sm-6 col-md-3">
+            <a href="{% url 'listar_cancelaciones' %}" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Ver todas las solicitudes de cancelación">
+                <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if not estado_seleccionado %}border-primary border-opacity-75 shadow-sm ring-1{% endif %}" style="cursor: pointer;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="text-secondary small fw-bold text-uppercase">Total Solicitudes</span>
+                        <div class="p-2 bg-secondary bg-opacity-10 text-secondary rounded-3">
+                            <i class="bi bi-x-octagon-fill fs-4"></i>
+                        </div>
                     </div>
-                    <div>
-                        <h6 class="text-muted text-uppercase fw-bold mb-1 u-style-75b54407">{{ label }}</h6>
-                        <h3 class="fw-black mb-0 {{ color }}">{{ count|default:0 }}</h3>
+                    <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">{{ total|default:0 }}</h3>
+                    <div class="text-muted small">
+                        <i class="bi bi-file-earmark-x me-1 text-secondary"></i>Solicitudes tramitadas
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
-        {% endfor %}
+
+        <!-- Pendientes -->
+        <div class="col-12 col-sm-6 col-md-3">
+            <a href="?estado=pendiente" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar solicitudes pendientes de revisión">
+                <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'pendiente' %}border-warning shadow-sm border-2{% endif %}" style="cursor: pointer;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="text-warning small fw-bold text-uppercase">Pendientes</span>
+                        <div class="p-2 bg-warning bg-opacity-10 text-warning rounded-3">
+                            <i class="bi bi-hourglass-split fs-4"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold text-warning mb-1 fs-4 fs-xl-3">{{ pendientes|default:0 }}</h3>
+                    <div class="text-warning small">
+                        <i class="bi bi-exclamation-circle text-warning me-1"></i>Requieren resolución
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Aprobadas -->
+        <div class="col-12 col-sm-6 col-md-3">
+            <a href="?estado=aprobada" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar solicitudes aprobadas">
+                <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'aprobada' %}border-success shadow-sm border-2{% endif %}" style="cursor: pointer;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="text-success small fw-bold text-uppercase">Aprobadas</span>
+                        <div class="p-2 bg-success text-white rounded-3 shadow-sm">
+                            <i class="bi bi-check-circle-fill fs-4 text-white"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold text-success mb-1 fs-4 fs-xl-3">{{ aprobadas|default:0 }}</h3>
+                    <div class="text-success small">
+                        <i class="bi bi-shield-check text-success me-1"></i>Cancelación confirmada
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Rechazadas -->
+        <div class="col-12 col-sm-6 col-md-3">
+            <a href="?estado=rechazada" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar solicitudes rechazadas">
+                <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'rechazada' %}border-danger shadow-sm border-2{% endif %}" style="cursor: pointer;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="text-danger small fw-bold text-uppercase">Rechazadas</span>
+                        <div class="p-2 bg-danger bg-opacity-10 text-danger rounded-3">
+                            <i class="bi bi-slash-circle-fill fs-4"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold text-danger mb-1 fs-4 fs-xl-3">{{ rechazadas|default:0 }}</h3>
+                    <div class="text-muted small">
+                        <i class="bi bi-x-circle text-danger me-1"></i>Solicitudes declinadas
+                    </div>
+                </div>
+            </a>
+        </div>
     </div>
 
     <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
@@ -81,7 +129,50 @@
 </div>
 </div>
     <!-- Tabla -->
-    <div class="card admin-list-panel overflow-hidden">
+    <div class="card admin-list-panel overflow-hidden p-4">
+        <!-- Barra de herramientas superior: Título y Dropdown Nativo Bootstrap 5 -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom">
+            <div>
+                <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                    <i class="bi bi-x-circle text-danger"></i> Solicitudes de Cancelación
+                </h5>
+                <small class="text-muted">Gestiona y audita las cancelaciones y penalidades aplicadas</small>
+            </div>
+
+            <!-- Dropdown nativo Bootstrap 5 -->
+            <div class="dropdown">
+                <button class="btn btn-outline-success btn-sm rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-2 shadow-sm dropdown-toggle" 
+                        type="button" 
+                        id="dropdownExportarCancelaciones" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false">
+                    <i class="bi bi-cloud-arrow-down-fill text-success"></i>
+                    <span>Exportar</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 py-2 mt-1" aria-labelledby="dropdownExportarCancelaciones" style="min-width: 220px;">
+                    <li><h6 class="dropdown-header text-uppercase small text-muted px-3 pb-1" style="font-size: 0.72rem; letter-spacing: 0.05em;">Descargar Datos</h6></li>
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-excel-trigger">
+                            <i class="bi bi-file-earmark-excel-fill text-success fs-6"></i>
+                            <span class="small fw-semibold">Documento Excel (.xlsx)</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-pdf-trigger">
+                            <i class="bi bi-file-earmark-pdf-fill text-danger fs-6"></i>
+                            <span class="small fw-semibold">Documento PDF (.pdf)</span>
+                        </button>
+                    </li>
+                    <li><hr class="dropdown-divider my-1"></li>
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-print-trigger">
+                            <i class="bi bi-printer-fill text-primary fs-6"></i>
+                            <span class="small fw-semibold"> Imprimir tabla</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
         <div class="table-responsive">
             <table id="tablaCancelaciones" class="table align-middle mb-0 admin-data-table">
                 <thead>

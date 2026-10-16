@@ -50,7 +50,7 @@
         <a
           class="navbar-glass__link nav-link text-dark small fw-bold px-1.5 px-xl-2.5 py-1 text-nowrap {% if request.resolver_match.url_name == 'nosotros' %}active text-success{% endif %}"
           href="{% url 'nosotros' %}"
-          target="_blank"
+          
           ><i class="bi bi-people me-1"></i>NOSOTROS</a
         >
       </li>
@@ -118,14 +118,14 @@
 
       <!-- Menú de hamburguesa -->
       <button
-        class="navbar-toggler border-0 shadow-none p-1 ms-1"
+        class="navbar-toggler border-0 shadow-none p-1 ms-1 d-flex align-items-center justify-content-center text-dark"
         type="button"
         data-bs-toggle="offcanvas"
         data-bs-target="#menuPremium"
         aria-controls="menuPremium"
         aria-label="Menú de hamburguesa"
       >
-        <span class="navbar-toggler-icon"></span>
+        <i class="fa-solid fa-bars fs-4" aria-hidden="true"></i>
       </button>
     </div>
   </div>

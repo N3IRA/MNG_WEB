@@ -79,6 +79,11 @@ table.dataTable.table-monagua-dt tbody td {
 }
 
 /* --- ESTILO DE LOS BOTONES --- */
+.d-none div.dt-buttons,
+div.dt-buttons:has(.d-none) {
+  display: none !important;
+}
+
 div.dt-buttons {
   margin: 0 !important; 
   display: flex !important; 

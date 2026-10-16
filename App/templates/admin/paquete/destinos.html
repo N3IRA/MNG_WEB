@@ -211,10 +211,10 @@
                         </div>
                         
                         <div class="card-body p-4 d-flex flex-column gap-3">
-                            <h4 class="fw-bold text-dark mb-0 text-truncate" style="color: #111 !important;" title="{{ tour.nombre }}">{{ tour.nombre }}</h4>
+                            <h4 class="fw-bold text-dark mb-0 text-truncate tour-card-title" title="{{ tour.nombre }}">{{ tour.nombre }}</h4>
                             
                             <div class="d-flex gap-3 fs-6 fw-normal text-secondary mb-1">
-                                <span><i class="bi bi-sun text-success me-1"></i>{{ tour.dias_duracion }} días</span>
+                                <span><i class="bi bi-sun text-warning me-1"></i>{{ tour.dias_duracion }} días</span>
                                 <span><i class="bi bi-moon text-info me-1"></i>{{ tour.noches_duracion }} noches</span>
                             </div>
                             <div class="d-flex gap-3 fs-6 fw-normal text-secondary mb-1">
@@ -222,7 +222,7 @@
                                 <span class="text-truncate" title="{{ tour.punto_encuentro }}"><i class="bi bi-geo-alt text-muted me-1"></i>{{ tour.punto_encuentro }}</span>
                             </div>
                             
-                            <p class="text-secondary fw-normal mb-1 lh-base fs-6" style="color: #4a5568 !important; min-height: 48px;">
+                            <p class="text-secondary fw-normal mb-1 lh-base fs-6 tour-card-desc" style="min-height: 48px;">
                                 {{ tour.descripcion|truncatechars:85 }}
                             </p>
                             
@@ -240,7 +240,7 @@
                                                     -{{ tour.porcentaje_descuento_calculado|default:tour.promocion_activa.porcentaje_descuento }}%
                                                 </span>
                                             </div>
-                                            <span class="text-danger fw-black fs-4" style="font-weight: 800; letter-spacing: -0.5px; line-height: 1.2;">
+                                            <span class="text-danger fw-black fs-4 tour-card-price" style="font-weight: 800; letter-spacing: -0.5px; line-height: 1.2;">
                                                 COP ${{ tour.precio_final|floatformat:0|intcomma }}
                                             </span>
 
@@ -251,7 +251,7 @@
                                     {% else %}
                                         <div class="d-flex flex-column">
                                             <span class="text-muted small fw-medium" style="font-size: 0.78rem;">Desde</span>
-                                            <span class="text-success fw-black fs-4" style="font-weight: 800; letter-spacing: -0.5px; line-height: 1.2;">
+                                            <span class="text-success fw-black fs-4 tour-card-price" style="font-weight: 800; letter-spacing: -0.5px; line-height: 1.2;">
                                                 COP ${{ tour.precio_minimo|floatformat:0|intcomma }}
                                             </span>
                                         </div>
@@ -286,19 +286,23 @@
                         </div>
                     </div>
                 </div>
-                {% with destino=tour %}
-                    {% include 'partials/actividades_modals.html' %}
-                {% endwith %}
             {% empty %}
                 <div class="col-12 text-center py-5" data-aos="zoom-in" data-aos-duration="600">
-                    <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center p-4 mb-3" style="width: 80px; height: 80px;">
-                        <i class="bi bi-search fs-1"></i>
+                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center p-4 mb-3 btn-hover-scale" style="width: 80px; height: 80px; cursor: pointer;" onclick="window.location.href=window.location.pathname;" title="Recargar página" role="button">
+                        <i class="fa-solid fa-arrows-rotate fs-1 text-white"></i>
                     </div>
                     <h5 class="fw-bold text-dark mb-1">Sin resultados disponibles</h5>
                     <p class="text-muted fw-normal fs-6">No encontramos resultados para tu búsqueda. Intenta con otros términos o filtros.</p>
                 </div>
             {% endfor %}
         </div>
+
+        <!-- Modales de actividades de cada tour (fuera del contenedor animado data-aos) -->
+        {% for tour in tours %}
+            {% with destino=tour %}
+                {% include 'partials/actividades_modals.html' %}
+            {% endwith %}
+        {% endfor %}
 
         <div class="text-center mt-4">
             <button id="btn-ver-mas-tours" type="button" class="btn btn-success btn-lg rounded-pill fw-bold px-4 shadow-sm tour-load-more d-none">
@@ -307,6 +311,13 @@
         </div>
     </section>
 
-<script src="{% static 'js/destinos.js' %}?v=4"></script>
+<script src="{% static 'js/destinos.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('[id^="modalActividades-"]').forEach(function(m) {
+            document.body.appendChild(m);
+        });
+    });
+</script>
 
 {% endblock %}

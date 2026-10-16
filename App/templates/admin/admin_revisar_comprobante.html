@@ -382,7 +382,7 @@
                         <!-- 4. BOTONES DE ACCIÓN -->
                         <div class="d-flex flex-wrap align-items-center gap-2">
                             <button type="submit" id="btnSubmitDecision" class="btn btn-success text-white flex-grow-1 py-2.5 rounded-pill fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2">
-                                <i class="bi bi-check2-circle fs-5 text-white"></i>
+                                <i class="bi bi-check2-circle fs-5 text-white" id="btnSubmitIcono"></i>
                                 <span id="btnSubmitTexto" class="text-white">Guardar y Aplicar Decisión</span>
                             </button>
                             
@@ -411,16 +411,20 @@
 
 {% block scripts %}
 <script>
-// Notificación Toast de alerta al realizar cambios vía HTMX
-document.addEventListener('mostrarNotificacionBitacora', function(evt) {
-    const data = evt.detail || {};
-    if (typeof window.mostrarToast === 'function') {
-        window.mostrarToast(
-            data.tipo || 'info',
-            data.titulo || 'Notificación del Sistema',
-            data.mensaje || 'Se han guardado los cambios correctamente.',
-            5000
-        );
+// Manejar envío del formulario para prevenir doble envío y reemplazar historial de navegación
+document.getElementById('formRevisarComprobante')?.addEventListener('submit', function() {
+    const btnSubmit = document.getElementById('btnSubmitDecision');
+    const btnTexto = document.getElementById('btnSubmitTexto');
+    const btnIcono = document.getElementById('btnSubmitIcono');
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        if (btnTexto) btnTexto.textContent = 'Procesando decisión...';
+        if (btnIcono) btnIcono.className = 'spinner-border spinner-border-sm me-1';
+    }
+    // Reemplaza la entrada actual del historial con la lista de comprobantes
+    // para evitar que el usuario pueda volver a la página de revisión usando "Atrás"
+    if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', "{% url 'admin_comprobantes' %}");
     }
 });
 

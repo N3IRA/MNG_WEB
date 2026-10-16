@@ -63,10 +63,61 @@
     }
     
     .info-pill {
-        background: #f8f9fa;
-        border-radius: 0.75rem;
+        background: #f8fafc;
+        border-radius: 0.85rem;
         padding: 1rem;
-        border: 1px solid #e9ecef;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        overflow: hidden;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    .info-pill:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    .info-pill-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        line-height: 1.25;
+        margin-bottom: 0;
+        word-break: break-word;
+    }
+    .info-pill-icon {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+    }
+    
+    /* Modo Oscuro para Modal de Detalles e Info-Pills */
+    html[data-bs-theme="dark"] .modal-body.bg-light {
+        background-color: #121814 !important;
+    }
+    html[data-bs-theme="dark"] .timeline-content h4 {
+        color: #ffffff !important;
+    }
+    html[data-bs-theme="dark"] .timeline-content p.text-muted {
+        color: #cbd5e1 !important;
+    }
+    html[data-bs-theme="dark"] .info-pill {
+        background: #1e2a21 !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    html[data-bs-theme="dark"] .info-pill h6 {
+        color: #ffffff !important;
+    }
+    html[data-bs-theme="dark"] .info-pill p {
+        color: #cbd5e1 !important;
+    }
+    html[data-bs-theme="dark"] .modal-footer.bg-white {
+        background-color: #18221b !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
     }
 </style>
 
@@ -134,12 +185,12 @@
                                             <div class="col-12 col-md-6">
                                                 <div class="info-pill h-100">
                                                     <div class="d-flex align-items-center gap-2 mb-2">
-                                                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
-                                                            <i class="bi bi-backpack-fill small"></i>
+                                                        <div class="bg-success text-white info-pill-icon shadow-sm">
+                                                            <i class="bi bi-backpack-fill"></i>
                                                         </div>
-                                                        <h6 class="fw-bold text-dark mb-0 fs-6">Equipo Requerido</h6>
+                                                        <h6 class="text-dark info-pill-title">Equipo Requerido</h6>
                                                     </div>
-                                                    <p class="small text-muted mb-0 lh-base ps-4 ms-1">{{ actividad.equipo_requerimiento }}</p>
+                                                    <p class="small text-muted mb-0 lh-base ps-1">{{ actividad.equipo_requerimiento }}</p>
                                                 </div>
                                             </div>
                                             {% endif %}
@@ -148,12 +199,12 @@
                                             <div class="col-12 col-md-6">
                                                 <div class="info-pill h-100">
                                                     <div class="d-flex align-items-center gap-2 mb-2">
-                                                        <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
-                                                            <i class="bi bi-lightbulb-fill small"></i>
+                                                        <div class="bg-warning text-dark info-pill-icon shadow-sm">
+                                                            <i class="bi bi-lightbulb-fill"></i>
                                                         </div>
-                                                        <h6 class="fw-bold text-dark mb-0 fs-6">Tips y Recomendaciones</h6>
+                                                        <h6 class="text-dark info-pill-title">Tips y Recomendaciones</h6>
                                                     </div>
-                                                    <p class="small text-muted mb-0 lh-base ps-4 ms-1">{{ actividad.recomendaciones }}</p>
+                                                    <p class="small text-muted mb-0 lh-base ps-1">{{ actividad.recomendaciones }}</p>
                                                 </div>
                                             </div>
                                             {% endif %}

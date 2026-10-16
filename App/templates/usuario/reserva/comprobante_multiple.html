@@ -24,7 +24,7 @@
             <div class="d-flex justify-content-between">
               <div>
                 <div class="fw-semibold">Reserva #{{ r.id }} - {{ r.paquete.nombre }}</div>
-                <div class="small text-muted">Fecha: {{ r.fecha|date:'d M Y' }} · Hora: {{ r.paquete.hora_encuentro }}</div>
+                <div class="small text-muted">Fecha: {{ r.fecha_inicio|date:'d M Y' }} · Hora: {{ r.paquete.hora_encuentro }}</div>
               </div>
               <div class="text-end">
                  <div class="fw-bold text-success">COP ${{ r.monto_total|floatformat:0|intcomma }}</div>

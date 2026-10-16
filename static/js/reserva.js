@@ -13,12 +13,48 @@ document.addEventListener("DOMContentLoaded", function () {
         const dd = String(fechaMinima.getDate()).padStart(2, '0');
         const fechaMinimaTexto = `${yyyy}-${mm}-${dd}`;
 
-        // 3. Inicializar Flatpickr con la fecha mínima exacta
-        flatpickr(dateInput, {
+        // 3. Recopilar rangos de temporadas con tarifa activa para este paquete
+        const elementosTarifas = document.querySelectorAll('.tarifa-item');
+        const rangosHabilitados = [];
+
+        elementosTarifas.forEach(function (el) {
+            const fInicio = el.getAttribute('data-inicio');
+            const fFin = el.getAttribute('data-fin');
+            if (fInicio && fFin) {
+                rangosHabilitados.push({
+                    from: fInicio,
+                    to: fFin
+                });
+            }
+        });
+
+        // Configuración de Flatpickr: habilitar sólo rangos vigentes si existen tarifas definidas
+        const opcionesFlatpickr = {
             locale: 'es',
             dateFormat: 'Y-m-d',
             minDate: fechaMinimaTexto,
             disableMobile: true,
+            onDayCreate: function (dObj, dStr, fp, dayElem) {
+                const dateObj = dayElem.dateObj;
+                const dYYYY = dateObj.getFullYear();
+                const dMM = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const dDD = String(dateObj.getDate()).padStart(2, '0');
+                const fechaStr = `${dYYYY}-${dMM}-${dDD}`;
+
+                // Verificar si está habilitado por tarifa y cumple fecha mínima
+                if (rangosHabilitados.length > 0) {
+                    const enRango = rangosHabilitados.some(function (rango) {
+                        return fechaStr >= rango.from && fechaStr <= rango.to;
+                    });
+
+                    if (enRango && fechaStr >= fechaMinimaTexto) {
+                        dayElem.classList.add('fecha-disponible-tour');
+                        dayElem.title = 'Fecha con tarifa disponible para reservar';
+                    } else if (fechaStr >= fechaMinimaTexto) {
+                        dayElem.title = 'Sin temporada o tarifa disponible';
+                    }
+                }
+            },
             onChange: function () {
                 if (typeof window.updatePrice === 'function') {
                     window.updatePrice();
@@ -34,7 +70,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     window.updatePrice();
                 }
             }
-        });
+        };
+
+        // Si el paquete tiene tarifas por temporadas registradas, solo permitir seleccionar fechas dentro de esos rangos
+        if (rangosHabilitados.length > 0) {
+            opcionesFlatpickr.enable = rangosHabilitados;
+        }
+
+        // Inicializar Flatpickr
+        flatpickr(dateInput, opcionesFlatpickr);
 
         dateInput.addEventListener('change', function () {
             if (typeof window.updatePrice === 'function') {

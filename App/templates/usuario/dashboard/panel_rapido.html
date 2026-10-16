@@ -10,7 +10,7 @@
   <div class="row align-items-center mb-5 g-4">
     <div class="col-12 col-lg-7" data-aos="fade-right" data-aos-duration="800">
       <div class="d-flex align-items-center gap-2 mb-3" data-aos="zoom-in" data-aos-delay="100">
-        <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fw-bold border border-success border-opacity-25">
+        <span class="badge bg-white bg-opacity-10 text-white px-3 py-2 rounded-pill fw-bold border border-success border-opacity-25">
           <i class="bi bi-compass-fill me-1"></i> PANEL RÁPIDO DE VIAJERO
         </span>
         {% if user.imagen_perfil %}
@@ -74,15 +74,15 @@
             <div class="bg-white bg-opacity-90 backdrop-blur rounded-4 p-3 shadow-sm border border-white">
               <div class="d-flex align-items-center justify-content-between">
                 <div class="me-2 overflow-hidden">
-                  <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2 py-1 rounded-pill small mb-1">
+                  <span class="badge bg-success bg-opacity-10 text-white fw-bold px-2 py-1 rounded-pill small mb-1">
                     <i class="bi bi-stars"></i> Destino Recomendado
                   </span>
                   <p class="mb-0 fw-bold text-dark text-truncate" id="heroRecTitle">
                     {{ recomendacion.nombre|default:"Laguna Negra" }}
                   </p>
                 </div>
-                <span class="btn btn-success btn-sm rounded-circle p-2 flex-shrink-0 shadow-sm">
-                  <i class="bi bi-arrow-right-short fs-5 text-white"></i>
+                <span class="btn btn-success rounded-circle p-0 d-inline-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style="width: 36px; height: 36px;">
+                  <i class="bi bi-arrow-right-short fs-4 text-white"></i>
                 </span>
               </div>
             </div>
@@ -102,7 +102,7 @@
             <div class="d-flex align-items-center justify-content-between mb-2">
               <span class="text-muted small fw-semibold">Mis Reservas</span>
               <div class="bg-success bg-opacity-10 text-success rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-                <i class="bi bi-calendar-check-fill fs-5"></i>
+                <i class="bi bi-calendar-check-fill text-white fs-5"></i>
               </div>
             </div>
             <div>
@@ -232,7 +232,7 @@
             <!-- Estado sin reservas -->
             <div class="text-center py-4 px-3 my-auto">
               <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-3" style="width: 70px; height: 70px;">
-                <i class="bi bi-tree-fill fs-2"></i>
+                <i class="bi bi-tree-fill text-white fs-2"></i>
               </div>
               <h6 class="fw-bold text-dark mb-2">Aún no tienes un viaje programado</h6>
               <p class="text-muted small mb-4">
@@ -446,16 +446,16 @@
           <i class="bi bi-info-circle-fill fs-4"></i>
         </div>
         <div>
-          <h6 class="fw-bold mb-1 text-dark">¿Necesitas asistencia con tu itinerario o reserva?</h6>
-          <p class="text-muted small mb-0">Nuestro equipo de guías locales y atención al cliente está a tu disposición en Mongua.</p>
+          <h6 class="fw-bold mb-1 text-white">¿Necesitas asistencia con tu itinerario o reserva?</h6>
+          <p class="text-white small mb-0">Nuestro equipo de guías locales y atención al cliente está a tu disposición en Mongua.</p>
         </div>
       </div>
       <div class="d-flex align-items-center gap-2 flex-shrink-0">
-        <a href="{% url 'pqrs' %}?from=panel" class="btn btn-success rounded-pill px-4 py-2 fw-bold btn-sm shadow-sm">
-          <i class="bi bi-envelope me-1"></i> Contactar Soporte
+        <a href="{% url 'pqrs' %}?from=panel" class="btn btn-light rounded-pill px-4 py-2 fw-bold btn-sm shadow-sm">
+          <i class="bi bi-envelope me-1 text-success"></i> Contactar Soporte
         </a>
-        <a href="{% url 'nosotros' %}?from=panel" class="btn btn-outline-success rounded-pill px-4 py-2 fw-semibold btn-sm">
-          <i class="bi bi-building me-1"></i> Conócenos
+        <a href="{% url 'nosotros' %}?from=panel" class="btn btn-light rounded-pill px-4 py-2 fw-semibold btn-sm">
+          <i class="bi bi-building me-1 text-success"></i> Conócenos
         </a>
       </div>
     </div>

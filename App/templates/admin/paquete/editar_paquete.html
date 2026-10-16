@@ -37,24 +37,35 @@
     <div class="row g-4">
         <!-- Columna Lateral: Resumen del Paquete e Imagen -->
         <div class="col-12 col-lg-4">
-            <!-- Tarjeta con Imagen Actual -->
+            <!-- Tarjeta con Imagen Actual y Vista Previa -->
             <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4 text-center">
-                <div class="d-flex align-items-center gap-2 mb-3 text-start">
-                    <div class="bg-success bg-opacity-10 text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-                        <i class="bi bi-image-fill fs-5"></i>
+                <div class="d-flex align-items-center justify-content-between mb-3 text-start">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="bg-success bg-opacity-10 text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                            <i class="bi bi-image-fill fs-5"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-0">Imagen del Destino</h6>
                     </div>
-                    <h6 class="fw-bold text-dark mb-0">Imagen del Destino</h6>
+                    <span id="badge-estado-img" class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill small px-2 py-1">{% if object.imagen %}Actual{% else %}Sin imagen{% endif %}</span>
                 </div>
-                {% if object.imagen %}
-                    <div class="rounded-4 overflow-hidden shadow-sm mb-3">
-                        <img src="{{ object.imagen.url }}" alt="{{ object.nombre }}" class="img-fluid w-100" style="height: 180px; object-fit: cover;">
-                    </div>
-                {% else %}
-                    <div class="py-4 bg-light rounded-4 text-muted mb-3 border border-dashed">
+                <div class="position-relative rounded-4 overflow-hidden shadow-sm mb-3 border">
+                    <img id="img-destino-preview" src="{% if object.imagen %}{{ object.imagen.url }}{% endif %}" alt="{{ object.nombre }}" class="img-fluid w-100 {% if not object.imagen %}d-none{% endif %}" style="height: 180px; object-fit: cover;">
+                    <div id="preview-placeholder" class="py-4 bg-light rounded-4 text-muted border border-dashed {% if object.imagen %}d-none{% endif %}">
                         <i class="bi bi-card-image fs-1 d-block mb-1"></i>
                         <span class="small">Sin imagen asignada</span>
                     </div>
-                {% endif %}
+                    <span class="position-absolute top-0 end-0 m-2 badge bg-dark bg-opacity-75 text-white rounded-pill small px-2 py-1 d-none" id="preview-img-size">-- KB</span>
+                </div>
+                <div id="new-img-info" class="d-none bg-light rounded-3 p-2 small mb-3 border border-light text-start">
+                    <div class="d-flex align-items-center justify-content-between mb-1 pb-1 border-bottom border-secondary border-opacity-10">
+                        <span class="text-muted" style="font-size: 0.75rem;">Nueva foto:</span>
+                        <span id="preview-img-name" class="fw-bold text-dark text-truncate ms-2" style="max-width: 170px; font-size: 0.78rem;">--</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="text-muted" style="font-size: 0.75rem;">Dimensiones:</span>
+                        <span id="preview-img-dim" class="fw-semibold text-secondary" style="font-size: 0.78rem;">-- × --</span>
+                    </div>
+                </div>
                 <div class="border-bottom border-light pb-2 mb-2 d-flex justify-content-between align-items-center text-start">
                     <span class="text-muted small">Identificador:</span>
                     <span class="badge bg-light text-dark fw-bold border">#{{ object.id }}</span>
@@ -125,7 +136,26 @@
                                 {{ form.nombre|as_crispy_field }}
                                 {{ form.categoria|as_crispy_field }}
                                 {{ form.descripcion|as_crispy_field }}
-                                {{ form.imagen|as_crispy_field }}
+                                <div class="mb-3">
+                                    {{ form.imagen|as_crispy_field }}
+                                    <!-- Miniatura y confirmación visual inmediata debajo del input -->
+                                    <div id="inline-preview-box" class="d-none mt-2 p-2 rounded-3 bg-light border border-success border-opacity-50 shadow-sm">
+                                        <div class="d-flex align-items-center justify-content-between gap-2">
+                                            <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                                <img id="inline-preview-img" src="#" alt="Vista previa" class="rounded-2 shadow-sm flex-shrink-0" style="width: 48px; height: 48px; object-fit: cover;">
+                                                <div class="overflow-hidden">
+                                                    <span id="inline-preview-name" class="fw-bold text-dark d-block text-truncate small" style="max-width: 180px;"></span>
+                                                    <span class="text-success small d-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                                                        <i class="bi bi-check-circle-fill"></i> Nueva imagen seleccionada
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <button type="button" id="btn-inline-remove" class="btn btn-sm btn-outline-danger rounded-circle p-0 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 30px; height: 30px;" title="Restaurar imagen anterior">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Columna Derecha: Logística y Actividades -->
@@ -133,12 +163,24 @@
                                 <h6 class="fw-bold text-dark text-uppercase small mb-3 border-bottom pb-2">
                                     <i class="bi bi-clock-history text-success me-1"></i> Logística y Duración
                                 </h6>
-                                <div class="row">
-                                    <div class="col-6">
-                                        {{ form.dias_duracion|as_crispy_field }}
+                                <div class="row g-3 mb-3">
+                                    <div class="col-12 col-sm-6">
+                                        <label for="{{ form.dias_duracion.id_for_label }}" class="form-label fw-bold text-dark small mb-1">
+                                            {{ form.dias_duracion.label }} <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.dias_duracion }}
+                                        {% if form.dias_duracion.errors %}
+                                            <div class="text-danger small mt-1">{{ form.dias_duracion.errors }}</div>
+                                        {% endif %}
                                     </div>
-                                    <div class="col-6">
-                                        {{ form.noches_duracion|as_crispy_field }}
+                                    <div class="col-12 col-sm-6">
+                                        <label for="{{ form.noches_duracion.id_for_label }}" class="form-label fw-bold text-dark small mb-1">
+                                            {{ form.noches_duracion.label }} <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.noches_duracion }}
+                                        {% if form.noches_duracion.errors %}
+                                            <div class="text-danger small mt-1">{{ form.noches_duracion.errors }}</div>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 {{ form.punto_encuentro|as_crispy_field }}
@@ -166,4 +208,114 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const inputImagen = document.querySelector('input[type="file"][name="imagen"]') || document.getElementById('id_imagen');
+    const previewPlaceholder = document.getElementById('preview-placeholder');
+    const imgDestinoPreview = document.getElementById('img-destino-preview');
+    const previewImgName = document.getElementById('preview-img-name');
+    const previewImgSize = document.getElementById('preview-img-size');
+    const previewImgDim = document.getElementById('preview-img-dim');
+    const badgeEstado = document.getElementById('badge-estado-img');
+    const newImgInfo = document.getElementById('new-img-info');
+    
+    const inlineBox = document.getElementById('inline-preview-box');
+    const inlineImg = document.getElementById('inline-preview-img');
+    const inlineName = document.getElementById('inline-preview-name');
+    const btnInlineRemove = document.getElementById('btn-inline-remove');
+
+    const originalImgUrl = "{% if object.imagen %}{{ object.imagen.url }}{% endif %}";
+
+    function formatearTamano(bytes) {
+        if (!bytes || bytes === 0) return '0 B';
+        const k = 1024;
+        const dm = 1;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+
+    function restaurarOriginal() {
+        if (inputImagen) inputImagen.value = '';
+        if (originalImgUrl) {
+            if (imgDestinoPreview) {
+                imgDestinoPreview.src = originalImgUrl;
+                imgDestinoPreview.classList.remove('d-none');
+            }
+            if (previewPlaceholder) previewPlaceholder.classList.add('d-none');
+            if (badgeEstado) {
+                badgeEstado.className = 'badge bg-secondary bg-opacity-10 text-secondary rounded-pill small px-2 py-1';
+                badgeEstado.textContent = 'Actual';
+            }
+        } else {
+            if (imgDestinoPreview) imgDestinoPreview.classList.add('d-none');
+            if (previewPlaceholder) previewPlaceholder.classList.remove('d-none');
+            if (badgeEstado) {
+                badgeEstado.className = 'badge bg-secondary bg-opacity-10 text-secondary rounded-pill small px-2 py-1';
+                badgeEstado.textContent = 'Sin imagen';
+            }
+        }
+        if (previewImgSize) previewImgSize.classList.add('d-none');
+        if (newImgInfo) newImgInfo.classList.add('d-none');
+        if (inlineBox) inlineBox.classList.add('d-none');
+    }
+
+    if (inputImagen) {
+        inputImagen.addEventListener('change', function(e) {
+            const file = this.files && this.files[0];
+            if (file) {
+                if (!file.type.startsWith('image/')) {
+                    alert('Por favor selecciona un archivo de imagen válido (JPG, PNG, WebP, etc.).');
+                    restaurarOriginal();
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const dataUrl = event.target.result;
+                    
+                    if (imgDestinoPreview) {
+                        imgDestinoPreview.src = dataUrl;
+                        imgDestinoPreview.classList.remove('d-none');
+                    }
+                    if (previewPlaceholder) previewPlaceholder.classList.add('d-none');
+                    if (inlineImg) inlineImg.src = dataUrl;
+
+                    if (previewImgName) {
+                        previewImgName.textContent = file.name;
+                        previewImgName.title = file.name;
+                    }
+                    if (inlineName) {
+                        inlineName.textContent = file.name;
+                        inlineName.title = file.name;
+                    }
+                    if (previewImgSize) {
+                        previewImgSize.textContent = formatearTamano(file.size);
+                        previewImgSize.classList.remove('d-none');
+                    }
+                    if (newImgInfo) newImgInfo.classList.remove('d-none');
+
+                    const imgObj = new Image();
+                    imgObj.onload = function() {
+                        if (previewImgDim) previewImgDim.textContent = this.width + ' × ' + this.height + ' px';
+                    };
+                    imgObj.src = dataUrl;
+
+                    if (inlineBox) inlineBox.classList.remove('d-none');
+                    if (badgeEstado) {
+                        badgeEstado.className = 'badge bg-success bg-opacity-10 text-success rounded-pill small px-2 py-1';
+                        badgeEstado.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Nueva foto';
+                    }
+                };
+                reader.readAsDataURL(file);
+            } else {
+                restaurarOriginal();
+            }
+        });
+    }
+
+    if (btnInlineRemove) btnInlineRemove.addEventListener('click', restaurarOriginal);
+});
+</script>
 {% endblock content %}
