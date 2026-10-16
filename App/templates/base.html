@@ -71,6 +71,13 @@
 
     <script src="{% static 'js/librerias/bootstrap.paquete.min.js' %}"></script>
     <script src="{% static 'js/librerias/animaciones_scroll_aos.js' %}"></script>
+    <script src="{% static 'js/librerias/htmx.min.js' %}"></script>
+    <script defer src="{% static 'js/librerias/alpine.min.js' %}"></script>
+    <script>
+      document.body.addEventListener('htmx:configRequest', function (event) {
+        event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+      });
+    </script>
 
     {% include 'partials/bitacora/bitacora.html' %}
     

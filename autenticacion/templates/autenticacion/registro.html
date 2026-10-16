@@ -119,16 +119,22 @@
           pattern="^[A-Za-z0-9_]{4,30}$"
           title="Solo letras, números y guión bajo (_). Entre 4 y 30 caracteres. Sin símbolos como / ( ) = ? ni espacios."
           autocomplete="username"
+          hx-get="{% url 'verificar_apodo_htmx' %}"
+          hx-trigger="keyup changed delay:400ms"
+          hx-target="#username-feedback"
+          hx-swap="innerHTML"
           required
         />
         <div class="form-text text-muted ms-3 small mt-1">
           <i class="bi bi-shield-check me-1"></i>Solo letras, números y guión bajo (_). Mín. 4 caracteres. Sin símbolos como / ( ) = ? ni espacios.
         </div>
-        {% if form.username.errors %}
-        <div class="invalid-feedback ms-3 d-block">
-          {{ form.username.errors.0 }}
+        <div id="username-feedback">
+          {% if form.username.errors %}
+          <div class="invalid-feedback ms-3 d-block">
+            {{ form.username.errors.0 }}
+          </div>
+          {% endif %}
         </div>
-        {% endif %}
       </div>
 
       <!-- Sección: Identificación (2 Columnas) -->
@@ -179,16 +185,24 @@
               class="form-control rounded-pill py-3 px-4 {% if form.numero_documento.errors %}is-invalid{% endif %}"
               placeholder="1000000000"
               maxlength="10"
+              pattern="[0-9]{6,10}"
+              title="Solo números (entre 6 y 10 dígitos)"
+              hx-get="{% url 'verificar_documento_htmx' %}"
+              hx-trigger="keyup changed delay:400ms"
+              hx-target="#documento-feedback"
+              hx-swap="innerHTML"
               required
               oninput="
                 this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)
               "
             />
-            {% if form.numero_documento.errors %}
-            <div class="invalid-feedback ms-3 d-block">
-              {{ form.numero_documento.errors.0 }}
+            <div id="documento-feedback">
+              {% if form.numero_documento.errors %}
+              <div class="invalid-feedback ms-3 d-block">
+                {{ form.numero_documento.errors.0 }}
+              </div>
+              {% endif %}
             </div>
-            {% endif %}
           </div>
         </div>
       </div>
@@ -259,14 +273,22 @@
               class="form-control rounded-pill py-3 px-4 {% if form.telefono.errors %}is-invalid{% endif %}"
               placeholder="3001234567"
               required
-              maxlength="10"
+              maxlength="15"
+              pattern="[0-9]{7,15}"
+              title="Solo números (entre 7 y 15 dígitos)"
+              hx-get="{% url 'verificar_telefono_htmx' %}"
+              hx-trigger="keyup changed delay:400ms"
+              hx-target="#telefono-feedback"
+              hx-swap="innerHTML"
               oninput="this.value = this.value.replace(/[^0-9]/g, '')"
             />
-            {% if form.telefono.errors %}
-            <div class="invalid-feedback ms-3 d-block">
-              {{ form.telefono.errors.0 }}
+            <div id="telefono-feedback">
+              {% if form.telefono.errors %}
+              <div class="invalid-feedback ms-3 d-block">
+                {{ form.telefono.errors.0 }}
+              </div>
+              {% endif %}
             </div>
-            {% endif %}
           </div>
           <div class="col-sm-6">
             <label
@@ -281,13 +303,19 @@
               value="{{ form.email.value|default:'' }}"
               class="form-control rounded-pill py-3 px-4 {% if form.email.errors %}is-invalid{% endif %}"
               placeholder="aventura@monagua.com"
+              hx-get="{% url 'verificar_email_htmx' %}"
+              hx-trigger="keyup changed delay:400ms"
+              hx-target="#email-feedback"
+              hx-swap="innerHTML"
               required
             />
-            {% if form.email.errors %}
-            <div class="invalid-feedback ms-3 d-block">
-              {{ form.email.errors.0 }}
+            <div id="email-feedback">
+              {% if form.email.errors %}
+              <div class="invalid-feedback ms-3 d-block">
+                {{ form.email.errors.0 }}
+              </div>
+              {% endif %}
             </div>
-            {% endif %}
           </div>
         </div>
         <p class="small text-muted px-3 mt-2 mb-0" style="font-size: 0.78rem">
@@ -296,39 +324,84 @@
         </p>
       </div>
 
-      <!-- Sección: Contraseñas y Seguridad -->
-      <div class="mb-3" data-aos="fade-up" data-aos-delay="400">
-        <div
-          class="d-flex justify-content-between align-items-center px-3 mb-1"
-        >
-          <label
-            for="pass1"
-            class="form-label small fw-semibold text-secondary mb-0"
-            >Contraseña</label
-          >
+      <!-- Sección: Contraseñas y Seguridad con Alpine.js -->
+      <div
+        class="mb-3"
+        data-aos="fade-up"
+        data-aos-delay="400"
+        x-data="{
+          password: '{{ form.password.value|default:'' }}',
+          confirmPassword: '{{ form.confirmar_password.value|default:'' }}',
+          showPass1: false,
+          showPass2: false,
+          showRequirements: false,
+          get hasLength() { return this.password.length >= 8; },
+          get hasUpper() { return /[A-Z]/.test(this.password); },
+          get hasLower() { return /[a-z]/.test(this.password); },
+          get hasNumber() { return /[0-9]/.test(this.password); },
+          get hasSpecial() { return /[@$!%*?&._\-#]/.test(this.password); },
+          get score() {
+            if (!this.password) return 0;
+            return (this.hasLength ? 1 : 0) + (this.hasUpper ? 1 : 0) + (this.hasLower ? 1 : 0) + (this.hasNumber ? 1 : 0) + (this.hasSpecial ? 1 : 0);
+          },
+          get strengthWidth() {
+            if (!this.password || this.score === 0) return '0%';
+            if (this.score <= 2) return '33%';
+            if (this.score <= 4) return '66%';
+            return '100%';
+          },
+          get strengthColor() {
+            if (this.score <= 2) return 'bg-danger';
+            if (this.score <= 4) return 'bg-warning';
+            return 'bg-success';
+          },
+          get strengthLabel() {
+            if (!this.password) return 'Mala';
+            if (this.score <= 2) return 'Mala';
+            if (this.score <= 4) return 'Normal';
+            return 'Buena';
+          },
+          get strengthTextColor() {
+            if (this.score <= 2) return 'text-danger';
+            if (this.score <= 4) return 'text-warning';
+            return 'text-success';
+          },
+          get passwordsMatch() {
+            if (!this.confirmPassword) return true;
+            return this.password === this.confirmPassword;
+          }
+        }"
+      >
+        <div class="d-flex justify-content-between align-items-center px-3 mb-1">
+          <label for="pass1" class="form-label small fw-semibold text-secondary mb-0">Contraseña</label>
           <button
             type="button"
-            id="info-password-trigger"
-            class="btn btn-link p-0 text-success text-decoration-none small d-none"
+            @click="showRequirements = !showRequirements"
+            x-show="password.length > 0 || showRequirements"
+            x-transition
+            class="btn btn-link p-0 text-success text-decoration-none small"
             style="font-size: 0.8rem"
           >
-            <i class="bi bi-info-circle me-1"></i>Requisitos
+            <i class="bi me-1" :class="showRequirements ? 'bi-info-circle-fill' : 'bi-info-circle'"></i>Requisitos
           </button>
         </div>
         <div class="position-relative">
           <input
-            type="password"
+            :type="showPass1 ? 'text' : 'password'"
             id="pass1"
             name="password"
+            x-model="password"
+            @focus="showRequirements = true"
             class="form-control rounded-pill py-3 px-4 pe-5 {% if form.password.errors %}is-invalid{% endif %}"
             placeholder="••••••••"
             required
             minlength="6"
           />
           <i
-            class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-4 text-secondary toggle-password"
+            class="bi position-absolute top-50 end-0 translate-middle-y me-4 text-secondary"
+            :class="showPass1 ? 'bi-eye-slash' : 'bi-eye'"
+            @click="showPass1 = !showPass1"
             style="cursor: pointer; z-index: 5"
-            data-target="pass1"
             title="Mostrar/ocultar contraseña"
           ></i>
         </div>
@@ -337,99 +410,93 @@
           {{ form.password.errors.0 }}
         </div>
         {% endif %}
-      </div>
 
-      <!-- Barra de fortaleza de contraseña -->
-      <div class="mb-3 px-3" id="strength-container" style="display: none">
+        <!-- Barra de fortaleza de contraseña reactiva con Alpine.js -->
+        <div class="mt-2 px-3" x-show="password.length > 0" x-transition>
+          <div class="progress rounded-pill" style="height: 6px; background-color: #e9ecef">
+            <div
+              class="progress-bar progress-bar-striped progress-bar-animated rounded-pill"
+              :class="strengthColor"
+              role="progressbar"
+              :style="'width: ' + strengthWidth"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            ></div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mt-1">
+            <span class="text-muted" style="font-size: 0.75rem">Seguridad:</span>
+            <span
+              class="fw-bold small"
+              :class="strengthTextColor"
+              x-text="strengthLabel"
+              style="font-size: 0.75rem"
+            ></span>
+          </div>
+        </div>
+
+        <!-- Tarjeta colapsable de requisitos de contraseña -->
         <div
-          class="progress rounded-pill"
-          style="height: 6px; background-color: #e9ecef"
+          x-show="showRequirements"
+          x-transition
+          class="card card-body p-3 mt-2 border-0 rounded-4 bg-light shadow-sm"
+          style="font-size: 0.82rem"
         >
-          <div
-            id="strength-bar"
-            class="progress-bar progress-bar-striped progress-bar-animated rounded-pill"
-            role="progressbar"
-            style="width: 0%"
-            aria-valuenow="0"
-            aria-valuemin="0"
-            aria-valuemax="100"
-          ></div>
+          <h6 class="fw-bold text-success mb-2 small">
+            <i class="bi bi-shield-check me-1"></i>Requisitos de contraseña segura:
+          </h6>
+          <ul class="mb-0 ps-3 small" style="list-style-type: none">
+            <li class="mb-1" :class="hasLength ? 'text-success fw-semibold' : 'text-secondary'">
+              <i class="bi me-1" :class="hasLength ? 'bi-check-circle-fill text-success' : 'bi-circle text-muted'"></i>Mínimo 8 caracteres
+            </li>
+            <li class="mb-1" :class="hasUpper ? 'text-success fw-semibold' : 'text-secondary'">
+              <i class="bi me-1" :class="hasUpper ? 'bi-check-circle-fill text-success' : 'bi-circle text-muted'"></i>Al menos una letra mayúscula
+            </li>
+            <li class="mb-1" :class="hasLower ? 'text-success fw-semibold' : 'text-secondary'">
+              <i class="bi me-1" :class="hasLower ? 'bi-check-circle-fill text-success' : 'bi-circle text-muted'"></i>Al menos una letra minúscula
+            </li>
+            <li class="mb-1" :class="hasNumber ? 'text-success fw-semibold' : 'text-secondary'">
+              <i class="bi me-1" :class="hasNumber ? 'bi-check-circle-fill text-success' : 'bi-circle text-muted'"></i>Al menos un número
+            </li>
+            <li class="mb-0" :class="hasSpecial ? 'text-success fw-semibold' : 'text-secondary'">
+              <i class="bi me-1" :class="hasSpecial ? 'bi-check-circle-fill text-success' : 'bi-circle text-muted'"></i>Al menos un carácter especial (@, $, !, %, *, ?, &)
+            </li>
+          </ul>
         </div>
-        <div class="d-flex justify-content-between align-items-center mt-1">
-          <span class="text-muted" style="font-size: 0.75rem">Seguridad:</span>
-          <span
-            id="strength-text"
-            class="fw-bold small text-secondary"
-            style="font-size: 0.75rem"
-            >Mala</span
-          >
-        </div>
-      </div>
 
-      <!-- Tarjeta colapsable de requisitos de contraseña -->
-      <div
-        id="password-requirements"
-        class="card card-body p-3 mb-3 border-0 rounded-4 bg-light d-none shadow-sm"
-        style="font-size: 0.82rem"
-      >
-        <h6 class="fw-bold text-success mb-2 small">
-          <i class="bi bi-shield-check me-1"></i>Requisitos de contraseña
-          segura:
-        </h6>
-        <ul
-          class="mb-0 ps-3 text-secondary small"
-          style="list-style-type: none"
-        >
-          <li id="req-length" class="mb-1">
-            <i class="bi bi-circle me-1 text-muted"></i>Mínimo 8 caracteres
-          </li>
-          <li id="req-upper" class="mb-1">
-            <i class="bi bi-circle me-1 text-muted"></i>Al menos una letra
-            mayúscula
-          </li>
-          <li id="req-lower" class="mb-1">
-            <i class="bi bi-circle me-1 text-muted"></i>Al menos una letra
-            minúscula
-          </li>
-          <li id="req-number" class="mb-1">
-            <i class="bi bi-circle me-1 text-muted"></i>Al menos un número
-          </li>
-          <li id="req-special" class="mb-0">
-            <i class="bi bi-circle me-1 text-muted"></i>Al menos un carácter
-            especial (@, $, !, %, *, ?, &)
-          </li>
-        </ul>
-      </div>
-
-      <!-- Confirmar Contraseña -->
-      <div class="mb-3" data-aos="fade-up" data-aos-delay="450">
-        <label
-          for="pass2"
-          class="form-label small fw-semibold text-secondary ps-3 mb-1"
-          >Confirmar contraseña</label
-        >
-        <div class="position-relative">
-          <input
-            type="password"
-            id="pass2"
-            name="confirmar_password"
-            class="form-control rounded-pill py-3 px-4 pe-5 {% if form.confirmar_password.errors %}is-invalid{% endif %}"
-            placeholder="••••••••"
-            required
-            minlength="6"
-          />
-          <i
-            class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-4 text-secondary toggle-password"
-            style="cursor: pointer; z-index: 5"
-            data-target="pass2"
-            title="Mostrar/ocultar contraseña"
-          ></i>
+        <!-- Confirmar Contraseña -->
+        <div class="mt-3">
+          <label for="pass2" class="form-label small fw-semibold text-secondary ps-3 mb-1">Confirmar contraseña</label>
+          <div class="position-relative">
+            <input
+              :type="showPass2 ? 'text' : 'password'"
+              id="pass2"
+              name="confirmar_password"
+              x-model="confirmPassword"
+              class="form-control rounded-pill py-3 px-4 pe-5 {% if form.confirmar_password.errors %}is-invalid{% endif %}"
+              placeholder="••••••••"
+              required
+              minlength="6"
+            />
+            <i
+              class="bi position-absolute top-50 end-0 translate-middle-y me-4 text-secondary"
+              :class="showPass2 ? 'bi-eye-slash' : 'bi-eye'"
+              @click="showPass2 = !showPass2"
+              style="cursor: pointer; z-index: 5"
+              title="Mostrar/ocultar contraseña"
+            ></i>
+          </div>
+          <div x-show="confirmPassword.length > 0 && !passwordsMatch" x-transition class="invalid-feedback d-block ms-3 mt-1">
+            <i class="bi bi-x-circle me-1"></i>Las contraseñas no coinciden.
+          </div>
+          <div x-show="confirmPassword.length > 0 && passwordsMatch && password.length >= 6" x-transition class="valid-feedback d-block text-success ms-3 mt-1">
+            <i class="bi bi-check-circle-fill me-1"></i>Las contraseñas coinciden.
+          </div>
+          {% if form.confirmar_password.errors %}
+          <div class="invalid-feedback ms-3 d-block">
+            {{ form.confirmar_password.errors.0 }}
+          </div>
+          {% endif %}
         </div>
-        {% if form.confirmar_password.errors %}
-        <div class="invalid-feedback ms-3 d-block">
-          {{ form.confirmar_password.errors.0 }}
-        </div>
-        {% endif %}
       </div>
 
       <!-- Términos y Condiciones -->
@@ -491,73 +558,7 @@
   </div>
 </div>
 
-<!-- Scripts de Validación, Geografía y Seguridad -->
-<script src="{% static 'js/auth/auth_bundle.js' %}"></script>
-<script>
-  // Limpiar inmediatamente alertas e is-invalid en cualquier campo al escribir
-  document
-    .querySelectorAll("#formularioRegistro input, #formularioRegistro select")
-    .forEach(function (input) {
-      input.addEventListener("input", function () {
-        this.classList.remove("is-invalid");
-        var feedback = this.parentElement
-          ? this.parentElement.querySelector(".invalid-feedback")
-          : null;
-        if (feedback) {
-          feedback.style.display = "none";
-        }
-      });
-    });
-
-  // Mostrar / ocultar contraseña
-  document.querySelectorAll(".toggle-password").forEach(function (toggle) {
-    toggle.addEventListener("click", function () {
-      var targetId = this.getAttribute("data-target");
-      var input = document.getElementById(targetId);
-      if (input) {
-        if (input.type === "password") {
-          input.type = "text";
-          this.classList.replace("bi-eye", "bi-eye-slash");
-        } else {
-          input.type = "password";
-          this.classList.replace("bi-eye-slash", "bi-eye");
-        }
-      }
-    });
-  });
-
-  // Mostrar el botón de requisitos sólo cuando el campo de contraseña tenga el foco
-  var passInput = document.getElementById("pass1");
-  var infoTrigger = document.getElementById("info-password-trigger");
-  var requirementsCard = document.getElementById("password-requirements");
-
-  if (passInput && infoTrigger) {
-    passInput.addEventListener("focus", function () {
-      infoTrigger.classList.remove("d-none");
-      if (requirementsCard) {
-        requirementsCard.classList.remove("d-none");
-        var icon = infoTrigger.querySelector("i");
-        if (icon) {
-          icon.classList.remove("bi-info-circle");
-          icon.classList.add("bi-info-circle-fill");
-        }
-      }
-    });
-
-    passInput.addEventListener("blur", function () {
-      setTimeout(function () {
-        infoTrigger.classList.add("d-none");
-        if (requirementsCard) {
-          requirementsCard.classList.add("d-none");
-          var icon = infoTrigger.querySelector("i");
-          if (icon) {
-            icon.classList.remove("bi-info-circle-fill");
-            icon.classList.add("bi-info-circle");
-          }
-        }
-      }, 250);
-    });
-  }
-</script>
+<!-- Scripts de Geografía -->
+<script src="{% static 'js/auth/paises_ciudades.js' %}"></script>
 
 {% block mascota %}{% endblock %} {% endblock %}

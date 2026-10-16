@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'auditlog',
+    'django_htmx',
     'App',
     'autenticacion',
 ]
@@ -54,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'auditlog.middleware.AuditlogMiddleware',
+    'django_htmx.middleware.HtmxMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -99,6 +101,14 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
+# Cache Configuration (utilizada por django-ratelimit para limitar tasa de peticiones)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'mng-web-ratelimit-cache',
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

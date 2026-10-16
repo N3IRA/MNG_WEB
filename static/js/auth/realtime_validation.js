@@ -1,198 +1,26 @@
+/**
+ * realtime_validation.js - Módulo de validación de registro Monagua.
+ * Las validaciones asíncronas en tiempo real son gestionadas de forma declarativa,
+ * reactiva y segura por HTMX (hx-get / hx-trigger / hx-target) con protección
+ * de Rate Limiting OWASP en el servidor Django.
+ */
+
 document.addEventListener('DOMContentLoaded', function () {
-  const fields = [
-    { id: 'id_username', name: 'username' },
-    { id: 'id_email', name: 'email' },
-    { id: 'id_numero_documento', name: 'numero_documento' },
-    { id: 'id_telefono', name: 'telefono' }
-  ];
-
-  const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
-  const FORBIDDEN_USERNAME_CHARS = /[/()=?]/;
-
-  function validarFormatoUsername(value) {
-    if (FORBIDDEN_USERNAME_CHARS.test(value)) {
-      return 'El apodo contiene caracteres no permitidos. No se permiten símbolos como / ( ) = ?.';
-    }
-    if (/\s/.test(value)) {
-      return 'El apodo no puede contener espacios. Puedes usar un guión bajo (_) en su lugar.';
-    }
-    if (!USERNAME_REGEX.test(value)) {
-      return 'El apodo solo puede contener letras, números y guión bajo (_).';
-    }
-    if (value.length < 4) {
-      return 'El apodo debe tener al menos 4 caracteres.';
-    }
-    if (value.length > 30) {
-      return 'El apodo no puede exceder los 30 caracteres.';
-    }
-    return null;
-  }
-
-  fields.forEach(field => {
-    const input = document.getElementById(field.id);
-    if (!input) return;
-
-    let debounceTimeout;
-
-    // Debounce checking as user types
-    input.addEventListener('input', function () {
-      clearTimeout(debounceTimeout);
-      const value = input.value.trim();
-
-      // Al empezar a modificar/corregir, quitar temporalmente la marca is-invalid para que no quede bloqueado
-      input.classList.remove('is-invalid');
-      let feedback = input.parentElement.querySelector('.invalid-feedback');
-      if (feedback) {
-        feedback.style.display = 'none';
-      }
-
-      if (value === '') {
-        resetField(input);
-        return;
-      }
-
-      // Si es el campo de correo, solo consultar backend si el formato general es válido
-      if (field.name === 'email') {
-        if (!EMAIL_REGEX.test(value)) {
-          return;
-        }
-      }
-
-      // Si es el campo de apodo, verificar formato previo a backend
-      if (field.name === 'username') {
-        const errorFormato = validarFormatoUsername(value);
-        if (errorFormato) {
-          showError(input, errorFormato);
-          return;
-        }
-      }
-
-      debounceTimeout = setTimeout(() => {
-        verificarCampo(input, field.name, value);
-      }, 500);
-    });
-
-    // Verificación inmediata al salir del campo
-    input.addEventListener('blur', function () {
-      clearTimeout(debounceTimeout);
-      const value = input.value.trim();
-      if (value === '') {
-        resetField(input);
-        return;
-      }
-
-      if (field.name === 'email') {
-        if (!EMAIL_REGEX.test(value)) {
-          showError(input, 'Ingresa un correo electrónico válido (ejemplo: usuario@correo.com).');
-          return;
-        }
-      }
-
-      if (field.name === 'username') {
-        const errorFormato = validarFormatoUsername(value);
-        if (errorFormato) {
-          showError(input, errorFormato);
-          return;
-        }
-      }
-
-      verificarCampo(input, field.name, value);
-    });
-  });
-
-  function verificarCampo(input, name, value) {
-    const url = `/autenticacion/verificar-campo/?campo=${name}&valor=${encodeURIComponent(value)}`;
-
-    fetch(url)
-      .then(response => {
-        if (!response.ok) throw new Error('Error en la verificación');
-        return response.json();
-      })
-      .then(data => {
-        if (data.disponible === false) {
-          showError(input, data.mensaje);
-        } else {
-          showSuccess(input);
-        }
-      })
-      .catch(err => {
-        console.error('Error al validar campo en tiempo real:', err);
-      });
-  }
-
-  function showError(input, mensaje) {
-    input.classList.remove('is-valid');
-    input.classList.add('is-invalid');
-
-    let feedback = input.parentElement.querySelector('.invalid-feedback');
-    if (!feedback) {
-      feedback = document.createElement('div');
-      feedback.className = 'invalid-feedback ms-2';
-      input.parentElement.appendChild(feedback);
-    }
-    feedback.textContent = mensaje;
-    feedback.style.display = 'block';
-  }
-
-  function showSuccess(input) {
-    input.classList.remove('is-invalid');
-    input.classList.add('is-valid');
-
-    let feedback = input.parentElement.querySelector('.invalid-feedback');
-    if (feedback) {
-      feedback.style.display = 'none';
-    }
-  }
-
-  function resetField(input) {
-    input.classList.remove('is-invalid', 'is-valid');
-    let feedback = input.parentElement.querySelector('.invalid-feedback');
-    if (feedback) {
-      feedback.style.display = 'none';
-    }
-  }
-
   const form = document.getElementById('formularioRegistro');
   if (form) {
     form.addEventListener('submit', function (e) {
-      // Validar apodo antes de enviar al servidor
-      const usernameInput = document.getElementById('id_username');
-      if (usernameInput) {
-        const userVal = usernameInput.value.trim();
-        const userErr = validarFormatoUsername(userVal);
-        if (userErr) {
-          e.preventDefault();
-          e.stopPropagation();
-          showError(usernameInput, userErr);
-          usernameInput.focus();
-          return false;
-        }
-      }
+      // Prevenir envío si existen mensajes de error visibles activos
+      const invalidFeedbacks = Array.from(
+        form.querySelectorAll('.invalid-feedback.d-block')
+      ).filter(fb => fb.textContent.trim().length > 0 && fb.style.display !== 'none');
 
-      // Validar correo antes de enviar al servidor
-      const emailInput = document.getElementById('id_email');
-      if (emailInput) {
-        const emailVal = emailInput.value.trim();
-        if (!emailVal || !EMAIL_REGEX.test(emailVal)) {
-          e.preventDefault();
-          e.stopPropagation();
-          showError(emailInput, 'Ingresa un correo electrónico válido (ejemplo: usuario@correo.com).');
-          emailInput.focus();
-          return false;
-        }
-      }
-
-      // Re-verificar solo los inputs que sigan teniendo de forma explícita la clase is-invalid activa y visible
-      const invalidFields = Array.from(form.querySelectorAll('.is-invalid')).filter(el => {
-        const fb = el.parentElement.querySelector('.invalid-feedback');
-        return fb && fb.style.display !== 'none';
-      });
-
-      if (invalidFields.length > 0) {
+      if (invalidFeedbacks.length > 0) {
         e.preventDefault();
         e.stopPropagation();
-        invalidFields[0].focus();
+        const parentInput = invalidFeedbacks[0].closest('.mb-3')?.querySelector('input');
+        if (parentInput) {
+          parentInput.focus();
+        }
         return false;
       }
     });
