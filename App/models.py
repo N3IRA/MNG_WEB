@@ -599,6 +599,11 @@ class Reserva(models.Model):
 
         super().save(*args, **kwargs)
     
+    @property
+    def fecha(self):
+        """Retorna fecha_inicio para retrocompatibilidad con plantillas."""
+        return self.fecha_inicio
+
     def __str__(self):
         nombre_paquete = self.paquete.nombre if self.paquete and hasattr(self.paquete, 'nombre') else str(self.paquete)
         if self.fecha_inicio:

@@ -1330,3 +1330,52 @@ body:has(.menu-hamburguesa-premium.show) {
     opacity: 0.55;
 }
 
+/* ============================================================ */
+/* Factura Digital e Impresión (@media print)                   */
+/* ============================================================ */
+.factura-qr {
+    width: 85px !important;
+    height: 85px !important;
+    object-fit: contain;
+}
+
+.factura-qr-hint {
+    font-size: 0.72rem;
+}
+
+.factura-logo {
+    object-fit: contain;
+}
+
+@media print {
+    #mainSidebar,
+    #sidebar-toggle,
+    #sidebar-overlay,
+    .d-print-none,
+    .a11y-panel,
+    .btn-a11y-floating,
+    aside,
+    nav {
+        display: none !important;
+    }
+
+    body,
+    #mainContent {
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+    }
+
+    .card.factura-card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
+
+

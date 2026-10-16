@@ -389,8 +389,9 @@ def get_qr_base64(url):
 
 def generar_factura_pdf_bytes(reserva, request=None, password=None):
     """Genera el contenido en bytes del PDF de la factura, opcionalmente protegido por contraseña."""
-    comprobante = reserva.pago if (hasattr(reserva, 'pago') and reserva.pago.estado_transaccion == 'aprobado') else None
-    metodo_pago = comprobante.banco_origen if comprobante else "Transferencia Bancaria"
+    pago = getattr(reserva, 'pago', None)
+    comprobante = pago if (pago and getattr(pago, 'estado_transaccion', None) == 'aprobado') else None
+    metodo_pago = (comprobante.banco_origen or comprobante.metodo_pago) if comprobante else "Transferencia Bancaria"
 
     documento_tipo = getattr(reserva.usuario, 'tipo_documento', 'Documento') or "Documento"
     documento_num = getattr(reserva.usuario, 'numero_documento', '—') or "—"
@@ -410,23 +411,29 @@ def generar_factura_pdf_bytes(reserva, request=None, password=None):
     else:
         fecha_emision = reserva.fecha_inicio.strftime('%d/%m/%Y') if getattr(reserva, 'fecha_inicio', None) else ""
 
+    cliente_nombre = getattr(reserva.usuario, 'nombre_completo', None) if reserva.usuario else None
+    if not cliente_nombre and reserva.usuario:
+        cliente_nombre = reserva.usuario.get_full_name() or reserva.usuario.username
+
     context = {
+        'reserva_id': reserva.id,
         'nro_factura': f"FAC-1000{reserva.id}",
-        'cliente_nombre': getattr(reserva.usuario, 'nombre_completo', reserva.usuario.username),
-        'cliente_email': reserva.usuario.email,
+        'cliente_nombre': cliente_nombre or 'Cliente',
+        'cliente_email': reserva.usuario.email if reserva.usuario else '',
         'cliente_documento_tipo': documento_tipo,
         'cliente_documento': documento_num,
         'fecha_emision': fecha_emision,
         'metodo_pago': metodo_pago,
-        'paquete_nombre': reserva.paquete.nombre,
-        'pasajeros_adultos': reserva.numero_adultos,
-        'pasajeros_menores': reserva.numero_menores,
+        'paquete_nombre': reserva.paquete.nombre if reserva.paquete else 'Aventura Mongua',
+        'pasajeros_adultos': reserva.numero_adultos if hasattr(reserva, 'numero_adultos') else 1,
+        'pasajeros_menores': reserva.numero_menores if hasattr(reserva, 'numero_menores') else 0,
+        'subtotal': reserva.monto_total,
         'total': reserva.monto_total,
         'logo_base64': logo_base64,
         'qr_base64': qr_base64,
     }
 
-    html_string = render_to_string('private/factura_pdf.html', context)
+    html_string = render_to_string('usuario/reserva/factura_pdf.html', context)
     pdf_temp = io.BytesIO()
     pisa.pisaDocument(io.BytesIO(html_string.encode("UTF-8")), pdf_temp)
     pdf_bytes = pdf_temp.getvalue()

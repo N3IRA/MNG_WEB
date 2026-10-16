@@ -2,6 +2,7 @@ import json
 import re
 from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
+import logging
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -16,7 +17,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from App.models import Reserva, Paquete, Tarifa, Pago
 
-from App.models import Reserva, Paquete, Tarifa, Pago
+logger = logging.getLogger(__name__)
 from App.forms.reserva.forms import ReservaForm
 from App.utils import (
     plantilla_reserva_html,
@@ -779,9 +780,10 @@ def guardar_reserva(request, paquete_id):
 @login_required(login_url='login')
 def mis_facturas(request):
     mis_confirmadas = Reserva.objects.filter(
-        usuario=request.user, 
-        estado_reserva='confirmada'
-    ).select_related('paquete').order_by('-id')
+        usuario=request.user
+    ).filter(
+        Q(estado_reserva='confirmada') | Q(pago__estado_transaccion='aprobado')
+    ).select_related('paquete', 'pago').distinct().order_by('-id')
     
     return render(request, 'usuario/reserva/mis_facturas.html', {
         'reservas': mis_confirmadas
@@ -793,15 +795,20 @@ def ver_factura(request, reserva_id):
     from django.urls import reverse
     reserva = get_object_or_404(Reserva.objects.select_related('usuario', 'paquete'), id=reserva_id)
     
-    if not request.user.is_staff and getattr(request.user, 'rol', None) not in [1, 'ADMIN'] and reserva.usuario != request.user:
+    is_admin = bool(request.user.is_staff or getattr(request.user, 'es_admin', False) or getattr(request.user, 'rol', None) in [1, 'ADMIN'])
+    if not is_admin and reserva.usuario != request.user:
         messages.error(request, "No tienes permiso para acceder a esta factura.")
         return redirect('mis_reservas_usuario')
     
+    pago = getattr(reserva, 'pago', None)
+    if pago and getattr(pago, 'estado_transaccion', None) == 'aprobado' and reserva.estado_reserva != 'confirmada':
+        reserva.estado_reserva = 'confirmada'
+        reserva.save(update_fields=['estado_reserva'])
+
     if reserva.estado_reserva != 'confirmada':
         messages.error(request, "La factura solo está disponible para reservas confirmadas y pagadas.")
-        return redirect('mis_reservas_usuario')
+        return redirect('admin_comprobantes' if is_admin else 'mis_reservas_usuario')
         
-    pago = getattr(reserva, 'pago', None)
     metodo_pago = (pago.banco_origen or pago.metodo_pago) if pago else "Transferencia Bancaria"
     
     abs_url = request.build_absolute_uri(reverse('ver_factura', args=[reserva.id]))
@@ -831,17 +838,23 @@ def ver_factura(request, reserva_id):
 
 @login_required(login_url='login')
 def descargar_factura(request, reserva_id):
-    reserva = get_object_or_404(Reserva, id=reserva_id)
+    reserva = get_object_or_404(Reserva.objects.select_related('usuario', 'paquete'), id=reserva_id)
     
-    if not request.user.is_staff and reserva.usuario != request.user:
+    is_admin = bool(request.user.is_staff or getattr(request.user, 'es_admin', False) or getattr(request.user, 'rol', None) in [1, 'ADMIN'])
+    if not is_admin and reserva.usuario != request.user:
         messages.error(request, "No tienes permiso para descargar esta factura.")
         return redirect('mis_reservas_usuario')
     
+    pago = getattr(reserva, 'pago', None)
+    if pago and getattr(pago, 'estado_transaccion', None) == 'aprobado' and reserva.estado_reserva != 'confirmada':
+        reserva.estado_reserva = 'confirmada'
+        reserva.save(update_fields=['estado_reserva'])
+
     if reserva.estado_reserva != 'confirmada':
         messages.error(request, "La factura solo se puede descargar para reservas confirmadas.")
-        return redirect('mis_reservas_usuario')
+        return redirect('admin_comprobantes' if is_admin else 'mis_reservas_usuario')
         
-    password = getattr(reserva.usuario, 'numero_documento', None) if reserva.usuario else None
+    password = None if is_admin else getattr(reserva.usuario, 'numero_documento', None)
     if password:
         password = str(password).strip()
         
@@ -851,8 +864,9 @@ def descargar_factura(request, reserva_id):
         response['Content-Disposition'] = f'attachment; filename="factura_FAC-1000{reserva.id}.pdf"'
         return response
     except Exception as e:
-        print(f"Error al descargar la factura PDF: {e}")
-        return HttpResponse("Error al generar el PDF de la factura.", status=500)
+        logger.error(f"Error al descargar la factura PDF para la reserva {reserva.id}: {e}", exc_info=True)
+        messages.error(request, "Hubo un inconveniente al generar la factura en PDF. Por favor intenta nuevamente.")
+        return redirect('ver_factura', reserva_id=reserva.id)
 
 @requiere_administrador
 def listar_cancelaciones_admin(request):

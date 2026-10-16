@@ -1,6 +1,9 @@
 import json
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.contrib import messages
+from django.http import HttpResponse
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Sum
@@ -129,23 +132,15 @@ def admin_revisar_comprobante(request, pk):
                         prioridad="alta"
                     )
 
-                    if request.headers.get('HX-Request'):
-                        response = render(request, 'admin/admin_revisar_comprobante.html', {
-                            'comprobante': comprobante,
-                        })
-                        tipo_alerta = 'success' if estado_transaccion == 'aprobado' else ('error' if estado_transaccion == 'rechazado' else 'warning')
-                        titulo_alerta = '¡Comprobante Aprobado!' if estado_transaccion == 'aprobado' else ('¡Comprobante Rechazado!' if estado_transaccion == 'rechazado' else '¡Comprobante en Espera!')
-                        mensaje_alerta = f"Comprobante #{comprobante.pk} actualizado como '{estado_transaccion.capitalize()}' exitosamente."
-                        response['HX-Trigger'] = json.dumps({
-                            'mostrarNotificacionBitacora': {
-                                'tipo': tipo_alerta,
-                                'titulo': titulo_alerta,
-                                'mensaje': mensaje_alerta
-                            }
-                        })
-                        return response
                     messages.success(request, f"Comprobante #{comprobante.pk} actualizado como '{estado_transaccion.capitalize()}' exitosamente.")
-                    destino_url = 'admin_pagos_rechazados' if estado_transaccion == 'rechazado' else 'admin_comprobantes'
+                    destino_url = reverse('admin_comprobantes')
+
+                    if request.headers.get('HX-Request'):
+                        # Redirección directa del navegador vía HTMX hacia /admin/comprobantes/
+                        response = HttpResponse(status=200)
+                        response['HX-Redirect'] = destino_url
+                        return response
+
                     return redirect(destino_url)
                 except ValidationError as ve:
                     if hasattr(ve, 'message_dict'):
