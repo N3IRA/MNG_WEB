@@ -294,9 +294,6 @@
                         </div>
                     </div>
                 </div>
-                {% with destino=tour %}
-                    {% include 'partials/actividades_modals.html' %}
-                {% endwith %}
             {% empty %}
                 <div class="col-12 text-center py-5" data-aos="zoom-in" data-aos-duration="600">
                     <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center p-4 mb-3 btn-hover-scale" style="width: 80px; height: 80px; cursor: pointer;" onclick="window.location.href=window.location.pathname;" title="Recargar página" role="button">
@@ -307,11 +304,23 @@
                 </div>
             {% endfor %}
         </div> 
+
+        <!-- Modales de actividades de cada tour (fuera del contenedor animado data-aos) -->
+        {% for tour in tours %}
+            {% with destino=tour %}
+                {% include 'partials/actividades_modals.html' %}
+            {% endwith %}
+        {% endfor %}
     </section>
 
-    <!-- Script de filtrado en tiempo real -->
+    <!-- Script de filtrado en tiempo real y reubicación de modales al body -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Mover todos los modales directamente al <body> para evitar trampas de apilamiento con overflow o z-index
+            document.querySelectorAll('[id^="modalActividades-"]').forEach(function(m) {
+                document.body.appendChild(m);
+            });
+
             const inputTour = document.getElementById('input-tour') || document.getElementById('input-destino');
             const alertaNoExiste = document.getElementById('alerta-no-existe');
             const tarjetas = document.querySelectorAll('.tarjeta-tour, .tarjeta-destino');

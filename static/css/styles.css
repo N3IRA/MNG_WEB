@@ -184,7 +184,15 @@ main.wrapper {
 
 .content-wrapper {
     position: relative;
-    z-index: 1;
+}
+
+/* Asegurar que modales y sus telones siempre se apilen sobre cualquier contenedor o animación */
+.modal {
+    z-index: 1060 !important;
+}
+
+.modal-backdrop {
+    z-index: 1050 !important;
 }
 
 main .content-wrapper > nav[aria-label="breadcrumb"],

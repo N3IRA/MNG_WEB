@@ -286,9 +286,6 @@
                         </div>
                     </div>
                 </div>
-                {% with destino=tour %}
-                    {% include 'partials/actividades_modals.html' %}
-                {% endwith %}
             {% empty %}
                 <div class="col-12 text-center py-5" data-aos="zoom-in" data-aos-duration="600">
                     <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center p-4 mb-3 btn-hover-scale" style="width: 80px; height: 80px; cursor: pointer;" onclick="window.location.href=window.location.pathname;" title="Recargar página" role="button">
@@ -300,6 +297,13 @@
             {% endfor %}
         </div>
 
+        <!-- Modales de actividades de cada tour (fuera del contenedor animado data-aos) -->
+        {% for tour in tours %}
+            {% with destino=tour %}
+                {% include 'partials/actividades_modals.html' %}
+            {% endwith %}
+        {% endfor %}
+
         <div class="text-center mt-4">
             <button id="btn-ver-mas-tours" type="button" class="btn btn-success btn-lg rounded-pill fw-bold px-4 shadow-sm tour-load-more d-none">
                 <i class="bi bi-chevron-down me-2"></i>Ver más
@@ -308,5 +312,12 @@
     </section>
 
 <script src="{% static 'js/destinos.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('[id^="modalActividades-"]').forEach(function(m) {
+            document.body.appendChild(m);
+        });
+    });
+</script>
 
 {% endblock %}
