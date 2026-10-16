@@ -42,11 +42,12 @@
                         {% elif color == 'text-danger' %} bg-danger bg-opacity-10 text-danger
                         {% elif color == 'text-info' %} bg-info bg-opacity-10 text-info
                         {% elif color == 'text-secondary' %} bg-secondary bg-opacity-10 text-secondary
-                        {% else %} bg-light text-dark {% endif %} u-style-97db017b">
+                        {% else %} bg-light text-dark {% endif %}"
+                        style="width: 52px; height: 52px; font-size: 1.5rem; flex-shrink: 0;">
                         {% if color == 'text-dark' %}
                             <i class="bi bi-calendar-check"></i>
                         {% elif color == 'text-success' %}
-                            <i class="bi bi-calendar-event-fill"></i>
+                            <i class="bi bi-calendar-event-fill text-white"></i>
                         {% elif color == 'text-info' %}
                             <i class="bi bi-calendar-minus"></i>
                         {% else %}
@@ -54,7 +55,7 @@
                         {% endif %}
                     </div>
                     <div>
-                        <h6 class="text-muted text-uppercase fw-bold mb-1 u-style-0b04a8e1">{{ label }}</h6>
+                        <h6 class="text-muted text-uppercase fw-bold mb-1 small">{{ label }}</h6>
                         <h4 class="fw-black mb-0 {{ color }}">{{ count }}</h4>
                     </div>
                 </div>

@@ -11,6 +11,12 @@
             const buttonContainer = buttons && buttons.querySelector('.dt-buttons');
             if (!tableContainer || !card || !buttonContainer) return;
 
+            // Si los botones están configurados como ocultos (usados por dropdown externo), no mover ni mostrar
+            if (buttonContainer.querySelector('.d-none') || buttonContainer.closest('.d-none')) {
+                buttonContainer.style.display = 'none';
+                return;
+            }
+
             if (!buttonContainer.monaguaOriginalParent) {
                 buttonContainer.monaguaOriginalParent = buttonContainer.parentNode;
             }

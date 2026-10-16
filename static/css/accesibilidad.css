@@ -1072,7 +1072,8 @@ html[data-bs-theme="dark"] [style*="difuminado.webp"] {
 /* ── 17. TEXTOS DE BIENVENIDA / SUBTÍTULOS EN MODO OSCURO ── */
 html[data-bs-theme="dark"] .registro-hero-bg .text-muted,
 html[data-bs-theme="dark"] .registro-hero-bg h1.text-dark,
-html[data-bs-theme="dark"] .registro-hero-bg .text-secondary {
+html[data-bs-theme="dark"] .registro-hero-bg .text-secondary,
+html[data-bs-theme="dark"] .registro-hero-bg .text-dark {
     color: #f1f5f9 !important;
 }
 

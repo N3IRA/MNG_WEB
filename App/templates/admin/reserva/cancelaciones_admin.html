@@ -34,17 +34,18 @@
                     <div class="rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm
                         {% if color == 'text-success' %} bg-success bg-opacity-10 text-success
                         {% elif color == 'text-danger' %} bg-danger bg-opacity-10 text-danger
-                        {% else %} bg-secondary bg-opacity-10 text-secondary {% endif %} u-style-c5b9e7ac">
+                        {% else %} bg-secondary bg-opacity-10 text-secondary {% endif %}"
+                        style="width: 52px; height: 52px; font-size: 1.5rem; flex-shrink: 0;">
                         {% if color == 'text-dark' %}
                             <i class="bi bi-tag-fill"></i>
                         {% elif color == 'text-success' %}
-                            <i class="bi bi-check-circle-fill"></i>
+                            <i class="bi bi-check-circle-fill text-white"></i>
                         {% else %}
                             <i class="bi bi-x-circle-fill"></i>
                         {% endif %}
                     </div>
                     <div>
-                        <h6 class="text-muted text-uppercase fw-bold mb-1 u-style-75b54407">{{ label }}</h6>
+                        <h6 class="text-muted text-uppercase fw-bold mb-1 small">{{ label }}</h6>
                         <h3 class="fw-black mb-0 {{ color }}">{{ count|default:0 }}</h3>
                     </div>
                 </div>
@@ -81,7 +82,50 @@
 </div>
 </div>
     <!-- Tabla -->
-    <div class="card admin-list-panel overflow-hidden">
+    <div class="card admin-list-panel overflow-hidden p-4">
+        <!-- Barra de herramientas superior: Título y Dropdown Nativo Bootstrap 5 -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom">
+            <div>
+                <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                    <i class="bi bi-x-circle text-danger"></i> Solicitudes de Cancelación
+                </h5>
+                <small class="text-muted">Gestiona y audita las cancelaciones y penalidades aplicadas</small>
+            </div>
+
+            <!-- Dropdown nativo Bootstrap 5 -->
+            <div class="dropdown">
+                <button class="btn btn-outline-success btn-sm rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-2 shadow-sm dropdown-toggle" 
+                        type="button" 
+                        id="dropdownExportarCancelaciones" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false">
+                    <i class="bi bi-cloud-arrow-down-fill text-success"></i>
+                    <span>Exportar</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 py-2 mt-1" aria-labelledby="dropdownExportarCancelaciones" style="min-width: 220px;">
+                    <li><h6 class="dropdown-header text-uppercase small text-muted px-3 pb-1" style="font-size: 0.72rem; letter-spacing: 0.05em;">Descargar Datos</h6></li>
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-excel-trigger">
+                            <i class="bi bi-file-earmark-excel-fill text-success fs-6"></i>
+                            <span class="small fw-semibold">Documento Excel (.xlsx)</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-pdf-trigger">
+                            <i class="bi bi-file-earmark-pdf-fill text-danger fs-6"></i>
+                            <span class="small fw-semibold">Documento PDF (.pdf)</span>
+                        </button>
+                    </li>
+                    <li><hr class="dropdown-divider my-1"></li>
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-print-trigger">
+                            <i class="bi bi-printer-fill text-primary fs-6"></i>
+                            <span class="small fw-semibold"> Imprimir tabla</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
         <div class="table-responsive">
             <table id="tablaCancelaciones" class="table align-middle mb-0 admin-data-table">
                 <thead>

@@ -35,6 +35,7 @@ class CategoriaListView(StaffRequiredMixin, ListView):
             activas=Count('id', filter=Q(estado=True)),
             inactivas=Count('id', filter=Q(estado=False))
         )
+        context.update(stats)
         context['stats_list'] = [
             ('Total Categorías', stats['total'], 'text-dark'),
             ('Activas', stats['activas'], 'text-success'),

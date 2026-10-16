@@ -6,13 +6,13 @@ $(document).ready(function() {
             { orderable: false, targets: 5 }, // No ordenar columna de acciones
             { className: "text-center", targets: [2, 3, 4, 5] }
         ],
-        // 1. ESTRUCTURA VISUAL: Mantiene botones y buscador alineados en la misma fila
-        dom: "<'row mb-3 align-items-center'<'col-md-6'B><'col-md-6 d-flex justify-content-md-end justify-content-center mt-2 mt-md-0'f>>" +
+        // 1. ESTRUCTURA VISUAL: Mantiene botones ocultos en DOM y buscador alineado a la derecha
+        dom: "<'row mb-3 align-items-center'<'d-none'B><'col-12 d-flex justify-content-end'f>>" +
              "<'row'<'col-sm-12'tr>>" +
              "<'row mt-3 align-items-center'<'col-md-5 text-center text-md-start'i><'col-md-7 d-flex justify-content-md-end justify-content-center'p>>",
 
-        // 2. BOTONES DE EXPORTACIÓN
-        buttons: buildMonaguaExportButtons('Reservas', 'reservas'),
+        // 2. BOTONES DE EXPORTACIÓN (Ocultos para ser disparados por el dropdown nativo)
+        buttons: buildMonaguaExportButtons('Reservas', 'reservas', true),
 
         // 3. TRADUCCIÓN COMPLETA DE TU PROYECTO MONAGUA
         language: {
@@ -45,4 +45,20 @@ $(document).ready(function() {
         scrollX: false,
         scrollCollapse: false
     });
+});
+
+// Vincular botones del Dropdown nativo Bootstrap 5 con las acciones de exportación de DataTables
+$(document).on('click', '.btn-export-excel-trigger, #btn-export-excel', function(e) {
+    e.preventDefault();
+    $('.btn-export-excel-hidden').trigger('click');
+});
+
+$(document).on('click', '.btn-export-pdf-trigger, #btn-export-pdf', function(e) {
+    e.preventDefault();
+    $('.btn-export-pdf-hidden').trigger('click');
+});
+
+$(document).on('click', '.btn-export-print-trigger, #btn-export-print', function(e) {
+    e.preventDefault();
+    $('.btn-export-print-hidden').trigger('click');
 });
