@@ -111,8 +111,8 @@ class ComprobantePagoForm(forms.ModelForm):
     def clean_imagen_comprobante(self):
         archivo = self.cleaned_data.get('imagen_comprobante')
         if archivo:
-            # Límite de tamaño: 5 MB
-            max_mb = 5
+            # Límite de tamaño: 10 MB
+            max_mb = 10
             if archivo.size > max_mb * 1024 * 1024:
                 raise ValidationError(f"El comprobante no puede pesar más de {max_mb} MB.")
         return archivo

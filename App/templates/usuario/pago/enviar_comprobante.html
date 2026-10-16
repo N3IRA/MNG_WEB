@@ -8,7 +8,7 @@
 
     <div class="row align-items-center mb-4 g-3">
         <div class="col-md-8">
-            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill mb-2 fw-bold">PROCESO DE PAGO</span>
+            <span class="badge bg-success bg-opacity-10 text-white px-3 py-2 rounded-pill mb-2 fw-bold">PROCESO DE PAGO</span>
             <h2 class="display-6 fw-bold text-dark mb-1">
                 <i class="bi bi-receipt-cutoff text-success me-2"></i>Enviar Comprobante
             </h2>
@@ -44,7 +44,7 @@
                         <span class="text-uppercase text-muted small fw-bold d-block mb-1 u-style-e2eb0d8e">Monto Aprobado</span>
                         <h3 class="fw-bold text-success mb-0">COP ${{ total_aprobados|floatformat:0|intcomma }}</h3>
                     </div>
-                    <div class="bg-success bg-opacity-10 text-success rounded-4 p-3 fs-3">
+                    <div class="bg-success bg-opacity-10 text-white rounded-4 p-3 fs-3">
                         <i class="bi bi-check-circle-fill"></i>
                     </div>
                 </div>
@@ -72,8 +72,8 @@
                     <div class="d-flex align-items-center">
                         <i class="bi bi-send-check text-success fs-3 me-3"></i>
                         <div>
-                            <h5 class="mb-0 fw-bold text-success-emphasis">Registrar Pago</h5>
-                            <p class="text-muted small mb-0">Rellena el formulario con los detalles exactos de tu transacción.</p>
+                            <h5 class="mb-0 fw-bold text-white emphasis">Registrar Pago</h5>
+                            <p class="text-white small mb-0">Rellena el formulario con los detalles exactos de tu transacción.</p>
                         </div>
                     </div>
                 </div>
@@ -133,12 +133,12 @@
                                     <span class="input-group-text bg-light text-muted">$</span>
                                     <input type="text" id="id_monto_display" class="form-control bg-light" readonly placeholder="Selecciona una reserva para ver el valor" value="">
                                 </div>
-                                <small class="form-text text-muted"><i class="bi bi-shield-check text-success me-1"></i>Monto verificado y fijado automáticamente por el servidor.</small>
+                                <small class="form-text text-muted"><i class="bi bi-shield-check text-success me-1"></i>Monto verificado y fijado automáticamente.</small>
                             </div>
                             <div class="form-group col-md-6 mb-3">
                                 <label for="id_imagen_comprobante" class="form-label requiredField">Imagen o Captura del Comprobante<span class="asteriskField">*</span></label>
                                 <input type="file" name="imagen_comprobante" class="clearablefileinput form-control" accept="image/png, image/jpeg, image/webp, application/pdf" required id="id_imagen_comprobante">
-                                <small class="form-text text-muted">Archivos permitidos: PNG, JPG, JPEG, WebP, PDF (Máx. 5 MB).</small>
+                                <small class="form-text text-muted">Archivos permitidos: PNG, JPG, JPEG, WebP, PDF (Máx. 10 MB).</small>
                             </div>
                         </div>
                         <div class="row">
