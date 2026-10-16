@@ -112,10 +112,6 @@ class CrearReservaAdminView(SuccessMessageMixin, CreateView):
             form.add_error('numero_menores', 'El número de menores no puede ser negativo.')
             return self.form_invalid(form)
 
-        if nuevo_estado != 'pendiente':
-            form.add_error('estado_reserva', 'Una reserva nueva debe quedar pendiente hasta validar el pago.')
-            return self.form_invalid(form)
-
         if fecha and fecha < date.today():
             form.add_error('fecha_inicio', 'No puedes crear reservas en fechas pasadas.')
             return self.form_invalid(form)
