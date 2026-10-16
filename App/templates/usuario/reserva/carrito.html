@@ -1,6 +1,8 @@
-{% extends "usuario/base-turista-dashboard.html" %} {% load static %} {% load
-humanize %} {% block titulo %}Carrito | Monagua{% endblock %} {% block content
-%}
+{% extends "usuario/base-turista-dashboard.html" %}
+{% load static %}
+{% load humanize %}
+{% block titulo %}Carrito | Monagua{% endblock %}
+{% block content %}
 <div class="container py-4 u-style-f694cf53">
   <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
     <div
@@ -85,8 +87,7 @@ humanize %} {% block titulo %}Carrito | Monagua{% endblock %} {% block content
                       {{ reserva.paquete.nombre }}
                     </h5>
                     <p class="text-muted small mb-0">
-                      Reserva #{{ reserva.id }} · {{
-                      reserva.fecha_inicio|date:'d M Y' }}
+                      Reserva #{{ reserva.id }} · {{ reserva.fecha_inicio|date:'d M Y' }}
                     </p>
                   </div>
                   <div>

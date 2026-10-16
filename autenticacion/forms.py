@@ -2,7 +2,17 @@ import re
 from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
+from better_profanity import profanity
 from App.models import Usuario
+
+# Cargar palabras censuradas de better-profanity e incorporar términos en español
+profanity.load_censor_words()
+profanity.add_censor_words([
+    'puta', 'puto', 'putas', 'putos', 'mierda', 'mierdas', 'gonorrea', 'gonorreas',
+    'malparido', 'malparida', 'pirobo', 'piroba', 'marica', 'maricon', 'carechimba',
+    'pendejo', 'pendeja', 'cabron', 'cabrona', 'verga', 'culo', 'chinga', 'zorra',
+    'perra', 'idiota', 'imbecil', 'estupido', 'huevon', 'guevon', 'nazi', 'hitler'
+])
 
 
 class IniciarSesionForm(forms.Form):
@@ -120,9 +130,9 @@ class RegistroForm(forms.ModelForm):
             'username': forms.TextInput(attrs={
                 'class': 'form-control rounded-pill py-3 px-4', 
                 'placeholder': 'aventurero_mongua',
-                'pattern': '[A-Za-z0-9]+',
-                'title': 'Solo letras y números, sin símbolos ni espacios',
-                'oninput': "this.value = this.value.replace(/[^A-Za-z0-9]/g, '')"
+                'maxlength': '30',
+                'pattern': '[A-Za-z0-9_]+',
+                'title': 'Solo letras, números y guión bajo (_). Sin espacios ni símbolos como / ( ) = ?',
             }),
             'email': forms.EmailInput(attrs={'class': 'form-control rounded-pill py-3 px-4', 'placeholder': 'correo@ejemplo.com'}),
             'tipo_documento': forms.Select(attrs={'class': 'form-select rounded-pill py-3 px-4'}),
@@ -195,11 +205,15 @@ class RegistroForm(forms.ModelForm):
     def clean_username(self):
         username = self.cleaned_data.get('username', '').strip()
         if len(username) < 4:
-            raise ValidationError("El nombre de usuario debe tener al menos 4 caracteres.")
+            raise ValidationError("El apodo debe tener al menos 4 caracteres.")
+        if len(username) > 30:
+            raise ValidationError("El apodo no puede exceder los 30 caracteres.")
         if not re.match(r'^[A-Za-z0-9_]+$', username):
-            raise ValidationError("El nombre de usuario solo puede contener letras, números y guiones bajos.")
+            raise ValidationError("El apodo solo puede contener letras, números y guión bajo (_). No se permiten espacios ni símbolos como / ( ) = ?.")
+        if profanity.contains_profanity(username) or profanity.contains_profanity(username.replace('_', ' ')):
+            raise ValidationError("El apodo contiene palabras no permitidas. Por favor elige un apodo respetuoso.")
         if Usuario.objects.filter(username__iexact=username).exists():
-            raise ValidationError("Este nombre de usuario ya está registrado.")
+            raise ValidationError("Este apodo ya está registrado.")
         return username
 
     def clean_email(self):

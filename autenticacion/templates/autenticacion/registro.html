@@ -1,13 +1,15 @@
-{% extends "base.html" %} {% load static %} {% block main_class %}pt-0{%
-endblock %} {% block titulo %}Crear Cuenta - Monagua{% endblock %} {% block
-content %}
+{% extends "base.html" %}
+{% load static %}
+{% block main_class %}pt-0{% endblock %}
+{% block titulo %}Crear Cuenta - Monagua{% endblock %}
+{% block content %}
 <!-- ============================================================ -->
 <!-- CONTENEDOR PRINCIPAL: Formulario Centrado con Fondo -->
 <!-- ============================================================ -->
 <div
   class="min-vh-100 d-flex flex-column justify-content-center align-items-center pt-5 pb-5 px-3 registro-hero-bg"
   style="
-    background-image: url(&quot;{% static &quot;img/difuminado.webp&quot; %}&quot;);
+    background-image: url('{% static 'img/difuminado.webp' %}');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -113,8 +115,15 @@ content %}
           value="{{ form.username.value|default:'' }}"
           class="form-control rounded-pill py-3 px-4 {% if form.username.errors %}is-invalid{% endif %}"
           placeholder="aventurero_mongua"
+          maxlength="30"
+          pattern="^[A-Za-z0-9_]{4,30}$"
+          title="Solo letras, números y guión bajo (_). Entre 4 y 30 caracteres. Sin símbolos como / ( ) = ? ni espacios."
+          autocomplete="username"
           required
         />
+        <div class="form-text text-muted ms-3 small mt-1">
+          <i class="bi bi-shield-check me-1"></i>Solo letras, números y guión bajo (_). Mín. 4 caracteres. Sin símbolos como / ( ) = ? ni espacios.
+        </div>
         {% if form.username.errors %}
         <div class="invalid-feedback ms-3 d-block">
           {{ form.username.errors.0 }}
@@ -137,56 +146,16 @@ content %}
               class="form-select rounded-pill py-3 px-4 text-secondary {% if form.tipo_documento.errors %}is-invalid{% endif %}"
               required
             >
-              <option
-                value=""
-                {%
-                if
-                not
-                form.tipo_documento.value
-                %}selected{%
-                endif
-                %}
-                disabled
-              >
+              <option value="" {% if not form.tipo_documento.value %}selected{% endif %} disabled>
                 Selecciona tipo
               </option>
-              <option
-                value="CC"
-                {%
-                if
-                form.tipo_documento.value=""
-                ="CC"
-                %}selected{%
-                endif
-                %}
-              >
+              <option value="CC" {% if form.tipo_documento.value == "CC" %}selected{% endif %}>
                 Cédula de Ciudadanía (CC)
               </option>
-              <option
-                value="CE"
-                {%
-                if
-                form.tipo_documento.value=""
-                ="CE"
-                %}selected{%
-                endif
-                %}
-              >
+              <option value="CE" {% if form.tipo_documento.value == "CE" %}selected{% endif %}>
                 Cédula de Extranjería (CE)
               </option>
-              <option
-                value="PASAPORTE"
-                {%
-                if
-                form.tipo_documento.value=""
-                ="PASAPORTE"
-                or
-                form.tipo_documento.value=""
-                ="PAS"
-                %}selected{%
-                endif
-                %}
-              >
+              <option value="PASAPORTE" {% if form.tipo_documento.value == "PASAPORTE" or form.tipo_documento.value == "PAS" %}selected{% endif %}>
                 Pasaporte (PAS)
               </option>
             </select>
@@ -266,12 +235,9 @@ content %}
             </select>
           </div>
         </div>
-        {% if form.pais.errors or form.departamento.errors or form.ciudad.errors
-        %}
+        {% if form.pais.errors or form.departamento.errors or form.ciudad.errors %}
         <div class="invalid-feedback ms-3 d-block">
-          {{
-          form.pais.errors.0|default:form.departamento.errors.0|default:form.ciudad.errors.0
-          }}
+          {{ form.pais.errors.0|default:form.departamento.errors.0|default:form.ciudad.errors.0 }}
         </div>
         {% endif %}
       </div>

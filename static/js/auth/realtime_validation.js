@@ -7,6 +7,27 @@ document.addEventListener('DOMContentLoaded', function () {
   ];
 
   const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
+  const FORBIDDEN_USERNAME_CHARS = /[/()=?]/;
+
+  function validarFormatoUsername(value) {
+    if (FORBIDDEN_USERNAME_CHARS.test(value)) {
+      return 'El apodo contiene caracteres no permitidos. No se permiten símbolos como / ( ) = ?.';
+    }
+    if (/\s/.test(value)) {
+      return 'El apodo no puede contener espacios. Puedes usar un guión bajo (_) en su lugar.';
+    }
+    if (!USERNAME_REGEX.test(value)) {
+      return 'El apodo solo puede contener letras, números y guión bajo (_).';
+    }
+    if (value.length < 4) {
+      return 'El apodo debe tener al menos 4 caracteres.';
+    }
+    if (value.length > 30) {
+      return 'El apodo no puede exceder los 30 caracteres.';
+    }
+    return null;
+  }
 
   fields.forEach(field => {
     const input = document.getElementById(field.id);
@@ -38,6 +59,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       }
 
+      // Si es el campo de apodo, verificar formato previo a backend
+      if (field.name === 'username') {
+        const errorFormato = validarFormatoUsername(value);
+        if (errorFormato) {
+          showError(input, errorFormato);
+          return;
+        }
+      }
+
       debounceTimeout = setTimeout(() => {
         verificarCampo(input, field.name, value);
       }, 500);
@@ -55,6 +85,14 @@ document.addEventListener('DOMContentLoaded', function () {
       if (field.name === 'email') {
         if (!EMAIL_REGEX.test(value)) {
           showError(input, 'Ingresa un correo electrónico válido (ejemplo: usuario@correo.com).');
+          return;
+        }
+      }
+
+      if (field.name === 'username') {
+        const errorFormato = validarFormatoUsername(value);
+        if (errorFormato) {
+          showError(input, errorFormato);
           return;
         }
       }
@@ -118,6 +156,20 @@ document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('formularioRegistro');
   if (form) {
     form.addEventListener('submit', function (e) {
+      // Validar apodo antes de enviar al servidor
+      const usernameInput = document.getElementById('id_username');
+      if (usernameInput) {
+        const userVal = usernameInput.value.trim();
+        const userErr = validarFormatoUsername(userVal);
+        if (userErr) {
+          e.preventDefault();
+          e.stopPropagation();
+          showError(usernameInput, userErr);
+          usernameInput.focus();
+          return false;
+        }
+      }
+
       // Validar correo antes de enviar al servidor
       const emailInput = document.getElementById('id_email');
       if (emailInput) {

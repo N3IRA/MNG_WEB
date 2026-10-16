@@ -16,13 +16,7 @@
       class="form-control rounded-pill py-3 px-4"
       placeholder="aventura@monagua.com"
       autofocus
-      {%
-      if
-      request.POST.get.email
-      %}value="{{ request.POST.get.email }}"
-      {%
-      endif
-      %}
+      {% if request.POST.email %}value="{{ request.POST.email }}"{% endif %}
     />
   </div>
 
@@ -42,13 +36,7 @@
       placeholder="1000000000"
       maxlength="10"
       oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)"
-      {%
-      if
-      request.POST.get.numero_documento
-      %}value="{{ request.POST.get.numero_documento }}"
-      {%
-      endif
-      %}
+      {% if request.POST.numero_documento %}value="{{ request.POST.numero_documento }}"{% endif %}
     />
     <p class="small text-muted ps-3 mt-2 mb-0" style="font-size: 0.78rem">
       <i class="bi bi-info-circle me-1"></i>
