@@ -9,6 +9,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const pageSize = 6;
     let visibleCount = pageSize;
 
+    // Si hay filtros activos en la URL, mostrar todas las tarjetas
+    const params = new URLSearchParams(window.location.search);
+    const hayFiltros = params.has('q') || params.has('precio_max') || params.has('apto_menores') || params.has('categoria');
+
+    if (hayFiltros) {
+        visibleCount = cards.length;
+        button.classList.add('d-none');
+    }
+
     const applyVisibility = () => {
         cards.forEach((card, index) => {
             const shouldShow = index < visibleCount;
@@ -25,12 +34,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-    cards.forEach((card, index) => {
-        if (index >= pageSize) {
-            card.classList.add('is-hidden');
-            card.style.display = 'none';
-        }
-    });
+    if (!hayFiltros) {
+        cards.forEach((card, index) => {
+            if (index >= pageSize) {
+                card.classList.add('is-hidden');
+                card.style.display = 'none';
+            }
+        });
+    }
 
     button.addEventListener('click', function () {
         if (visibleCount + pageSize >= cards.length) {
