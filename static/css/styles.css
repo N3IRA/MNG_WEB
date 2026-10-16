@@ -1296,3 +1296,37 @@ body:has(.menu-hamburguesa-premium.show) {
     transform: scale(1.15) translateY(-4px);
 }
 
+/* ============================================================ */
+/* Calendario de Reservas (Flatpickr)                            */
+/* ============================================================ */
+.flatpickr-day.fecha-disponible-tour {
+    background-color: rgba(25, 135, 84, 0.12) !important;
+    border-color: rgba(25, 135, 84, 0.45) !important;
+    color: #198754 !important;
+    font-weight: 700 !important;
+    border-radius: 50% !important;
+}
+
+.flatpickr-day.fecha-disponible-tour:hover {
+    background-color: #198754 !important;
+    color: #ffffff !important;
+    border-color: #198754 !important;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover {
+    background-color: #2c6e3c !important;
+    border-color: #2c6e3c !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+}
+
+.flatpickr-day.flatpickr-disabled,
+.flatpickr-day.flatpickr-disabled:hover {
+    color: #cbd5e1 !important;
+    background: transparent !important;
+    cursor: not-allowed !important;
+    text-decoration: line-through;
+    opacity: 0.55;
+}
+
