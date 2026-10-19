@@ -184,6 +184,83 @@ class SeguridadFormulariosTests(TestCase):
         self.assertContains(response, 'código ejecutable no permitido')
         self.assertFalse(Pago.objects.filter(referencia='TRANS-SCRIPT-INJECT').exists())
 
+    def test_pago_archivo_adicional_inyectado_rechazado(self):
+        """Verifica que si se inyectan archivos adicionales no permitidos en FILES, Django lo bloquee con error."""
+        self.client.force_login(self.turista)
+        gif_bytes = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+        archivo_valido = SimpleUploadedFile('recibo.gif', gif_bytes, content_type='image/gif')
+        archivo_extra = SimpleUploadedFile('extra.txt', b'datos extra no autorizados', content_type='text/plain')
+
+        payload = {
+            'reserva': self.reserva.id,
+            'referencia': 'TRANS-EXTRA-FILE',
+            'banco_origen': 'Bancolombia',
+            'metodo_pago': 'Transferencia Bancaria',
+            'imagen_comprobante': archivo_valido,
+            'archivo_secreto': archivo_extra,
+        }
+
+        response = self.client.post(reverse('enviar_comprobante'), data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'archivos adicionales no autorizados')
+        self.assertFalse(Pago.objects.filter(referencia='TRANS-EXTRA-FILE').exists())
+
+    def test_pago_referencia_con_caracteres_peligrosos_rechazada(self):
+        """Verifica que referencias con inyecciones XSS o SQL sean rechazadas por validación de Django."""
+        self.client.force_login(self.turista)
+        gif_bytes = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+        archivo_valido = SimpleUploadedFile('recibo.gif', gif_bytes, content_type='image/gif')
+
+        payload = {
+            'reserva': self.reserva.id,
+            'referencia': "<script>alert('xss')</script>",
+            'banco_origen': 'Nequi',
+            'metodo_pago': 'Billetera Digital',
+            'imagen_comprobante': archivo_valido,
+        }
+
+        response = self.client.post(reverse('enviar_comprobante'), data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'La referencia contiene caracteres no permitidos')
+        self.assertFalse(Pago.objects.filter(referencia__icontains='<script>').exists())
+
+    def test_pago_pdf_valido_aceptado(self):
+        """Verifica que un comprobante en PDF legítimo sea procesado correctamente."""
+        self.client.force_login(self.turista)
+        pdf_bytes = b'%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF'
+        archivo_pdf = SimpleUploadedFile('comprobante_bancario.pdf', pdf_bytes, content_type='application/pdf')
+
+        payload = {
+            'reserva': self.reserva.id,
+            'referencia': 'TRANS-PDF-VALID-99',
+            'banco_origen': 'Davivienda',
+            'metodo_pago': 'Transferencia Bancaria',
+            'imagen_comprobante': archivo_pdf,
+            'descripcion': 'Pago por transferencia en PDF',
+        }
+
+        response = self.client.post(reverse('enviar_comprobante'), data=payload)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Pago.objects.filter(referencia='TRANS-PDF-VALID-99').exists())
+
+    def test_pago_pdf_falso_o_corrupto_rechazado(self):
+        """Verifica que un archivo con extensión .pdf pero sin cabecera PDF válida sea rechazado."""
+        self.client.force_login(self.turista)
+        archivo_pdf_falso = SimpleUploadedFile('factura_falsa.pdf', b'TEXTO PLANO FALSO', content_type='application/pdf')
+
+        payload = {
+            'reserva': self.reserva.id,
+            'referencia': 'TRANS-PDF-FAKE-00',
+            'banco_origen': 'Davivienda',
+            'metodo_pago': 'Transferencia Bancaria',
+            'imagen_comprobante': archivo_pdf_falso,
+        }
+
+        response = self.client.post(reverse('enviar_comprobante'), data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'El archivo PDF del comprobante')
+        self.assertFalse(Pago.objects.filter(referencia='TRANS-PDF-FAKE-00').exists())
+
     def test_pago_reserva_de_otro_usuario_rechazado(self):
         """Verifica que un usuario no pueda pagar una reserva que pertenece a otro usuario (prevención IDOR)."""
         otro_usuario = Usuario.objects.create_user(

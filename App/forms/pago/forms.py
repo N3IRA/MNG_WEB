@@ -69,7 +69,7 @@ class ComprobantePagoForm(forms.ModelForm):
         })
     )
 
-    imagen_comprobante = forms.ImageField(
+    imagen_comprobante = forms.FileField(
         required=True,
         validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf'])],
         widget=forms.ClearableFileInput(attrs={
@@ -80,7 +80,6 @@ class ComprobantePagoForm(forms.ModelForm):
         }),
         error_messages={
             'required': 'Debes adjuntar la imagen o PDF del comprobante de pago.',
-            'invalid_image': 'El archivo subido no es una imagen o archivo válido.'
         }
     )
 
@@ -128,6 +127,13 @@ class ComprobantePagoForm(forms.ModelForm):
                 "La operación ha sido bloqueada por Django para garantizar la integridad financiera."
             )
 
+        archivos_enviados = set(self.files.keys()) - {'imagen_comprobante'}
+        if archivos_enviados:
+            nombres_files = ', '.join(sorted(archivos_enviados))
+            raise ValidationError(
+                f"Error de seguridad: Se detectaron archivos adicionales no autorizados ({nombres_files})."
+            )
+
         return cleaned_data
 
     def clean_referencia(self):
@@ -136,9 +142,17 @@ class ComprobantePagoForm(forms.ModelForm):
             raise ValidationError("La referencia de pago no puede estar vacía.")
         if len(referencia) < 3:
             raise ValidationError("La referencia debe contener al menos 3 caracteres.")
+        if len(referencia) > 100:
+            raise ValidationError("La referencia no puede exceder 100 caracteres.")
         if not re.match(r'^[A-Za-z0-9\-_#\s\.]+$', referencia):
-            raise ValidationError("La referencia contiene caracteres no permitidos. Solo se admiten letras, números y guiones.")
+            raise ValidationError("La referencia contiene caracteres no permitidos. Solo se admiten letras, números, puntos y guiones.")
         return referencia
+
+    def clean_descripcion(self):
+        descripcion = self.cleaned_data.get('descripcion', '')
+        if len(descripcion) > 500:
+            raise ValidationError("La descripción no puede superar los 500 caracteres.")
+        return descripcion
 
     def clean_imagen_comprobante(self):
         archivo = self.cleaned_data.get('imagen_comprobante')
@@ -160,12 +174,27 @@ class ComprobantePagoForm(forms.ModelForm):
             # 3. Inspección de código o scripts maliciosos en los primeros bytes del archivo
             pos = archivo.tell() if hasattr(archivo, 'tell') else 0
             archivo.seek(0)
-            primeros_bytes = archivo.read(1024)
+            primeros_bytes = archivo.read(2048)
             archivo.seek(pos)
 
             patrones_maliciosos = [b'<?php', b'<script', b'eval(', b'base64_decode', b'system(', b'shell_exec(']
             for patron in patrones_maliciosos:
                 if patron in primeros_bytes.lower():
                     raise ValidationError("El archivo adjunto contiene código ejecutable no permitido por seguridad.")
+
+            # 4. Verificación de integridad de imagen o PDF
+            import os
+            ext = os.path.splitext(nombre)[1].lower()
+            if ext == '.pdf':
+                if not primeros_bytes.startswith(b'%PDF-'):
+                    raise ValidationError("El archivo PDF del comprobante está dañado o no es un PDF válido.")
+            else:
+                try:
+                    from PIL import Image
+                    img = Image.open(archivo)
+                    img.verify()
+                    archivo.seek(pos)
+                except Exception:
+                    raise ValidationError("El archivo subido no es una imagen o archivo válido.")
 
         return archivo
