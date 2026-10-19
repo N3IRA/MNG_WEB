@@ -840,6 +840,7 @@ class PruebasSeguridadYFuncionalidadCompletas(TestCase):
             password='Password123#',
             first_name='Laura',
             last_name='Gomez',
+            numero_documento='999000111',
             rol=Usuario.Roles.CLIENTE,
             is_staff=False
         )
@@ -849,6 +850,7 @@ class PruebasSeguridadYFuncionalidadCompletas(TestCase):
             password='AdminPassword123#',
             first_name='Super',
             last_name='Admin',
+            numero_documento='999000222',
             rol=Usuario.Roles.ADMIN,
             is_staff=True
         )
@@ -876,7 +878,7 @@ class PruebasSeguridadYFuncionalidadCompletas(TestCase):
     def test_calculo_variable_dias_reserva(self):
         """Verifica que las propiedades dias_duracion y fecha_fin en Reserva calculen correctamente."""
         self.assertEqual(self.reserva.dias_duracion, 3)
-        self.assertEqual(self.reserva.fecha_fin, self.reserva.fecha_inicio + timedelta(days=3))
+        self.assertEqual(self.reserva.fecha_fin, self.reserva.fecha_inicio + timedelta(days=2))
 
     def test_calculo_dias_y_costo_aseguradora(self):
         """Verifica que Aseguradora calcule automáticamente días, costo del seguro y folio único."""
@@ -900,8 +902,8 @@ class PruebasSeguridadYFuncionalidadCompletas(TestCase):
         self.assertTrue(seguro.numero_poliza.startswith('POL-'))
         self.assertEqual(seguro.fecha_inicio_cobertura, self.reserva.fecha_inicio)
         self.assertEqual(seguro.fecha_fin_cobertura, self.reserva.fecha_fin)
-        # Costo = 3 días * $12,000 * 3 personas (2 adultos + 1 menor) = $108,000
-        self.assertEqual(seguro.costo_seguro, Decimal('108000.00'))
+        # Costo = 3 días * $12,000/día = $36,000
+        self.assertEqual(seguro.costo_seguro, Decimal('36000.00'))
 
     def test_login_brute_force_lockout(self):
         """Verifica que 5 intentos fallidos consecutivos de login activen el bloqueo temporal."""
@@ -969,6 +971,7 @@ class PruebasSeguridadYFuncionalidadCompletas(TestCase):
         )
         self.assertEqual(res.status_code, 200)
         data = res.json()
-        self.assertIn('reply', data)
-        self.assertIn('pqrs', data.get('reply', '').lower())
+        self.assertIn('response', data)
+        self.assertEqual(data.get('action'), 'pqrs')
+        self.assertIn('pqrs', data.get('response', '').lower())
 

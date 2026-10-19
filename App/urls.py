@@ -45,6 +45,7 @@ urlpatterns = [
 
     # Chat API Condy
     path('api/chat/', condy_chat_api, name='api_chat'),
+    path('api/condy-chat/', condy_chat_api, name='condy_chat_api'),
 
     # Inicio
     path('', views.index, name='index'),
