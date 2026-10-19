@@ -18,11 +18,20 @@ from autenticacion.forms import RecuperacionPersonalizadaForm, RestablecerClaveF
 logger = logging.getLogger(__name__)
 
 
+from django_ratelimit.decorators import ratelimit
+
+
+@ratelimit(key='ip', rate='5/m', block=False)
 def recuperar_clave_vista(request):
     """
     Inicia el flujo de recuperación de contraseña validando apodo, documento y correo.
     Genera un código OTP de 6 dígitos y lo envía por correo electrónico.
+    Protegido con rate-limiting para evitar ataques de denegación o spam de correos.
     """
+    if getattr(request, 'limited', False):
+        messages.error(request, "Has solicitado demasiados códigos de recuperación. Por favor espera unos minutos.")
+        return render(request, 'autenticacion/recuperar.html', {'form': RecuperacionPersonalizadaForm()})
+
     if request.method == 'POST':
         form = RecuperacionPersonalizadaForm(request.POST)
         if form.is_valid():
@@ -35,6 +44,7 @@ def recuperar_clave_vista(request):
             request.session['reset_email'] = email
             request.session['reset_otp'] = otp
             request.session['reset_otp_time'] = time.time()
+            request.session['reset_otp_intentos'] = 0
 
             asunto = 'Código de verificación para recuperar contraseña - Monagua'
             html_mensaje = render_to_string('autenticacion/email_otp_recuperar.html', {'otp': otp})
@@ -73,6 +83,7 @@ def verificar_otp_recuperar_vista(request):
     Valida el código OTP ingresado para la recuperación de contraseña.
     Al ser correcto, genera un token criptográfico seguro firmado (signing)
     y envía el enlace al correo para establecer la nueva contraseña.
+    Incluye un límite estricto de 5 intentos para mitigar ataques de fuerza bruta.
     """
     if 'reset_email' not in request.session or 'reset_otp' not in request.session:
         messages.error(request, 'Tu sesión de recuperación ha expirado o no es válida.')
@@ -85,7 +96,18 @@ def verificar_otp_recuperar_vista(request):
         request.session.pop('reset_email', None)
         request.session.pop('reset_otp', None)
         request.session.pop('reset_otp_time', None)
+        request.session.pop('reset_otp_intentos', None)
         messages.error(request, 'El código OTP ha expirado. Por favor solicita uno nuevo.')
+        return redirect('recuperar_clave')
+
+    intentos = request.session.get('reset_otp_intentos', 0)
+    if intentos >= 5:
+        request.session.pop('reset_user_id', None)
+        request.session.pop('reset_email', None)
+        request.session.pop('reset_otp', None)
+        request.session.pop('reset_otp_time', None)
+        request.session.pop('reset_otp_intentos', None)
+        messages.error(request, 'Has superado el número máximo de intentos permitidos (5). Solicita un nuevo código.')
         return redirect('recuperar_clave')
 
     if request.method == 'POST':
@@ -131,10 +153,22 @@ def verificar_otp_recuperar_vista(request):
             request.session.pop('reset_email', None)
             request.session.pop('reset_otp', None)
             request.session.pop('reset_otp_time', None)
+            request.session.pop('reset_otp_intentos', None)
 
             return redirect('clave_enviada')
         else:
-            messages.error(request, 'El código OTP ingresado es incorrecto.')
+            intentos += 1
+            request.session['reset_otp_intentos'] = intentos
+            restantes = 5 - intentos
+            if restantes <= 0:
+                request.session.pop('reset_user_id', None)
+                request.session.pop('reset_email', None)
+                request.session.pop('reset_otp', None)
+                request.session.pop('reset_otp_time', None)
+                request.session.pop('reset_otp_intentos', None)
+                messages.error(request, 'Has superado el número máximo de intentos permitidos (5). Solicita un nuevo código.')
+                return redirect('recuperar_clave')
+            messages.error(request, f'El código OTP ingresado es incorrecto. Te quedan {restantes} intentos.')
 
     email = request.session.get('reset_email', '')
     partes = email.split('@')
