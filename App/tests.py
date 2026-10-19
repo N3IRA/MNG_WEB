@@ -96,35 +96,117 @@ class SeguridadFormulariosTests(TestCase):
 
     def test_pago_parameter_tampering_protection(self):
         """
-        Verifica que si un usuario manipula el HTML de la vista de pagos para enviar 'monto=100'
-        o un estado 'aprobado', el servidor ignora esos datos y asigna el monto exacto de la reserva
-        en estado 'pendiente'.
+        Verifica que si un usuario o atacante agrega campos no autorizados (ej. 'monto=10.00'
+        o 'estado_transaccion=aprobado'), Django detecta la alteración, rechaza la solicitud
+        con un error explícito de seguridad y NO registra el comprobante en la base de datos.
         """
         self.client.force_login(self.turista)
-        # Bytes de una imagen GIF 1x1 válida compatible con Pillow/ImageField
         gif_bytes = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
         archivo_imagen = SimpleUploadedFile('recibo.gif', gif_bytes, content_type='image/gif')
 
-        payload = {
+        payload_manipulado = {
             'reserva': self.reserva.id,
-            'referencia': 'TRANS-998877',
+            'referencia': 'TRANS-HACKED-99',
             'banco_origen': 'Bancolombia',
             'metodo_pago': 'Transferencia Bancaria',
             'imagen_comprobante': archivo_imagen,
-            'descripcion': 'Pago enviado',
-            # Parámetros manipulados en navegador:
+            'descripcion': 'Pago intentando alterar precio',
+            # Parámetros manipulados / extraños inyectados en POST:
             'monto': '10.00',
             'estado_transaccion': 'aprobado'
         }
 
-        response = self.client.post(reverse('enviar_comprobante'), data=payload)
+        response = self.client.post(reverse('enviar_comprobante'), data=payload_manipulado)
+        # Debe fallar con error de validación de Django y renderizar nuevamente
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'datos no autorizados')
+
+        # NO debe existir ningún pago creado con esa referencia en BD
+        self.assertFalse(Pago.objects.filter(referencia='TRANS-HACKED-99').exists())
+
+    def test_pago_valido_sin_tampering_exitoso(self):
+        """Verifica que un comprobante legítimo sin campos extraños se registre con éxito y monto del servidor."""
+        self.client.force_login(self.turista)
+        gif_bytes = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+        archivo_imagen = SimpleUploadedFile('recibo_legitimo.gif', gif_bytes, content_type='image/gif')
+
+        payload_limpio = {
+            'reserva': self.reserva.id,
+            'referencia': 'TRANS-LEGIT-1234',
+            'banco_origen': 'Bancolombia',
+            'metodo_pago': 'Transferencia Bancaria',
+            'imagen_comprobante': archivo_imagen,
+            'descripcion': 'Pago legítimo',
+        }
+
+        response = self.client.post(reverse('enviar_comprobante'), data=payload_limpio)
         self.assertEqual(response.status_code, 302)
 
-        pago = Pago.objects.get(referencia='TRANS-998877')
-        # El monto debe ser 350000.00 (de la reserva), no 10.00
+        pago = Pago.objects.get(referencia='TRANS-LEGIT-1234')
         self.assertEqual(pago.monto, Decimal('350000.00'))
-        # El estado debe ser 'pendiente', no 'aprobado'
         self.assertEqual(pago.estado_transaccion, 'pendiente')
+
+    def test_pago_archivo_peligroso_doble_extension_rechazado(self):
+        """Verifica que subir un archivo con doble extensión sospechosa (ej. exploit.php.png) sea rechazado."""
+        self.client.force_login(self.turista)
+        archivo_sospechoso = SimpleUploadedFile('recibo.php.png', b'GIF89a fake payload', content_type='image/png')
+
+        payload = {
+            'reserva': self.reserva.id,
+            'referencia': 'TRANS-DANGEROUS-FILE',
+            'banco_origen': 'Bancolombia',
+            'metodo_pago': 'Transferencia Bancaria',
+            'imagen_comprobante': archivo_sospechoso,
+            'descripcion': 'Archivo malicioso',
+        }
+
+        response = self.client.post(reverse('enviar_comprobante'), data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Archivo sospechoso detectado')
+        self.assertFalse(Pago.objects.filter(referencia='TRANS-DANGEROUS-FILE').exists())
+
+    def test_pago_archivo_con_script_ejecutable_rechazado(self):
+        """Verifica que subir un archivo que contenga código script o php sea bloqueado de inmediato."""
+        self.client.force_login(self.turista)
+        archivo_script = SimpleUploadedFile('recibo.png', b'<?php system($_GET["cmd"]); ?>', content_type='image/png')
+
+        payload = {
+            'reserva': self.reserva.id,
+            'referencia': 'TRANS-SCRIPT-INJECT',
+            'banco_origen': 'Nequi',
+            'metodo_pago': 'Billetera Digital',
+            'imagen_comprobante': archivo_script,
+            'descripcion': 'Intento de webshell',
+        }
+
+        response = self.client.post(reverse('enviar_comprobante'), data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'código ejecutable no permitido')
+        self.assertFalse(Pago.objects.filter(referencia='TRANS-SCRIPT-INJECT').exists())
+
+    def test_pago_reserva_de_otro_usuario_rechazado(self):
+        """Verifica que un usuario no pueda pagar una reserva que pertenece a otro usuario (prevención IDOR)."""
+        otro_usuario = Usuario.objects.create_user(
+            username='otro_turista',
+            email='otro@monagua.com',
+            password='Password123#',
+            numero_documento='888777666'
+        )
+        self.client.force_login(otro_usuario)
+        gif_bytes = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+        archivo_imagen = SimpleUploadedFile('recibo_ajeno.gif', gif_bytes, content_type='image/gif')
+
+        payload = {
+            'reserva': self.reserva.id,  # La reserva pertenece a self.turista, no a otro_usuario
+            'referencia': 'TRANS-IDOR-ATTACK',
+            'banco_origen': 'Daviplata',
+            'metodo_pago': 'Billetera Digital',
+            'imagen_comprobante': archivo_imagen,
+        }
+
+        response = self.client.post(reverse('enviar_comprobante'), data=payload)
+        # Debe responder 404 (get_object_or_404) porque la reserva no le pertenece
+        self.assertEqual(response.status_code, 404)
 
     def test_pago_penalidad_esta_disponible_en_enviar_comprobante(self):
         """Una cancelación aprobada con penalidad debe aparecer como opción de pago en la vista de comprobantes."""

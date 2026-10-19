@@ -1,3 +1,4 @@
+import re
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
@@ -6,10 +7,13 @@ from App.models import Pago
 
 class ComprobantePagoForm(forms.ModelForm):
     """
-    Formulario seguro para la carga de comprobantes de pago por parte del turista.
-    Aplica el principio de Lista Blanca para evitar 'Mass Assignment' y parameter tampering:
-    Los campos 'monto', 'reserva' y 'estado_transaccion' están deliberadamente EXCLUIDOS
-    del formulario y son fijados obligatoriamente por el servidor en la vista.
+    Formulario con seguridad reforzada para la carga de comprobantes de pago.
+    Implementa:
+    1. Lista Blanca estricta de campos: si el usuario o un atacante inyecta campos
+       adicionales (ej. monto, estado_transaccion, is_staff, id) se genera un ValidationError explícito.
+    2. Validación de extensiones, dobles extensiones y tamaño máximo de archivo.
+    3. Inspección de contenido malicioso y scripts en el comprobante.
+    4. Validación de caracteres permitidos en la referencia bancaria.
     """
     BANCOS_CHOICES = [
         ('', '— Selecciona el banco o medio de pago —'),
@@ -32,6 +36,17 @@ class ComprobantePagoForm(forms.ModelForm):
         ('PSE / Enlace de Pago', 'PSE / Enlace de Pago'),
         ('Otro', 'Otro Método'),
     ]
+
+    # Conjunto estricto de campos permitidos en la petición POST
+    CAMPOS_PERMITIDOS = {
+        'csrfmiddlewaretoken',
+        'referencia',
+        'banco_origen',
+        'metodo_pago',
+        'descripcion',
+        'reserva',
+        'imagen_comprobante',
+    }
 
     banco_origen = forms.ChoiceField(
         choices=BANCOS_CHOICES,
@@ -100,19 +115,57 @@ class ComprobantePagoForm(forms.ModelForm):
             }
         }
 
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # Validación estricta de seguridad: si se agregan otros datos o parámetros extraños
+        campos_enviados = set(self.data.keys())
+        campos_no_permitidos = campos_enviados - self.CAMPOS_PERMITIDOS
+        if campos_no_permitidos:
+            nombres = ', '.join(sorted(campos_no_permitidos))
+            raise ValidationError(
+                f"Error de seguridad: Se detectaron campos o datos no autorizados en la solicitud ({nombres}). "
+                "La operación ha sido bloqueada por Django para garantizar la integridad financiera."
+            )
+
+        return cleaned_data
+
     def clean_referencia(self):
         referencia = self.cleaned_data.get('referencia', '').strip()
         if not referencia:
             raise ValidationError("La referencia de pago no puede estar vacía.")
         if len(referencia) < 3:
             raise ValidationError("La referencia debe contener al menos 3 caracteres.")
+        if not re.match(r'^[A-Za-z0-9\-_#\s\.]+$', referencia):
+            raise ValidationError("La referencia contiene caracteres no permitidos. Solo se admiten letras, números y guiones.")
         return referencia
 
     def clean_imagen_comprobante(self):
         archivo = self.cleaned_data.get('imagen_comprobante')
         if archivo:
-            # Límite de tamaño: 10 MB
+            # 1. Límite de tamaño: 10 MB
             max_mb = 10
             if archivo.size > max_mb * 1024 * 1024:
                 raise ValidationError(f"El comprobante no puede pesar más de {max_mb} MB.")
+
+            # 2. Protección contra dobles extensiones peligrosas (ej. archivo.php.png, exploit.sh.jpg)
+            nombre = archivo.name.lower()
+            extensiones_peligrosas = ('.php', '.exe', '.sh', '.bat', '.py', '.pl', '.jsp', '.asp', '.aspx', '.cgi', '.cmd', '.vbs', '.phtml')
+            for ext in extensiones_peligrosas:
+                if ext in nombre:
+                    raise ValidationError(
+                        f"Archivo sospechoso detectado con extensión no permitida ({ext}). Solo se admiten imágenes limpias o PDF."
+                    )
+
+            # 3. Inspección de código o scripts maliciosos en los primeros bytes del archivo
+            pos = archivo.tell() if hasattr(archivo, 'tell') else 0
+            archivo.seek(0)
+            primeros_bytes = archivo.read(1024)
+            archivo.seek(pos)
+
+            patrones_maliciosos = [b'<?php', b'<script', b'eval(', b'base64_decode', b'system(', b'shell_exec(']
+            for patron in patrones_maliciosos:
+                if patron in primeros_bytes.lower():
+                    raise ValidationError("El archivo adjunto contiene código ejecutable no permitido por seguridad.")
+
         return archivo
