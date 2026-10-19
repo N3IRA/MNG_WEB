@@ -11,34 +11,60 @@ function calcStepSize(data) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    /* Fecha */
+    /* Fecha actual formateada */
     const dateElement = document.getElementById('currentDate');
     if (dateElement) {
         dateElement.textContent = new Date().toLocaleDateString('es-CO', { weekday:'short', year:'numeric', month:'short', day:'numeric' });
     }
 
-    const C = { green:'#1a261f', greenLight:'rgba(26,38,31,.12)', amber:'#f59e0b', rose:'#dc3545', gray:'#f0f0f0', muted:'#aaa' };
+    /* Paleta de colores de alto contraste y viveza */
+    const C = {
+      emerald: '#059669',
+      emeraldDark: '#047857',
+      emeraldLight: 'rgba(16, 185, 129, 0.18)',
+      amber: '#f59e0b',
+      amberDark: '#d97706',
+      rose: '#ef4444',
+      roseDark: '#dc2626',
+      slateDark: '#0f172a',
+      slateText: '#334155',
+      slateMuted: '#475569',
+      gridColor: '#f1f5f9'
+    };
 
     /* Gráfica 1 — Ingresos mensuales */
-    if (document.getElementById('chartIngresos') && typeof ingresosData !== 'undefined') {
+    const canvasIngresos = document.getElementById('chartIngresos');
+    if (canvasIngresos && typeof ingresosData !== 'undefined') {
         const stepIngresos = calcStepSize(ingresosData);
         const maxIngresos  = stepIngresos * 6; /* 6 pasos arriba del máximo */
+        const ctx = canvasIngresos.getContext('2d');
 
-        new Chart(document.getElementById('chartIngresos'), {
+        /* Gradiente vibrante para el área bajo la curva */
+        const fillGradient = ctx.createLinearGradient(0, 0, 0, 260);
+        fillGradient.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
+        fillGradient.addColorStop(0.7, 'rgba(16, 185, 129, 0.08)');
+        fillGradient.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
+
+        new Chart(canvasIngresos, {
           type: 'line',
           data: {
             labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
             datasets: [{
               label: 'Ingresos (COP $)',
               data: ingresosData,
-              borderColor: C.green,
-              backgroundColor: C.greenLight,
-              borderWidth: 2.5,
-              tension: .4,
+              borderColor: C.emerald,
+              backgroundColor: fillGradient,
+              borderWidth: 3,
+              tension: 0.38,
               fill: true,
-              pointBackgroundColor: C.green,
-              pointRadius: 4,
-              pointHoverRadius: 7
+              pointBackgroundColor: C.emerald,
+              pointBorderColor: '#ffffff',
+              pointBorderWidth: 2,
+              pointRadius: 4.5,
+              pointHoverRadius: 7.5,
+              pointHoverBackgroundColor: C.emeraldDark,
+              pointHoverBorderColor: '#ffffff',
+              pointHoverBorderWidth: 3
             }]
           },
           options: {
@@ -47,6 +73,14 @@ document.addEventListener('DOMContentLoaded', function() {
             plugins: {
               legend: { display: false },
               tooltip: {
+                backgroundColor: C.slateDark,
+                titleColor: '#34d399',
+                bodyColor: '#ffffff',
+                titleFont: { weight: 'bold', size: 12 },
+                bodyFont: { weight: 'bold', size: 13 },
+                padding: 10,
+                cornerRadius: 8,
+                boxPadding: 4,
                 callbacks: {
                   label: c => ' ' + formatCOP(c.parsed.y)
                 }
@@ -55,16 +89,19 @@ document.addEventListener('DOMContentLoaded', function() {
             scales: {
               x: {
                 grid: { display: false },
-                ticks: { font: { size: 11 }, color: C.muted }
+                ticks: {
+                  font: { size: 12, weight: '600' },
+                  color: C.slateMuted
+                }
               },
               y: {
                 min: 0,
                 max: maxIngresos,
-                grid: { color: C.gray },
+                grid: { color: C.gridColor, drawBorder: false },
                 ticks: {
                   stepSize: stepIngresos,
-                  font: { size: 11 },
-                  color: C.muted,
+                  font: { size: 11, weight: '600' },
+                  color: C.slateMuted,
                   callback: v => formatCOP(v)
                 }
               }
@@ -74,27 +111,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /* Gráfica 2 — Estado reservas (donut) */
-    if (document.getElementById('chartEstado') && typeof reservasConf !== 'undefined') {
+    const canvasEstado = document.getElementById('chartEstado');
+    if (canvasEstado && typeof reservasConf !== 'undefined') {
         const tot = reservasConf + reservasPend + reservasCan;
-        new Chart(document.getElementById('chartEstado'), {
+        new Chart(canvasEstado, {
           type: 'doughnut',
           data: {
             labels: ['Confirmadas','Pendientes','Canceladas'],
             datasets: [{
               data: tot > 0 ? [reservasConf, reservasPend, reservasCan] : [1],
-              backgroundColor: tot > 0 ? [C.green, C.amber, C.rose] : ['#e5e7eb'],
-              borderWidth: 0,
+              backgroundColor: tot > 0 ? ['#10b981', '#f59e0b', '#ef4444'] : ['#e2e8f0'],
+              borderColor: '#ffffff',
+              borderWidth: 3,
               hoverOffset: tot > 0 ? 8 : 0
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '68%',
+            cutout: '70%',
             plugins: {
               legend: { display: false },
               tooltip: {
                 enabled: tot > 0,
+                backgroundColor: C.slateDark,
+                titleColor: '#f8fafc',
+                bodyColor: '#f1f5f9',
+                titleFont: { weight: 'bold', size: 12 },
+                bodyFont: { weight: 'bold', size: 13 },
+                padding: 10,
+                cornerRadius: 8,
                 callbacks: {
                   label: c => ' ' + c.label + ': ' + c.parsed + ' reservas'
                 }
@@ -105,16 +151,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /* Gráfica 3 — Reservas esta semana */
-    if (document.getElementById('chartSemana') && typeof dataSemana !== 'undefined') {
+    const canvasSemana = document.getElementById('chartSemana');
+    if (canvasSemana && typeof dataSemana !== 'undefined') {
         const maxS = Math.max(...dataSemana) || 1;
-        new Chart(document.getElementById('chartSemana'), {
+        new Chart(canvasSemana, {
           type: 'bar',
           data: {
             labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],
             datasets: [{
               label: 'Reservas',
               data: dataSemana,
-              backgroundColor: dataSemana.map(v => v === maxS && v > 0 ? C.green : C.greenLight),
+              backgroundColor: dataSemana.map(v => v === maxS && v > 0 ? '#059669' : 'rgba(16, 185, 129, 0.4)'),
+              hoverBackgroundColor: '#047857',
               borderRadius: 6,
               borderSkipped: false
             }]
@@ -125,6 +173,13 @@ document.addEventListener('DOMContentLoaded', function() {
             plugins: {
               legend: { display: false },
               tooltip: {
+                backgroundColor: C.slateDark,
+                titleColor: '#34d399',
+                bodyColor: '#ffffff',
+                titleFont: { weight: 'bold', size: 12 },
+                bodyFont: { weight: 'bold', size: 13 },
+                padding: 8,
+                cornerRadius: 8,
                 callbacks: {
                   label: c => ' ' + c.parsed.y + ' reservas'
                 }
@@ -133,7 +188,10 @@ document.addEventListener('DOMContentLoaded', function() {
             scales: {
               x: {
                 grid: { display: false },
-                ticks: { font: { size: 11 }, color: C.muted }
+                ticks: {
+                  font: { size: 11, weight: '600' },
+                  color: C.slateMuted
+                }
               },
               y: {
                 display: false,
@@ -169,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let loopLimit = 0;
 
             const header = (n, t) => {
-              pdf.setFillColor(33, 37, 41); pdf.rect(0, 0, pW, 10, 'F');
+              pdf.setFillColor(15, 23, 42); pdf.rect(0, 0, pW, 10, 'F');
               pdf.setTextColor(255, 255, 255); pdf.setFontSize(8); pdf.setFont('helvetica', 'bold');
               pdf.text('MONAGUA — Tablero de Rendimiento', 8, 6.5);
               pdf.text('Generado: ' + new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) + '   Pág ' + n + '/' + t, pW - 8, 6.5, { align: 'right' });

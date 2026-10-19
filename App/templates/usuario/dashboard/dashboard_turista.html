@@ -4,145 +4,311 @@
 
 {% block title %}Dashboard Turista | Monagua{% endblock %}
 
+{% block extra_head %}
+<style>
+  /* ══════════════════════════════════════════════════════════════
+     SISTEMA DE DISEÑO DE ALTO CONTRASTE - DASHBOARD TURISTA
+     ══════════════════════════════════════════════════════════════ */
+  .dash-header-title {
+    color: #0f172a;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+  }
+  .dash-header-sub {
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+
+  .dash-kpi-card {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.05);
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+  }
+
+  .dash-kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 24px -4px rgba(15, 23, 42, 0.1);
+    border-color: #cbd5e1;
+  }
+
+  .dash-kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+  }
+
+  .dash-kpi-emerald::before { background: linear-gradient(90deg, #10b981, #059669); }
+  .dash-kpi-indigo::before  { background: linear-gradient(90deg, #6366f1, #4f46e5); }
+  .dash-kpi-cyan::before    { background: linear-gradient(90deg, #06b6d4, #0891b2); }
+  .dash-kpi-amber::before   { background: linear-gradient(90deg, #f59e0b, #d97706); }
+  .dash-kpi-rose::before    { background: linear-gradient(90deg, #ef4444, #dc2626); }
+  .dash-kpi-violet::before  { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
+
+  .kpi-icon-pill {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.25rem;
+  }
+
+  .kpi-icon-pill.emerald {
+    background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+    box-shadow: 0 6px 14px rgba(16, 185, 129, 0.35);
+  }
+  .kpi-icon-pill.indigo {
+    background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+    box-shadow: 0 6px 14px rgba(99, 102, 241, 0.35);
+  }
+  .kpi-icon-pill.cyan {
+    background: linear-gradient(135deg, #06b6d4 0%, #0e7490 100%);
+    box-shadow: 0 6px 14px rgba(6, 182, 212, 0.35);
+  }
+  .kpi-icon-pill.amber {
+    background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
+    box-shadow: 0 6px 14px rgba(245, 158, 11, 0.35);
+  }
+  .kpi-icon-pill.rose {
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    box-shadow: 0 6px 14px rgba(239, 68, 68, 0.35);
+  }
+  .kpi-icon-pill.violet {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+    box-shadow: 0 6px 14px rgba(139, 92, 246, 0.35);
+  }
+
+  .kpi-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #475569;
+    margin-bottom: 4px;
+  }
+
+  .kpi-number {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    margin-bottom: 4px;
+  }
+
+  .kpi-number.text-emerald { color: #047857; }
+  .kpi-number.text-indigo  { color: #3730a3; }
+  .kpi-number.text-cyan    { color: #0e7490; }
+  .kpi-number.text-amber   { color: #b45309; }
+  .kpi-number.text-rose    { color: #b91c1c; }
+  .kpi-number.text-violet  { color: #5b21b6; }
+
+  .kpi-detail {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #334155;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .kpi-detail a {
+    color: #334155;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.15s ease;
+  }
+  .kpi-detail a:hover {
+    color: #0f172a;
+    text-decoration: underline;
+  }
+
+  .dash-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.05);
+    overflow: hidden;
+  }
+  .dash-card-header {
+    background: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1.1rem 1.25rem 0.85rem;
+  }
+  .dash-card-title {
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 2px;
+  }
+  .dash-card-subtitle {
+    color: #475569;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- ── Top Bar ── -->
-<div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
   <div>
-    <h2 class="fw-bold mb-0 text-success">
-      <i class="bi bi-compass me-2"></i>Hola, {{ user.first_name|default:user.username }}
+    <h2 class="dash-header-title d-flex align-items-center mb-1">
+      <span class="p-2 rounded-3 bg-success bg-opacity-10 text-success me-2 d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+        <i class="bi bi-compass-fill"></i>
+      </span>
+      Hola, {{ user.first_name|default:user.username }}
     </h2>
-    <p class="text-muted mb-0 small">Resumen de tus aventuras, reservas y actividad en Monagua.</p>
+    <p class="dash-header-sub mb-0">Resumen de tus expediciones, reservas y actividad turística en Monagua.</p>
   </div>
   <div class="d-flex align-items-center gap-2 flex-wrap">
-    <a href="{% url 'panel_rapido' %}" class="btn btn-outline-success btn-sm rounded-pill d-inline-flex align-items-center gap-1">
+    <a href="{% url 'panel_rapido' %}" class="btn btn-outline-success btn-sm rounded-pill d-inline-flex align-items-center gap-1 px-3 fw-semibold shadow-sm">
       <i class="bi bi-house-door-fill"></i> Panel Rápido
     </a>
-    <a href="{% url 'tours' %}" class="btn btn-success btn-sm rounded-pill d-inline-flex align-items-center gap-1 shadow-sm">
+    <a href="{% url 'tours' %}" class="btn btn-success btn-sm rounded-pill d-inline-flex align-items-center gap-1 px-3 fw-semibold shadow-sm">
       <i class="bi bi-map-fill"></i> Explorar Destinos
     </a>
-    <span class="badge bg-white text-secondary border d-none d-md-inline-flex align-items-center gap-1 px-3 py-2 rounded-pill">
+    <span class="badge bg-white text-dark border d-none d-md-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill shadow-sm fw-semibold">
       <i class="bi bi-calendar3 text-success"></i>
       <span>{{ "now"|date:"d \d\e F, Y" }}</span>
     </span>
   </div>
 </div>
 
-<!-- ── KPI Cards (Inspiradas en el Dashboard Admin) ── -->
+<!-- ── KPI Cards de Alto Contraste ── -->
 <div class="row g-3 mb-4">
   <!-- Inversión en Viajes -->
   <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
-    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-      <div class="card-body p-3">
-        <div class="d-flex align-items-center gap-2 mb-2">
-          <span class="bg-success bg-opacity-10 text-success rounded-3 p-2 fs-5 d-inline-flex align-items-center justify-content-center">
+    <div class="dash-kpi-card dash-kpi-emerald p-3">
+      <div>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="kpi-icon-pill emerald">
             <i class="bi bi-currency-dollar"></i>
           </span>
+          <span class="badge bg-success bg-opacity-15 text-success rounded-pill px-2 py-1 small fw-bold">Inversión</span>
         </div>
-        <div class="text-muted small">Inversión en Viajes</div>
-        <div class="fw-bold fs-5 text-success">COP ${{ total_invertido|floatformat:0|intcomma|default:"0" }}</div>
-        <div class="text-muted small pt-1">
-          <a href="{% url 'mis_comprobantes' %}" class="text-decoration-none text-muted">
-            Pagos aprobados <i class="bi bi-arrow-right text-success"></i>
-          </a>
-        </div>
+        <div class="kpi-tag">Inversión en Viajes</div>
+        <div class="kpi-number text-emerald">COP ${{ total_invertido|floatformat:0|intcomma|default:"0" }}</div>
+      </div>
+      <div class="kpi-detail pt-2 border-top border-light">
+        <a href="{% url 'mis_comprobantes' %}" class="d-flex align-items-center gap-1 text-success">
+          Pagos aprobados <i class="bi bi-arrow-right"></i>
+        </a>
       </div>
     </div>
   </div>
 
   <!-- Reservas Totales -->
   <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
-    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-      <div class="card-body p-3">
-        <div class="d-flex align-items-center gap-2 mb-2">
-          <span class="bg-primary bg-opacity-10 text-primary rounded-3 p-2 fs-5 d-inline-flex align-items-center justify-content-center">
+    <div class="dash-kpi-card dash-kpi-indigo p-3">
+      <div>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="kpi-icon-pill indigo">
             <i class="bi bi-calendar-check-fill"></i>
           </span>
+          <span class="badge bg-primary bg-opacity-15 text-primary rounded-pill px-2 py-1 small fw-bold">Tours</span>
         </div>
-        <div class="text-muted small">Mis Reservas</div>
-        <div class="fw-bold fs-5 text-primary">{{ total_reservas|default:"0" }}</div>
-        <div class="text-muted small pt-1">
-          <a href="{% url 'mis_reservas_usuario' %}" class="text-decoration-none text-muted">
-            Ver todas <i class="bi bi-arrow-right text-primary"></i>
-          </a>
-        </div>
+        <div class="kpi-tag">Mis Reservas</div>
+        <div class="kpi-number text-indigo">{{ total_reservas|default:"0" }}</div>
+      </div>
+      <div class="kpi-detail pt-2 border-top border-light">
+        <a href="{% url 'mis_reservas_usuario' %}" class="d-flex align-items-center gap-1 text-primary">
+          Ver todas <i class="bi bi-arrow-right"></i>
+        </a>
       </div>
     </div>
   </div>
 
   <!-- Destinos / Tours Visitados -->
   <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
-    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-      <div class="card-body p-3">
-        <div class="d-flex align-items-center gap-2 mb-2">
-          <span class="bg-info bg-opacity-10 text-info rounded-3 p-2 fs-5 d-inline-flex align-items-center justify-content-center">
+    <div class="dash-kpi-card dash-kpi-cyan p-3">
+      <div>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="kpi-icon-pill cyan">
             <i class="bi bi-compass-fill"></i>
           </span>
+          <span class="badge bg-info bg-opacity-15 text-info-emphasis rounded-pill px-2 py-1 small fw-bold">Rutas</span>
         </div>
-        <div class="text-muted small">Tours Visitados</div>
-        <div class="fw-bold fs-5 text-info">{{ destinos_visitados|default:"0" }}</div>
-        <div class="text-muted small pt-1">
-          <a href="{% url 'tours' %}" class="text-decoration-none text-muted">
-            Ver catálogo <i class="bi bi-arrow-right text-info"></i>
-          </a>
-        </div>
+        <div class="kpi-tag">Tours Visitados</div>
+        <div class="kpi-number text-cyan">{{ destinos_visitados|default:"0" }}</div>
+      </div>
+      <div class="kpi-detail pt-2 border-top border-light">
+        <a href="{% url 'tours' %}" class="d-flex align-items-center gap-1" style="color: #0891b2;">
+          Ver catálogo <i class="bi bi-arrow-right"></i>
+        </a>
       </div>
     </div>
   </div>
 
   <!-- Calificaciones -->
   <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
-    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-      <div class="card-body p-3">
-        <div class="d-flex align-items-center gap-2 mb-2">
-          <span class="bg-warning bg-opacity-10 text-warning rounded-3 p-2 fs-5 d-inline-flex align-items-center justify-content-center">
+    <div class="dash-kpi-card dash-kpi-amber p-3">
+      <div>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="kpi-icon-pill amber">
             <i class="bi bi-star-fill"></i>
           </span>
+          <span class="badge bg-warning bg-opacity-25 text-dark rounded-pill px-2 py-1 small fw-bold">Opiniones</span>
         </div>
-        <div class="text-muted small">Calificaciones</div>
-        <div class="fw-bold fs-5 text-warning">{{ total_calificaciones|default:"0" }}</div>
-        <div class="text-muted small pt-1">
-          <a href="{% url 'mis_calificaciones' %}" class="text-decoration-none text-muted">
-            Gestionar <i class="bi bi-arrow-right text-warning"></i>
-          </a>
-        </div>
+        <div class="kpi-tag">Calificaciones</div>
+        <div class="kpi-number text-amber">{{ total_calificaciones|default:"0" }}</div>
+      </div>
+      <div class="kpi-detail pt-2 border-top border-light">
+        <a href="{% url 'mis_calificaciones' %}" class="d-flex align-items-center gap-1 text-warning">
+          Gestionar <i class="bi bi-arrow-right"></i>
+        </a>
       </div>
     </div>
   </div>
 
   <!-- PQRS Enviadas -->
   <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
-    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-      <div class="card-body p-3">
-        <div class="d-flex align-items-center gap-2 mb-2">
-          <span class="bg-danger bg-opacity-10 text-danger rounded-3 p-2 fs-5 d-inline-flex align-items-center justify-content-center">
+    <div class="dash-kpi-card dash-kpi-rose p-3">
+      <div>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="kpi-icon-pill rose">
             <i class="bi bi-envelope-check-fill"></i>
           </span>
+          <span class="badge bg-danger bg-opacity-15 text-danger rounded-pill px-2 py-1 small fw-bold">Soporte</span>
         </div>
-        <div class="text-muted small">Mis PQRS</div>
-        <div class="fw-bold fs-5 text-danger">{{ total_pqrs|default:"0" }}</div>
-        <div class="text-muted small pt-1">
-          <a href="{% url 'mis_pqrs' %}" class="text-decoration-none text-muted">
-            Ver solicitudes <i class="bi bi-arrow-right text-danger"></i>
-          </a>
-        </div>
+        <div class="kpi-tag">Mis PQRS</div>
+        <div class="kpi-number text-rose">{{ total_pqrs|default:"0" }}</div>
+      </div>
+      <div class="kpi-detail pt-2 border-top border-light">
+        <a href="{% url 'mis_pqrs' %}" class="d-flex align-items-center gap-1 text-danger">
+          Ver solicitudes <i class="bi bi-arrow-right"></i>
+        </a>
       </div>
     </div>
   </div>
 
-  <!-- Tasa de Confirmación -->
+  <!-- Efectividad de Reserva -->
   <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
-    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-      <div class="card-body p-3">
-        <div class="d-flex align-items-center gap-2 mb-2">
-          <span class="bg-secondary bg-opacity-10 text-secondary rounded-3 p-2 fs-5 d-inline-flex align-items-center justify-content-center">
+    <div class="dash-kpi-card dash-kpi-violet p-3">
+      <div>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="kpi-icon-pill violet">
             <i class="bi bi-shield-check"></i>
           </span>
+          <span class="badge bg-purple bg-opacity-15 text-dark rounded-pill px-2 py-1 small fw-bold" style="background: rgba(139, 92, 246, 0.15); color: #5b21b6 !important;">Éxito</span>
         </div>
-        <div class="text-muted small">Efectividad</div>
-        <div class="fw-bold fs-5 text-dark">{{ tasa_confirmacion|default:"0" }}%</div>
-        <div class="text-muted small pt-1">
-          <i class="bi bi-check-circle-fill text-success"></i> Tasa confirmada
-        </div>
+        <div class="kpi-tag">Efectividad</div>
+        <div class="kpi-number text-violet">{{ tasa_confirmacion|default:"0" }}%</div>
+      </div>
+      <div class="kpi-detail pt-2 border-top border-light">
+        <i class="bi bi-check-circle-fill text-success"></i> Tasa confirmada
       </div>
     </div>
   </div>
@@ -150,17 +316,17 @@
 
 <!-- ── Gráfica y Estado de Reservas + Próxima Aventura ── -->
 <div class="row g-3 mb-4">
-  <!-- Estado de Reservas (Bootstrap 5 nativo) -->
+  <!-- Estado de Reservas -->
   <div class="col-12 col-lg-5">
-    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-      <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
-        <h5 class="fw-bold text-dark mb-0">Estado de Mis Reservas</h5>
-        <p class="text-muted small mb-0">Distribución de estados en tus viajes</p>
+    <div class="dash-card h-100">
+      <div class="dash-card-header">
+        <div class="dash-card-title">Estado de Mis Reservas</div>
+        <div class="dash-card-subtitle">Distribución histórica de tus solicitudes de viaje</div>
       </div>
       <div class="card-body p-4 d-flex flex-column justify-content-between">
         {% if total_reservas > 0 %}
         <!-- Barra de progreso acumulada -->
-        <div class="progress rounded-pill mb-4" style="height: 14px;">
+        <div class="progress rounded-pill mb-4 shadow-sm" style="height: 12px; background-color: #e2e8f0;">
           <div class="progress-bar bg-success" role="progressbar" style="width: {% widthratio reservas_confirmadas total_reservas 100 %}%;" aria-valuenow="{{ reservas_confirmadas }}" aria-valuemin="0" aria-valuemax="{{ total_reservas }}"></div>
           <div class="progress-bar bg-warning" role="progressbar" style="width: {% widthratio reservas_pendientes total_reservas 100 %}%;" aria-valuenow="{{ reservas_pendientes }}" aria-valuemin="0" aria-valuemax="{{ total_reservas }}"></div>
           <div class="progress-bar bg-danger" role="progressbar" style="width: {% widthratio reservas_canceladas total_reservas 100 %}%;" aria-valuenow="{{ reservas_canceladas }}" aria-valuemin="0" aria-valuemax="{{ total_reservas }}"></div>
@@ -170,39 +336,39 @@
           <div class="col-4">
             <div class="p-3 rounded-3 bg-light border">
               <div class="fw-bold fs-4 text-success">{{ reservas_confirmadas }}</div>
-              <small class="text-muted d-block fw-semibold">Confirmadas</small>
+              <span class="d-block fw-bold small text-dark">Confirmadas</span>
             </div>
           </div>
           <div class="col-4">
             <div class="p-3 rounded-3 bg-light border">
               <div class="fw-bold fs-4 text-warning">{{ reservas_pendientes }}</div>
-              <small class="text-muted d-block fw-semibold">Pendientes</small>
+              <span class="d-block fw-bold small text-dark">Pendientes</span>
             </div>
           </div>
           <div class="col-4">
             <div class="p-3 rounded-3 bg-light border">
               <div class="fw-bold fs-4 text-danger">{{ reservas_canceladas }}</div>
-              <small class="text-muted d-block fw-semibold">Canceladas</small>
+              <span class="d-block fw-bold small text-dark">Canceladas</span>
             </div>
           </div>
         </div>
 
-        <div class="d-flex justify-content-center gap-3 pt-2 text-muted small">
-          <span class="d-inline-flex align-items-center gap-1">
+        <div class="d-flex justify-content-center gap-3 pt-2 small fw-semibold">
+          <span class="d-inline-flex align-items-center gap-1" style="color: #047857;">
             <i class="bi bi-circle-fill text-success"></i> Confirmadas
           </span>
-          <span class="d-inline-flex align-items-center gap-1">
+          <span class="d-inline-flex align-items-center gap-1" style="color: #b45309;">
             <i class="bi bi-circle-fill text-warning"></i> Pendientes
           </span>
-          <span class="d-inline-flex align-items-center gap-1">
+          <span class="d-inline-flex align-items-center gap-1" style="color: #b91c1c;">
             <i class="bi bi-circle-fill text-danger"></i> Canceladas
           </span>
         </div>
         {% else %}
-        <div class="text-center py-4 my-auto text-muted">
+        <div class="text-center py-4 my-auto text-secondary">
           <i class="bi bi-calendar2-x fs-1 text-muted d-block mb-2"></i>
-          <p class="mb-2">Aún no registras reservas en tu cuenta.</p>
-          <a href="{% url 'tours' %}" class="btn btn-outline-success btn-sm rounded-pill px-3">
+          <p class="mb-3 fw-semibold text-secondary">Aún no registras reservas en tu cuenta.</p>
+          <a href="{% url 'tours' %}" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold">
             Explorar Destinos Ahora
           </a>
         </div>
@@ -213,13 +379,13 @@
 
   <!-- Próxima Aventura o Destino Destacado -->
   <div class="col-12 col-lg-7">
-    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-      <div class="card-header bg-white border-0 pt-4 pb-2 px-4 d-flex justify-content-between align-items-center">
+    <div class="dash-card h-100">
+      <div class="dash-card-header d-flex justify-content-between align-items-center">
         <div>
-          <h5 class="fw-bold text-dark mb-0">Mi Próxima Aventura</h5>
-          <p class="text-muted small mb-0">Detalle de tu viaje más cercano en calendario</p>
+          <div class="dash-card-title">Mi Próxima Aventura</div>
+          <div class="dash-card-subtitle">Detalle de tu viaje más cercano en calendario</div>
         </div>
-        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 fw-semibold">
+        <span class="badge bg-success bg-opacity-15 text-success rounded-pill px-3 py-2 fw-bold">
           <i class="bi bi-geo-alt-fill me-1"></i> Mongua, Boyacá
         </span>
       </div>
@@ -235,13 +401,13 @@
           </div>
           <div class="flex-grow-1">
             <div class="d-flex align-items-center gap-2 mb-1">
-              <span class="badge rounded-pill {% if proxima_reserva.estado_reserva == 'confirmada' %}bg-success text-white{% elif proxima_reserva.estado_reserva == 'pendiente' %}bg-warning text-dark{% else %}bg-danger text-white{% endif %} px-2.5 py-1 small">
+              <span class="badge rounded-pill {% if proxima_reserva.estado_reserva == 'confirmada' %}bg-success text-white{% elif proxima_reserva.estado_reserva == 'pendiente' %}bg-warning text-dark{% else %}bg-danger text-white{% endif %} px-2.5 py-1 small fw-bold">
                 {{ proxima_reserva.get_estado_reserva_display|default:proxima_reserva.estado_reserva }}
               </span>
-              <small class="text-muted">Reserva #{{ proxima_reserva.id }}</small>
+              <span class="fw-bold small text-secondary">Reserva #{{ proxima_reserva.id }}</span>
             </div>
             <h5 class="fw-bold text-dark mb-1">{{ proxima_reserva.paquete.nombre }}</h5>
-            <div class="text-muted small d-flex flex-wrap align-items-center gap-3 mt-2">
+            <div class="small fw-semibold text-secondary d-flex flex-wrap align-items-center gap-3 mt-2">
               <span><i class="bi bi-calendar-event text-success me-1"></i> {{ proxima_reserva.fecha_inicio|date:"d M, Y"|default:"Por programar" }}</span>
               <span><i class="bi bi-people text-primary me-1"></i> {{ proxima_reserva.numero_adultos }} Adultos{% if proxima_reserva.numero_menores %}, {{ proxima_reserva.numero_menores }} Menores{% endif %}</span>
               <span class="fw-bold text-success">COP ${{ proxima_reserva.monto_total|floatformat:0|intcomma|default:"0" }}</span>
@@ -258,10 +424,10 @@
           </a>
         </div>
         {% else %}
-        <div class="text-center py-4 my-auto text-muted">
-          <i class="bi bi-compass fs-1 text-success opacity-50 d-block mb-2"></i>
+        <div class="text-center py-4 my-auto text-secondary">
+          <i class="bi bi-compass fs-1 text-success opacity-75 d-block mb-2"></i>
           <h6 class="fw-bold text-dark mb-1">¡No tienes viajes programados!</h6>
-          <p class="small text-muted mb-3">Descubre los senderos ancestrales, cascadas y lagunas que Mongua tiene preparados para ti.</p>
+          <p class="small text-secondary mb-3">Descubre los senderos ancestrales, cascadas y lagunas que Mongua tiene preparados para ti.</p>
           <a href="{% url 'tours' %}" class="btn btn-success btn-sm rounded-pill px-4 py-2 fw-bold shadow-sm">
             <i class="bi bi-map-fill me-1"></i> Explorar Catálogo de Tours
           </a>
@@ -276,26 +442,29 @@
 <div class="row g-3 mb-4">
   <!-- Últimas Reservas -->
   <div class="col-12 col-lg-7">
-    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-      <div class="card-header bg-white border-0 pt-4 pb-2 px-4 d-flex justify-content-between align-items-center">
-        <h5 class="fw-bold text-dark mb-0">
-          <i class="bi bi-clock-history text-success me-2"></i>Mis Últimas Reservas
-        </h5>
-        <a href="{% url 'mis_reservas_usuario' %}" class="text-success text-decoration-none small fw-semibold">
+    <div class="dash-card h-100">
+      <div class="dash-card-header d-flex justify-content-between align-items-center">
+        <div>
+          <div class="dash-card-title d-flex align-items-center gap-2">
+            <i class="bi bi-clock-history text-success"></i> Mis Últimas Reservas
+          </div>
+          <div class="dash-card-subtitle">Historial de expediciones y estado de pago</div>
+        </div>
+        <a href="{% url 'mis_reservas_usuario' %}" class="text-success text-decoration-none small fw-bold">
           Ver todas <i class="bi bi-arrow-right"></i>
         </a>
       </div>
-      <div class="card-body p-4">
+      <div class="card-body p-3">
         {% if ultimas_reservas %}
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-              <thead class="table-light small text-muted">
+              <thead class="table-light small">
                 <tr>
-                  <th class="border-0">Destino</th>
-                  <th class="border-0">Fecha</th>
-                  <th class="border-0">Total</th>
-                  <th class="border-0 text-center">Estado</th>
-                  <th class="border-0 text-end">Acción</th>
+                  <th class="border-0 fw-bold text-dark">Destino</th>
+                  <th class="border-0 fw-bold text-dark">Fecha</th>
+                  <th class="border-0 fw-bold text-dark">Total</th>
+                  <th class="border-0 text-center fw-bold text-dark">Estado</th>
+                  <th class="border-0 text-end fw-bold text-dark">Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -303,16 +472,16 @@
                 <tr>
                   <td>
                     <div class="fw-bold text-dark small">{{ r.paquete.nombre|default:"Tour Mongua" }}</div>
-                    <small class="text-muted">#{{ r.id }}</small>
+                    <span class="text-secondary small fw-semibold">#{{ r.id }}</span>
                   </td>
-                  <td class="small text-muted">
+                  <td class="small fw-semibold text-secondary">
                     {{ r.fecha_inicio|date:"d M, Y"|default:r.fecha_registro|date:"d M, Y" }}
                   </td>
                   <td class="small fw-bold text-success">
                     COP ${{ r.monto_total|floatformat:0|intcomma|default:"0" }}
                   </td>
                   <td class="text-center">
-                    <span class="badge rounded-pill px-2.5 py-1 small {% if r.estado_reserva == 'confirmada' %}bg-success bg-opacity-10 text-success{% elif r.estado_reserva == 'pendiente' %}bg-warning bg-opacity-10 text-warning{% else %}bg-danger bg-opacity-10 text-danger{% endif %}">
+                    <span class="badge rounded-pill px-2.5 py-1 small fw-bold {% if r.estado_reserva == 'confirmada' %}bg-success text-white{% elif r.estado_reserva == 'pendiente' %}bg-warning text-dark{% else %}bg-danger text-white{% endif %}">
                       {{ r.get_estado_reserva_display|default:r.estado_reserva }}
                     </span>
                   </td>
@@ -327,10 +496,10 @@
             </table>
           </div>
         {% else %}
-          <div class="text-center py-5 text-muted">
+          <div class="text-center py-5 text-secondary">
             <i class="bi bi-journal-x fs-1 text-muted d-block mb-2"></i>
-            <p class="small mb-2">No tienes reservas registradas en el historial.</p>
-            <a href="{% url 'tours' %}" class="btn btn-success btn-sm rounded-pill px-3">
+            <p class="small mb-2 fw-semibold">No tienes reservas registradas en el historial.</p>
+            <a href="{% url 'tours' %}" class="btn btn-success btn-sm rounded-pill px-3 fw-bold">
               Explorar Tours Disponibles
             </a>
           </div>
@@ -341,8 +510,8 @@
 
   <!-- Compromiso Ecológico & Accesos Rápidos -->
   <div class="col-12 col-lg-5 d-flex flex-column gap-3">
-    <!-- Viajero Ecológico (Sin emojis, 100% Bootstrap 5) -->
-    <div class="card border-0 shadow-sm rounded-4 bg-success text-white p-4 position-relative overflow-hidden">
+    <!-- Viajero Ecológico -->
+    <div class="dash-card bg-success text-white p-4 position-relative overflow-hidden" style="background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;">
       <div class="position-absolute top-0 end-0 p-3 opacity-25">
         <i class="bi bi-tree display-1"></i>
       </div>
@@ -352,42 +521,42 @@
             <i class="bi bi-award-fill text-warning me-1"></i> VIAJERO CONSCIENTE
           </span>
         </div>
-        <h5 class="fw-bold mb-2">Conservación del Páramo</h5>
-        <p class="small text-white text-opacity-90 mb-3">
+        <h5 class="fw-bold mb-2 text-white">Conservación del Páramo</h5>
+        <p class="small text-white text-opacity-90 mb-3 fw-medium">
           Cada expedición turística realizada en Monagua apoya directamente a los guías campesinos locales y preserva los frailejones del Páramo de Ocetá.
         </p>
-        <div class="bg-white bg-opacity-10 rounded-3 p-3 border border-white border-opacity-25 d-flex align-items-center gap-3">
+        <div class="bg-white bg-opacity-15 rounded-3 p-3 border border-white border-opacity-25 d-flex align-items-center gap-3">
           <i class="bi bi-shield-fill-check fs-2 text-white"></i>
           <div>
-            <div class="fw-bold small">{{ arboles_conservados|default:"2" }} Árboles y Fuentes Protegidas</div>
-            <small class="text-white text-opacity-75">Gracias por elegir ecoturismo comunitario responsable.</small>
+            <div class="fw-bold small text-white">{{ arboles_conservados|default:"2" }} Árboles y Fuentes Protegidas</div>
+            <small class="text-white text-opacity-75 fw-medium">Gracias por elegir ecoturismo comunitario responsable.</small>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Accesos Rápidos -->
-    <div class="card border-0 shadow-sm rounded-4 bg-white p-4 flex-grow-1">
-      <h6 class="fw-bold text-dark mb-3">
-        <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Accesos Frecuentes
+    <div class="dash-card p-4 flex-grow-1">
+      <h6 class="fw-bold text-dark mb-3 d-flex align-items-center">
+        <i class="bi bi-lightning-charge-fill text-warning me-2"></i>Accesos Frecuentes
       </h6>
       <div class="d-flex flex-wrap gap-2">
-        <a href="{% url 'tours' %}" class="btn btn-outline-success btn-sm rounded-pill d-inline-flex align-items-center gap-1">
+        <a href="{% url 'tours' %}" class="btn btn-outline-success btn-sm rounded-pill d-inline-flex align-items-center gap-1 fw-semibold">
           <i class="bi bi-compass"></i> Destinos
         </a>
-        <a href="{% url 'mis_reservas_usuario' %}" class="btn btn-outline-primary btn-sm rounded-pill d-inline-flex align-items-center gap-1">
+        <a href="{% url 'mis_reservas_usuario' %}" class="btn btn-outline-primary btn-sm rounded-pill d-inline-flex align-items-center gap-1 fw-semibold">
           <i class="bi bi-calendar-check"></i> Reservas
         </a>
-        <a href="{% url 'mis_comprobantes' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-inline-flex align-items-center gap-1">
+        <a href="{% url 'mis_comprobantes' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-inline-flex align-items-center gap-1 fw-semibold">
           <i class="bi bi-wallet2"></i> Comprobantes
         </a>
-        <a href="{% url 'mis_calificaciones' %}" class="btn btn-outline-warning btn-sm rounded-pill d-inline-flex align-items-center gap-1">
+        <a href="{% url 'mis_calificaciones' %}" class="btn btn-outline-warning btn-sm rounded-pill d-inline-flex align-items-center gap-1 fw-semibold">
           <i class="bi bi-star"></i> Calificaciones
         </a>
-        <a href="{% url 'mis_pqrs' %}" class="btn btn-outline-danger btn-sm rounded-pill d-inline-flex align-items-center gap-1">
+        <a href="{% url 'mis_pqrs' %}" class="btn btn-outline-danger btn-sm rounded-pill d-inline-flex align-items-center gap-1 fw-semibold">
           <i class="bi bi-envelope"></i> PQRS
         </a>
-        <a href="{% url 'perfil_detalles' %}" class="btn btn-outline-dark btn-sm rounded-pill d-inline-flex align-items-center gap-1">
+        <a href="{% url 'perfil_detalles' %}" class="btn btn-outline-dark btn-sm rounded-pill d-inline-flex align-items-center gap-1 fw-semibold">
           <i class="bi bi-person-circle"></i> Mi Perfil
         </a>
       </div>

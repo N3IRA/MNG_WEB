@@ -1,13 +1,25 @@
 {% extends 'admin/base-admin.html' %}
+{% load static %}
+
+{% block title %}Eliminar Seguro Emitido | Monagua Admin{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>Eliminar Aseguradora</h1>
-    <p>¿Está seguro de que desea eliminar la aseguradora "{{ object }}"?</p>
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Confirmar Eliminación</button>
-        <a href="{% url 'aseguradora_listar' %}" class="btn btn-secondary">Cancelar</a>
-    </form>
+<div class="container py-4" style="max-width: 600px;">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white text-center p-4">
+        <div class="my-3">
+            <span class="p-3 bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                <i class="bi bi-exclamation-triangle fs-2"></i>
+            </span>
+        </div>
+        <h4 class="fw-bold text-dark">¿Eliminar Seguro Emitido?</h4>
+        <p class="text-muted">¿Estás seguro de que deseas eliminar el registro de seguro <strong>"{{ object.numero_poliza }}"</strong>?</p>
+        <p class="small text-danger bg-danger-subtle py-2 px-3 rounded-3">Esta acción cancelará la trazabilidad del seguro para esta reserva.</p>
+        
+        <form method="POST" class="d-flex justify-content-center gap-2 mt-3">
+            {% csrf_token %}
+            <a href="{% url 'aseguradora_listar' %}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
+            <button type="submit" class="btn btn-danger rounded-pill px-4 shadow-sm">Sí, Confirmar Eliminación</button>
+        </form>
+    </div>
 </div>
 {% endblock %}

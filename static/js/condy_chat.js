@@ -13,8 +13,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // Opciones iniciales frecuentes (CA2)
   const initialOptions = [
     "¿Cuáles son sus horarios?",
-    "¿Dónde están ubicados?",
-    "¿Qué servicios ofrecen?"
+    "¿Qué servicios ofrecen?",
+    "¿Cómo radicar una PQRS?"
   ];
 
   // Restaurar historial del sessionStorage
@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (data.options && data.options.length > 0) {
         showOptions(data.options);
       }
-      if (data.fallback_action === 'ticket') {
+      if (data.fallback_action === 'ticket' || data.fallback_action === 'pqrs' || data.action === 'pqrs') {
         showFallbackOption();
       }
     })
@@ -184,8 +184,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function showFallbackOption(save = true) {
     const div = document.createElement('div');
-    div.className = 'mt-2 mb-2 d-flex justify-content-start';
-    div.innerHTML = `<a href="/contactanos/" class="btn btn-sm btn-outline-primary rounded-pill" style="border-color:#198754; color:#198754;">Dejar un Ticket / Contactar Soporte</a>`;
+    div.className = 'mt-2 mb-2 d-flex flex-wrap gap-2 justify-content-start';
+    div.innerHTML = `
+      <a href="/contactanos/" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm d-inline-flex align-items-center gap-1" style="background-color: #198754; color: #fff; font-weight: 600; text-decoration: none;">
+        <i class="bi bi-envelope-paper-heart"></i> Radicar PQRS
+      </a>
+      <a href="/mis_pqrs/" class="btn btn-sm btn-outline-success rounded-pill px-3 shadow-sm d-inline-flex align-items-center gap-1" style="border-color: #198754; color: #198754; font-weight: 600; text-decoration: none;">
+        <i class="bi bi-inbox"></i> Mis Solicitudes
+      </a>
+    `;
     messagesContainer.appendChild(div);
     scrollToBottom();
     
