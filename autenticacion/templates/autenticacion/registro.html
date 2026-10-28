@@ -484,13 +484,7 @@
               style="cursor: pointer; z-index: 5"
               title="Mostrar/ocultar contraseña"
             ></i>
-          </div>
-          <div x-show="confirmPassword.length > 0 && !passwordsMatch" x-transition class="invalid-feedback d-block ms-3 mt-1">
-            <i class="bi bi-x-circle me-1"></i>Las contraseñas no coinciden.
-          </div>
-          <div x-show="confirmPassword.length > 0 && passwordsMatch && password.length >= 6" x-transition class="valid-feedback d-block text-success ms-3 mt-1">
-            <i class="bi bi-check-circle-fill me-1"></i>Las contraseñas coinciden.
-          </div>
+          
           {% if form.confirmar_password.errors %}
           <div class="invalid-feedback ms-3 d-block">
             {{ form.confirmar_password.errors.0 }}
