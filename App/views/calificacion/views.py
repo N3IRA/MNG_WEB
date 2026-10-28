@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.db.models import Count, Avg, Q
 
@@ -11,7 +11,8 @@ def _es_admin(user):
     return user.is_authenticated and (user.is_staff or getattr(user, 'rol', None) == Usuario.Roles.ADMIN)
 
 
-@login_required
+@login_required(login_url='login')
+@user_passes_test(_es_admin, login_url='login')
 def listar_calificaciones_admin(request):
     """Renderiza el módulo de moderación y auditoría de calificaciones para el Staff."""
     if not _es_admin(request.user):
@@ -61,7 +62,8 @@ def listar_calificaciones_admin(request):
     })
 
 
-@login_required
+@login_required(login_url='login')
+@user_passes_test(_es_admin, login_url='login')
 def toggle_visible_calificacion(request, pk):
     """Permite al administrador cambiar el estado de visibilidad pública de una calificación."""
     if not _es_admin(request.user):
@@ -77,7 +79,8 @@ def toggle_visible_calificacion(request, pk):
     return redirect('listar_calificaciones')
 
 
-@login_required
+@login_required(login_url='login')
+@user_passes_test(_es_admin, login_url='login')
 def responder_calificacion(request, pk):
     """Permite al administrador registrar o actualizar la respuesta oficial a una calificación."""
     if not _es_admin(request.user):

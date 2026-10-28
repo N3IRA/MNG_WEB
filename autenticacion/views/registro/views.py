@@ -110,6 +110,18 @@ def verificar_otp_registro_vista(request):
     error_otp = False
 
     if request.method == 'POST':
+        otp_intentos = request.session.get('registro_otp_intentos', 0) + 1
+        request.session['registro_otp_intentos'] = otp_intentos
+
+        if otp_intentos > 5:
+            request.session.pop('registro_data', None)
+            request.session.pop('registro_otp', None)
+            request.session.pop('registro_email', None)
+            request.session.pop('registro_otp_time', None)
+            request.session.pop('registro_otp_intentos', None)
+            messages.error(request, 'Has superado el límite de intentos permitidos por seguridad. Por favor inicia nuevamente tu registro.')
+            return redirect('registro')
+
         otp_ingresado = request.POST.get('otp', '').strip()
         if otp_ingresado == request.session['registro_otp']:
             form = RegistroForm(request.session['registro_data'])
@@ -143,6 +155,7 @@ def verificar_otp_registro_vista(request):
                 request.session.pop('registro_otp', None)
                 request.session.pop('registro_email', None)
                 request.session.pop('registro_otp_time', None)
+                request.session.pop('registro_otp_intentos', None)
 
                 response = redirect(next_url if next_url else 'panel_rapido')
                 response.set_cookie('ha_registrado', 'true', max_age=31536000)  # 1 año
@@ -153,7 +166,8 @@ def verificar_otp_registro_vista(request):
                 return redirect('registro')
         else:
             error_otp = True
-            messages.error(request, 'El código OTP ingresado es incorrecto. Inténtalo nuevamente.')
+            intentos_restantes = max(0, 5 - otp_intentos)
+            messages.error(request, f'El código OTP ingresado es incorrecto. Intentos restantes: {intentos_restantes}.')
 
     email = request.session.get('registro_email', '')
     partes = email.split('@')

@@ -1,8 +1,119 @@
 {% extends 'admin/base-admin.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Pólizas de Viaje | Monagua Admin{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>Listado de Pólizas de Viaje</h1>
-    <!-- Aquí irá la tabla con el listado de pólizas -->
+<div class="container-fluid px-0">
+    <!-- Top Bar -->
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-0 text-success d-flex align-items-center gap-2">
+                <i class="bi bi-shield-check"></i>Gestión de Pólizas de Viaje
+            </h2>
+            <p class="text-muted mb-0 small">Configura las pólizas de seguro y coberturas médicas para los viajeros.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a href="{% url 'aseguradora_listar' %}" class="btn btn-outline-success btn-sm rounded-pill shadow-sm">
+                <i class="bi bi-building"></i> Ver Seguros Emitidos
+            </a>
+            <a href="{% url 'poliza_crear' %}" class="btn btn-success text-white btn-sm fw-semibold rounded-pill shadow-sm px-3 py-2 d-inline-flex align-items-center gap-1">
+                <i class="bi bi-plus-circle me-1"></i>Nueva Póliza
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-secondary small fw-bold text-uppercase">Total Pólizas</span>
+                    <span class="p-2 bg-success bg-opacity-10 text-success rounded-3"><i class="bi bi-shield-shaded fs-5"></i></span>
+                </div>
+                <h4 class="fw-bold text-dark mb-0">{{ total|default:0 }}</h4>
+            </div>
+        </div>
+        <div class="col-12 col-sm-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-success small fw-bold text-uppercase">Pólizas Activas</span>
+                    <span class="p-2 bg-success text-white rounded-3"><i class="bi bi-check-circle-fill fs-5"></i></span>
+                </div>
+                <h4 class="fw-bold text-success mb-0">{{ activas|default:0 }}</h4>
+            </div>
+        </div>
+        <div class="col-12 col-sm-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-danger small fw-bold text-uppercase">Pólizas Inactivas</span>
+                    <span class="p-2 bg-danger bg-opacity-10 text-danger rounded-3"><i class="bi bi-x-circle-fill fs-5"></i></span>
+                </div>
+                <h4 class="fw-bold text-danger mb-0">{{ inactivas|default:0 }}</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-white">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Póliza</th>
+                        <th>Cobertura Médica</th>
+                        <th>Precio Diario</th>
+                        <th class="text-center">Beneficios</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in polizas %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold text-dark">{{ p.nombre_poliza }}</div>
+                            <small class="text-muted">{{ p.condiciones_generales|default:"Sin condiciones especiales"|truncatewords:8 }}</small>
+                        </td>
+                        <td class="fw-semibold text-primary">COP ${{ p.cobertura_medica_max|floatformat:0|intcomma }}</td>
+                        <td class="fw-bold text-success">COP ${{ p.precio_diario|floatformat:0|intcomma }}/día</td>
+                        <td class="text-center">
+                            {% if p.cubre_perdida_equipaje %}
+                            <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-2 py-1 small me-1">Equipaje</span>
+                            {% endif %}
+                            {% if p.cubre_cancelacion_vuelo %}
+                            <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-2 py-1 small">Vuelo</span>
+                            {% endif %}
+                            {% if not p.cubre_perdida_equipaje and not p.cubre_cancelacion_vuelo %}
+                            <span class="text-muted small">Estándar</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if p.estado %}
+                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1">Activa</span>
+                            {% else %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-1">Inactiva</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center pe-4">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'poliza_editar' p.id %}" class="btn btn-outline-secondary" title="Editar"><i class="bi bi-pencil"></i></a>
+                                <a href="{% url 'poliza_eliminar' p.id %}" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-shield-x d-block fs-1 mb-2 text-secondary opacity-50"></i>
+                            Aún no hay pólizas de viaje registradas.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}

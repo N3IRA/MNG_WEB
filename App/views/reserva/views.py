@@ -355,21 +355,6 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
         messages.warning(request, "Esta reserva ya se encuentra cancelada.")
         return redirect('mis_cancelaciones')
 
-    if reserva.estado_cancelacion == 'pendiente':
-        if request.headers.get('HX-Request'):
-            context = obtener_contexto_mis_reservas(request.user)
-            response = render(request, 'admin/reserva/mis_reservas.html', context)
-            response['HX-Trigger'] = json.dumps({
-                'mostrarNotificacionBitacora': {
-                    'tipo': 'warning',
-                    'titulo': 'Solicitud en Revisión',
-                    'mensaje': f'Ya tienes una solicitud de cancelación en revisión para la reserva #{reserva.id}.'
-                }
-            })
-            return response
-        messages.warning(request, "Ya tienes una solicitud de cancelación en revisión para esta reserva.")
-        return redirect('mis_cancelaciones')
-
     motivo = request.POST.get('motivo_cancelacion', '').strip()
     if not motivo:
         if request.headers.get('HX-Request'):
@@ -403,24 +388,22 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
         return redirect('mis_reservas_usuario')
 
     pago = getattr(reserva, 'pago', None)
-    motivo = request.POST.get('motivo_cancelacion', '').strip()
-    if not motivo:
+    tiene_pago_valido = pago is not None and pago.estado_transaccion in ['pendiente', 'aprobado']
+
+    if reserva.estado_cancelacion == 'pendiente' and tiene_pago_valido:
         if request.headers.get('HX-Request'):
             context = obtener_contexto_mis_reservas(request.user)
             response = render(request, 'admin/reserva/mis_reservas.html', context)
             response['HX-Trigger'] = json.dumps({
                 'mostrarNotificacionBitacora': {
                     'tipo': 'warning',
-                    'titulo': 'Campo Requerido',
-                    'mensaje': 'Debes ingresar un motivo válido para cancelar la reserva.'
+                    'titulo': 'Solicitud en Revisión',
+                    'mensaje': f'Ya tienes una solicitud de cancelación en revisión para la reserva #{reserva.id}.'
                 }
             })
             return response
-        messages.error(request, "Debes ingresar un motivo válido para cancelar la reserva.")
-        return redirect('mis_reservas_usuario')
-
-    pago = getattr(reserva, 'pago', None)
-    tiene_pago_valido = pago is not None and pago.estado_transaccion in ['pendiente', 'aprobado']
+        messages.warning(request, "Ya tienes una solicitud de cancelación en revisión para esta reserva.")
+        return redirect('mis_cancelaciones')
 
     # CASO A: Reserva sin pago o con comprobante rechazado -> Cancelación inmediata sin penalidad
     if not tiene_pago_valido:
@@ -511,9 +494,8 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
         messages.success(request, f"La cancelación de la reserva #{reserva.id} fue procesada exitosamente sin penalidad.")
         return redirect('mis_cancelaciones')
 
-    # Con penalidad > 0 la reserva NO se marca cancelada todavía: queda en su
-    # estado actual (pendiente/confirmada) con la solicitud 'pendiente' de revisión
-    # administrativa. Solo cuando el admin apruebe pasará a 'cancelada'.
+    # La reserva se marca como 'cancelada' con la solicitud 'pendiente' de revisión administrativa.
+    reserva.estado_reserva = 'cancelada'
     reserva.estado_cancelacion = 'pendiente'
     reserva.save()
 
@@ -558,15 +540,15 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
 @login_required(login_url='login')
 def mis_cancelaciones(request):
     """
-    Vista para que el usuario consulte el historial de sus cancelaciones pendientes, aprobadas o rechazadas.
+    Vista para que el usuario consulte el historial de sus cancelaciones pendientes o aprobadas.
     """
     normalizar_estados_cancelacion_usuario(request.user)
 
     cancelaciones = Reserva.objects.filter(
         usuario=request.user
     ).filter(
-        Q(estado_cancelacion__in=['pendiente', 'aprobada', 'rechazada']) |
-        Q(estado_reserva='cancelada')
+        Q(estado_cancelacion__in=['pendiente', 'aprobada']) |
+        Q(estado_reserva='cancelada', estado_cancelacion__isnull=True)
     ).select_related('paquete').order_by('-fecha_registro')
 
     context = {

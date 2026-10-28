@@ -37,7 +37,7 @@ FAQS = [
     },
     {
         "keywords": ["contacto", "telefono", "celular", "email", "correo", "llamar", "whatsapp", "comunicarse", "numero", "escribir", "contactar"],
-        "answer": "Puedes contactarnos al teléfono +57 322 3465191 o al correo contacto@monagua.com. También puedes dejar un ticket en nuestra sección de Contacto."
+        "answer": "Puedes contactarnos al teléfono +57 322 3465191 o al correo contacto@monagua.com. También puedes radicar una PQRS en nuestro módulo oficial de Contacto."
     },
     {
         "keywords": ["guia", "guias", "acompañante", "acompañantes", "orientador", "asesor", "instructor", "quien nos acompaña"],
@@ -46,6 +46,18 @@ FAQS = [
     {
         "keywords": ["comida", "comidas", "restaurante", "almuerzo", "desayuno", "cena", "alimentacion", "bebida", "bebidas", "snacks", "refrigerio", "alimentos", "que comer", "donde comer"],
         "answer": "Durante nuestras actividades recomendamos llevar hidratación y snacks. También puedes consultar por los restaurantes aliados del pueblo."
+    },
+    {
+        "keywords": ["pqrs", "pqr", "peticion", "peticiones", "queja", "quejas", "reclamo", "reclamos", "sugerencia", "sugerencias", "ticket", "tickets", "soporte", "radicar", "radicado", "inconformidad", "radicar pqrs", "poner queja", "hacer reclamo"],
+        "answer": "En Monagua contamos con un sistema oficial de PQRS (Peticiones, Quejas, Reclamos y Sugerencias). Puedes radicar tu solicitud en línea para recibir un número de radicado y seguimiento formal de nuestro equipo.",
+        "action": "pqrs",
+        "options": ["Radicar PQRS", "Consultar mis PQRS"]
+    },
+    {
+        "keywords": ["seguimiento pqrs", "consultar pqrs", "estado pqrs", "mi radicado", "numero radicado", "donde veo mi pqrs", "mis pqrs", "mis solicitudes"],
+        "answer": "Puedes consultar el estado y respuestas de todas tus PQRS desde tu cuenta en la sección 'Mis PQRS' o mediante el correo de confirmación con tu número de radicado.",
+        "action": "pqrs",
+        "options": ["Consultar mis PQRS", "Radicar PQRS"]
     }
 ]
 
@@ -89,7 +101,8 @@ def procesar_mensaje(mensaje, request):
         request.session['condy_fallos'] = 0
         return {
             "response": mejor_coincidencia['answer'],
-            "options": []
+            "action": mejor_coincidencia.get('action'),
+            "options": mejor_coincidencia.get('options', [])
         }
     
     request.session['condy_fallos'] += 1
@@ -97,12 +110,12 @@ def procesar_mensaje(mensaje, request):
     if request.session['condy_fallos'] >= 2:
         request.session['condy_fallos'] = 0
         return {
-            "response": "Lo siento, no he podido entenderte después de varios intentos. ¿Te gustaría dejar un ticket para que un agente de nuestro equipo te contacte?",
-            "fallback_action": "ticket",
-            "options": []
+            "response": "No he podido comprender tu consulta después de varios intentos. Te invito a radicar una PQRS (Petición, Queja, Reclamo o Sugerencia) en nuestro sistema para que un asesor te contacte directamente.",
+            "fallback_action": "pqrs",
+            "options": ["Radicar PQRS", "¿Cuáles son sus horarios?"]
         }
     else:
         return {
             "response": "Lo siento, no he entendido tu pregunta. ¿Podrías reformularla o usar otras palabras?",
-            "options": ["¿Cuáles son sus horarios?", "¿Qué servicios ofrecen?"]
+            "options": ["¿Cuáles son sus horarios?", "¿Qué servicios ofrecen?", "Radicar PQRS"]
         }

@@ -604,6 +604,21 @@ class Reserva(models.Model):
         """Retorna fecha_inicio para retrocompatibilidad con plantillas."""
         return self.fecha_inicio
 
+    @property
+    def dias_duracion(self):
+        """Retorna los días de duración del paquete turístico asociado."""
+        if self.paquete and hasattr(self.paquete, 'dias_duracion') and self.paquete.dias_duracion:
+            return self.paquete.dias_duracion
+        return 1
+
+    @property
+    def fecha_fin(self):
+        """Calcula la fecha final del viaje según la fecha de inicio y los días de duración."""
+        if self.fecha_inicio:
+            from datetime import timedelta
+            return self.fecha_inicio + timedelta(days=max(self.dias_duracion - 1, 0))
+        return None
+
     def __str__(self):
         nombre_paquete = self.paquete.nombre if self.paquete and hasattr(self.paquete, 'nombre') else str(self.paquete)
         if self.fecha_inicio:
@@ -959,9 +974,27 @@ class Aseguradora(models.Model):
         verbose_name_plural = 'Seguros Emitidos (Aseguradoras)'
 
     def save(self, *args, **kwargs):
-        if self.reserva and self.poliza_viaje:
+        if not self.numero_poliza:
+            import uuid
+            self.numero_poliza = f"POL-{timezone.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
+
+        dias = 1
+        if self.fecha_inicio_cobertura and self.fecha_fin_cobertura:
+            delta = (self.fecha_fin_cobertura - self.fecha_inicio_cobertura).days + 1
+            if delta > 0:
+                dias = delta
+        elif self.reserva and self.reserva.paquete and self.reserva.paquete.dias_duracion:
             dias = self.reserva.paquete.dias_duracion
-            self.costo_seguro = self.poliza_viaje.precio_diario * dias
+            if not self.fecha_inicio_cobertura and self.reserva.fecha_inicio:
+                self.fecha_inicio_cobertura = self.reserva.fecha_inicio
+                self.fecha_fin_cobertura = self.reserva.fecha_inicio + timezone.timedelta(days=max(dias - 1, 0))
+
+        if self.poliza_viaje:
+            precio = self.poliza_viaje.precio_diario or Decimal('0.00')
+            self.costo_seguro = round(Decimal(precio) * Decimal(dias), 2)
+        elif not getattr(self, 'costo_seguro', None):
+            self.costo_seguro = Decimal('0.00')
+
         super().save(*args, **kwargs)
 
     def __str__(self):

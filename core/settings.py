@@ -171,6 +171,20 @@ EMAIL_TIMEOUT = 10
 # CONFIGURACIONES DE SEGURIDAD (PRODUCCIÓN Y GLOBAL)
 # ==========================================
 
+# Variable de días para sesiones y tokens (configurable vía entorno)
+DIAS_EXPIRACION_SESION = int(os.environ.get('DIAS_EXPIRACION_SESION', 7))
+SESSION_COOKIE_AGE = DIAS_EXPIRACION_SESION * 24 * 60 * 60
+
+DIAS_EXPIRACION_TOKEN_PASSWORD = int(os.environ.get('DIAS_EXPIRACION_TOKEN_PASSWORD', 1))
+PASSWORD_RESET_TIMEOUT = DIAS_EXPIRACION_TOKEN_PASSWORD * 24 * 60 * 60
+
+# Seguridad de Cookies de Sesión y CSRF
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
 # Prevenir ataques de confusión MIME en toda la página
 SECURE_CONTENT_TYPE_NOSNIFF = True
 

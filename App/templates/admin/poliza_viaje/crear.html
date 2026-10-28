@@ -1,13 +1,26 @@
 {% extends 'admin/base-admin.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Nueva Póliza de Viaje | Monagua Admin{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>Crear Póliza de Viaje</h1>
-    <!-- Aquí irá el formulario para crear pólizas -->
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Guardar</button>
-    </form>
+<div class="container py-3" style="max-width: 800px;">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+        <div class="card-header bg-success text-white py-3 px-4">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-shield-plus me-2"></i>Registrar Nueva Póliza de Viaje</h5>
+            <small class="opacity-75">Define los beneficios, costos diarios y coberturas médicas para los turistas.</small>
+        </div>
+        <div class="card-body p-4">
+            <form method="POST">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <a href="{% url 'poliza_listar' %}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
+                    <button type="submit" class="btn btn-success text-white rounded-pill px-4 shadow-sm">Guardar Póliza</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}

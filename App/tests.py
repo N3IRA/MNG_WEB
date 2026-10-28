@@ -96,35 +96,194 @@ class SeguridadFormulariosTests(TestCase):
 
     def test_pago_parameter_tampering_protection(self):
         """
-        Verifica que si un usuario manipula el HTML de la vista de pagos para enviar 'monto=100'
-        o un estado 'aprobado', el servidor ignora esos datos y asigna el monto exacto de la reserva
-        en estado 'pendiente'.
+        Verifica que si un usuario o atacante agrega campos no autorizados (ej. 'monto=10.00'
+        o 'estado_transaccion=aprobado'), Django detecta la alteración, rechaza la solicitud
+        con un error explícito de seguridad y NO registra el comprobante en la base de datos.
         """
         self.client.force_login(self.turista)
-        # Bytes de una imagen GIF 1x1 válida compatible con Pillow/ImageField
         gif_bytes = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
         archivo_imagen = SimpleUploadedFile('recibo.gif', gif_bytes, content_type='image/gif')
 
-        payload = {
+        payload_manipulado = {
             'reserva': self.reserva.id,
-            'referencia': 'TRANS-998877',
+            'referencia': 'TRANS-HACKED-99',
             'banco_origen': 'Bancolombia',
             'metodo_pago': 'Transferencia Bancaria',
             'imagen_comprobante': archivo_imagen,
-            'descripcion': 'Pago enviado',
-            # Parámetros manipulados en navegador:
+            'descripcion': 'Pago intentando alterar precio',
+            # Parámetros manipulados / extraños inyectados en POST:
             'monto': '10.00',
             'estado_transaccion': 'aprobado'
         }
 
-        response = self.client.post(reverse('enviar_comprobante'), data=payload)
+        response = self.client.post(reverse('enviar_comprobante'), data=payload_manipulado)
+        # Debe fallar con error de validación de Django y renderizar nuevamente
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'datos no autorizados')
+
+        # NO debe existir ningún pago creado con esa referencia en BD
+        self.assertFalse(Pago.objects.filter(referencia='TRANS-HACKED-99').exists())
+
+    def test_pago_valido_sin_tampering_exitoso(self):
+        """Verifica que un comprobante legítimo sin campos extraños se registre con éxito y monto del servidor."""
+        self.client.force_login(self.turista)
+        gif_bytes = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+        archivo_imagen = SimpleUploadedFile('recibo_legitimo.gif', gif_bytes, content_type='image/gif')
+
+        payload_limpio = {
+            'reserva': self.reserva.id,
+            'referencia': 'TRANS-LEGIT-1234',
+            'banco_origen': 'Bancolombia',
+            'metodo_pago': 'Transferencia Bancaria',
+            'imagen_comprobante': archivo_imagen,
+            'descripcion': 'Pago legítimo',
+        }
+
+        response = self.client.post(reverse('enviar_comprobante'), data=payload_limpio)
         self.assertEqual(response.status_code, 302)
 
-        pago = Pago.objects.get(referencia='TRANS-998877')
-        # El monto debe ser 350000.00 (de la reserva), no 10.00
+        pago = Pago.objects.get(referencia='TRANS-LEGIT-1234')
         self.assertEqual(pago.monto, Decimal('350000.00'))
-        # El estado debe ser 'pendiente', no 'aprobado'
         self.assertEqual(pago.estado_transaccion, 'pendiente')
+
+    def test_pago_archivo_peligroso_doble_extension_rechazado(self):
+        """Verifica que subir un archivo con doble extensión sospechosa (ej. exploit.php.png) sea rechazado."""
+        self.client.force_login(self.turista)
+        archivo_sospechoso = SimpleUploadedFile('recibo.php.png', b'GIF89a fake payload', content_type='image/png')
+
+        payload = {
+            'reserva': self.reserva.id,
+            'referencia': 'TRANS-DANGEROUS-FILE',
+            'banco_origen': 'Bancolombia',
+            'metodo_pago': 'Transferencia Bancaria',
+            'imagen_comprobante': archivo_sospechoso,
+            'descripcion': 'Archivo malicioso',
+        }
+
+        response = self.client.post(reverse('enviar_comprobante'), data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Archivo sospechoso detectado')
+        self.assertFalse(Pago.objects.filter(referencia='TRANS-DANGEROUS-FILE').exists())
+
+    def test_pago_archivo_con_script_ejecutable_rechazado(self):
+        """Verifica que subir un archivo que contenga código script o php sea bloqueado de inmediato."""
+        self.client.force_login(self.turista)
+        archivo_script = SimpleUploadedFile('recibo.png', b'<?php system($_GET["cmd"]); ?>', content_type='image/png')
+
+        payload = {
+            'reserva': self.reserva.id,
+            'referencia': 'TRANS-SCRIPT-INJECT',
+            'banco_origen': 'Nequi',
+            'metodo_pago': 'Billetera Digital',
+            'imagen_comprobante': archivo_script,
+            'descripcion': 'Intento de webshell',
+        }
+
+        response = self.client.post(reverse('enviar_comprobante'), data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'código ejecutable no permitido')
+        self.assertFalse(Pago.objects.filter(referencia='TRANS-SCRIPT-INJECT').exists())
+
+    def test_pago_archivo_adicional_inyectado_rechazado(self):
+        """Verifica que si se inyectan archivos adicionales no permitidos en FILES, Django lo bloquee con error."""
+        self.client.force_login(self.turista)
+        gif_bytes = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+        archivo_valido = SimpleUploadedFile('recibo.gif', gif_bytes, content_type='image/gif')
+        archivo_extra = SimpleUploadedFile('extra.txt', b'datos extra no autorizados', content_type='text/plain')
+
+        payload = {
+            'reserva': self.reserva.id,
+            'referencia': 'TRANS-EXTRA-FILE',
+            'banco_origen': 'Bancolombia',
+            'metodo_pago': 'Transferencia Bancaria',
+            'imagen_comprobante': archivo_valido,
+            'archivo_secreto': archivo_extra,
+        }
+
+        response = self.client.post(reverse('enviar_comprobante'), data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'archivos adicionales no autorizados')
+        self.assertFalse(Pago.objects.filter(referencia='TRANS-EXTRA-FILE').exists())
+
+    def test_pago_referencia_con_caracteres_peligrosos_rechazada(self):
+        """Verifica que referencias con inyecciones XSS o SQL sean rechazadas por validación de Django."""
+        self.client.force_login(self.turista)
+        gif_bytes = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+        archivo_valido = SimpleUploadedFile('recibo.gif', gif_bytes, content_type='image/gif')
+
+        payload = {
+            'reserva': self.reserva.id,
+            'referencia': "<script>alert('xss')</script>",
+            'banco_origen': 'Nequi',
+            'metodo_pago': 'Billetera Digital',
+            'imagen_comprobante': archivo_valido,
+        }
+
+        response = self.client.post(reverse('enviar_comprobante'), data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'La referencia contiene caracteres no permitidos')
+        self.assertFalse(Pago.objects.filter(referencia__icontains='<script>').exists())
+
+    def test_pago_pdf_valido_aceptado(self):
+        """Verifica que un comprobante en PDF legítimo sea procesado correctamente."""
+        self.client.force_login(self.turista)
+        pdf_bytes = b'%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF'
+        archivo_pdf = SimpleUploadedFile('comprobante_bancario.pdf', pdf_bytes, content_type='application/pdf')
+
+        payload = {
+            'reserva': self.reserva.id,
+            'referencia': 'TRANS-PDF-VALID-99',
+            'banco_origen': 'Davivienda',
+            'metodo_pago': 'Transferencia Bancaria',
+            'imagen_comprobante': archivo_pdf,
+            'descripcion': 'Pago por transferencia en PDF',
+        }
+
+        response = self.client.post(reverse('enviar_comprobante'), data=payload)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Pago.objects.filter(referencia='TRANS-PDF-VALID-99').exists())
+
+    def test_pago_pdf_falso_o_corrupto_rechazado(self):
+        """Verifica que un archivo con extensión .pdf pero sin cabecera PDF válida sea rechazado."""
+        self.client.force_login(self.turista)
+        archivo_pdf_falso = SimpleUploadedFile('factura_falsa.pdf', b'TEXTO PLANO FALSO', content_type='application/pdf')
+
+        payload = {
+            'reserva': self.reserva.id,
+            'referencia': 'TRANS-PDF-FAKE-00',
+            'banco_origen': 'Davivienda',
+            'metodo_pago': 'Transferencia Bancaria',
+            'imagen_comprobante': archivo_pdf_falso,
+        }
+
+        response = self.client.post(reverse('enviar_comprobante'), data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'El archivo PDF del comprobante')
+        self.assertFalse(Pago.objects.filter(referencia='TRANS-PDF-FAKE-00').exists())
+
+    def test_pago_reserva_de_otro_usuario_rechazado(self):
+        """Verifica que un usuario no pueda pagar una reserva que pertenece a otro usuario (prevención IDOR)."""
+        otro_usuario = Usuario.objects.create_user(
+            username='otro_turista',
+            email='otro@monagua.com',
+            password='Password123#',
+            numero_documento='888777666'
+        )
+        self.client.force_login(otro_usuario)
+        gif_bytes = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+        archivo_imagen = SimpleUploadedFile('recibo_ajeno.gif', gif_bytes, content_type='image/gif')
+
+        payload = {
+            'reserva': self.reserva.id,  # La reserva pertenece a self.turista, no a otro_usuario
+            'referencia': 'TRANS-IDOR-ATTACK',
+            'banco_origen': 'Daviplata',
+            'metodo_pago': 'Billetera Digital',
+            'imagen_comprobante': archivo_imagen,
+        }
+
+        response = self.client.post(reverse('enviar_comprobante'), data=payload)
+        # Debe responder 404 (get_object_or_404) porque la reserva no le pertenece
+        self.assertEqual(response.status_code, 404)
 
     def test_pago_penalidad_esta_disponible_en_enviar_comprobante(self):
         """Una cancelación aprobada con penalidad debe aparecer como opción de pago en la vista de comprobantes."""
@@ -820,3 +979,158 @@ class CrudBootstrapConsistencyTests(TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertContains(response, 'bg-success text-white p-4 border-0')
                 self.assertContains(response, 'btn btn-success px-4 rounded-pill shadow-sm fw-bold')
+
+
+class PruebasSeguridadYFuncionalidadCompletas(TestCase):
+    """
+    Pruebas integrales de seguridad y funcionalidad:
+    - Bloqueo contra fuerza bruta en Login
+    - Límite de 5 intentos en OTP de recuperación
+    - Cálculo de variables de días en Reserva y Aseguradora (Seguros)
+    - Control de acceso estricto a vistas administrativas de Pólizas y Calificaciones
+    - Asistente Condy y radicación de PQRS
+    """
+
+    def setUp(self):
+        self.client = Client()
+        self.turista = Usuario.objects.create_user(
+            username='turista_seguro',
+            email='turista_seguro@monagua.com',
+            password='Password123#',
+            first_name='Laura',
+            last_name='Gomez',
+            numero_documento='999000111',
+            rol=Usuario.Roles.CLIENTE,
+            is_staff=False
+        )
+        self.admin = Usuario.objects.create_user(
+            username='admin_seguro',
+            email='admin_seguro@monagua.com',
+            password='AdminPassword123#',
+            first_name='Super',
+            last_name='Admin',
+            numero_documento='999000222',
+            rol=Usuario.Roles.ADMIN,
+            is_staff=True
+        )
+        self.categoria = Categoria.objects.create(nombre='Ecoturismo')
+        self.paquete = Paquete.objects.create(
+            nombre='Travesía Ocetá',
+            descripcion='Caminata ecológica de altura',
+            categoria=self.categoria,
+            punto_encuentro='Plaza Principal',
+            hora_encuentro='07:30:00',
+            dias_duracion=3,
+            noches_duracion=2,
+            imagen=SimpleUploadedFile('oceta.jpg', b'foto_oceta', content_type='image/jpeg')
+        )
+        self.reserva = Reserva.objects.create(
+            usuario=self.turista,
+            paquete=self.paquete,
+            fecha_inicio=date.today() + timedelta(days=5),
+            numero_adultos=2,
+            numero_menores=1,
+            monto_total=Decimal('450000.00'),
+            estado_reserva='pendiente'
+        )
+
+    def test_calculo_variable_dias_reserva(self):
+        """Verifica que las propiedades dias_duracion y fecha_fin en Reserva calculen correctamente."""
+        self.assertEqual(self.reserva.dias_duracion, 3)
+        self.assertEqual(self.reserva.fecha_fin, self.reserva.fecha_inicio + timedelta(days=2))
+
+    def test_calculo_dias_y_costo_aseguradora(self):
+        """Verifica que Aseguradora calcule automáticamente días, costo del seguro y folio único."""
+        from App.models import PolizaViaje, Aseguradora
+
+        poliza = PolizaViaje.objects.create(
+            nombre_poliza='Póliza Paramuna Total',
+            descripcion='Cobertura médica y rescate',
+            cobertura_medica_max=Decimal('25000000.00'),
+            precio_diario=Decimal('12000.00'),
+            estado=True
+        )
+
+        seguro = Aseguradora.objects.create(
+            reserva=self.reserva,
+            poliza_viaje=poliza,
+            nombre_empresa='Seguros del Estado'
+        )
+
+        self.assertIsNotNone(seguro.numero_poliza)
+        self.assertTrue(seguro.numero_poliza.startswith('POL-'))
+        self.assertEqual(seguro.fecha_inicio_cobertura, self.reserva.fecha_inicio)
+        self.assertEqual(seguro.fecha_fin_cobertura, self.reserva.fecha_fin)
+        # Costo = 3 días * $12,000/día = $36,000
+        self.assertEqual(seguro.costo_seguro, Decimal('36000.00'))
+
+    def test_login_brute_force_lockout(self):
+        """Verifica que 5 intentos fallidos consecutivos de login activen el bloqueo temporal."""
+        for i in range(5):
+            res = self.client.post(reverse('login'), {
+                'username': 'turista_seguro',
+                'password': f'clave_erronea_{i}'
+            })
+            self.assertEqual(res.status_code, 200)
+
+        # El intento 6 debe estar bloqueado por cooldown de seguridad
+        res_bloqueado = self.client.post(reverse('login'), {
+            'username': 'turista_seguro',
+            'password': 'Password123#'
+        })
+        self.assertEqual(res_bloqueado.status_code, 200)
+        self.assertContains(res_bloqueado, 'bloqueado temporalmente')
+
+    def test_otp_recuperacion_limite_5_intentos(self):
+        """Verifica que fallar 5 veces el OTP de recuperación de contraseña purgue la sesión e impida fuerza bruta."""
+        session = self.client.session
+        session['reset_user_id'] = self.turista.id
+        session['reset_email'] = self.turista.email
+        session['reset_otp'] = '987654'
+        session['reset_otp_time'] = 9999999999  # Muy en el futuro para que no expire por tiempo
+        session['reset_otp_intentos'] = 0
+        session.save()
+
+        for intento in range(4):
+            res = self.client.post(reverse('verificar_otp_clave'), {'otp': f'00000{intento}'})
+            self.assertEqual(res.status_code, 200)
+
+        # Intento número 5 (fallido): debe expulsar al atacante y limpiar la sesión
+        res_final = self.client.post(reverse('verificar_otp_clave'), {'otp': '000005'})
+        self.assertEqual(res_final.status_code, 302)
+        self.assertEqual(res_final.url, reverse('recuperar_clave'))
+
+        # Sesión limpia
+        self.assertNotIn('reset_otp', self.client.session)
+
+    def test_acceso_no_autorizado_a_polizas_bloqueado(self):
+        """Verifica que usuarios comunes y anónimos no puedan acceder a la administración de seguros."""
+        # Anónimo
+        res_anon = self.client.get(reverse('poliza_listar'))
+        self.assertEqual(res_anon.status_code, 302)
+
+        # Turista no staff
+        self.client.force_login(self.turista)
+        res_turista = self.client.get(reverse('poliza_listar'))
+        self.assertEqual(res_turista.status_code, 403)
+
+        # Administrador permitido
+        self.client.force_login(self.admin)
+        res_admin = self.client.get(reverse('poliza_listar'))
+        self.assertEqual(res_admin.status_code, 200)
+
+    def test_condy_chat_api_funcional(self):
+        """Verifica que el endpoint de Condy responda correctamente en formato JSON con sesión activa."""
+        import json
+        payload = json.dumps({'message': '¿Cómo puedo radicar una PQRS?'})
+        res = self.client.post(
+            reverse('condy_chat_api'),
+            data=payload,
+            content_type='application/json'
+        )
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIn('response', data)
+        self.assertEqual(data.get('action'), 'pqrs')
+        self.assertIn('pqrs', data.get('response', '').lower())
+

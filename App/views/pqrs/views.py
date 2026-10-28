@@ -144,8 +144,15 @@ def contestar_pqrs(request, pqrs_id):
         'reservas_cliente': reservas_cliente
     })
 
+from django_ratelimit.decorators import ratelimit
+
+
 @login_required
+@ratelimit(key='ip', rate='10/m', block=False)
 def guardar_pqrs(request):
+    if getattr(request, 'limited', False):
+        messages.error(request, "Has enviado demasiadas solicitudes en poco tiempo. Por favor espera unos minutos.")
+        return redirect('mis_pqrs')
     if request.method == 'POST':
         form = PqrsForm(request.POST, user=request.user)
 
@@ -208,8 +215,15 @@ def pqrs_publica(request):
     form = PqrsForm()
     return render(request, 'public/pqrs.html', {'form': form})
 
+@ratelimit(key='ip', rate='10/m', block=False)
 def api_guardar_pqrs(request):
     """Recibe la solicitud POST de PQRS, guarda en BD y envía email."""
+    if getattr(request, 'limited', False):
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Has excedido el límite de solicitudes permitidas. Por favor espera unos minutos.'
+        }, status=429)
+
     if request.method == 'POST':
         # Validación Anti-Spam (Honeypot)
         honeypot = request.POST.get('website', '')

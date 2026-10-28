@@ -26,6 +26,9 @@ from App.views.promocion import views as promocion_views
 from App.views.comprobante_pago import views as comprobante_pago_views
 from App.views.pagos_rechazados import views as pagos_rechazados_views
 from App.views.reserva.views import listar_cancelaciones_admin
+from App.views.poliza_viaje import views as poliza_views
+from App.views.aseguradora import views as aseguradora_views
+
 
 
 
@@ -42,6 +45,7 @@ urlpatterns = [
 
     # Chat API Condy
     path('api/chat/', condy_chat_api, name='api_chat'),
+    path('api/condy-chat/', condy_chat_api, name='condy_chat_api'),
 
     # Inicio
     path('', views.index, name='index'),
@@ -56,18 +60,21 @@ urlpatterns = [
     # Categorías (Administración / Staff)
     path('admin/categorias/', categoria_views.CategoriaListView.as_view(), name='listar_categorias'),
     path('admin/categorias/agregar/', categoria_views.CategoriaCreateView.as_view(), name='agregar_categoria'),
+    path('admin/categorias/crear/', categoria_views.CategoriaCreateView.as_view(), name='crear_categoria'),
     path('admin/categorias/editar/<int:pk>/', categoria_views.CategoriaUpdateView.as_view(), name='editar_categoria'),
     path('admin/categorias/eliminar/<int:pk>/', categoria_views.CategoriaDeleteView.as_view(), name='eliminar_categoria'),
 
     # Temporadas (Administración / Staff)
     path('admin/temporadas/', temporada_views.TemporadaListView.as_view(), name='listar_temporadas'),
     path('admin/temporadas/agregar/', temporada_views.TemporadaCreateView.as_view(), name='agregar_temporada'),
+    path('admin/temporadas/crear/', temporada_views.TemporadaCreateView.as_view(), name='crear_temporada'),
     path('admin/temporadas/editar/<int:pk>/', temporada_views.TemporadaUpdateView.as_view(), name='editar_temporada'),
     path('admin/temporadas/eliminar/<int:pk>/', temporada_views.TemporadaDeleteView.as_view(), name='eliminar_temporada'),
 
     # Actividades (Administración / Staff)
     path('admin/actividades/', actividades_views.ActividadesListView.as_view(), name='listar_actividades'),
     path('admin/actividades/agregar/', actividades_views.ActividadesCreateView.as_view(), name='agregar_actividad'),
+    path('admin/actividades/crear/', actividades_views.ActividadesCreateView.as_view(), name='crear_actividad'),
     path('admin/actividades/editar/<int:pk>/', actividades_views.ActividadesUpdateView.as_view(), name='editar_actividad'),
     path('admin/actividades/eliminar/<int:pk>/', actividades_views.ActividadesDeleteView.as_view(), name='eliminar_actividad'),
 
@@ -80,6 +87,7 @@ urlpatterns = [
     # Tarifas (Administración / Staff)
     path('admin/tarifas/', tarifa_views.TarifaListView.as_view(), name='listar_tarifas'),
     path('admin/tarifas/agregar/', tarifa_views.TarifaCreateView.as_view(), name='agregar_tarifa'),
+    path('admin/tarifas/crear/', tarifa_views.TarifaCreateView.as_view(), name='crear_tarifa'),
     path('admin/tarifas/editar/<int:pk>/', tarifa_views.TarifaUpdateView.as_view(), name='editar_tarifa'),
     path('admin/tarifas/eliminar/<int:pk>/', tarifa_views.TarifaDeleteView.as_view(), name='eliminar_tarifa'),
 
@@ -179,6 +187,18 @@ urlpatterns = [
     path('pqrs/', pqrs, name='pqrs'),
     path('contactanos/', pqrs_publica, name='pqrs_publica'),
     path('api/pqrs/', api_guardar_pqrs, name='api_guardar_pqrs'),
+
+    # Pólizas de Viaje (Administración / Staff)
+    path('admin/polizas/', poliza_views.PolizaViajeListView.as_view(), name='poliza_listar'),
+    path('admin/polizas/crear/', poliza_views.PolizaViajeCreateView.as_view(), name='poliza_crear'),
+    path('admin/polizas/editar/<int:pk>/', poliza_views.PolizaViajeUpdateView.as_view(), name='poliza_editar'),
+    path('admin/polizas/eliminar/<int:pk>/', poliza_views.PolizaViajeDeleteView.as_view(), name='poliza_eliminar'),
+
+    # Aseguradoras / Seguros Emitidos (Administración / Staff)
+    path('admin/aseguradoras/', aseguradora_views.AseguradoraListView.as_view(), name='aseguradora_listar'),
+    path('admin/aseguradoras/crear/', aseguradora_views.AseguradoraCreateView.as_view(), name='aseguradora_crear'),
+    path('admin/aseguradoras/editar/<int:pk>/', aseguradora_views.AseguradoraUpdateView.as_view(), name='aseguradora_editar'),
+    path('admin/aseguradoras/eliminar/<int:pk>/', aseguradora_views.AseguradoraDeleteView.as_view(), name='aseguradora_eliminar'),
 
     #cancelaciones
     path('mis_cancelaciones/', reserva_views.mis_cancelaciones, name='mis_cancelaciones'),
