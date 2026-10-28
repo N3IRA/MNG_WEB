@@ -1,6 +1,9 @@
 import os
 import django
 
+import sys
+# Asegura que la raíz del proyecto (donde está 'core') esté en el path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 django.setup()
 
