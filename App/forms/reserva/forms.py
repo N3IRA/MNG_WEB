@@ -89,6 +89,8 @@ class ReservaForm(forms.ModelForm):
         menores = self.cleaned_data.get('numero_menores')
         if menores is None or menores < 0:
             raise ValidationError("El número de menores no puede ser negativo.")
+        if menores > 10:
+            raise ValidationError("El número de menores no puede superar 10.")
         return menores
 
     def clean_paquete(self):
