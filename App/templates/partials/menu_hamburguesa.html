@@ -29,6 +29,8 @@
           id="offcanvasNavbarDropdown"
           data-bs-toggle="dropdown"
           aria-expanded="false"
+          aria-label="Menú de opciones de usuario"
+          title="Menú de opciones de usuario"
         >
           {% if user.imagen_perfil %}
           <img
@@ -53,12 +55,19 @@
       </div>
       {% else %}
       <a
-        class="btn btn-outline-light rounded-pill px-3 px-md-4 py-1.5"
+        class="btn btn-outline-light rounded-pill px-3 px-md-4 py-1.5 fw-semibold"
         href="{% url 'login' %}"
-        >Acceder</a
+        title="Iniciar sesión en su cuenta"
+        aria-label="Iniciar sesión en su cuenta"
+        >Iniciar Sesión</a
       >
       {% endif %} {% if not user.is_authenticated or user.rol != 1 %}
-      <a class="nav-link text-white" href="{% url 'mis_reservas_usuario' %}">
+      <a
+        class="nav-link text-white"
+        href="{% url 'mis_reservas_usuario' %}"
+        title="Ver mis reservas"
+        aria-label="Ver mis reservas"
+      >
         <i class="bi bi-calendar-check fs-5"></i>
       </a>
       {% endif %}
@@ -66,7 +75,8 @@
         type="button"
         class="btn-close btn-close-white shadow-none"
         data-bs-dismiss="offcanvas"
-        aria-label="Cerrar menú de hamburguesa"
+        aria-label="Cerrar menú de navegación"
+        title="Cerrar menú de navegación"
       ></button>
     </div>
   </div>
@@ -81,21 +91,29 @@
             <a
               href="{% url 'index' %}"
               class="menu-hamburguesa-premium__main-link"
+              title="Ir a la página de inicio"
+              aria-label="Ir a la página de inicio"
               >Inicio</a
             >
             <a
               href="{% url 'tours' %}"
               class="menu-hamburguesa-premium__main-link"
+              title="Explorar paquetes y destinos turísticos"
+              aria-label="Explorar paquetes y destinos turísticos"
               >Destinos</a
             >
             <a
               href="{% url 'nosotros' %}"
               class="menu-hamburguesa-premium__main-link"
+              title="Conocer más sobre Monagua"
+              aria-label="Conocer más sobre Monagua"
               >Nosotros</a
             >
             <a
               href="{% url 'terminos' %}"
               class="menu-hamburguesa-premium__main-link"
+              title="Consultar términos y condiciones de servicio"
+              aria-label="Consultar términos y condiciones de servicio"
               >Términos y Condiciones</a
             >
           </nav>
@@ -110,7 +128,9 @@
             <li>
               <a
                 class="menu-hamburguesa-premium__secondary-link fw-bold text-success"
-                href="{% if user.is_staff or user.is_superuser %}{% url 'admin_perfil' %}{% else %}#{% endif %}"
+                href="{% if user.is_staff or user.is_superuser %}{% url 'admin_perfil' %}{% else %}{% url 'perfil_detalles' %}{% endif %}"
+                title="Ver mi perfil"
+                aria-label="Ver mi perfil de usuario"
               >
                 <i class="bi bi-person-vcard me-2"></i>Mi Perfil
               </a>
@@ -121,29 +141,50 @@
               <a
                 class="menu-hamburguesa-premium__secondary-link fw-bold text-success"
                 href="{% url 'dashboard_admin' %}"
+                title="Ir al Panel de Control de administración"
+                aria-label="Ir al Panel de Control de administración"
               >
-                <i class="bi bi-speedometer2 me-2"></i>Dashboard Admin
+                <i class="bi bi-speedometer2 me-2"></i>Panel de Control
               </a>
             </li>
             <li>
               <a
                 class="menu-hamburguesa-premium__secondary-link"
                 href="{% url 'gestion_reservas' %}"
+                title="Gestionar reservas del sistema"
+                aria-label="Gestionar reservas del sistema"
               >
                 <i class="bi bi-calendar-check me-2"></i>Gestión de Reservas
               </a>
             </li>
             {% endif %} {# Guía Turístico #} {% if user.rol == 3 %}
             <li>
-              <a class="menu-hamburguesa-premium__secondary-link" href="#">
+              <a
+                class="menu-hamburguesa-premium__secondary-link"
+                href="{% url 'mis_calificaciones' %}"
+                title="Ver mis calificaciones y opiniones"
+                aria-label="Ver mis calificaciones y opiniones"
+              >
                 <i class="bi bi-star-fill me-2"></i>Mis Calificaciones
               </a>
             </li>
             {% endif %} {# Turista / Viajero #} {% if user.es_turista or user.rol == 2 or user.rol == 'TURISTA' %}
             <li>
               <a
+                class="menu-hamburguesa-premium__secondary-link fw-bold text-success"
+                href="{% url 'dashboard_turista' %}"
+                title="Ir a mi Panel de Control de viajero"
+                aria-label="Ir a mi Panel de Control de viajero"
+              >
+                <i class="bi bi-grid-1x2-fill me-2"></i>Panel de Control
+              </a>
+            </li>
+            <li>
+              <a
                 class="menu-hamburguesa-premium__secondary-link"
                 href="{% url 'mis_reservas_usuario' %}"
+                title="Ver y gestionar mis reservas"
+                aria-label="Ver y gestionar mis reservas"
               >
                 <i class="bi bi-calendar2-check me-2"></i>Mis Reservas
               </a>
@@ -152,6 +193,8 @@
               <a
                 class="menu-hamburguesa-premium__secondary-link"
                 href="{% url 'mis_calificaciones' %}"
+                title="Ver mis calificaciones"
+                aria-label="Ver mis calificaciones"
               >
                 <i class="bi bi-star-fill me-2"></i>Mis Calificaciones
               </a>
@@ -160,6 +203,8 @@
               <a
                 class="menu-hamburguesa-premium__secondary-link"
                 href="{% url 'mis_pqrs' %}"
+                title="Ver mis peticiones, quejas y reclamos"
+                aria-label="Ver mis peticiones, quejas y reclamos"
               >
                 <i class="bi bi-envelope me-2"></i>Mis PQRS
               </a>
@@ -169,14 +214,18 @@
               <a
                 class="menu-hamburguesa-premium__secondary-link fw-bold text-success"
                 href="{% url 'login' %}"
+                title="Iniciar sesión en su cuenta"
+                aria-label="Iniciar sesión en su cuenta"
               >
-                <i class="bi bi-box-arrow-in-right me-2"></i>Acceder
+                <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
               </a>
             </li>
             <li>
               <a
                 class="menu-hamburguesa-premium__secondary-link fw-bold text-success"
                 href="{% url 'registro' %}"
+                title="Registrarse y crear una nueva cuenta"
+                aria-label="Registrarse y crear una nueva cuenta"
               >
                 <i class="bi bi-person-plus me-2"></i>Registrarse
               </a>
@@ -188,6 +237,8 @@
               <a
                 class="menu-hamburguesa-premium__secondary-link"
                 href="{% url 'nosotros' %}"
+                title="Conocer más sobre nosotros"
+                aria-label="Conocer más sobre nosotros"
               >
                 <i class="bi bi-people me-2"></i>Nosotros
               </a>
@@ -196,6 +247,8 @@
               <a
                 class="menu-hamburguesa-premium__secondary-link"
                 href="{% url 'pqrs' %}"
+                title="Radicar o consultar PQRS"
+                aria-label="Radicar o consultar PQRS"
               >
                 <i class="bi bi-file-earmark-text me-2"></i> PQRS
               </a>
@@ -204,6 +257,8 @@
               <a
                 class="menu-hamburguesa-premium__secondary-link"
                 href="{% url 'terminos' %}"
+                title="Consultar términos y condiciones"
+                aria-label="Consultar términos y condiciones"
               >
                 <i class="bi bi-shield-lock me-2"></i>Términos y Condiciones
               </a>

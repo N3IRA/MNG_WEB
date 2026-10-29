@@ -1,25 +1,38 @@
-{% extends "admin/base-admin.html" %} 
-{% load static %} 
-
-{% block content %}
+{% extends "admin/base-admin.html" %} {% load static %} {% block content %}
 <div class="container-fluid px-0">
-
   <!-- ── Top Bar (Estilo Dashboard Admin) ── -->
-  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+  <div
+    class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4"
+  >
     <div>
       <h2 class="fw-bold mb-0 text-success d-flex align-items-center gap-2">
         <i class="bi bi-person-vcard"></i>Perfil de Administrador
       </h2>
-      <p class="text-muted mb-0 small">Gestión de datos de cuenta, seguridad e información personal.</p>
+      <p class="text-muted mb-0 small">
+        Gestión de datos de cuenta, seguridad e información personal.
+      </p>
     </div>
     <div class="d-flex align-items-center gap-2 flex-wrap me-lg-5 pe-lg-2">
-      <a href="{% url 'dashboard_admin' %}" class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 shadow-sm">
-        <i class="bi bi-grid-1x2"></i> Dashboard
+      <a
+        href="{% url 'dashboard_admin' %}"
+        class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 shadow-sm"
+        title="Ir al Panel de Control de administración"
+        aria-label="Ir al Panel de Control de administración"
+      >
+        <i class="bi bi-grid-1x2"></i> Panel de Control
       </a>
-      <a href="{% url 'gestion_usuarios' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-none d-md-inline-flex align-items-center gap-1 shadow-sm">
+      <a
+        href="{% url 'gestion_usuarios' %}"
+        class="btn btn-outline-secondary btn-sm rounded-pill d-none d-md-inline-flex align-items-center gap-1 shadow-sm"
+        title="Gestionar usuarios del sistema"
+        aria-label="Gestionar usuarios del sistema"
+      >
         <i class="bi bi-people"></i> Usuarios
       </a>
-      <span class="badge bg-white text-secondary border d-none d-md-inline-flex align-items-center gap-1 px-3 py-2 shadow-sm" title="Fecha actual">
+      <span
+        class="badge bg-white text-secondary border d-none d-md-inline-flex align-items-center gap-1 px-3 py-2 shadow-sm"
+        title="Fecha actual"
+      >
         <i class="bi bi-calendar3 text-success"></i>
         <span>{% now "D, j \d\e M. Y" %}</span>
       </span>
@@ -28,14 +41,21 @@
 
   <div class="card shadow-sm border-0 rounded-4 overflow-hidden bg-white mb-5">
     <div class="w-100 bg-dark bg-opacity-75">
-      <img src="{% static 'img/Fondo.webp' %}" class="w-100 object-fit-cover" height="160" alt="Fondo" />
+      <img
+        src="{% static 'img/Fondo.webp' %}"
+        class="w-100 object-fit-cover"
+        height="160"
+        alt="Fondo"
+      />
     </div>
 
     <div class="card-body p-4 p-md-5 pt-4">
       <div class="row">
         <!-- Columna Izquierda: Información de perfil / Sidebar -->
         <div class="col-lg-4 text-center text-lg-start mb-5 mb-lg-0 border-end">
-          <div class="d-flex justify-content-center justify-content-lg-start mb-4">
+          <div
+            class="d-flex justify-content-center justify-content-lg-start mb-4"
+          >
             <img
               src="{{ user.avatar_url }}"
               alt="{{ user.username }}"
@@ -49,26 +69,52 @@
             <h3 class="fw-bold text-dark mb-1">
               {{ user.first_name|default:user.username }} {{ user.last_name }}
             </h3>
-            <span class="badge bg-dark bg-opacity-10 text-dark rounded-pill px-3 py-1 fw-bold mb-3">
-              <i class="bi bi-shield-lock-fill me-1"></i> {% if user.is_superuser %}Administrador{% else %}{{ user.get_rol_display }}{% endif %}
+            <span
+              class="badge bg-dark bg-opacity-10 text-dark rounded-pill px-3 py-1 fw-bold mb-3"
+            >
+              <i class="bi bi-shield-lock-fill me-1"></i> {% if
+              user.is_superuser %}Administrador{% else %}{{ user.get_rol_display
+              }}{% endif %}
             </span>
             <p class="text-muted small mb-4">
-              <i class="bi bi-calendar3 me-1"></i>Miembro desde: {{ user.date_joined|date:"d F, Y" }}
+              <i class="bi bi-calendar3 me-1"></i>Miembro desde: {{
+              user.date_joined|date:"d F, Y" }}
             </p>
           </div>
 
-          <div class="list-group list-group-flush rounded-3 overflow-hidden border border-light shadow-sm">
-            <a href="{% url 'dashboard_admin' %}" class="list-group-item list-group-item-action py-3 px-4 d-flex align-items-center gap-3">
+          <div
+            class="list-group list-group-flush rounded-3 overflow-hidden border border-light shadow-sm"
+          >
+            <a
+              href="{% url 'dashboard_admin' %}"
+              class="list-group-item list-group-item-action py-3 px-4 d-flex align-items-center gap-3"
+              title="Ir al Panel de Control de administración"
+              aria-label="Ir al Panel de Control de administración"
+            >
               <i class="bi bi-speedometer2 text-dark fs-5"></i>
-              <span class="fw-semibold text-secondary">Dashboard Admin</span>
+              <span class="fw-semibold text-secondary">Panel de Control</span>
             </a>
-            <a href="#" class="list-group-item list-group-item-action py-3 px-4 d-flex align-items-center gap-3">
+            <a
+              href="{% url 'gestion_usuarios' %}"
+              class="list-group-item list-group-item-action py-3 px-4 d-flex align-items-center gap-3"
+              title="Ir a la gestión de usuarios del sistema"
+              aria-label="Ir a Gestión de Usuarios"
+            >
               <i class="bi bi-people-fill text-dark fs-5"></i>
-              <span class="fw-semibold text-secondary">Gestión de Usuarios</span>
+              <span class="fw-semibold text-secondary"
+                >Gestión de Usuarios</span
+              >
             </a>
-            <a href="#" class="list-group-item list-group-item-action py-3 px-4 d-flex align-items-center gap-3">
+            <a
+              href="{% url 'listar_paquetes' %}"
+              class="list-group-item list-group-item-action py-3 px-4 d-flex align-items-center gap-3"
+              title="Ir a la administración de paquetes y catálogo de destinos"
+              aria-label="Ir a Gestión de Catálogo de paquetes"
+            >
               <i class="bi bi-map-fill text-dark fs-5"></i>
-              <span class="fw-semibold text-secondary">Gestión de Catálogo</span>
+              <span class="fw-semibold text-secondary"
+                >Gestión de Catálogo</span
+              >
             </a>
           </div>
         </div>
@@ -80,33 +126,59 @@
             <h4 class="fw-bold text-dark mb-0">Configuración del Perfil</h4>
           </div>
 
-          <form method="POST" enctype="multipart/form-data" id="form_perfil_principal">
+          <form
+            method="POST"
+            enctype="multipart/form-data"
+            id="form_perfil_principal"
+          >
             {% csrf_token %}
             <input type="hidden" name="editar_perfil" value="1" />
 
             <div class="row g-4">
               <!-- Nombre de Usuario (NO EDITABLE) -->
               <div class="col-md-6">
-                <label class="form-label small fw-semibold text-secondary mb-1"><i class="bi bi-person-badge text-dark me-2"></i>Nombre de Usuario</label>
-                <div class="p-3 bg-light rounded-4 shadow-sm text-secondary border fw-medium d-flex align-items-center">
+                <label class="form-label small fw-semibold text-secondary mb-1"
+                  ><i class="bi bi-person-badge text-dark me-2"></i>Nombre de
+                  Usuario</label
+                >
+                <div
+                  class="p-3 bg-light rounded-4 shadow-sm text-secondary border fw-medium d-flex align-items-center"
+                >
                   <span>{{ user.username }}</span>
                 </div>
-                <span class="text-muted small ps-2">Identificador único inmutable.</span>
+                <span class="text-muted small ps-2"
+                  >Identificador único inmutable.</span
+                >
               </div>
 
               <!-- Correo (NO EDITABLE) -->
               <div class="col-md-6">
-                <label class="form-label small fw-semibold text-secondary mb-1"><i class="bi bi-envelope text-dark me-2"></i>Correo Electrónico</label>
-                <div class="p-3 bg-light rounded-4 shadow-sm text-secondary border fw-medium d-flex align-items-center">
+                <label class="form-label small fw-semibold text-secondary mb-1"
+                  ><i class="bi bi-envelope text-dark me-2"></i>Correo
+                  Electrónico</label
+                >
+                <div
+                  class="p-3 bg-light rounded-4 shadow-sm text-secondary border fw-medium d-flex align-items-center"
+                >
                   <span>{{ user.email }}</span>
                 </div>
-                <span class="text-muted small ps-2">No modificable desde este panel.</span>
+                <span class="text-muted small ps-2"
+                  >No modificable desde este panel.</span
+                >
               </div>
 
               <!-- Nombres (EDITABLE) -->
               <div class="col-md-6">
                 <div class="form-floating">
-                  <input type="text" name="first_name" class="form-control rounded-4 shadow-sm {% if form.first_name.errors %}is-invalid{% endif %}" id="first_name" value="{{ form.first_name.value|default:user.first_name }}" placeholder="Nombres" required />
+                  <input
+                    type="text"
+                    name="first_name"
+                    class="form-control rounded-4 shadow-sm {% if form.first_name.errors %}is-invalid{% endif %}"
+                    id="first_name"
+                    value="{{ form.first_name.value|default:user.first_name }}"
+                    placeholder="Nombres"
+                    required
+                  />
                   <label for="first_name">Nombres</label>
                   {% if form.first_name.errors %}
                   <div class="invalid-feedback ms-2">
@@ -119,7 +191,15 @@
               <!-- Apellidos (EDITABLE) -->
               <div class="col-md-6">
                 <div class="form-floating">
-                  <input type="text" name="last_name" class="form-control rounded-4 shadow-sm {% if form.last_name.errors %}is-invalid{% endif %}" id="last_name" value="{{ form.last_name.value|default:user.last_name }}" placeholder="Apellidos" required />
+                  <input
+                    type="text"
+                    name="last_name"
+                    class="form-control rounded-4 shadow-sm {% if form.last_name.errors %}is-invalid{% endif %}"
+                    id="last_name"
+                    value="{{ form.last_name.value|default:user.last_name }}"
+                    placeholder="Apellidos"
+                    required
+                  />
                   <label for="last_name">Apellidos</label>
                   {% if form.last_name.errors %}
                   <div class="invalid-feedback ms-2">
@@ -131,25 +211,53 @@
 
               <!-- Tipo Documento (NO EDITABLE) -->
               <div class="col-md-6">
-                <label class="form-label small fw-semibold text-secondary mb-1"><i class="bi bi-card-heading text-dark me-2"></i>Tipo de Documento</label>
-                <div class="p-3 bg-light rounded-4 shadow-sm text-secondary border fw-medium d-flex align-items-center">
-                  <span>{{ user.get_tipo_documento_display|default:'No especificado' }}</span>
+                <label class="form-label small fw-semibold text-secondary mb-1"
+                  ><i class="bi bi-card-heading text-dark me-2"></i>Tipo de
+                  Documento</label
+                >
+                <div
+                  class="p-3 bg-light rounded-4 shadow-sm text-secondary border fw-medium d-flex align-items-center"
+                >
+                  <span
+                    >{{ user.get_tipo_documento_display|default:'No
+                    especificado' }}</span
+                  >
                 </div>
               </div>
 
               <!-- Número Documento (NO EDITABLE) -->
               <div class="col-md-6">
-                <label class="form-label small fw-semibold text-secondary mb-1"><i class="bi bi-shield-check text-dark me-2"></i>Número de Documento</label>
-                <div class="p-3 bg-light rounded-4 shadow-sm text-secondary border fw-medium d-flex align-items-center">
-                  <span>{{ user.numero_documento|default:'No especificado' }}</span>
+                <label class="form-label small fw-semibold text-secondary mb-1"
+                  ><i class="bi bi-shield-check text-dark me-2"></i>Número de
+                  Documento</label
+                >
+                <div
+                  class="p-3 bg-light rounded-4 shadow-sm text-secondary border fw-medium d-flex align-items-center"
+                >
+                  <span
+                    >{{ user.numero_documento|default:'No especificado' }}</span
+                  >
                 </div>
               </div>
 
               <!-- Teléfono (EDITABLE) -->
               <div class="col-md-6">
                 <div class="form-floating">
-                  <input type="tel" name="telefono" class="form-control rounded-4 shadow-sm {% if form.telefono.errors %}is-invalid{% endif %}" id="telefono" value="{{ form.telefono.value|default:user.telefono }}" placeholder="Número de Teléfono" required maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
-                  <label for="telefono"><i class="bi bi-telephone text-dark me-2"></i>Teléfono</label>
+                  <input
+                    type="tel"
+                    name="telefono"
+                    class="form-control rounded-4 shadow-sm {% if form.telefono.errors %}is-invalid{% endif %}"
+                    id="telefono"
+                    value="{{ form.telefono.value|default:user.telefono }}"
+                    placeholder="Número de Teléfono"
+                    required
+                    maxlength="10"
+                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                  />
+                  <label for="telefono"
+                    ><i class="bi bi-telephone text-dark me-2"></i
+                    >Teléfono</label
+                  >
                   {% if form.telefono.errors %}
                   <div class="invalid-feedback ms-2">
                     {{ form.telefono.errors.0 }}
@@ -161,8 +269,17 @@
               <!-- Imagen de Perfil (EDITABLE) -->
               <div class="col-md-6">
                 <div class="form-floating">
-                  <input type="file" name="imagen_perfil" class="form-control rounded-4 shadow-sm {% if form.imagen_perfil.errors %}is-invalid{% endif %}" id="imagen_perfil" accept="image/*" />
-                  <label for="imagen_perfil"><i class="bi bi-camera text-dark me-2"></i>Foto de Perfil (Opcional)</label>
+                  <input
+                    type="file"
+                    name="imagen_perfil"
+                    class="form-control rounded-4 shadow-sm {% if form.imagen_perfil.errors %}is-invalid{% endif %}"
+                    id="imagen_perfil"
+                    accept="image/*"
+                  />
+                  <label for="imagen_perfil"
+                    ><i class="bi bi-camera text-dark me-2"></i>Foto de Perfil
+                    (Opcional)</label
+                  >
                   {% if form.imagen_perfil.errors %}
                   <div class="invalid-feedback ms-2">
                     {{ form.imagen_perfil.errors.0 }}
@@ -174,17 +291,37 @@
               <!-- Ciudad y País (NO EDITABLE) -->
               <div class="col-md-12">
                 <div class="form-floating">
-                  <input type="text" class="form-control rounded-4 shadow-sm bg-light text-muted" id="residencia_disabled" value="{{ user.residencia|default:'No especificado' }}" disabled readonly />
-                  <label for="residencia_disabled"><i class="bi bi-geo-alt text-dark me-2"></i>Ciudad y País</label>
+                  <input
+                    type="text"
+                    class="form-control rounded-4 shadow-sm bg-light text-muted"
+                    id="residencia_disabled"
+                    value="{{ user.residencia|default:'No especificado' }}"
+                    disabled
+                    readonly
+                  />
+                  <label for="residencia_disabled"
+                    ><i class="bi bi-geo-alt text-dark me-2"></i>Ciudad y
+                    País</label
+                  >
                 </div>
               </div>
             </div>
 
             <div class="d-flex justify-content-end gap-3 mt-5">
-              <a href="{% url 'dashboard_admin' %}" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
+              <a
+                href="{% url 'dashboard_admin' %}"
+                class="btn btn-outline-secondary rounded-pill px-4 fw-bold"
+                title="Cancelar y volver al Panel de Control"
+                aria-label="Cancelar y volver al Panel de Control"
+              >
                 Cancelar
               </a>
-              <button type="submit" class="btn btn-dark rounded-pill px-5 fw-bold shadow-sm">
+              <button
+                type="submit"
+                class="btn btn-dark rounded-pill px-5 fw-bold shadow-sm"
+                title="Guardar los cambios del perfil de administrador"
+                aria-label="Guardar los cambios del perfil de administrador"
+              >
                 Guardar Cambios
               </button>
             </div>

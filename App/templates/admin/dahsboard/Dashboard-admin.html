@@ -1,354 +1,405 @@
 <!-- ── Dashboard Admin ── -->
-{% extends 'admin/base-admin.html' %}
-{% load static %}
-{% load humanize %}
+{% extends 'admin/base-admin.html' %} {% load static %} {% load humanize %} {%
+block title %}Panel de Control | Monagua Admin{% endblock %} {% block extra_head %}
+<script src="{% static 'js/librerias/chart.umd.min.js' %}"></script>
+<script src="{% static 'js/librerias/html2canvas.min.js' %}"></script>
+<script src="{% static 'js/librerias/jspdf.umd.min.js' %}"></script>
 
-{% block title %}Dashboard | Monagua Admin{% endblock %}
-
-{% block extra_head %}
-  <script src="{% static 'js/librerias/chart.umd.min.js' %}"></script>
-  <script src="{% static 'js/librerias/html2canvas.min.js' %}"></script>
-  <script src="{% static 'js/librerias/jspdf.umd.min.js' %}"></script>
-
-  <style>
-    /* ══════════════════════════════════════════════════════════════
+<style>
+  /* ══════════════════════════════════════════════════════════════
        SISTEMA DE DISEÑO DE ALTO CONTRASTE - DASHBOARD MONAGUA
        ══════════════════════════════════════════════════════════════ */
-    :root {
-      --dash-slate-900: #0f172a;
-      --dash-slate-800: #1e293b;
-      --dash-slate-700: #334155;
-      --dash-slate-600: #475569;
-      --dash-slate-500: #64748b;
-      --dash-border: #e2e8f0;
-    }
+  :root {
+    --dash-slate-900: #0f172a;
+    --dash-slate-800: #1e293b;
+    --dash-slate-700: #334155;
+    --dash-slate-600: #475569;
+    --dash-slate-500: #64748b;
+    --dash-border: #e2e8f0;
+  }
 
-    .dash-header-title {
-      color: #0f172a;
-      font-weight: 800;
-      letter-spacing: -0.025em;
-    }
+  .dash-header-title {
+    color: #0f172a;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+  }
 
-    .dash-header-sub {
-      color: #475569;
-      font-weight: 600;
-      font-size: 0.875rem;
-    }
+  .dash-header-sub {
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
 
-    /* KPI Cards */
-    .dash-kpi-card {
-      position: relative;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 1rem;
-      box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.05);
-      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      height: 100%;
-    }
+  /* KPI Cards */
+  .dash-kpi-card {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.05);
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+  }
 
-    .dash-kpi-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 14px 24px -4px rgba(15, 23, 42, 0.1);
-      border-color: #cbd5e1;
-    }
+  .dash-kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 24px -4px rgba(15, 23, 42, 0.1);
+    border-color: #cbd5e1;
+  }
 
-    .dash-kpi-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-    }
+  .dash-kpi-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+  }
 
-    .dash-kpi-emerald::before { background: linear-gradient(90deg, #10b981, #059669); }
-    .dash-kpi-indigo::before  { background: linear-gradient(90deg, #6366f1, #4f46e5); }
-    .dash-kpi-amber::before   { background: linear-gradient(90deg, #f59e0b, #d97706); }
-    .dash-kpi-violet::before  { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
-    .dash-kpi-rose::before    { background: linear-gradient(90deg, #ef4444, #dc2626); }
-    .dash-kpi-cyan::before    { background: linear-gradient(90deg, #06b6d4, #0891b2); }
+  .dash-kpi-emerald::before {
+    background: linear-gradient(90deg, #10b981, #059669);
+  }
+  .dash-kpi-indigo::before {
+    background: linear-gradient(90deg, #6366f1, #4f46e5);
+  }
+  .dash-kpi-amber::before {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+  }
+  .dash-kpi-violet::before {
+    background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+  }
+  .dash-kpi-rose::before {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+  }
+  .dash-kpi-cyan::before {
+    background: linear-gradient(90deg, #06b6d4, #0891b2);
+  }
 
-    .kpi-icon-pill {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-size: 1.25rem;
-    }
+  .kpi-icon-pill {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.25rem;
+  }
 
-    .kpi-icon-pill.emerald {
-      background: linear-gradient(135deg, #10b981 0%, #047857 100%);
-      box-shadow: 0 6px 14px rgba(16, 185, 129, 0.35);
-    }
-    .kpi-icon-pill.indigo {
-      background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
-      box-shadow: 0 6px 14px rgba(99, 102, 241, 0.35);
-    }
-    .kpi-icon-pill.amber {
-      background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
-      box-shadow: 0 6px 14px rgba(245, 158, 11, 0.35);
-    }
-    .kpi-icon-pill.violet {
-      background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-      box-shadow: 0 6px 14px rgba(139, 92, 246, 0.35);
-    }
-    .kpi-icon-pill.rose {
-      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-      box-shadow: 0 6px 14px rgba(239, 68, 68, 0.35);
-    }
-    .kpi-icon-pill.cyan {
-      background: linear-gradient(135deg, #06b6d4 0%, #0e7490 100%);
-      box-shadow: 0 6px 14px rgba(6, 182, 212, 0.35);
-    }
+  .kpi-icon-pill.emerald {
+    background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+    box-shadow: 0 6px 14px rgba(16, 185, 129, 0.35);
+  }
+  .kpi-icon-pill.indigo {
+    background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+    box-shadow: 0 6px 14px rgba(99, 102, 241, 0.35);
+  }
+  .kpi-icon-pill.amber {
+    background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
+    box-shadow: 0 6px 14px rgba(245, 158, 11, 0.35);
+  }
+  .kpi-icon-pill.violet {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+    box-shadow: 0 6px 14px rgba(139, 92, 246, 0.35);
+  }
+  .kpi-icon-pill.rose {
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    box-shadow: 0 6px 14px rgba(239, 68, 68, 0.35);
+  }
+  .kpi-icon-pill.cyan {
+    background: linear-gradient(135deg, #06b6d4 0%, #0e7490 100%);
+    box-shadow: 0 6px 14px rgba(6, 182, 212, 0.35);
+  }
 
-    .kpi-tag {
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #475569;
-      margin-bottom: 4px;
-    }
+  .kpi-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #475569;
+    margin-bottom: 4px;
+  }
 
-    .kpi-number {
-      font-size: 1.35rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      line-height: 1.25;
-      margin-bottom: 4px;
-    }
+  .kpi-number {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    margin-bottom: 4px;
+  }
 
-    .kpi-number.text-emerald { color: #047857; }
-    .kpi-number.text-indigo  { color: #3730a3; }
-    .kpi-number.text-amber   { color: #b45309; }
-    .kpi-number.text-violet  { color: #5b21b6; }
-    .kpi-number.text-rose    { color: #b91c1c; }
-    .kpi-number.text-cyan    { color: #0e7490; }
+  .kpi-number.text-emerald {
+    color: #047857;
+  }
+  .kpi-number.text-indigo {
+    color: #3730a3;
+  }
+  .kpi-number.text-amber {
+    color: #b45309;
+  }
+  .kpi-number.text-violet {
+    color: #5b21b6;
+  }
+  .kpi-number.text-rose {
+    color: #b91c1c;
+  }
+  .kpi-number.text-cyan {
+    color: #0e7490;
+  }
 
-    .kpi-detail {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: #334155;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
+  .kpi-detail {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #334155;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
 
-    .kpi-detail a {
-      color: #334155;
-      text-decoration: none;
-      font-weight: 600;
-      transition: color 0.15s ease;
-    }
-    .kpi-detail a:hover {
-      color: #0f172a;
-      text-decoration: underline;
-    }
+  .kpi-detail a {
+    color: #334155;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.15s ease;
+  }
+  .kpi-detail a:hover {
+    color: #0f172a;
+    text-decoration: underline;
+  }
 
-    /* Cards Generales */
-    .dash-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 1rem;
-      box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.05);
-      overflow: hidden;
-    }
+  /* Cards Generales */
+  .dash-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.05);
+    overflow: hidden;
+  }
 
-    .dash-card-header {
-      background: #ffffff;
-      border-bottom: 1px solid #f1f5f9;
-      padding: 1.1rem 1.25rem 0.85rem;
-    }
+  .dash-card-header {
+    background: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1.1rem 1.25rem 0.85rem;
+  }
 
-    .dash-card-title {
-      color: #0f172a;
-      font-weight: 700;
-      font-size: 1.05rem;
-      margin-bottom: 2px;
-    }
+  .dash-card-title {
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 2px;
+  }
 
-    .dash-card-subtitle {
-      color: #475569;
-      font-size: 0.82rem;
-      font-weight: 600;
-    }
+  .dash-card-subtitle {
+    color: #475569;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
 
-    /* Mini stat cards */
-    .mini-stat-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.85rem;
-      padding: 1rem 0.85rem;
-      text-align: center;
-      box-shadow: 0 2px 8px -1px rgba(15, 23, 42, 0.04);
-      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
+  /* Mini stat cards */
+  .mini-stat-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.85rem;
+    padding: 1rem 0.85rem;
+    text-align: center;
+    box-shadow: 0 2px 8px -1px rgba(15, 23, 42, 0.04);
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
 
-    .mini-stat-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px -2px rgba(15, 23, 42, 0.08);
-      border-color: #cbd5e1;
-    }
+  .mini-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px -2px rgba(15, 23, 42, 0.08);
+    border-color: #cbd5e1;
+  }
 
-    .mini-stat-val {
-      font-size: 1.28rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      line-height: 1.2;
-    }
+  .mini-stat-val {
+    font-size: 1.28rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
 
-    .mini-stat-label {
-      font-size: 0.76rem;
-      font-weight: 700;
-      color: #334155;
-      margin-top: 4px;
-    }
+  .mini-stat-label {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #334155;
+    margin-top: 4px;
+  }
 
-    /* Activity Items */
-    .activity-item {
-      padding: 0.85rem 0;
-      border-bottom: 1px solid #f1f5f9;
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-    }
-    .activity-item:last-child {
-      border-bottom: none;
-    }
-    .activity-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-top: 5px;
-      flex-shrink: 0;
-      background: #10b981;
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-    }
-    .activity-title {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: #0f172a;
-    }
-    .activity-time {
-      font-size: 0.76rem;
-      font-weight: 600;
-      color: #64748b;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      margin-top: 2px;
-    }
+  /* Activity Items */
+  .activity-item {
+    padding: 0.85rem 0;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .activity-item:last-child {
+    border-bottom: none;
+  }
+  .activity-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+    background: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  }
+  .activity-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #0f172a;
+  }
+  .activity-time {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+  }
 
-    /* Popular tours table */
-    .tours-header-dark {
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      color: #ffffff;
-      padding: 1rem 1.25rem;
-    }
+  /* Popular tours table */
+  .tours-header-dark {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #ffffff;
+    padding: 1rem 1.25rem;
+  }
 
-    .tours-table thead th {
-      background: #f8fafc;
-      color: #334155;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 0.85rem 1rem;
-    }
+  .tours-table thead th {
+    background: #f8fafc;
+    color: #334155;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0.85rem 1rem;
+  }
 
-    .tours-table tbody td {
-      padding: 0.85rem 1rem;
-      color: #1e293b;
-      border-bottom: 1px solid #f1f5f9;
-    }
+  .tours-table tbody td {
+    padding: 0.85rem 1rem;
+    color: #1e293b;
+    border-bottom: 1px solid #f1f5f9;
+  }
 
-    .tours-table tbody tr:hover td {
-      background-color: #f8fafc;
-    }
+  .tours-table tbody tr:hover td {
+    background-color: #f8fafc;
+  }
 
-    .podium-badge {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.85rem;
-      font-weight: 800;
-      color: #ffffff;
-    }
-    .podium-1 {
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);
-    }
-    .podium-2 {
-      background: linear-gradient(135deg, #94a3b8, #64748b);
-      box-shadow: 0 4px 10px rgba(100, 116, 139, 0.4);
-    }
-    .podium-3 {
-      background: linear-gradient(135deg, #f97316, #b45309);
-      box-shadow: 0 4px 10px rgba(180, 83, 9, 0.4);
-    }
-    .podium-num {
-      font-size: 0.85rem;
-      font-weight: 800;
-      color: #475569;
-      padding-left: 6px;
-    }
+  .podium-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #ffffff;
+  }
+  .podium-1 {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);
+  }
+  .podium-2 {
+    background: linear-gradient(135deg, #94a3b8, #64748b);
+    box-shadow: 0 4px 10px rgba(100, 116, 139, 0.4);
+  }
+  .podium-3 {
+    background: linear-gradient(135deg, #f97316, #b45309);
+    box-shadow: 0 4px 10px rgba(180, 83, 9, 0.4);
+  }
+  .podium-num {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #475569;
+    padding-left: 6px;
+  }
 
-    .badge-soft-success {
-      background-color: rgba(16, 185, 129, 0.15);
-      color: #047857;
-      font-weight: 700;
-    }
-    .badge-soft-primary {
-      background-color: rgba(99, 102, 241, 0.15);
-      color: #4338ca;
-      font-weight: 700;
-    }
-  </style>
-{% endblock %}
-
-{% block content %}
+  .badge-soft-success {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #047857;
+    font-weight: 700;
+  }
+  .badge-soft-primary {
+    background-color: rgba(99, 102, 241, 0.15);
+    color: #4338ca;
+    font-weight: 700;
+  }
+</style>
+{% endblock %} {% block content %}
 
 <!-- ── Top Bar ── -->
-<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+<div
+  class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4"
+>
   <div>
     <h2 class="dash-header-title d-flex align-items-center mb-1">
-      <span class="p-2 rounded-3 bg-white bg-opacity-10 text-success me-2 d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+      <span
+        class="p-2 rounded-3 bg-white bg-opacity-10 text-success me-2 d-inline-flex align-items-center justify-content-center"
+        style="width: 40px; height: 40px"
+      >
         <i class="bi bi-grid-1x2-fill"></i>
       </span>
-      Tablero de Rendimiento
+      Panel de Control
     </h2>
-    <p class="dash-header-sub mb-0">Visión general del negocio, métricas en tiempo real y pólizas de viaje.</p>
+    <p class="dash-header-sub mb-0">
+      Visión general del negocio, métricas en tiempo real y pólizas de viaje.
+    </p>
   </div>
   <div class="d-flex align-items-center gap-2 flex-wrap">
-    <a href="{% url 'poliza_listar' %}" class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 shadow-sm px-3 fw-semibold">
+    <a
+      href="{% url 'poliza_listar' %}"
+      class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 shadow-sm px-3 fw-semibold"
+      title="Gestionar pólizas de viaje"
+      aria-label="Gestionar pólizas de viaje"
+    >
       <i class="bi bi-shield-check"></i> Pólizas de Viaje
     </a>
-    <a href="{% url 'gestion_promociones' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 px-3 fw-semibold">
+    <a
+      href="{% url 'gestion_promociones' %}"
+      class="btn btn-outline-secondary btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 px-3 fw-semibold"
+      title="Gestionar promociones y descuentos"
+      aria-label="Gestionar promociones y descuentos"
+    >
       <i class="bi bi-megaphone-fill"></i> Promociones
     </a>
-    <a href="{% url 'gestion_reservas' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 px-3 fw-semibold">
+    <a
+      href="{% url 'gestion_reservas' %}"
+      class="btn btn-outline-secondary btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 px-3 fw-semibold"
+      title="Gestionar reservas del sistema"
+      aria-label="Gestionar reservas del sistema"
+    >
       <i class="bi bi-calendar2-check-fill"></i> Reservas
     </a>
-    <span class="badge bg-white text-dark border d-none d-md-inline-flex align-items-center gap-2 px-3 py-2 shadow-sm rounded-pill fw-semibold" title="Fecha actual">
+    <span
+      class="badge bg-white text-dark border d-none d-md-inline-flex align-items-center gap-2 px-3 py-2 shadow-sm rounded-pill fw-semibold"
+      title="Fecha actual del sistema"
+      aria-label="Fecha actual del sistema"
+    >
       <i class="bi bi-calendar3 text-success"></i>
       <span id="currentDate">{% now "D, j \d\e M. Y" %}</span>
     </span>
-    <button class="btn btn-success text-white btn-sm d-flex align-items-center gap-2 px-3 py-2 shadow-sm rounded-pill fw-semibold" id="btnExportPdf">
+    <button
+      class="btn btn-success text-white btn-sm d-flex align-items-center gap-2 px-3 py-2 shadow-sm rounded-pill fw-semibold"
+      id="btnExportPdf"
+      title="Exportar informe del panel de control a documento PDF"
+      aria-label="Exportar informe del panel de control a documento PDF"
+    >
       <i class="bi bi-file-earmark-pdf-fill text-white"></i>
       <span id="exportLabel" class="text-white">Exportar PDF</span>
     </button>
@@ -365,13 +416,18 @@
           <span class="kpi-icon-pill emerald">
             <i class="bi bi-currency-dollar"></i>
           </span>
-          <span class="badge badge-soft-success rounded-pill px-2 py-1 small">+Ventas</span>
+          <span class="badge badge-soft-success rounded-pill px-2 py-1 small"
+            >+Ventas</span
+          >
         </div>
         <div class="kpi-tag">Ingresos Totales</div>
-        <div class="kpi-number text-emerald">COP ${{ total_ventas|floatformat:0|intcomma|default:"0" }}</div>
+        <div class="kpi-number text-emerald">
+          COP ${{ total_ventas|floatformat:0|intcomma|default:"0" }}
+        </div>
       </div>
       <div class="kpi-detail pt-2 border-top border-light">
-        <i class="bi bi-arrow-up-right-circle-fill text-success"></i> Reservas confirmadas
+        <i class="bi bi-arrow-up-right-circle-fill text-success"></i> Reservas
+        confirmadas
       </div>
     </div>
   </div>
@@ -384,13 +440,18 @@
           <span class="kpi-icon-pill indigo">
             <i class="bi bi-people-fill"></i>
           </span>
-          <span class="badge badge-soft-primary rounded-pill px-2 py-1 small">Activos</span>
+          <span class="badge badge-soft-primary rounded-pill px-2 py-1 small"
+            >Activos</span
+          >
         </div>
         <div class="kpi-tag">Usuarios Registrados</div>
-        <div class="kpi-number text-indigo">{{ total_usuarios|intcomma|default:"0" }}</div>
+        <div class="kpi-number text-indigo">
+          {{ total_usuarios|intcomma|default:"0" }}
+        </div>
       </div>
       <div class="kpi-detail pt-2 border-top border-light">
-        <i class="bi bi-person-check-fill text-primary"></i> Clientes registrados
+        <i class="bi bi-person-check-fill text-primary"></i> Clientes
+        registrados
       </div>
     </div>
   </div>
@@ -403,13 +464,19 @@
           <span class="kpi-icon-pill amber">
             <i class="bi bi-calendar-check-fill"></i>
           </span>
-          <span class="badge bg-warning bg-opacity-25 text-dark rounded-pill px-2 py-1 small">Total</span>
+          <span
+            class="badge bg-warning bg-opacity-25 text-dark rounded-pill px-2 py-1 small"
+            >Total</span
+          >
         </div>
         <div class="kpi-tag">Reservas Totales</div>
-        <div class="kpi-number text-amber">{{ total_reservas|intcomma|default:"0" }}</div>
+        <div class="kpi-number text-amber">
+          {{ total_reservas|intcomma|default:"0" }}
+        </div>
       </div>
       <div class="kpi-detail pt-2 border-top border-light">
-        <i class="bi bi-ticket-detailed-fill text-warning"></i> Paquetes reservados
+        <i class="bi bi-ticket-detailed-fill text-warning"></i> Paquetes
+        reservados
       </div>
     </div>
   </div>
@@ -422,13 +489,23 @@
           <span class="kpi-icon-pill violet">
             <i class="bi bi-map-fill"></i>
           </span>
-          <span class="badge bg-purple bg-opacity-10 text-dark rounded-pill px-2 py-1 small" style="background: rgba(139, 92, 246, 0.15); color: #5b21b6 !important;">Catálogo</span>
+          <span
+            class="badge bg-purple bg-opacity-10 text-dark rounded-pill px-2 py-1 small"
+            style="
+              background: rgba(139, 92, 246, 0.15);
+              color: #5b21b6 !important;
+            "
+            >Catálogo</span
+          >
         </div>
         <div class="kpi-tag">Tours Activos</div>
-        <div class="kpi-number text-violet">{{ total_tours|intcomma|default:"0" }}</div>
+        <div class="kpi-number text-violet">
+          {{ total_tours|intcomma|default:"0" }}
+        </div>
       </div>
       <div class="kpi-detail pt-2 border-top border-light">
-        <i class="bi bi-check-circle-fill" style="color: #8b5cf6;"></i> Disponibles ahora
+        <i class="bi bi-check-circle-fill" style="color: #8b5cf6"></i>
+        Disponibles ahora
       </div>
     </div>
   </div>
@@ -441,13 +518,21 @@
           <span class="kpi-icon-pill rose">
             <i class="bi bi-x-octagon-fill"></i>
           </span>
-          <span class="badge bg-danger bg-opacity-15 text-danger rounded-pill px-2 py-1 small fw-bold">Alerta</span>
+          <span
+            class="badge bg-danger bg-opacity-15 text-danger rounded-pill px-2 py-1 small fw-bold"
+            >Alerta</span
+          >
         </div>
         <div class="kpi-tag">Pagos Rechazados</div>
-        <div class="kpi-number text-rose">{{ total_pagos_rechazados|intcomma|default:"0" }}</div>
+        <div class="kpi-number text-rose">
+          {{ total_pagos_rechazados|intcomma|default:"0" }}
+        </div>
       </div>
       <div class="kpi-detail pt-2 border-top border-light">
-        <a href="{% url 'admin_comprobantes' %}?estado=rechazado" class="d-flex align-items-center gap-1 text-danger">
+        <a
+          href="{% url 'admin_comprobantes' %}?estado=rechazado"
+          class="d-flex align-items-center gap-1 text-danger"
+        >
           Ver detalles <i class="bi bi-arrow-right"></i>
         </a>
       </div>
@@ -462,13 +547,22 @@
           <span class="kpi-icon-pill cyan">
             <i class="bi bi-megaphone-fill"></i>
           </span>
-          <span class="badge bg-info bg-opacity-15 text-info-emphasis rounded-pill px-2 py-1 small fw-bold">Campañas</span>
+          <span
+            class="badge bg-info bg-opacity-15 text-info-emphasis rounded-pill px-2 py-1 small fw-bold"
+            >Campañas</span
+          >
         </div>
         <div class="kpi-tag">Promociones Activas</div>
-        <div class="kpi-number text-cyan">{{ total_promociones|intcomma|default:"0" }}</div>
+        <div class="kpi-number text-cyan">
+          {{ total_promociones|intcomma|default:"0" }}
+        </div>
       </div>
       <div class="kpi-detail pt-2 border-top border-light">
-        <a href="{% url 'gestion_promociones' %}" class="d-flex align-items-center gap-1" style="color: #0891b2;">
+        <a
+          href="{% url 'gestion_promociones' %}"
+          class="d-flex align-items-center gap-1"
+          style="color: #0891b2"
+        >
           Gestionar <i class="bi bi-arrow-right"></i>
         </a>
       </div>
@@ -481,15 +575,25 @@
   <!-- Ingresos mensuales -->
   <div class="col-12 col-lg-7">
     <div class="dash-card h-100">
-      <div class="dash-card-header d-flex justify-content-between align-items-center">
+      <div
+        class="dash-card-header d-flex justify-content-between align-items-center"
+      >
         <div>
           <div class="dash-card-title">Evolución de Ingresos Mensuales</div>
-          <div class="dash-card-subtitle">Ventas confirmadas acumuladas por mes</div>
+          <div class="dash-card-subtitle">
+            Ventas confirmadas acumuladas por mes
+          </div>
         </div>
-        <span class="badge bg-success text-white px-3 py-2 rounded-pill shadow-sm fw-bold">Año {{ "now"|date:"Y" }}</span>
+        <span
+          class="badge bg-success text-white px-3 py-2 rounded-pill shadow-sm fw-bold"
+          >Año {{ "now"|date:"Y" }}</span
+        >
       </div>
       <div class="card-body p-3">
-        <div class="chart-container" style="position: relative; height: 260px; width: 100%;">
+        <div
+          class="chart-container"
+          style="position: relative; height: 260px; width: 100%"
+        >
           <canvas id="chartIngresos"></canvas>
         </div>
       </div>
@@ -501,21 +605,49 @@
     <div class="dash-card h-100">
       <div class="dash-card-header">
         <div class="dash-card-title">Distribución de Reservas</div>
-        <div class="dash-card-subtitle">Estado actual de órdenes registradas</div>
+        <div class="dash-card-subtitle">
+          Estado actual de órdenes registradas
+        </div>
       </div>
-      <div class="card-body d-flex flex-column align-items-center justify-content-center p-3">
-        <div class="chart-container" style="position: relative; height: 200px; width: 100%;">
+      <div
+        class="card-body d-flex flex-column align-items-center justify-content-center p-3"
+      >
+        <div
+          class="chart-container"
+          style="position: relative; height: 200px; width: 100%"
+        >
           <canvas id="chartEstado"></canvas>
         </div>
         <div class="d-flex justify-content-center gap-4 mt-3 small">
-          <span class="d-flex align-items-center gap-2 fw-semibold" style="color: #047857;">
-            <span class="rounded-circle d-inline-block shadow-sm" style="width: 12px; height: 12px; background-color: #10b981;"></span> Confirmadas
+          <span
+            class="d-flex align-items-center gap-2 fw-semibold"
+            style="color: #047857"
+          >
+            <span
+              class="rounded-circle d-inline-block shadow-sm"
+              style="width: 12px; height: 12px; background-color: #10b981"
+            ></span>
+            Confirmadas
           </span>
-          <span class="d-flex align-items-center gap-2 fw-semibold" style="color: #b45309;">
-            <span class="rounded-circle d-inline-block shadow-sm" style="width: 12px; height: 12px; background-color: #f59e0b;"></span> Pendientes
+          <span
+            class="d-flex align-items-center gap-2 fw-semibold"
+            style="color: #b45309"
+          >
+            <span
+              class="rounded-circle d-inline-block shadow-sm"
+              style="width: 12px; height: 12px; background-color: #f59e0b"
+            ></span>
+            Pendientes
           </span>
-          <span class="d-flex align-items-center gap-2 fw-semibold" style="color: #b91c1c;">
-            <span class="rounded-circle d-inline-block shadow-sm" style="width: 12px; height: 12px; background-color: #ef4444;"></span> Canceladas
+          <span
+            class="d-flex align-items-center gap-2 fw-semibold"
+            style="color: #b91c1c"
+          >
+            <span
+              class="rounded-circle d-inline-block shadow-sm"
+              style="width: 12px; height: 12px; background-color: #ef4444"
+            ></span>
+            Canceladas
           </span>
         </div>
       </div>
@@ -528,33 +660,40 @@
   <!-- Actividad reciente -->
   <div class="col-12 col-lg-6">
     <div class="dash-card h-100">
-      <div class="dash-card-header d-flex justify-content-between align-items-center">
+      <div
+        class="dash-card-header d-flex justify-content-between align-items-center"
+      >
         <div>
           <div class="dash-card-title">Actividad Reciente del Sistema</div>
-          <div class="dash-card-subtitle">Transacciones, reservas y eventos en vivo</div>
+          <div class="dash-card-subtitle">
+            Transacciones, reservas y eventos en vivo
+          </div>
         </div>
-        <span class="p-2 rounded-circle bg-light text-secondary d-inline-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+        <span
+          class="p-2 rounded-circle bg-light text-secondary d-inline-flex align-items-center justify-content-center"
+          style="width: 36px; height: 36px"
+        >
           <i class="bi bi-clock-history fs-6"></i>
         </span>
       </div>
       <div class="card-body p-3">
-        {% if actividad_reciente %}
-          {% for item in actividad_reciente %}
-          <div class="activity-item">
-            <span class="activity-dot"></span>
-            <div>
-              <div class="activity-title">{{ item.texto }}</div>
-              <div class="activity-time">
-                <i class="bi bi-clock"></i> {{ item.tiempo }}
-              </div>
+        {% if actividad_reciente %} {% for item in actividad_reciente %}
+        <div class="activity-item">
+          <span class="activity-dot"></span>
+          <div>
+            <div class="activity-title">{{ item.texto }}</div>
+            <div class="activity-time">
+              <i class="bi bi-clock"></i> {{ item.tiempo }}
             </div>
           </div>
-          {% endfor %}
-        {% else %}
-          <div class="text-center py-5 text-secondary">
-            <i class="bi bi-clock-history d-block mb-2 fs-2 text-muted"></i>
-            <span class="fw-semibold text-secondary">Sin actividad reciente registrada en el sistema.</span>
-          </div>
+        </div>
+        {% endfor %} {% else %}
+        <div class="text-center py-5 text-secondary">
+          <i class="bi bi-clock-history d-block mb-2 fs-2 text-muted"></i>
+          <span class="fw-semibold text-secondary"
+            >Sin actividad reciente registrada en el sistema.</span
+          >
+        </div>
         {% endif %}
       </div>
     </div>
@@ -566,39 +705,52 @@
     <div class="row g-2">
       <div class="col-12 col-sm-6 col-md-4">
         <div class="mini-stat-card">
-          <div class="mini-stat-val text-success">{{ tasa_confirmacion|default:"0" }}%</div>
+          <div class="mini-stat-val text-success">
+            {{ tasa_confirmacion|default:"0" }}%
+          </div>
           <div class="mini-stat-label">Tasa de Confirmación</div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-md-4">
         <div class="mini-stat-card">
-          <div class="mini-stat-val text-primary d-flex align-items-center justify-content-center gap-1">
-            {{ valoracion_promedio|default:"0.0" }} <i class="bi bi-star-fill text-warning fs-6"></i>
+          <div
+            class="mini-stat-val text-primary d-flex align-items-center justify-content-center gap-1"
+          >
+            {{ valoracion_promedio|default:"0.0" }}
+            <i class="bi bi-star-fill text-warning fs-6"></i>
           </div>
           <div class="mini-stat-label">Valoración Promedio</div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-md-4">
         <div class="mini-stat-card">
-          <div class="mini-stat-val text-warning">COP ${{ ingreso_por_reserva|floatformat:0|intcomma|default:"0" }}</div>
+          <div class="mini-stat-val text-warning">
+            COP ${{ ingreso_por_reserva|floatformat:0|intcomma|default:"0" }}
+          </div>
           <div class="mini-stat-label">Ingreso / Reserva</div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-md-4">
         <div class="mini-stat-card">
-          <div class="mini-stat-val text-danger">{{ cancelaciones_hoy|default:"0" }}</div>
+          <div class="mini-stat-val text-danger">
+            {{ cancelaciones_hoy|default:"0" }}
+          </div>
           <div class="mini-stat-label">Cancelaciones Hoy</div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-md-4">
         <div class="mini-stat-card">
-          <div class="mini-stat-val text-danger">{{ cancelaciones_rechazadas|default:"0" }}</div>
+          <div class="mini-stat-val text-danger">
+            {{ cancelaciones_rechazadas|default:"0" }}
+          </div>
           <div class="mini-stat-label">Canc. Rechazadas</div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-md-4">
         <div class="mini-stat-card">
-          <div class="mini-stat-val text-warning">{{ cancelaciones_pendientes|default:"0" }}</div>
+          <div class="mini-stat-val text-warning">
+            {{ cancelaciones_pendientes|default:"0" }}
+          </div>
           <div class="mini-stat-label">Canc. Pendientes</div>
         </div>
       </div>
@@ -608,7 +760,9 @@
     <div class="dash-card flex-grow-1">
       <div class="dash-card-header">
         <div class="dash-card-title">Reservas de Esta Semana</div>
-        <div class="dash-card-subtitle">Flujo de reservas diarias en los últimos 7 días</div>
+        <div class="dash-card-subtitle">
+          Flujo de reservas diarias en los últimos 7 días
+        </div>
       </div>
       <div class="card-body p-3">
         <canvas id="chartSemana" height="110"></canvas>
@@ -619,12 +773,16 @@
 
 <!-- ── Tabla Tours Populares ── -->
 <div class="dash-card mb-4">
-  <div class="tours-header-dark d-flex justify-content-between align-items-center">
+  <div
+    class="tours-header-dark d-flex justify-content-between align-items-center"
+  >
     <h5 class="mb-0 fs-6 fw-bold d-flex align-items-center gap-2">
       <i class="bi bi-trophy-fill text-warning fs-5"></i>
-      Tours Más Populares
+      Destinos Más Populares
     </h5>
-    <span class="badge bg-white bg-opacity-20 text-white rounded-pill px-3 py-1 small fw-semibold">
+    <span
+      class="badge bg-white bg-opacity-20 text-white rounded-pill px-3 py-1 small fw-semibold"
+    >
       Ordenados por volumen de reservas
     </span>
   </div>
@@ -632,8 +790,8 @@
     <table class="table tours-table align-middle mb-0">
       <thead>
         <tr>
-          <th style="width: 70px;">Pos.</th>
-          <th>Tour</th>
+          <th style="width: 70px">Pos.</th>
+          <th>Destino / Paquete</th>
           <th>Precio</th>
           <th>Reservas</th>
           <th>Popularidad</th>
@@ -645,49 +803,71 @@
         <tr>
           <td>
             {% if forloop.counter == 1 %}
-              <span class="podium-badge podium-1" title="1er Lugar">
-                <i class="bi bi-trophy-fill"></i>
-              </span>
+            <span class="podium-badge podium-1" title="1er Lugar">
+              <i class="bi bi-trophy-fill"></i>
+            </span>
             {% elif forloop.counter == 2 %}
-              <span class="podium-badge podium-2" title="2do Lugar">
-                <i class="bi bi-award-fill"></i>
-              </span>
+            <span class="podium-badge podium-2" title="2do Lugar">
+              <i class="bi bi-award-fill"></i>
+            </span>
             {% elif forloop.counter == 3 %}
-              <span class="podium-badge podium-3" title="3er Lugar">
-                <i class="bi bi-award-fill"></i>
-              </span>
+            <span class="podium-badge podium-3" title="3er Lugar">
+              <i class="bi bi-award-fill"></i>
+            </span>
             {% else %}
-              <span class="podium-num">#{{ forloop.counter }}</span>
+            <span class="podium-num">#{{ forloop.counter }}</span>
             {% endif %}
           </td>
           <td class="fw-bold text-dark">{{ tour.nombre }}</td>
-          <td class="fw-bold text-success">COP ${{ tour.precio|floatformat:0|intcomma }}</td>
+          <td class="fw-bold text-success">
+            COP ${{ tour.precio|floatformat:0|intcomma }}
+          </td>
           <td>
-            <span class="badge rounded-pill bg-success text-white px-3 py-1 fw-bold">
-              {{ tour.numero_reservas }} <i class="bi bi-ticket-detailed ms-1 text-white"></i>
+            <span
+              class="badge rounded-pill bg-success text-white px-3 py-1 fw-bold"
+            >
+              {{ tour.numero_reservas }}
+              <i class="bi bi-ticket-detailed ms-1 text-white"></i>
             </span>
           </td>
-          <td style="min-width: 140px;">
+          <td style="min-width: 140px">
             <div class="d-flex align-items-center gap-2">
-              <div class="progress flex-grow-1 shadow-sm" style="height: 8px; background-color: #e2e8f0; border-radius: 99px;">
-                <div class="progress-bar"
-                     style="width: {{ tour.porcentaje }}%; border-radius: 99px; background: linear-gradient(90deg, #10b981, #059669);"
-                     role="progressbar">
-                </div>
+              <div
+                class="progress flex-grow-1 shadow-sm"
+                style="
+                  height: 8px;
+                  background-color: #e2e8f0;
+                  border-radius: 99px;
+                "
+              >
+                <div
+                  class="progress-bar"
+                  style="width: {{ tour.porcentaje }}%; border-radius: 99px; background: linear-gradient(90deg, #10b981, #059669);"
+                  role="progressbar"
+                ></div>
               </div>
-              <span class="fw-bold small text-dark">{{ tour.porcentaje }}%</span>
+              <span class="fw-bold small text-dark"
+                >{{ tour.porcentaje }}%</span
+              >
             </div>
           </td>
           <td>
-            <span class="badge rounded-pill bg-success text-white px-3 py-1 fw-semibold">
-              <i class="bi bi-check-circle-fill me-1 text-white" style="font-size: 0.65rem;"></i>Activo
+            <span
+              class="badge rounded-pill bg-success text-white px-3 py-1 fw-semibold"
+            >
+              <i
+                class="bi bi-check-circle-fill me-1 text-white"
+                style="font-size: 0.65rem"
+              ></i
+              >Activo
             </span>
           </td>
         </tr>
         {% empty %}
         <tr>
           <td colspan="6" class="text-center py-4 text-secondary fw-semibold">
-            <i class="bi bi-info-circle me-1"></i> No hay tours registrados en este momento.
+            <i class="bi bi-info-circle me-1"></i> No hay tours registrados en
+            este momento.
           </td>
         </tr>
         {% endfor %}
@@ -696,15 +876,13 @@
   </div>
 </div>
 
-{% endblock %}
-
-{% block scripts %}
+{% endblock %} {% block scripts %}
 <script>
-const ingresosData = {{ ingresos_mensuales|default:"[0,0,0,0,0,0,0,0,0,0,0,0]"|safe }};
-const reservasConf = {{ reservas_confirmadas|default:0 }};
-const reservasPend = {{ reservas_pendientes|default:0 }};
-const reservasCan  = {{ reservas_canceladas|default:0 }};
-const dataSemana   = {{ reservas_semana|default:"[0,0,0,0,0,0,0]"|safe }};
+  const ingresosData = {{ ingresos_mensuales|default:"[0,0,0,0,0,0,0,0,0,0,0,0]"|safe }};
+  const reservasConf = {{ reservas_confirmadas|default:0 }};
+  const reservasPend = {{ reservas_pendientes|default:0 }};
+  const reservasCan  = {{ reservas_canceladas|default:0 }};
+  const dataSemana   = {{ reservas_semana|default:"[0,0,0,0,0,0,0]"|safe }};
 </script>
 <script src="{% static 'js/dashboard_admin.js' %}"></script>
 {% endblock %}

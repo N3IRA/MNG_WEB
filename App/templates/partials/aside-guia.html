@@ -1,233 +1,434 @@
 {% load static %}
 <div id="mainSidebar" class="bg-dark text-white shadow-lg">
-
   <!-- ═════════════════════════════════════════════════════════════════
        1. VISTA CONTRAÍDA (CARRIL DE ÍCONOS GUÍA - MODO SLIM CON BOOTSTRAP)
        ═════════════════════════════════════════════════════════════════ -->
-  <aside class="sidebar-slim-view bg-dark text-white d-flex flex-column align-items-center h-100 border-end border-secondary border-opacity-25 w-100" aria-label="Barra de actividades">
-    
+  <aside
+    class="sidebar-slim-view bg-dark text-white d-flex flex-column align-items-center h-100 border-end border-secondary border-opacity-25 w-100"
+    aria-label="Barra de actividades"
+  >
     <!-- Header / Brand & Botón Desplegar -->
-    <div class="d-flex flex-column align-items-center py-3 px-1 border-bottom border-secondary border-opacity-25 w-100 gap-2">
-      <a href="/" class="text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="right" title="Monagua — Inicio">
-        <img src="{% static 'img/logo_monagua.webp' %}" alt="Monagua" class="rounded-circle border border-success p-1 shadow-sm" style="width: 36px; height: 36px; object-fit: cover;">
+    <div
+      class="d-flex flex-column align-items-center py-3 px-1 border-bottom border-secondary border-opacity-25 w-100 gap-2"
+    >
+      <a
+        href="/"
+        class="text-decoration-none"
+        data-bs-toggle="tooltip"
+        data-bs-placement="right"
+        title="Monagua — Inicio"
+      >
+        <img
+          src="{% static 'img/logo_monagua.webp' %}"
+          alt="Monagua"
+          class="rounded-circle border border-success p-1 shadow-sm"
+          style="width: 36px; height: 36px; object-fit: cover"
+        />
       </a>
-      <button class="btn btn-sm btn-outline-secondary border-0 text-white-50 p-1 toggle-sidebar-btn" type="button" data-bs-toggle="tooltip" data-bs-placement="right" title="Desplegar menú lateral">
+      <button
+        class="btn btn-sm btn-outline-secondary border-0 text-white-50 p-1 toggle-sidebar-btn"
+        type="button"
+        data-bs-toggle="tooltip"
+        data-bs-placement="right"
+        title="Desplegar menú lateral"
+      >
         <i class="bi bi-layout-sidebar fs-5"></i>
       </button>
     </div>
 
     <!-- Carril central de iconos con utilidades Bootstrap -->
-    <nav class="d-flex flex-column align-items-center flex-grow-1 overflow-auto py-2 gap-1 w-100">
-      
-      <a href="/" 
-         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 text-white-50 text-white-hover" 
-         style="width: 44px; height: 44px;" 
-         data-bs-toggle="tooltip" data-bs-placement="right" title="Página Principal">
+    <nav
+      class="d-flex flex-column align-items-center flex-grow-1 overflow-auto py-2 gap-1 w-100"
+    >
+      <a
+        href="/"
+        class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 text-white-50 text-white-hover"
+        style="width: 44px; height: 44px"
+        data-bs-toggle="tooltip"
+        data-bs-placement="right"
+        title="Página Principal"
+      >
         <i class="bi bi-house fs-5"></i>
       </a>
 
-      <a href="#" 
-         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'dashboard_guia' %}bg-success text-white shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}" 
-         style="width: 44px; height: 44px;" 
-         data-bs-toggle="tooltip" data-bs-placement="right" title="Dashboard">
+      <a
+        href="#"
+        class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'dashboard_guia' %}bg-success text-white shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
+        style="width: 44px; height: 44px"
+        data-bs-toggle="tooltip"
+        data-bs-placement="right"
+        title="Panel de Control"
+        aria-label="Panel de Control"
+      >
         <i class="bi bi-grid-1x2 fs-5"></i>
       </a>
 
-      <a href="#" 
-         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'estadisticas_guia' %}bg-success text-white shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}" 
-         style="width: 44px; height: 44px;" 
-         data-bs-toggle="tooltip" data-bs-placement="right" title="Mis Estadísticas">
+      <a
+        href="#"
+        class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'estadisticas_guia' %}bg-success text-white shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
+        style="width: 44px; height: 44px"
+        data-bs-toggle="tooltip"
+        data-bs-placement="right"
+        title="Mis Estadísticas"
+      >
         <i class="bi bi-graph-up-arrow fs-5"></i>
       </a>
 
-      <a href="#" 
-         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'perfil_detalles' %}bg-success text-white shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}" 
-         style="width: 44px; height: 44px;" 
-         data-bs-toggle="tooltip" data-bs-placement="right" title="Mi Perfil">
+      <a
+        href="{% url 'perfil_detalles' %}"
+        class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'perfil_detalles' %}bg-success text-white shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
+        style="width: 44px; height: 44px"
+        data-bs-toggle="tooltip"
+        data-bs-placement="right"
+        title="Mi Perfil"
+      >
         <i class="bi bi-person-badge fs-5"></i>
       </a>
 
-      <hr class="border-secondary border-opacity-25 w-75 my-2">
+      <hr class="border-secondary border-opacity-25 w-75 my-2" />
 
       <!-- Mis Tours (Al hacer clic: despliega el aside y abre el acordeón de Mis Tours) -->
-      <button class="btn p-0 d-flex align-items-center justify-content-center border-0 rounded-3 text-white-hover {% if request.resolver_match.url_name in 'mis_asignaciones calendario_guia historial_tours' %}bg-success text-white shadow-sm border-start border-3 border-success{% else %}text-white-50{% endif %}" 
-              style="width: 44px; height: 44px;"
-              type="button" 
-              data-expand-sidebar-target="#menuGuiaTours"
-              data-bs-toggle="tooltip" 
-              data-bs-placement="right" 
-              title="Mis Tours">
+      <button
+        class="btn p-0 d-flex align-items-center justify-content-center border-0 rounded-3 text-white-hover {% if request.resolver_match.url_name in 'mis_asignaciones calendario_guia historial_tours' %}bg-success text-white shadow-sm border-start border-3 border-success{% else %}text-white-50{% endif %}"
+        style="width: 44px; height: 44px"
+        type="button"
+        data-expand-sidebar-target="#menuGuiaTours"
+        data-bs-toggle="tooltip"
+        data-bs-placement="right"
+        title="Mis Tours"
+      >
         <i class="bi bi-map fs-5"></i>
       </button>
 
       <!-- Comunidad (Al hacer clic: despliega el aside y abre el acordeón de Comunidad) -->
-      <button class="btn p-0 d-flex align-items-center justify-content-center border-0 rounded-3 text-white-hover {% if request.resolver_match.url_name in 'calificaciones_guia blog_usuario' %}bg-success text-white shadow-sm border-start border-3 border-success{% else %}text-white-50{% endif %}" 
-              style="width: 44px; height: 44px;"
-              type="button" 
-              data-expand-sidebar-target="#menuGuiaComunidad"
-              data-bs-toggle="tooltip" 
-              data-bs-placement="right" 
-              title="Comunidad">
+      <button
+        class="btn p-0 d-flex align-items-center justify-content-center border-0 rounded-3 text-white-hover {% if request.resolver_match.url_name in 'calificaciones_guia blog_usuario' %}bg-success text-white shadow-sm border-start border-3 border-success{% else %}text-white-50{% endif %}"
+        style="width: 44px; height: 44px"
+        type="button"
+        data-expand-sidebar-target="#menuGuiaComunidad"
+        data-bs-toggle="tooltip"
+        data-bs-placement="right"
+        title="Comunidad"
+      >
         <i class="bi bi-chat-left-heart fs-5"></i>
       </button>
 
-      <a href="{% url 'listar_notificaciones' %}" 
-         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 text-white-50 text-white-hover" 
-         style="width: 44px; height: 44px;" 
-         data-bs-toggle="tooltip" data-bs-placement="right" title="Notificaciones">
+      <a
+        href="{% url 'listar_notificaciones' %}"
+        class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 text-white-50 text-white-hover"
+        style="width: 44px; height: 44px"
+        data-bs-toggle="tooltip"
+        data-bs-placement="right"
+        title="Notificaciones"
+      >
         <i class="bi bi-bell fs-5"></i>
       </a>
 
-      <a href="{% url 'configuracion_usuario' %}" 
-         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 text-white-50 text-white-hover" 
-         style="width: 44px; height: 44px;" 
-         data-bs-toggle="tooltip" data-bs-placement="right" title="Configuración">
+      <a
+        href="{% url 'configuracion_usuario' %}"
+        class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 text-white-50 text-white-hover"
+        style="width: 44px; height: 44px"
+        data-bs-toggle="tooltip"
+        data-bs-placement="right"
+        title="Configuración"
+      >
         <i class="bi bi-gear fs-5"></i>
       </a>
-
     </nav>
 
     <!-- Footer Slim: Avatar + Logout -->
-    <div class="d-flex flex-column align-items-center py-2 px-1 border-top border-secondary border-opacity-25 w-100 gap-2">
-      <a href="#" class="position-relative d-inline-block text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ user.first_name|default:user.username }} (Guía Oficial)">
-        <img src="{% if user.imagen_perfil %}{{ user.imagen_perfil.url }}{% else %}{% static 'img/avatar_pred.webp' %}{% endif %}" alt="Guía" class="rounded-circle border border-success" style="width: 34px; height: 34px; object-fit: cover;">
-        <span class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-dark" style="width: 8px; height: 8px;"></span>
+    <div
+      class="d-flex flex-column align-items-center py-2 px-1 border-top border-secondary border-opacity-25 w-100 gap-2"
+    >
+      <a
+        href="#"
+        class="position-relative d-inline-block text-decoration-none"
+        data-bs-toggle="tooltip"
+        data-bs-placement="right"
+        title="{{ user.first_name|default:user.username }} (Guía Oficial)"
+      >
+        <img
+          src="{% if user.imagen_perfil %}{{ user.imagen_perfil.url }}{% else %}{% static 'img/avatar_pred.webp' %}{% endif %}"
+          alt="Guía"
+          class="rounded-circle border border-success"
+          style="width: 34px; height: 34px; object-fit: cover"
+        />
+        <span
+          class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-dark"
+          style="width: 8px; height: 8px"
+        ></span>
       </a>
 
       <form action="{% url 'logout' %}" method="post" class="m-0 p-0">
         {% csrf_token %}
-        <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-2 text-white-50 text-white-hover rounded-2" data-bs-toggle="tooltip" data-bs-placement="right" title="Cerrar Sesión">
+        <button
+          type="submit"
+          class="btn btn-sm btn-outline-danger border-0 p-2 text-white-50 text-white-hover rounded-2"
+          data-bs-toggle="tooltip"
+          data-bs-placement="right"
+          title="Cerrar Sesión"
+        >
           <i class="bi bi-power fs-5"></i>
         </button>
       </form>
     </div>
-
   </aside>
-
 
   <!-- ═════════════════════════════════════════════════════════════════
        2. VISTA EXPANDIDA (SIDEBAR GUÍA DESPLEGADO CON BOOTSTRAP)
        ═════════════════════════════════════════════════════════════════ -->
-  <aside class="sidebar-wide-view bg-dark text-white d-flex flex-column h-100 border-end border-secondary border-opacity-25 w-100" aria-label="Menú principal guía expandido">
-    
+  <aside
+    class="sidebar-wide-view bg-dark text-white d-flex flex-column h-100 border-end border-secondary border-opacity-25 w-100"
+    aria-label="Menú principal guía expandido"
+  >
     <!-- Header / Brand & Botón Contraer -->
-    <div class="d-flex align-items-center justify-content-between p-3 border-bottom border-secondary border-opacity-25 bg-black bg-opacity-25">
-      <a href="/" class="d-flex align-items-center gap-2 text-white text-decoration-none overflow-hidden">
-        <img src="{% static 'img/logo_monagua.webp' %}" alt="Logo Monagua" class="rounded-circle border border-success flex-shrink-0" style="width: 34px; height: 34px; object-fit: cover;">
-        <div class="d-flex flex-column" style="line-height: 1.15;">
-          <span class="fw-bold small text-white text-uppercase" style="letter-spacing: 0.5px;">MONAGUA</span>
-          <span class="text-success text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">Panel Guía</span>
+    <div
+      class="d-flex align-items-center justify-content-between p-3 border-bottom border-secondary border-opacity-25 bg-black bg-opacity-25"
+    >
+      <a
+        href="/"
+        class="d-flex align-items-center gap-2 text-white text-decoration-none overflow-hidden"
+      >
+        <img
+          src="{% static 'img/logo_monagua.webp' %}"
+          alt="Logo Monagua"
+          class="rounded-circle border border-success flex-shrink-0"
+          style="width: 34px; height: 34px; object-fit: cover"
+        />
+        <div class="d-flex flex-column" style="line-height: 1.15">
+          <span
+            class="fw-bold small text-white text-uppercase"
+            style="letter-spacing: 0.5px"
+            >MONAGUA</span
+          >
+          <span
+            class="text-success text-uppercase fw-bold"
+            style="font-size: 0.68rem; letter-spacing: 0.5px"
+            >Panel de Control del Guía</span
+          >
         </div>
       </a>
-      <button class="btn btn-sm btn-outline-secondary border-0 text-white-50 toggle-sidebar-btn rounded-2 p-1" type="button" aria-label="Contraer menú" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Contraer menú">
+      <button
+        class="btn btn-sm btn-outline-secondary border-0 text-white-50 toggle-sidebar-btn rounded-2 p-1"
+        type="button"
+        aria-label="Contraer menú"
+        data-bs-toggle="tooltip"
+        data-bs-placement="bottom"
+        title="Contraer menú"
+      >
         <i class="bi bi-layout-sidebar-inset fs-5"></i>
       </button>
     </div>
 
     <!-- Navegación con Acordeón y Listas Bootstrap -->
     <nav class="flex-grow-1 overflow-auto p-2 d-flex flex-column gap-1">
-      
-      <div class="text-secondary text-uppercase fw-bold px-2 pt-2 pb-1 small" style="font-size: 0.68rem; letter-spacing: 0.8px;">Principal</div>
-      
-      <a href="/" class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none text-white-50 text-white-hover">
-        <i class="bi bi-house fs-6" style="width: 20px;"></i>
+      <div
+        class="text-secondary text-uppercase fw-bold px-2 pt-2 pb-1 small"
+        style="font-size: 0.68rem; letter-spacing: 0.8px"
+      >
+        Principal
+      </div>
+
+      <a
+        href="/"
+        class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none text-white-50 text-white-hover"
+      >
+        <i class="bi bi-house fs-6" style="width: 20px"></i>
         <span class="small">Página Principal</span>
       </a>
 
-      <a href="#" class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'dashboard_guia' %}bg-success text-white fw-semibold shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}">
-        <i class="bi bi-grid-1x2 fs-6" style="width: 20px;"></i>
-        <span class="small">Dashboard</span>
+      <a
+        href="#"
+        class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'dashboard_guia' %}bg-success text-white fw-semibold shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
+        title="Ir al Panel de Control"
+        aria-label="Ir al Panel de Control"
+      >
+        <i class="bi bi-grid-1x2 fs-6" style="width: 20px"></i>
+        <span class="small">Panel de Control</span>
       </a>
 
-      <a href="#" class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'estadisticas_guia' %}bg-success text-white fw-semibold shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}">
-        <i class="bi bi-graph-up-arrow fs-6" style="width: 20px;"></i>
+      <a
+        href="#"
+        class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'estadisticas_guia' %}bg-success text-white fw-semibold shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
+      >
+        <i class="bi bi-graph-up-arrow fs-6" style="width: 20px"></i>
         <span class="small">Mis Estadísticas</span>
       </a>
 
-      <a href="#" class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'perfil_detalles' %}bg-success text-white fw-semibold shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}">
-        <i class="bi bi-person-badge fs-6" style="width: 20px;"></i>
+      <a
+        href="{% url 'perfil_detalles' %}"
+        class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'perfil_detalles' %}bg-success text-white fw-semibold shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
+        title="Ver y editar mis datos de perfil"
+        aria-label="Ir a Mi Perfil"
+      >
+        <i class="bi bi-person-badge fs-6" style="width: 20px"></i>
         <span class="small">Mi Perfil</span>
       </a>
 
       <!-- Operaciones -->
-      <div class="text-secondary text-uppercase fw-bold px-2 pt-3 pb-1 small" style="font-size: 0.68rem; letter-spacing: 0.8px;">Operaciones</div>
+      <div
+        class="text-secondary text-uppercase fw-bold px-2 pt-3 pb-1 small"
+        style="font-size: 0.68rem; letter-spacing: 0.8px"
+      >
+        Operaciones
+      </div>
 
       <div>
-        <button class="btn w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded-2 text-decoration-none border-0 text-start text-white-hover {% if request.resolver_match.url_name in 'mis_asignaciones calendario_guia historial_tours' %}text-white fw-semibold bg-white bg-opacity-10 border-start border-3 border-success{% else %}text-white-50 collapsed{% endif %}" 
-                type="button" data-bs-toggle="collapse" data-bs-target="#menuGuiaTours" 
-                aria-expanded="{% if request.resolver_match.url_name in 'mis_asignaciones calendario_guia historial_tours' %}true{% else %}false{% endif %}">
+        <button
+          class="btn w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded-2 text-decoration-none border-0 text-start text-white-hover {% if request.resolver_match.url_name in 'mis_asignaciones calendario_guia historial_tours' %}text-white fw-semibold bg-white bg-opacity-10 border-start border-3 border-success{% else %}text-white-50 collapsed{% endif %}"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#menuGuiaTours"
+          aria-expanded="{% if request.resolver_match.url_name in 'mis_asignaciones calendario_guia historial_tours' %}true{% else %}false{% endif %}"
+        >
           <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-map fs-6" style="width: 20px;"></i>
+            <i class="bi bi-map fs-6" style="width: 20px"></i>
             <span class="small">Mis Tours</span>
           </div>
           <i class="bi bi-chevron-down small"></i>
         </button>
-        <div class="collapse {% if request.resolver_match.url_name in 'mis_asignaciones calendario_guia historial_tours' %}show{% endif %}" id="menuGuiaTours">
-          <ul class="list-unstyled ps-3 ms-2 border-start border-secondary border-opacity-25 my-1 d-flex flex-column gap-1">
-            <li><a href="#" class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'mis_asignaciones' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"><i class="bi bi-pin-map"></i> Asignaciones</a></li>
-            <li><a href="#" class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'calendario_guia' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"><i class="bi bi-calendar-range"></i> Calendario</a></li>
-            <li><a href="#" class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'historial_tours' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"><i class="bi bi-clock-history"></i> Historial</a></li>
+        <div
+          class="collapse {% if request.resolver_match.url_name in 'mis_asignaciones calendario_guia historial_tours' %}show{% endif %}"
+          id="menuGuiaTours"
+        >
+          <ul
+            class="list-unstyled ps-3 ms-2 border-start border-secondary border-opacity-25 my-1 d-flex flex-column gap-1"
+          >
+            <li>
+              <a
+                href="#"
+                class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'mis_asignaciones' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
+                ><i class="bi bi-pin-map"></i> Asignaciones</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'calendario_guia' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
+                ><i class="bi bi-calendar-range"></i> Calendario</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'historial_tours' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
+                ><i class="bi bi-clock-history"></i> Historial</a
+              >
+            </li>
           </ul>
         </div>
       </div>
 
       <!-- Comunidad -->
-      <div class="text-secondary text-uppercase fw-bold px-2 pt-3 pb-1 small" style="font-size: 0.68rem; letter-spacing: 0.8px;">Comunidad</div>
+      <div
+        class="text-secondary text-uppercase fw-bold px-2 pt-3 pb-1 small"
+        style="font-size: 0.68rem; letter-spacing: 0.8px"
+      >
+        Comunidad
+      </div>
 
       <div>
-        <button class="btn w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded-2 text-decoration-none border-0 text-start text-white-hover {% if request.resolver_match.url_name in 'calificaciones_guia blog_usuario' %}text-white fw-semibold bg-white bg-opacity-10 border-start border-3 border-success{% else %}text-white-50 collapsed{% endif %}" 
-                type="button" data-bs-toggle="collapse" data-bs-target="#menuGuiaComunidad" 
-                aria-expanded="{% if request.resolver_match.url_name in 'calificaciones_guia blog_usuario' %}true{% else %}false{% endif %}">
+        <button
+          class="btn w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded-2 text-decoration-none border-0 text-start text-white-hover {% if request.resolver_match.url_name in 'calificaciones_guia blog_usuario' %}text-white fw-semibold bg-white bg-opacity-10 border-start border-3 border-success{% else %}text-white-50 collapsed{% endif %}"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#menuGuiaComunidad"
+          aria-expanded="{% if request.resolver_match.url_name in 'calificaciones_guia blog_usuario' %}true{% else %}false{% endif %}"
+        >
           <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-chat-left-heart fs-6" style="width: 20px;"></i>
+            <i class="bi bi-chat-left-heart fs-6" style="width: 20px"></i>
             <span class="small">Comunidad</span>
           </div>
           <i class="bi bi-chevron-down small"></i>
         </button>
-        <div class="collapse {% if request.resolver_match.url_name in 'calificaciones_guia blog_usuario' %}show{% endif %}" id="menuGuiaComunidad">
-          <ul class="list-unstyled ps-3 ms-2 border-start border-secondary border-opacity-25 my-1 d-flex flex-column gap-1">
-            <li><a href="#" class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'calificaciones_guia' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"><i class="bi bi-star"></i> Mis Calificaciones</a></li>
-            <li><a href="#" class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'blog_usuario' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"><i class="bi bi-journal-text"></i> Blog</a></li>
+        <div
+          class="collapse {% if request.resolver_match.url_name in 'calificaciones_guia blog_usuario' %}show{% endif %}"
+          id="menuGuiaComunidad"
+        >
+          <ul
+            class="list-unstyled ps-3 ms-2 border-start border-secondary border-opacity-25 my-1 d-flex flex-column gap-1"
+          >
+            <li>
+              <a
+                href="#"
+                class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'calificaciones_guia' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
+                ><i class="bi bi-star"></i> Mis Calificaciones</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'blog_usuario' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
+                ><i class="bi bi-journal-text"></i> Blog</a
+              >
+            </li>
           </ul>
         </div>
       </div>
 
       <!-- Sistema -->
-      <div class="text-secondary text-uppercase fw-bold px-2 pt-3 pb-1 small" style="font-size: 0.68rem; letter-spacing: 0.8px;">Sistema</div>
+      <div
+        class="text-secondary text-uppercase fw-bold px-2 pt-3 pb-1 small"
+        style="font-size: 0.68rem; letter-spacing: 0.8px"
+      >
+        Sistema
+      </div>
 
-      <a href="{% url 'listar_notificaciones' %}" class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'listar_notificaciones' %}bg-success text-white fw-semibold shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}">
-        <i class="bi bi-bell fs-6" style="width: 20px;"></i>
+      <a
+        href="{% url 'listar_notificaciones' %}"
+        class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'listar_notificaciones' %}bg-success text-white fw-semibold shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
+      >
+        <i class="bi bi-bell fs-6" style="width: 20px"></i>
         <span class="small">Notificaciones</span>
       </a>
 
-      <a href="{% url 'configuracion_usuario' %}" class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'configuracion_usuario' %}bg-success text-white fw-semibold shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}">
-        <i class="bi bi-gear fs-6" style="width: 20px;"></i>
+      <a
+        href="{% url 'configuracion_usuario' %}"
+        class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'configuracion_usuario' %}bg-success text-white fw-semibold shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
+      >
+        <i class="bi bi-gear fs-6" style="width: 20px"></i>
         <span class="small">Configuración</span>
       </a>
-
     </nav>
 
     <!-- Footer: Perfil + Logout -->
-    <div class="p-3 border-top border-secondary border-opacity-25 bg-black bg-opacity-25 d-flex flex-column gap-2">
+    <div
+      class="p-3 border-top border-secondary border-opacity-25 bg-black bg-opacity-25 d-flex flex-column gap-2"
+    >
       <div class="d-flex align-items-center gap-2 p-1 rounded-2">
-        <img src="{% if user.imagen_perfil %}{{ user.imagen_perfil.url }}{% else %}{% static 'img/avatar_pred.webp' %}{% endif %}" alt="Guía" class="rounded-circle border border-success flex-shrink-0" style="width: 36px; height: 36px; object-fit: cover;">
+        <img
+          src="{% if user.imagen_perfil %}{{ user.imagen_perfil.url }}{% else %}{% static 'img/avatar_pred.webp' %}{% endif %}"
+          alt="Guía"
+          class="rounded-circle border border-success flex-shrink-0"
+          style="width: 36px; height: 36px; object-fit: cover"
+        />
         <div class="overflow-hidden">
-          <div class="fw-bold text-white small text-truncate">{{ user.first_name|default:user.username }} {{ user.last_name }}</div>
-          <div class="text-white-50 small text-truncate" style="font-size: 0.72rem;">Guía Oficial</div>
+          <div class="fw-bold text-white small text-truncate">
+            {{ user.first_name|default:user.username }} {{ user.last_name }}
+          </div>
+          <div
+            class="text-white-50 small text-truncate"
+            style="font-size: 0.72rem"
+          >
+            Guía Oficial
+          </div>
         </div>
       </div>
       <form action="{% url 'logout' %}" method="post" class="m-0">
         {% csrf_token %}
-        <button type="submit" class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2">
+        <button
+          type="submit"
+          class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2"
+          title="Cerrar la sesión de guía de forma segura"
+          aria-label="Cerrar la sesión de guía de forma segura"
+        >
           <i class="bi bi-power"></i>
           <span>Cerrar Sesión</span>
         </button>
       </form>
     </div>
-
   </aside>
-
 </div>
 
-<link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=2.3">
+<link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=2.3" />
 <script src="{% static 'js/sidebar.js' %}?v=2.3" defer></script>

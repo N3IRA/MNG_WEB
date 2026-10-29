@@ -5,7 +5,7 @@
 {% block content %}
 
 {% include "partials/breadcrumbs.html" with current_title="Calificaciones y Opiniones" current_icon="bi bi-star-fill" %}
-<div class="container py-5 mt-5 u-style-10efeeeb">
+<div class="container py-5 mt-5">
 
   <div class="mb-5">
     <h1 class="fw-bold mb-1">Calificaciones</h1>
@@ -24,12 +24,12 @@
         <div class="col-12 col-md-9">
           {% for i in "54321" %}
           <div class="d-flex align-items-center gap-2 mb-1">
-            <span class="text-muted small u-style-5a4a521a">{{ i }}</span>
-            <i class="bi bi-star-fill text-warning u-style-bc9efe64"></i>
-            <div class="flex-grow-1 bg-light rounded-pill overflow-hidden u-style-c9849390">
-              <div class="bg-success rounded-pill h-100 u-style-9c33ea5e" id="bar-{{ i }}"></div>
+            <span class="text-muted small">{{ i }}</span>
+            <i class="bi bi-star-fill text-warning"></i>
+            <div class="flex-grow-1 bg-light rounded-pill overflow-hidden">
+              <div class="bg-success rounded-pill h-100" id="bar-{{ i }}"></div>
             </div>
-            <span class="text-muted small u-style-533f037e" id="cnt-{{ i }}">0</span>
+            <span class="text-muted small" id="cnt-{{ i }}">0</span>
           </div>
           {% endfor %}
         </div>
@@ -95,11 +95,11 @@
             <div class="mb-4">
               <label class="form-label fw-medium small d-block">Puntaje / Valoración</label>
               <div class="d-flex gap-2 fs-3" id="starGeneral">
-                <i class="bi bi-star-fill text-warning star-btn u-style-b202c6d4" data-val="1"></i>
-                <i class="bi bi-star-fill text-warning star-btn u-style-b202c6d4" data-val="2"></i>
-                <i class="bi bi-star-fill text-warning star-btn u-style-b202c6d4" data-val="3"></i>
-                <i class="bi bi-star-fill text-warning star-btn u-style-b202c6d4" data-val="4"></i>
-                <i class="bi bi-star-fill text-warning star-btn u-style-b202c6d4" data-val="5"></i>
+                <i class="bi bi-star-fill text-warning star-btn" data-val="1"></i>
+                <i class="bi bi-star-fill text-warning star-btn" data-val="2"></i>
+                <i class="bi bi-star-fill text-warning star-btn" data-val="3"></i>
+                <i class="bi bi-star-fill text-warning star-btn" data-val="4"></i>
+                <i class="bi bi-star-fill text-warning star-btn" data-val="5"></i>
               </div>
               <input type="hidden" name="puntaje_estrellas" id="id_puntaje_estrellas" value="5">
             </div>
@@ -123,19 +123,19 @@
           {% for c in mis_calificaciones %}
           <div class="border-bottom pb-3 mb-3">
             <div class="d-flex justify-content-between align-items-start mb-1 gap-2">
-              <span class="fw-semibold small text-truncate u-style-a497ea78">{{ c.titulo }}</span>
+              <span class="fw-semibold small text-truncate">{{ c.titulo }}</span>
               <span
-                class="badge rounded-pill flex-shrink-0 {% if c.visible %}bg-success bg-opacity-25 text-success{% else %}bg-warning bg-opacity-25 text-warning{% endif %} u-style-8cba01a2">
+                class="badge rounded-pill flex-shrink-0 {% if c.visible %}bg-success bg-opacity-25 text-success{% else %}bg-warning bg-opacity-25 text-warning{% endif %}">
                 {% if c.visible %}Publicada{% else %}En revisión{% endif %}
               </span>
             </div>
             {% if c.paquete %}
-              <div class="small text-success mb-1 u-style-4dc05622">
+              <div class="small text-success mb-1">
                 <i class="bi bi-compass-fill me-1"></i>{{ c.paquete.nombre }}
               </div>
             {% endif %}
             <!-- LÍMITE: truncatechars para el comentario -->
-            <p class="text-muted small mb-1 u-style-c69eaeed">
+            <p class="text-muted small mb-1">
               {{ c.comentario|truncatechars:90 }}
             </p>
             {% if c.admin_respuesta %}
@@ -149,7 +149,7 @@
                 {% for s in c.estrellas %}★{% endfor %}{% for s in c.estrellas_vacias %}<span
                   class="text-muted">★</span>{% endfor %}
               </span>
-              <span class="text-muted u-style-bc9efe64">{{ c.fecha_calificacion|date:"d M Y" }}</span>
+              <span class="text-muted">{{ c.fecha_calificacion|date:"d M Y" }}</span>
             </div>
           </div>
           {% endfor %}
@@ -174,11 +174,11 @@
 
     <div id="calificaciones-container">
       {% for c in calificaciones_publicas %}
-      <div class="calificacion-item col-12 border-bottom py-4 u-style-cb458930">
+      <div class="calificacion-item col-12 border-bottom py-4">
         <div class="d-flex gap-3 align-items-center mb-2 flex-wrap">
           <img
             src="{% if c.usuario and c.usuario.imagen_perfil %}{{ c.usuario.imagen_perfil.url }}{% else %}{% static 'img/avatar_pred.webp' %}{% endif %}"
-            class="rounded-circle flex-shrink-0 u-style-a2bbb072" width="40" height="40">
+            class="rounded-circle flex-shrink-0" width="40" height="40">
           <div class="flex-grow-1 min-width-0">
             <h6 class="mb-0 fw-bold text-truncate">{{ c.usuario.get_full_name|default:c.usuario.username|default:"Turista" }}</h6>
             <small class="text-muted">{{ c.fecha_calificacion|date:"d M, Y" }}</small>
@@ -192,7 +192,7 @@
         </div>
         <h6 class="fw-semibold mb-1">{{ c.titulo }}</h6>
         <!-- LÍMITE: comentario cortado -->
-        <p class="text-secondary mb-2 u-style-e20e94e2">
+        <p class="text-secondary mb-2">
           {{ c.comentario|truncatechars:200 }}
         </p>
         {% if c.admin_respuesta %}
@@ -201,7 +201,7 @@
           <p class="small text-secondary mb-0">{{ c.admin_respuesta }}</p>
         </div>
         {% endif %}
-        <span class="badge rounded-pill bg-primary bg-opacity-25 text-primary u-style-8cba01a2">
+        <span class="badge rounded-pill bg-primary bg-opacity-25 text-primary">
           {% if c.paquete %}{{ c.paquete.nombre }}{% else %}{{ c.get_tipo_display|default:c.tipo|title }}{% endif %}
         </span>
       </div>

@@ -16,7 +16,12 @@
 
 <!-- Acción Común: Mi Perfil -->
 <li>
-  <a class="dropdown-item py-2 fw-bold text-dark" href="{% if user.is_staff or user.is_superuser %}{% url 'admin_perfil' %}{% else %}{% url 'perfil_detalles' %}{% endif %}">
+  <a
+    class="dropdown-item py-2 fw-bold text-dark"
+    href="{% if user.is_staff or user.is_superuser %}{% url 'admin_perfil' %}{% else %}{% url 'perfil_detalles' %}{% endif %}"
+    title="Ver y editar mi perfil de usuario"
+    aria-label="Ver y editar mi perfil de usuario"
+  >
     <i class="bi bi-person-vcard me-2"></i>Mi Perfil
   </a>
 </li>
@@ -25,33 +30,57 @@
 <!-- Opciones por Rol -->
 {% if user.is_staff or user.is_superuser %}
 <li>
-  <a class="dropdown-item py-2 fw-bold text-primary" href="{% url 'dashboard_admin' %}"
-    ><i class="bi bi-grid-1x2-fill me-2"></i>Dashboard</a
+  <a
+    class="dropdown-item py-2 fw-bold text-primary"
+    href="{% url 'dashboard_admin' %}"
+    title="Ir al Panel de Control de administración"
+    aria-label="Ir al Panel de Control de administración"
+    ><i class="bi bi-grid-1x2-fill me-2"></i>Panel de Control</a
   >
 </li>
 <li>
-  <a class="dropdown-item py-2" href="{% url 'listar_calificaciones' %}"
-    ><i class="bi bi-star-fill me-2"></i>Gestión Calificaciones</a
+  <a
+    class="dropdown-item py-2"
+    href="{% url 'listar_calificaciones' %}"
+    title="Gestionar calificaciones y reseñas"
+    aria-label="Gestionar calificaciones y reseñas"
+    ><i class="bi bi-star-fill me-2"></i>Gestión de Calificaciones</a
   >
 </li>
 <li>
-  <a class="dropdown-item py-2" href="{% url 'gestion_reservas' %}"
-    ><i class="bi bi-calendar-check me-2"></i>Gestión Reservas</a
+  <a
+    class="dropdown-item py-2"
+    href="{% url 'gestion_reservas' %}"
+    title="Gestionar todas las reservas"
+    aria-label="Gestionar todas las reservas"
+    ><i class="bi bi-calendar-check me-2"></i>Gestión de Reservas</a
   >
 </li>
 <li>
-  <a class="dropdown-item py-2" href="{% url 'listar_pqrs' %}"
+  <a
+    class="dropdown-item py-2"
+    href="{% url 'listar_pqrs' %}"
+    title="Gestionar peticiones, quejas, reclamos y solicitudes"
+    aria-label="Gestionar peticiones, quejas, reclamos y solicitudes"
     ><i class="bi bi-envelope me-2"></i>PQRS</a
   >
 </li>
 {% endif %} {% if user.es_guia %}
 <li>
-  <a class="dropdown-item py-2" href="#"
+  <a
+    class="dropdown-item py-2"
+    href="{% url 'tours' %}"
+    title="Ver rutas y destinos turísticos"
+    aria-label="Ver rutas y destinos turísticos"
     ><i class="bi bi-calendar-event me-2"></i>Mis Rutas</a
   >
 </li>
 <li>
-  <a class="dropdown-item py-2" href="#"
+  <a
+    class="dropdown-item py-2"
+    href="{% url 'mis_calificaciones' %}"
+    title="Ver mis calificaciones y comentarios de turistas"
+    aria-label="Ver mis calificaciones y comentarios"
     ><i class="bi bi-star-fill me-2"></i>Mis Calificaciones</a
   >
 </li>
@@ -60,33 +89,53 @@
   <a
     class="dropdown-item py-2 fw-bold text-success"
     href="{% url 'dashboard_turista' %}"
-    ><i class="bi bi-grid-1x2-fill me-2"></i>Dashboard Turista</a
+    title="Ir a mi Panel de Control de viajero"
+    aria-label="Ir a mi Panel de Control de viajero"
+    ><i class="bi bi-grid-1x2-fill me-2"></i>Panel de Control</a
   >
 </li>
 <li>
   <a
     class="dropdown-item py-2 fw-semibold text-dark"
     href="{% url 'panel_rapido' %}"
+    title="Ir al panel rápido de accesos"
+    aria-label="Ir al panel rápido de accesos"
     ><i class="bi bi-house-door-fill me-2 text-success"></i>Panel Rápido</a
   >
 </li>
 <li>
-  <a class="dropdown-item py-2" href="{% url 'mis_reservas_usuario' %}"
+  <a
+    class="dropdown-item py-2"
+    href="{% url 'mis_reservas_usuario' %}"
+    title="Ver y gestionar mis reservas de viaje"
+    aria-label="Ver y gestionar mis reservas de viaje"
     ><i class="bi bi-calendar-check me-2"></i>Mis Reservas</a
   >
 </li>
 <li>
-  <a class="dropdown-item py-2" href="{% url 'mis_comprobantes' %}"
+  <a
+    class="dropdown-item py-2"
+    href="{% url 'mis_comprobantes' %}"
+    title="Ver mis comprobantes de pago"
+    aria-label="Ver mis comprobantes de pago"
     ><i class="bi bi-cash-stack me-2"></i>Mis Comprobantes</a
   >
 </li>
 <li>
-  <a class="dropdown-item py-2" href="{% url 'mis_calificaciones' %}"
+  <a
+    class="dropdown-item py-2"
+    href="{% url 'mis_calificaciones' %}"
+    title="Ver mis calificaciones y opiniones enviadas"
+    aria-label="Ver mis calificaciones y opiniones enviadas"
     ><i class="bi bi-star-fill me-2"></i>Mis Calificaciones</a
   >
 </li>
 <li>
-  <a class="dropdown-item py-2" href="{% url 'mis_pqrs' %}"
+  <a
+    class="dropdown-item py-2"
+    href="{% url 'mis_pqrs' %}"
+    title="Ver mis peticiones, quejas, reclamos y solicitudes"
+    aria-label="Ver mis peticiones, quejas, reclamos y solicitudes"
     ><i class="bi bi-envelope me-2"></i>Mis PQRS</a
   >
 </li>
@@ -98,7 +147,12 @@
 <li>
   <form action="{% url 'logout' %}" method="post" class="m-0">
     {% csrf_token %}
-    <button type="submit" class="dropdown-item text-danger py-2">
+    <button
+      type="submit"
+      class="dropdown-item text-danger py-2"
+      title="Cerrar la sesión actual de forma segura"
+      aria-label="Cerrar sesión actual de forma segura"
+    >
       <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
     </button>
   </form>

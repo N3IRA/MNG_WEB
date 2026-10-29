@@ -18,7 +18,7 @@
         } catch(e){}
       })();
     </script>
-    <title>{% block title %}Panel Viajero | Monagua{% endblock %}</title>
+    <title>{% block title %}Panel de Control | Monagua{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="{% static 'img/monagua_log.ico' %}" />
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/monagua_log.ico' %}" />
     <link rel="icon" type="image/webp" href="{% static 'img/monagua_log.webp' %}" />
@@ -39,14 +39,15 @@
     <script src="{% static 'js/htmx.min.js' %}"></script>
     {% block extra_head %}{% endblock %}
   </head>
-  <body class="u-style-0e1c2a89 bg-body" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <body class=" bg-body" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     <a href="#mainContent" class="visually-hidden-focusable p-3 bg-primary text-white position-absolute z-3">Saltar al contenido principal</a>
     <!-- ── Menú de hamburguesa (solo móvil) ── -->
     <button
       id="sidebar-toggle"
       class="btn btn-success position-fixed d-lg-none shadow-sm"
       style="top: 15px; left: 15px; z-index: 1050;"
-      aria-label="Menú de hamburguesa"
+      aria-label="Abrir o contraer barra lateral del panel de control"
+      title="Alternar barra lateral del panel de control"
       aria-expanded="false"
       aria-controls="mainSidebar"
     >

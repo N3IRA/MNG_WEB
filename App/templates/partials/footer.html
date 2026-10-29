@@ -5,16 +5,16 @@
     <div class="row g-5">
       <!-- Columna 1: Brand & Social -->
       <div class="col-lg-4">
-        <a href="/" class="d-flex align-items-center gap-2 mb-3 text-decoration-none">
+        <a href="/" class="d-flex align-items-center gap-2 mb-3 text-decoration-none" title="Monagua — Inicio" aria-label="Ir a la página de inicio">
           <img class="footer-monagua__logo" src="{% static 'img/Logo.webp' %}" alt="Logo de MONAGUA" width="50" height="50">
           <span class="h4 mb-0 text-white fw-bold">MONAGUA</span>
         </a>
         <p class="small mb-4">Descubre la magia de Mongua y Boyacá con nosotros. Experiencias únicas en el corazón de la naturaleza.</p>
         <div class="d-flex gap-3">
-          <a href="https://wa.me/573223465191" class="text-white opacity-75 h5" target="_blank"><i class="bi bi-whatsapp"></i></a>
-          <a href="#" class="text-white opacity-75 h5"><i class="bi bi-facebook"></i></a>
-          <a href="#" class="text-white opacity-75 h5"><i class="bi bi-instagram"></i></a>
-          <a href="#" class="text-white opacity-75 h5"><i class="bi bi-twitter-x"></i></a>
+          <a href="https://wa.me/573223465191" class="text-white opacity-75 h5" target="_blank" rel="noopener noreferrer" title="Contactar por WhatsApp" aria-label="Contactar por WhatsApp"><i class="bi bi-whatsapp"></i></a>
+          <a href="#" class="text-white opacity-75 h5" title="Seguir en Facebook" aria-label="Seguir en Facebook"><i class="bi bi-facebook"></i></a>
+          <a href="#" class="text-white opacity-75 h5" title="Seguir en Instagram" aria-label="Seguir en Instagram"><i class="bi bi-instagram"></i></a>
+          <a href="#" class="text-white opacity-75 h5" title="Seguir en X (Twitter)" aria-label="Seguir en X"><i class="bi bi-twitter-x"></i></a>
         </div>
       </div>
 
@@ -24,18 +24,18 @@
           <div class="col-6">
             <h5 class="footer-monagua__title small mb-4">Explora</h5>
             <ul class="list-unstyled d-flex flex-column gap-2 small">
-              <li><a href="/" class="footer-monagua__link text-white-50">Inicio</a></li>
-              <li><a href="{% url 'tours' %}" class="footer-monagua__link text-white-50">Tours</a></li>
-              <li><a href="/panes-turisticos/" class="footer-monagua__link text-white-50">Planes</a></li>
-              <li><a href="/blog/" class="footer-monagua__link text-white-50">Blog</a></li>
+              <li><a href="/" class="footer-monagua__link text-white-50" title="Ir a la página principal" aria-label="Inicio">Inicio</a></li>
+              <li><a href="{% url 'tours' %}" class="footer-monagua__link text-white-50" title="Ver catálogo de destinos y paquetes" aria-label="Destinos">Destinos</a></li>
+              <li><a href="{% url 'listar_calificaciones' %}" class="footer-monagua__link text-white-50" title="Ver opiniones de viajeros" aria-label="Calificaciones">Calificaciones</a></li>
+              <li><a href="{% url 'blog' %}" class="footer-monagua__link text-white-50" title="Leer artículos del blog" aria-label="Blog">Blog</a></li>
             </ul>
           </div>
           <div class="col-6">
             <h5 class="footer-monagua__title small mb-4">Soporte</h5>
             <ul class="list-unstyled d-flex flex-column gap-2 small">
-             <li><a href="#" class="footer-monagua__link text-white-50">Nosotros</a></li>
-             <li><a href="{% url 'terminos' %}" class="footer-monagua__link text-white-50">Términos, Condiciones y Legal</a></li>
-              <li><a href="{% url 'pqrs_publica' %}" class="footer-monagua__link text-white-50">Contáctanos / PQRS</a></li>
+             <li><a href="{% url 'nosotros' %}" class="footer-monagua__link text-white-50" title="Conocer sobre Monagua" aria-label="Nosotros">Nosotros</a></li>
+             <li><a href="{% url 'terminos' %}" class="footer-monagua__link text-white-50" title="Consultar términos y condiciones legales" aria-label="Términos y Condiciones">Términos y Condiciones</a></li>
+              <li><a href="{% url 'pqrs_publica' %}" class="footer-monagua__link text-white-50" title="Radicar peticiones, quejas o reclamos" aria-label="PQRS">Contáctanos / PQRS</a></li>
             </ul>
           </div>
         </div>
@@ -46,12 +46,12 @@
         <h5 class="footer-monagua__title small mb-4">Escríbenos</h5>
         <form>
           <div class="mb-2">
-            <input type="email" class="form-control form-control-sm footer-monagua__form-input" placeholder="Tu correo electrónico">
+            <input type="email" class="form-control form-control-sm footer-monagua__form-input" placeholder="Tu correo electrónico" title="Ingrese su correo electrónico" aria-label="Tu correo electrónico">
           </div>
           <div class="mb-3">
-            <textarea class="form-control form-control-sm footer-monagua__form-input" placeholder="¿En qué podemos ayudarte?" rows="3"></textarea>
+            <textarea class="form-control form-control-sm footer-monagua__form-input" placeholder="¿En qué podemos ayudarte?" rows="3" title="Mensaje de consulta" aria-label="¿En qué podemos ayudarte?"></textarea>
           </div>
-          <button type="button" class="btn btn-light btn-sm w-100 fw-bold">Enviar Mensaje</button>
+          <button type="button" class="btn btn-light btn-sm w-100 fw-bold" title="Enviar mensaje de consulta" aria-label="Enviar mensaje de consulta">Enviar Mensaje</button>
         </form>
       </div>
     </div>
