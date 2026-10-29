@@ -1,24 +1,36 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block titulo %}{{ block.super }} - Nosotros{% endblock %}
+{% block titulo %}
+  {{ block.super }} - Nosotros
+{% endblock %}
 
 {% block content %}
-{% include "partials/breadcrumbs.html" with current_title="Nosotros" current_icon="bi bi-info-circle-fill" %}
+{% include "partials/breadcrumbs.html" with
+   current_title="Nosotros"
+   current_icon="bi bi-info-circle-fill"
+%}
 
 <!-- ══ HÉROE ══ -->
 <section class="py-5 bg-success text-white">
   <div class="container py-4">
     <div class="row align-items-center g-5">
       <div class="col-lg-6" data-aos="fade-right">
-        <span class="badge rounded-pill border border-light border-opacity-25 text-white-50 fw-normal px-3 py-2 mb-3">
+        <span
+          class="badge rounded-pill border border-light border-opacity-25
+                 text-white-50 fw-normal px-3 py-2 mb-3"
+        >
           NUESTRA HISTORIA
         </span>
         <h1 class="fw-bold lh-sm mb-3 text-white display-5">
-          Hacemos del viaje<br><span class="text-warning">una experiencia inolvidable</span>
+          Hacemos del viaje<br>
+          <span class="text-warning">una experiencia inolvidable</span>
         </h1>
         <p class="text-white-50 fw-light mb-4 fs-5">
-          En Monagua creemos que cada destino guarda una historia única. Desde 2015 guiamos a nuestros viajeros para descubrir los rincones más auténticos de Mongua y Boyacá con pasión, seguridad y responsabilidad ecológica.
+          En Monagua creemos que cada destino guarda una historia única.
+          Desde 2015 guiamos a nuestros viajeros para descubrir los rincones
+          más auténticos de Mongua y Boyacá con pasión, seguridad y
+          responsabilidad ecológica.
         </p>
         <div class="row g-3 text-center text-sm-start">
           <div class="col-6 col-sm-3">
@@ -48,12 +60,23 @@
             class="img-fluid w-100 rounded-4 shadow-lg object-fit-cover"
             style="max-height: 420px;"
           />
-          <div class="position-absolute bottom-0 start-0 m-3 m-md-4 bg-white rounded-4 p-3 d-flex align-items-center gap-3 shadow-lg border border-light text-dark">
-            <div class="d-flex align-items-center justify-content-center rounded-3 bg-success text-white shadow-sm flex-shrink-0" style="width: 44px; height: 44px;">
+          <div
+            class="position-absolute bottom-0 start-0 m-3 m-md-4 bg-white rounded-4
+                   p-3 d-flex align-items-center gap-3 shadow-lg border border-light
+                   text-dark"
+          >
+            <div
+              class="d-flex align-items-center justify-content-center rounded-3
+                     bg-success text-white shadow-sm flex-shrink-0"
+              style="width: 44px; height: 44px;"
+            >
               <i class="fa-solid fa-person-walking fs-5 text-white" aria-hidden="true"></i>
             </div>
             <div>
-              <div class="fw-bold small text-success text-uppercase" style="letter-spacing: 0.5px;">
+              <div
+                class="fw-bold small text-success text-uppercase"
+                style="letter-spacing: 0.5px;"
+              >
                 Turismo Responsable Monagua
               </div>
               <div class="text-muted small">
@@ -72,69 +95,130 @@
   <div class="container py-4">
     <div class="row align-items-center g-5">
       <div class="col-lg-5" data-aos="fade-right">
-        <div id="historiaCarousel" class="carousel slide carousel-fade shadow-lg rounded-4 overflow-hidden" data-bs-ride="carousel">
+        <div
+          id="historiaCarousel"
+          class="carousel slide carousel-fade shadow-lg rounded-4 overflow-hidden"
+          data-bs-ride="carousel"
+        >
           <div class="carousel-inner">
             <div class="carousel-item active ratio ratio-1x1" data-bs-interval="3000">
-              <img src="{% static 'img/fondo3.webp' %}" class="d-block w-100 object-fit-cover" alt="Guía turístico en ruta">
+              <img
+                src="{% static 'img/fondo3.webp' %}"
+                class="d-block w-100 object-fit-cover"
+                alt="Guía turístico en ruta"
+              />
             </div>
             <div class="carousel-item ratio ratio-1x1" data-bs-interval="3000">
-              <img src="{% static 'img/fondo4.webp' %}" class="d-block w-100 object-fit-cover" alt="Senderismo ecológico">
+              <img
+                src="{% static 'img/fondo4.webp' %}"
+                class="d-block w-100 object-fit-cover"
+                alt="Senderismo ecológico"
+              />
             </div>
             <div class="carousel-item ratio ratio-1x1" data-bs-interval="3000">
-              <img src="{% static 'img/paramo.webp' %}" class="d-block w-100 object-fit-cover" alt="Frailejones en el Páramo de Ocetá">
+              <img
+                src="{% static 'img/paramo.webp' %}"
+                class="d-block w-100 object-fit-cover"
+                alt="Frailejones en el Páramo de Ocetá"
+              />
             </div>
           </div>
         </div>
       </div>
 
       <div class="col-lg-7" data-aos="fade-left">
-        <small class="text-uppercase fw-semibold text-success">Quiénes somos</small>
+        <small class="text-uppercase fw-semibold text-success">
+          Quiénes somos
+        </small>
         <h2 class="fw-bold mt-1 mb-3 text-dark">
           Una agencia nacida del <span class="text-success">amor por explorar</span>
         </h2>
         <p class="text-muted fw-light lh-lg mb-2">
-          Monagua nació en 2015 con una convicción fundamental: las mejores expediciones no se improvisan; se planifican con minucioso cuidado, conocimiento de guías nativos y un sincero respeto por la naturaleza.
+          Monagua nació en 2015 con una convicción fundamental: las mejores
+          expediciones no se improvisan; se planifican con minucioso cuidado,
+          conocimiento de guías nativos y un sincero respeto por la naturaleza.
         </p>
         <p class="text-muted fw-light lh-lg mb-4">
-          Cada sendero ha sido explorado y adaptado para garantizar la tranquilidad y enriquecimiento de familias, aventureros y grupos que desean vivir el patrimonio cultural de Colombia.
+          Cada sendero ha sido explorado y adaptado para garantizar la tranquilidad
+          y enriquecimiento de familias, aventureros y grupos que desean vivir el
+          patrimonio cultural de Colombia.
         </p>
 
         <div class="accordion accordion-flush mt-3" id="historiaAccordion">
           <div class="accordion-item border-0 bg-transparent mb-2">
             <h3 class="accordion-header">
-              <button class="accordion-button rounded-3 bg-success text-white fw-bold shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+              <button
+                class="accordion-button rounded-3 bg-success text-white fw-bold
+                       shadow-sm"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseOne"
+                aria-expanded="true"
+                aria-controls="collapseOne"
+              >
                 1. 2015 — Fundación y Primeras Rutas
               </button>
             </h3>
-            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#historiaAccordion">
+            <div
+              id="collapseOne"
+              class="accordion-collapse collapse show"
+              data-bs-parent="#historiaAccordion"
+            >
               <div class="accordion-body text-muted small px-4 py-3">
-                Guías turísticos locales unen esfuerzos para fundar una agencia enfocada en el ecoturismo comunitario y de aventura en Mongua.
+                Guías turísticos locales unen esfuerzos para fundar una agencia
+                enfocada en el ecoturismo comunitario y de aventura en Mongua.
               </div>
             </div>
           </div>
 
           <div class="accordion-item border-0 bg-transparent mb-2">
             <h3 class="accordion-header">
-              <button class="accordion-button collapsed rounded-3 bg-success text-white fw-bold shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+              <button
+                class="accordion-button collapsed rounded-3 bg-success text-white
+                       fw-bold shadow-sm"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseTwo"
+                aria-expanded="false"
+                aria-controls="collapseTwo"
+              >
                 2. 2018 — Certificación de Calidad y Sostenibilidad
               </button>
             </h3>
-            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#historiaAccordion">
+            <div
+              id="collapseTwo"
+              class="accordion-collapse collapse"
+              data-bs-parent="#historiaAccordion"
+            >
               <div class="accordion-body text-muted small px-4 py-3">
-                Obtención de certificaciones en buenas prácticas de turismo sostenible y ampliación del catálogo de páramos y lagunas.
+                Obtención de certificaciones en buenas prácticas de turismo
+                sostenible y ampliación del catálogo de páramos y lagunas.
               </div>
             </div>
           </div>
 
           <div class="accordion-item border-0 bg-transparent mb-2">
             <h3 class="accordion-header">
-              <button class="accordion-button collapsed rounded-3 bg-success text-white fw-bold shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+              <button
+                class="accordion-button collapsed rounded-3 bg-success text-white
+                       fw-bold shadow-sm"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseThree"
+                aria-expanded="false"
+                aria-controls="collapseThree"
+              >
                 3. 2022 — Transformación Digital
               </button>
             </h3>
-            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#historiaAccordion">
+            <div
+              id="collapseThree"
+              class="accordion-collapse collapse"
+              data-bs-parent="#historiaAccordion"
+            >
               <div class="accordion-body text-muted small px-4 py-3">
-                Lanzamiento del ecosistema digital Monagua para reservas en línea, verificación de pagos y atención personalizada.
+                Lanzamiento del ecosistema digital Monagua para reservas en línea,
+                verificación de pagos y atención personalizada.
               </div>
             </div>
           </div>
@@ -148,29 +232,52 @@
 <section class="py-5 bg-success text-white">
   <div class="container py-4">
     <div class="text-center mb-5" data-aos="fade-up">
-      <small class="text-white-50 text-uppercase fw-semibold">Propósito y Futuro</small>
-      <h2 class="fw-bold mt-1 text-white">Lo que nos guía cada día</h2>
+      <small class="text-white-50 text-uppercase fw-semibold">
+        Propósito y Futuro
+      </small>
+      <h2 class="fw-bold mt-1 text-white">
+        Lo que nos guía cada día
+      </h2>
     </div>
     <div class="row g-4 justify-content-center">
       <div class="col-md-6 col-lg-5" data-aos="fade-up" data-aos-delay="100">
-        <div class="card h-100 border-0 rounded-4 p-4 p-lg-5 bg-white bg-opacity-10 text-white shadow-sm">
-          <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-white text-success mb-3 shadow-sm" style="width: 52px; height: 52px;">
+        <div
+          class="card h-100 border-0 rounded-4 p-4 p-lg-5 bg-white bg-opacity-10
+                 text-white shadow-sm"
+        >
+          <div
+            class="d-inline-flex align-items-center justify-content-center
+                   rounded-circle bg-white text-success mb-3 shadow-sm"
+            style="width: 52px; height: 52px;"
+          >
             <i class="bi bi-compass fs-4"></i>
           </div>
           <h3 class="fw-bold mb-3 fs-4 text-white">Nuestra Misión</h3>
           <p class="text-white-50 fw-light lh-lg mb-0">
-            Conectar a las personas con los destinos más extraordinarios de Boyacá a través de experiencias auténticas, seguras y sostenibles, impulsando activamente la economía y el bienestar de las comunidades locales.
+            Conectar a las personas con los destinos más extraordinarios de Boyacá
+            a través de experiencias auténticas, seguras y sostenibles,
+            impulsando activamente la economía y el bienestar de las
+            comunidades locales.
           </p>
         </div>
       </div>
       <div class="col-md-6 col-lg-5" data-aos="fade-up" data-aos-delay="200">
-        <div class="card h-100 border-0 rounded-4 p-4 p-lg-5 bg-white bg-opacity-10 text-white shadow-sm">
-          <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-white text-success mb-3 shadow-sm" style="width: 52px; height: 52px;">
+        <div
+          class="card h-100 border-0 rounded-4 p-4 p-lg-5 bg-white bg-opacity-10
+                 text-white shadow-sm"
+        >
+          <div
+            class="d-inline-flex align-items-center justify-content-center
+                   rounded-circle bg-white text-success mb-3 shadow-sm"
+            style="width: 52px; height: 52px;"
+          >
             <i class="bi bi-flag fs-4"></i>
           </div>
           <h3 class="fw-bold mb-3 fs-4 text-white">Nuestra Visión</h3>
           <p class="text-white-50 fw-light lh-lg mb-0">
-            Ser la agencia de turismo líder en Colombia y referente en Latinoamérica, reconocida por transformar la forma de viajar mediante la conciencia ambiental, la preservación cultural y la excelencia en el servicio.
+            Ser la agencia de turismo líder en Colombia y referente en Latinoamérica,
+            reconocida por transformar la forma de viajar mediante la conciencia
+            ambiental, la preservación cultural y la excelencia en el servicio.
           </p>
         </div>
       </div>
@@ -182,51 +289,75 @@
 <section class="py-5 bg-white">
   <div class="container py-4">
     <div class="text-center mb-5" data-aos="fade-up">
-      <small class="text-uppercase fw-semibold text-success">Valores Corporativos</small>
-      <h2 class="fw-bold mt-1 text-dark">Los principios que nos definen</h2>
+      <small class="text-uppercase fw-semibold text-success">
+        Valores Corporativos
+      </small>
+      <h2 class="fw-bold mt-1 text-dark">
+        Los principios que nos definen
+      </h2>
     </div>
     <div class="row g-4">
       <div class="col-sm-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
         <div class="card h-100 border-0 rounded-4 p-4 shadow-sm bg-white hover-lift">
-          <div class="d-flex align-items-center justify-content-center rounded-3 mb-3 bg-success text-white shadow-sm" style="width: 48px; height: 48px;">
+          <div
+            class="d-flex align-items-center justify-content-center rounded-3 mb-3
+                   bg-success text-white shadow-sm"
+            style="width: 48px; height: 48px;"
+          >
             <i class="bi bi-tree fs-5 text-white"></i>
           </div>
           <h4 class="fw-bold mb-2 fs-5 text-dark">Sostenibilidad</h4>
           <p class="text-muted small lh-lg mb-0">
-            Cada ruta e itinerario protege activamente los ecosistemas de páramo y apoya a las familias campesinas.
+            Cada ruta e itinerario protege activamente los ecosistemas de páramo
+            y apoya a las familias campesinas.
           </p>
         </div>
       </div>
       <div class="col-sm-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
         <div class="card h-100 border-0 rounded-4 p-4 shadow-sm bg-white hover-lift">
-          <div class="d-flex align-items-center justify-content-center rounded-3 mb-3 bg-success text-white shadow-sm" style="width: 48px; height: 48px;">
+          <div
+            class="d-flex align-items-center justify-content-center rounded-3 mb-3
+                   bg-success text-white shadow-sm"
+            style="width: 48px; height: 48px;"
+          >
             <i class="bi bi-shield-check fs-5 text-white"></i>
           </div>
           <h4 class="fw-bold mb-2 fs-5 text-dark">Confianza</h4>
           <p class="text-muted small lh-lg mb-0">
-            Tarifas transparentes, pólizas vigentes de asistencia y acompañamiento certificado en todo momento.
+            Tarifas transparentes, pólizas vigentes de asistencia y acompañamiento
+            certificado en todo momento.
           </p>
         </div>
       </div>
       <div class="col-sm-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
         <div class="card h-100 border-0 rounded-4 p-4 shadow-sm bg-white hover-lift">
-          <div class="d-flex align-items-center justify-content-center rounded-3 mb-3 bg-success text-white shadow-sm" style="width: 48px; height: 48px;">
+          <div
+            class="d-flex align-items-center justify-content-center rounded-3 mb-3
+                   bg-success text-white shadow-sm"
+            style="width: 48px; height: 48px;"
+          >
             <i class="bi bi-people fs-5 text-white"></i>
           </div>
           <h4 class="fw-bold mb-2 fs-5 text-dark">Comunidad</h4>
           <p class="text-muted small lh-lg mb-0">
-            Trabajo colaborativo con artesanos, guías nativos y prestadores de servicios gastronómicos de la región.
+            Trabajo colaborativo con artesanos, guías nativos y prestadores de
+            servicios gastronómicos de la región.
           </p>
         </div>
       </div>
       <div class="col-sm-6 col-lg-3" data-aos="fade-up" data-aos-delay="400">
         <div class="card h-100 border-0 rounded-4 p-4 shadow-sm bg-white hover-lift">
-          <div class="d-flex align-items-center justify-content-center rounded-3 mb-3 bg-success text-white shadow-sm" style="width: 48px; height: 48px;">
+          <div
+            class="d-flex align-items-center justify-content-center rounded-3 mb-3
+                   bg-success text-white shadow-sm"
+            style="width: 48px; height: 48px;"
+          >
             <i class="bi bi-star fs-5 text-white"></i>
           </div>
           <h4 class="fw-bold mb-2 fs-5 text-dark">Excelencia</h4>
           <p class="text-muted small lh-lg mb-0">
-            Dedicación constante para que cada expedición supere las expectativas de nuestros clientes y familias.
+            Dedicación constante para que cada expedición supere las expectativas
+            de nuestros clientes y familias.
           </p>
         </div>
       </div>
@@ -238,36 +369,54 @@
 <section class="py-5 bg-success text-white">
   <div class="container py-4">
     <div class="text-center mb-5" data-aos="fade-up">
-      <small class="text-white-50 text-uppercase fw-semibold">Ingeniería y Tecnología</small>
-      <h2 class="fw-bold mt-1 text-white">Equipo de Desarrollo de Monagua</h2>
+      <small class="text-white-50 text-uppercase fw-semibold">
+        Ingeniería y Tecnología
+      </small>
+      <h2 class="fw-bold mt-1 text-white">
+        Equipo de Desarrollo de Monagua
+      </h2>
       <p class="text-white-50 fw-light mx-auto" style="max-width: 650px;">
-        Los ingenieros y desarrolladores que diseñaron, construyeron y desplegaron la arquitectura completa de esta plataforma web.
+        Los ingenieros y desarrolladores que diseñaron, construyeron y desplegaron
+        la arquitectura completa de esta plataforma web.
       </p>
     </div>
 
     <div class="row g-4 justify-content-center">
       <!-- Victor Toledo -->
-      <div class="col-12 col-md-6 col-lg-4 text-center" data-aos="zoom-in" data-aos-delay="100">
-        <div class="card bg-white bg-opacity-10 border-0 rounded-4 p-4 h-100 text-white shadow-sm d-flex flex-column">
+      <div
+        class="col-12 col-md-6 col-lg-4 text-center"
+        data-aos="zoom-in"
+        data-aos-delay="100"
+      >
+        <div
+          class="card bg-white bg-opacity-10 border-0 rounded-4 p-4 h-100 text-white
+                 shadow-sm d-flex flex-column"
+        >
           <img
             src="{% static 'img/victor.webp' %}"
             alt="Foto de Victor Toledo"
-            class="img-fluid rounded-circle border border-3 border-white border-opacity-25 mx-auto mb-3 shadow"
+            class="img-fluid rounded-circle border border-3 border-white
+                   border-opacity-25 mx-auto mb-3 shadow"
             style="width: 130px; height: 130px; object-fit: cover;"
           />
           <h4 class="fw-bold text-white fs-5 mb-1">Victor Toledo</h4>
-          <span class="badge bg-white text-success rounded-pill fw-semibold mb-3 px-3 py-1 align-self-center">
+          <span
+            class="badge bg-white text-success rounded-pill fw-semibold mb-3 px-3
+                   py-1 align-self-center"
+          >
             Desarrollador Full Stack
           </span>
           <p class="text-white-50 small mb-4 flex-grow-1">
-            Arquitectura del sistema, lógica transaccional del servidor, diseño de interfaces dinámicas y modelado de datos de la plataforma Monagua.
+            Arquitectura del sistema, lógica transaccional del servidor, diseño
+            de interfaces dinámicas y modelado de datos de la plataforma Monagua.
           </p>
           <div class="d-flex justify-content-center gap-2 mt-auto">
             <a
               href="https://github.com/k3vineira/MNG_WEB"
               target="_blank"
               rel="noopener noreferrer"
-              class="btn btn-sm btn-outline-light rounded-circle p-0 d-flex align-items-center justify-content-center"
+              class="btn btn-sm btn-outline-light rounded-circle p-0 d-flex
+                     align-items-center justify-content-center"
               style="width: 36px; height: 36px;"
               title="Repositorio del proyecto en GitHub"
               aria-label="Repositorio de Victor Toledo en GitHub"
@@ -276,7 +425,8 @@
             </a>
             <a
               href="mailto:vt74117@gmail.com"
-              class="btn btn-sm btn-outline-light rounded-circle p-0 d-flex align-items-center justify-content-center"
+              class="btn btn-sm btn-outline-light rounded-circle p-0 d-flex
+                     align-items-center justify-content-center"
               style="width: 36px; height: 36px;"
               title="Enviar correo de contacto a Victor Toledo"
               aria-label="Enviar correo a Victor Toledo"
@@ -288,27 +438,40 @@
       </div>
 
       <!-- Kevin Neira -->
-      <div class="col-12 col-md-6 col-lg-4 text-center" data-aos="zoom-in" data-aos-delay="200">
-        <div class="card bg-white bg-opacity-10 border-0 rounded-4 p-4 h-100 text-white shadow-sm d-flex flex-column">
+      <div
+        class="col-12 col-md-6 col-lg-4 text-center"
+        data-aos="zoom-in"
+        data-aos-delay="200"
+      >
+        <div
+          class="card bg-white bg-opacity-10 border-0 rounded-4 p-4 h-100 text-white
+                 shadow-sm d-flex flex-column"
+        >
           <img
             src="{% static 'img/kevin.webp' %}"
             alt="Foto de Kevin Neira"
-            class="img-fluid rounded-circle border border-3 border-white border-opacity-25 mx-auto mb-3 shadow"
+            class="img-fluid rounded-circle border border-3 border-white
+                   border-opacity-25 mx-auto mb-3 shadow"
             style="width: 130px; height: 130px; object-fit: cover;"
           />
           <h4 class="fw-bold text-white fs-5 mb-1">Kevin Neira</h4>
-          <span class="badge bg-white text-success rounded-pill fw-semibold mb-3 px-3 py-1 align-self-center">
+          <span
+            class="badge bg-white text-success rounded-pill fw-semibold mb-3 px-3
+                   py-1 align-self-center"
+          >
             Desarrollador Full Stack
           </span>
           <p class="text-white-50 small mb-4 flex-grow-1">
-            Desarrollo integral del ecosistema Monagua: ingeniería del backend, diseño de la experiencia de usuario, optimización web y base de datos.
+            Desarrollo integral del ecosistema Monagua: ingeniería del backend,
+            diseño de la experiencia de usuario, optimización web y base de datos.
           </p>
           <div class="d-flex justify-content-center gap-2 mt-auto">
             <a
               href="https://github.com/k3vineira"
               target="_blank"
               rel="noopener noreferrer"
-              class="btn btn-sm btn-outline-light rounded-circle p-0 d-flex align-items-center justify-content-center"
+              class="btn btn-sm btn-outline-light rounded-circle p-0 d-flex
+                     align-items-center justify-content-center"
               style="width: 36px; height: 36px;"
               title="Perfil de Kevin Neira en GitHub"
               aria-label="Perfil de Kevin Neira en GitHub"
@@ -317,7 +480,8 @@
             </a>
             <a
               href="mailto:k3vineira@gmail.com"
-              class="btn btn-sm btn-outline-light rounded-circle p-0 d-flex align-items-center justify-content-center"
+              class="btn btn-sm btn-outline-light rounded-circle p-0 d-flex
+                     align-items-center justify-content-center"
               style="width: 36px; height: 36px;"
               title="Enviar correo de contacto a Kevin Neira"
               aria-label="Enviar correo a Kevin Neira"
@@ -329,27 +493,40 @@
       </div>
 
       <!-- Dayana Mozo -->
-      <div class="col-12 col-md-6 col-lg-4 text-center" data-aos="zoom-in" data-aos-delay="300">
-        <div class="card bg-white bg-opacity-10 border-0 rounded-4 p-4 h-100 text-white shadow-sm d-flex flex-column">
+      <div
+        class="col-12 col-md-6 col-lg-4 text-center"
+        data-aos="zoom-in"
+        data-aos-delay="300"
+      >
+        <div
+          class="card bg-white bg-opacity-10 border-0 rounded-4 p-4 h-100 text-white
+                 shadow-sm d-flex flex-column"
+        >
           <img
             src="{% static 'img/avatar_pred.webp' %}"
             alt="Foto de Dayana Mozo"
-            class="img-fluid rounded-circle border border-3 border-white border-opacity-25 mx-auto mb-3 shadow"
+            class="img-fluid rounded-circle border border-3 border-white
+                   border-opacity-25 mx-auto mb-3 shadow"
             style="width: 130px; height: 130px; object-fit: cover;"
           />
           <h4 class="fw-bold text-white fs-5 mb-1">Dayana Mozo</h4>
-          <span class="badge bg-white text-success rounded-pill fw-semibold mb-3 px-3 py-1 align-self-center">
+          <span
+            class="badge bg-white text-success rounded-pill fw-semibold mb-3 px-3
+                   py-1 align-self-center"
+          >
             Desarrolladora Full Stack
           </span>
           <p class="text-white-50 small mb-4 flex-grow-1">
-            Programación de servicios de servidor, interactividad en clientes, modelado transaccional y control de calidad de la plataforma.
+            Programación de servicios de servidor, interactividad en clientes,
+            modelado transaccional y control de calidad de la plataforma.
           </p>
           <div class="d-flex justify-content-center gap-2 mt-auto">
             <a
               href="https://github.com/k3vineira/MNG_WEB"
               target="_blank"
               rel="noopener noreferrer"
-              class="btn btn-sm btn-outline-light rounded-circle p-0 d-flex align-items-center justify-content-center"
+              class="btn btn-sm btn-outline-light rounded-circle p-0 d-flex
+                     align-items-center justify-content-center"
               style="width: 36px; height: 36px;"
               title="Repositorio del proyecto en GitHub"
               aria-label="Repositorio de Dayana Mozo en GitHub"
@@ -358,7 +535,8 @@
             </a>
             <a
               href="mailto:dayana.mozo@example.com"
-              class="btn btn-sm btn-outline-light rounded-circle p-0 d-flex align-items-center justify-content-center"
+              class="btn btn-sm btn-outline-light rounded-circle p-0 d-flex
+                     align-items-center justify-content-center"
               style="width: 36px; height: 36px;"
               title="Enviar correo de contacto a Dayana Mozo"
               aria-label="Enviar correo a Dayana Mozo"
@@ -378,10 +556,20 @@
     <h2 class="fw-bold mb-3 text-dark display-6" data-aos="fade-up">
       ¿Listo para tu próxima aventura?
     </h2>
-    <p class="fw-light mb-4 mx-auto text-muted fs-5" style="max-width: 650px;" data-aos="fade-up" data-aos-delay="100">
-      Cuéntanos qué destino sueñas visitar y construimos juntos una experiencia a tu medida.
+    <p
+      class="fw-light mb-4 mx-auto text-muted fs-5"
+      style="max-width: 650px;"
+      data-aos="fade-up"
+      data-aos-delay="100"
+    >
+      Cuéntanos qué destino sueñas visitar y construimos juntos una experiencia
+      a tu medida.
     </p>
-    <div class="d-flex flex-wrap justify-content-center gap-3" data-aos="fade-up" data-aos-delay="200">
+    <div
+      class="d-flex flex-wrap justify-content-center gap-3"
+      data-aos="fade-up"
+      data-aos-delay="200"
+    >
       <a
         href="{% url 'tours' %}"
         class="btn btn-success fw-semibold rounded-pill px-4 py-2 shadow-sm"

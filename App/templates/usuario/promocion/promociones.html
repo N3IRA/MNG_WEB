@@ -3,60 +3,102 @@
 
 {% block content %}
 <main class="container py-5">
-    <div class="row mb-5">
-        <div class="col-12 text-center">
-            <h1 class="display-5 fw-bold text-success text-uppercase">Ofertas de Temporada</h1>
-            <p class="text-muted">Explora Mongua con precios especiales y descuentos exclusivos</p>
-            <hr class="mx-auto border-success border-2 opacity-75" style="width: 80px;">
-        </div>
+  <div class="row mb-5">
+    <div class="col-12 text-center">
+      <h1 class="display-5 fw-bold text-success text-uppercase">
+        Ofertas de Temporada
+      </h1>
+      <p class="text-muted">
+        Explora Mongua con precios especiales y descuentos exclusivos
+      </p>
+      <hr
+        class="mx-auto border-success border-2 opacity-75"
+        style="width: 80px;"
+      />
     </div>
+  </div>
 
-    <section class="row g-4">
-        {% for promo in promociones %}
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
-                <div class="ratio ratio-4x3 position-relative">
-                    {% if promo.paquete.imagen %}
-                        <img src="{{ promo.paquete.imagen.url }}" class="card-img-top object-fit-cover" alt="{{ promo.nombre }}">
-                    {% else %}
-                        <img src="{% static 'img/lagunanegra.webp' %}" class="card-img-top object-fit-cover" alt="Monagua">
-                    {% endif %}
-                    
-                    <div class="position-absolute top-0 end-0 m-3">
-                        <span class="badge bg-danger fs-5 shadow">-{{ promo.descuento }}%</span>
-                    </div>
-                </div>
+  <section class="row g-4">
+    {% for promo in promociones %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+          <div class="ratio ratio-4x3 position-relative">
+            {% if promo.paquete.imagen %}
+              <img
+                src="{{ promo.paquete.imagen.url }}"
+                class="card-img-top object-fit-cover"
+                alt="{{ promo.nombre }}"
+              />
+            {% else %}
+              <img
+                src="{% static 'img/lagunanegra.webp' %}"
+                class="card-img-top object-fit-cover"
+                alt="Monagua"
+              />
+            {% endif %}
 
-                <div class="card-body text-center d-flex flex-column p-4">
-                    <h5 class="fw-bold text-uppercase text-dark mb-2">{{ promo.nombre }}</h5>
-                    <p class="small text-muted flex-grow-1 mb-3">{{ promo.descripcion }}</p>
-                    
-                    <div class="mb-3">
-                        <h4 class="text-success fw-bold">¡Precio Especial!</h4>
-                        <p class="text-muted small mb-0">Válido hasta: {{ promo.fecha_fin|date:"d/m/Y" }}</p>
-                    </div>
-
-                    {% if promo.paquete %}
-                        <a href="{% url 'guardar_reserva' promo.paquete.id %}" class="btn btn-success w-100 mb-2 shadow-sm fw-bold rounded-pill" title="Reservar este paquete promocional" aria-label="Reservar el paquete {{ promo.paquete.nombre }}">
-                            Reservar Ahora
-                        </a>
-                    {% else %}
-                        <a href="{% url 'tours' %}" class="btn btn-success w-100 mb-2 shadow-sm fw-bold rounded-pill" title="Explorar destinos y reservar" aria-label="Explorar catálogo de destinos">
-                            Reservar Ahora
-                        </a>
-                    {% endif %}
-                </div>
+            <div class="position-absolute top-0 end-0 m-3">
+              <span class="badge bg-danger fs-5 shadow">
+                -{{ promo.descuento }}%
+              </span>
             </div>
+          </div>
+
+          <div class="card-body text-center d-flex flex-column p-4">
+            <h5 class="fw-bold text-uppercase text-dark mb-2">
+              {{ promo.nombre }}
+            </h5>
+            <p class="small text-muted flex-grow-1 mb-3">
+              {{ promo.descripcion }}
+            </p>
+
+            <div class="mb-3">
+              <h4 class="text-success fw-bold">¡Precio Especial!</h4>
+              <p class="text-muted small mb-0">
+                Válido hasta: {{ promo.fecha_fin|date:"d/m/Y" }}
+              </p>
+            </div>
+
+            {% if promo.paquete %}
+              <a
+                href="{% url 'guardar_reserva' promo.paquete.id %}"
+                class="btn btn-success w-100 mb-2 shadow-sm fw-bold rounded-pill"
+                title="Reservar este paquete promocional"
+                aria-label="Reservar el paquete {{ promo.paquete.nombre }}"
+              >
+                Reservar Ahora
+              </a>
+            {% else %}
+              <a
+                href="{% url 'tours' %}"
+                class="btn btn-success w-100 mb-2 shadow-sm fw-bold rounded-pill"
+                title="Explorar destinos y reservar"
+                aria-label="Explorar catálogo de destinos"
+              >
+                Reservar Ahora
+              </a>
+            {% endif %}
+          </div>
         </div>
-        {% empty %}
-        <div class="col-12 text-center py-5">
-            <h3 class="text-muted fw-light">No hay promociones disponibles en este momento.</h3>
-            <p class="text-secondary small">Descubre todas nuestras rutas y paquetes turísticos regulares.</p>
-            <a href="{% url 'tours' %}" class="btn btn-success rounded-pill px-4 py-2 mt-2" title="Explorar todos los destinos turísticos" aria-label="Explorar catálogo de destinos">
-                <i class="bi bi-compass me-2"></i>Explorar destinos
-            </a>
-        </div>
-        {% endfor %}
-    </section>
+      </div>
+    {% empty %}
+      <div class="col-12 text-center py-5">
+        <h3 class="text-muted fw-light">
+          No hay promociones disponibles en este momento.
+        </h3>
+        <p class="text-secondary small">
+          Descubre todas nuestras rutas y paquetes turísticos regulares.
+        </p>
+        <a
+          href="{% url 'tours' %}"
+          class="btn btn-success rounded-pill px-4 py-2 mt-2"
+          title="Explorar todos los destinos turísticos"
+          aria-label="Explorar catálogo de destinos"
+        >
+          <i class="bi bi-compass me-2"></i>Explorar destinos
+        </a>
+      </div>
+    {% endfor %}
+  </section>
 </main>
 {% endblock %}

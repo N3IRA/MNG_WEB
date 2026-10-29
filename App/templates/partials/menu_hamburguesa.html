@@ -7,7 +7,8 @@
   aria-labelledby="menuPremiumLabel"
 >
   <div
-    class="d-flex justify-content-between align-items-center px-3 px-md-4 py-2.5 border-bottom border-dark border-opacity-10"
+    class="d-flex justify-content-between align-items-center
+           px-3 px-md-4 py-2.5 border-bottom border-dark border-opacity-10"
   >
     <a class="navbar-brand m-0 d-flex align-items-center text-white" href="/">
       <span class="fw-bold me-2" id="menuPremiumLabel">MONAGUA</span>
@@ -24,7 +25,8 @@
       {% if user.is_authenticated %}
       <div class="dropdown">
         <button
-          class="dropdown-toggle d-flex align-items-center gap-2 btn btn-outline-light rounded-pill px-3 py-1 text-decoration-none"
+          class="dropdown-toggle d-flex align-items-center gap-2
+                 btn btn-outline-light rounded-pill px-3 py-1 text-decoration-none"
           type="button"
           id="offcanvasNavbarDropdown"
           data-bs-toggle="dropdown"
@@ -121,14 +123,19 @@
 
         <!-- Columna Secundaria (Derecha): Enlaces por Rol + Accesos Secundarios -->
         <div
-          class="col-12 col-md-6 col-lg-4 menu-hamburguesa-premium__secondary-menu mt-2 mt-md-0"
+          class="col-12 col-md-6 col-lg-4 menu-hamburguesa-premium__secondary-menu
+                 mt-2 mt-md-0"
         >
           <ul class="nav flex-column gap-2 gap-md-3">
             {% if user.is_authenticated %}
             <li>
               <a
                 class="menu-hamburguesa-premium__secondary-link fw-bold text-success"
-                href="{% if user.is_staff or user.is_superuser %}{% url 'admin_perfil' %}{% else %}{% url 'perfil_detalles' %}{% endif %}"
+                {% if user.is_staff or user.is_superuser %}
+                href="{% url 'admin_perfil' %}"
+                {% else %}
+                href="{% url 'perfil_detalles' %}"
+                {% endif %}
                 title="Ver mi perfil"
                 aria-label="Ver mi perfil de usuario"
               >
@@ -168,7 +175,9 @@
                 <i class="bi bi-star-fill me-2"></i>Mis Calificaciones
               </a>
             </li>
-            {% endif %} {# Turista / Viajero #} {% if user.es_turista or user.rol == 2 or user.rol == 'TURISTA' %}
+            {% endif %}
+            {# Turista / Viajero #}
+            {% if user.es_turista or user.rol == 2 or user.rol == 'TURISTA' %}
             <li>
               <a
                 class="menu-hamburguesa-premium__secondary-link fw-bold text-success"

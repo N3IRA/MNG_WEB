@@ -18,7 +18,11 @@
 <li>
   <a
     class="dropdown-item py-2 fw-bold text-dark"
-    href="{% if user.is_staff or user.is_superuser %}{% url 'admin_perfil' %}{% else %}{% url 'perfil_detalles' %}{% endif %}"
+    {% if user.is_staff or user.is_superuser %}
+    href="{% url 'admin_perfil' %}"
+    {% else %}
+    href="{% url 'perfil_detalles' %}"
+    {% endif %}
     title="Ver y editar mi perfil de usuario"
     aria-label="Ver y editar mi perfil de usuario"
   >
