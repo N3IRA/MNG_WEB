@@ -56,18 +56,21 @@ urlpatterns = [
     # Categorías (Administración / Staff)
     path('admin/categorias/', categoria_views.CategoriaListView.as_view(), name='listar_categorias'),
     path('admin/categorias/agregar/', categoria_views.CategoriaCreateView.as_view(), name='agregar_categoria'),
+    path('admin/categorias/crear/', categoria_views.CategoriaCreateView.as_view(), name='crear_categoria'),
     path('admin/categorias/editar/<int:pk>/', categoria_views.CategoriaUpdateView.as_view(), name='editar_categoria'),
     path('admin/categorias/eliminar/<int:pk>/', categoria_views.CategoriaDeleteView.as_view(), name='eliminar_categoria'),
 
     # Temporadas (Administración / Staff)
     path('admin/temporadas/', temporada_views.TemporadaListView.as_view(), name='listar_temporadas'),
     path('admin/temporadas/agregar/', temporada_views.TemporadaCreateView.as_view(), name='agregar_temporada'),
+    path('admin/temporadas/crear/', temporada_views.TemporadaCreateView.as_view(), name='crear_temporada'),
     path('admin/temporadas/editar/<int:pk>/', temporada_views.TemporadaUpdateView.as_view(), name='editar_temporada'),
     path('admin/temporadas/eliminar/<int:pk>/', temporada_views.TemporadaDeleteView.as_view(), name='eliminar_temporada'),
 
     # Actividades (Administración / Staff)
     path('admin/actividades/', actividades_views.ActividadesListView.as_view(), name='listar_actividades'),
     path('admin/actividades/agregar/', actividades_views.ActividadesCreateView.as_view(), name='agregar_actividad'),
+    path('admin/actividades/crear/', actividades_views.ActividadesCreateView.as_view(), name='crear_actividad'),
     path('admin/actividades/editar/<int:pk>/', actividades_views.ActividadesUpdateView.as_view(), name='editar_actividad'),
     path('admin/actividades/eliminar/<int:pk>/', actividades_views.ActividadesDeleteView.as_view(), name='eliminar_actividad'),
 
@@ -80,6 +83,7 @@ urlpatterns = [
     # Tarifas (Administración / Staff)
     path('admin/tarifas/', tarifa_views.TarifaListView.as_view(), name='listar_tarifas'),
     path('admin/tarifas/agregar/', tarifa_views.TarifaCreateView.as_view(), name='agregar_tarifa'),
+    path('admin/tarifas/crear/', tarifa_views.TarifaCreateView.as_view(), name='crear_tarifa'),
     path('admin/tarifas/editar/<int:pk>/', tarifa_views.TarifaUpdateView.as_view(), name='editar_tarifa'),
     path('admin/tarifas/eliminar/<int:pk>/', tarifa_views.TarifaDeleteView.as_view(), name='eliminar_tarifa'),
 

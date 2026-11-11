@@ -355,7 +355,7 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
         messages.warning(request, "Esta reserva ya se encuentra cancelada.")
         return redirect('mis_cancelaciones')
 
-    if reserva.estado_cancelacion == 'pendiente':
+    if reserva.estado_cancelacion == 'pendiente' and reserva.estado_reserva == 'cancelada':
         if request.headers.get('HX-Request'):
             context = obtener_contexto_mis_reservas(request.user)
             response = render(request, 'admin/reserva/mis_reservas.html', context)
@@ -464,6 +464,7 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
     fecha_tour = getattr(reserva, 'fecha_inicio', None)
     penalidad_calculada = Decimal('0.00')
     politica_reembolso = "Sujeto a evaluación administrativa."
+    dias_para_tour = None
 
     if fecha_tour:
         fecha_tour_date = fecha_tour.date() if hasattr(fecha_tour, 'date') else fecha_tour
@@ -476,9 +477,25 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
             penalidad_calculada = monto_total * Decimal('0.50')
             politica_reembolso = "Parcial (Reembolso del 50% / Penalidad del 50%)."
         else:
-            # Menos de 2 días (menos de 48 horas) antes: 100% penalidad
-            penalidad_calculada = monto_total * Decimal('1.00')
-            politica_reembolso = "Sin reembolso (Penalidad del 100% por menos de 48 horas de anticipación)."
+            # Menos de 2 días (menos de 48 horas) antes: no se acepta la cancelación.
+            reserva.motivo_cancelacion = motivo
+            reserva.estado_cancelacion = 'pendiente'
+            reserva.save(update_fields=['motivo_cancelacion', 'estado_cancelacion'])
+
+            if request.headers.get('HX-Request'):
+                context = obtener_contexto_mis_reservas(request.user)
+                response = render(request, 'admin/reserva/mis_reservas.html', context)
+                response['HX-Trigger'] = json.dumps({
+                    'mostrarNotificacionBitacora': {
+                        'tipo': 'warning',
+                        'titulo': 'Cancelación Bloqueada',
+                        'mensaje': 'La cancelación no puede realizarse porque faltan menos de 2 días para el viaje.'
+                    }
+                })
+                return response
+
+            messages.warning(request, 'La cancelación no puede realizarse porque faltan menos de 2 días para el viaje.')
+            return redirect('mis_reservas_usuario')
 
     reserva.motivo_cancelacion = motivo
     reserva.penalidad = penalidad_calculada
@@ -511,9 +528,10 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
         messages.success(request, f"La cancelación de la reserva #{reserva.id} fue procesada exitosamente sin penalidad.")
         return redirect('mis_cancelaciones')
 
-    # Con penalidad > 0 la reserva NO se marca cancelada todavía: queda en su
-    # estado actual (pendiente/confirmada) con la solicitud 'pendiente' de revisión
-    # administrativa. Solo cuando el admin apruebe pasará a 'cancelada'.
+    # Con penalidad > 0, si la cancelación está en un plazo válido, la reserva
+    # queda marcada como cancelada para reflejar el flujo del cliente, aunque la
+    # revisión administrativa continúe pendiente.
+    reserva.estado_reserva = 'cancelada'
     reserva.estado_cancelacion = 'pendiente'
     reserva.save()
 
@@ -565,8 +583,11 @@ def mis_cancelaciones(request):
     cancelaciones = Reserva.objects.filter(
         usuario=request.user
     ).filter(
-        Q(estado_cancelacion__in=['pendiente', 'aprobada', 'rechazada']) |
-        Q(estado_reserva='cancelada')
+        Q(estado_cancelacion='pendiente') |
+        Q(estado_cancelacion='aprobada') |
+        Q(estado_reserva='cancelada', estado_cancelacion='aprobada')
+    ).exclude(
+        estado_cancelacion='rechazada'
     ).select_related('paquete').order_by('-fecha_registro')
 
     context = {
