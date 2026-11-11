@@ -533,43 +533,7 @@ body, .navbar-glass, .card, main, section {
     transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
 }
 
-/* ── 1. HERO WATER REVEAL CANVAS EN MODO OSCURO ── */
-html[data-bs-theme="dark"] #hero-reveal-section {
-    background-color: #0b0f0d !important;
-}
-
-html[data-bs-theme="dark"] .canvas-container {
-    background: #000000 !important;
-    mix-blend-mode: multiply !important;
-}
-
-html[data-bs-theme="dark"] .interface h1 {
-    color: #ffffff !important;
-    -webkit-text-stroke: 1px rgba(76, 175, 112, 0.6) !important;
-    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.9) !important;
-}
-
-html[data-bs-theme="dark"] .interface p {
-    color: #e2e8f0 !important;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;
-}
-
-html[data-bs-theme="dark"] .interface .btn {
-    color: #ffffff !important;
-    -webkit-text-stroke: 0px !important;
-    background-color: rgba(44, 110, 60, 0.4) !important;
-    border: 1.5px solid #4caf70 !important;
-    box-shadow: 0 4px 16px rgba(0, 82, 21, 0.4) !important;
-}
-
-html[data-bs-theme="dark"] .interface .btn:hover {
-    background-color: rgba(76, 175, 112, 0.6) !important;
-    border-color: #5aba73 !important;
-    color: #ffffff !important;
-    transform: translateX(4px);
-}
-
-/* ── 2. SECCIONES Y APARTADOS CON SUPERFICIES CLARAS ── */
+/* ── 1. SECCIONES Y APARTADOS CON SUPERFICIES CLARAS ── */
 html[data-bs-theme="dark"] section,
 html[data-bs-theme="dark"] .bg-white,
 html[data-bs-theme="dark"] .bg-light,
