@@ -248,9 +248,7 @@ endblock %} {% block content %}
             <i class="bi bi-card-heading text-muted fs-5"></i>
             <div>
               Documento:
-              <strong class="text-dark"
-                >{{ user.get_tipo_documento_display|default:user.tipo_documento
-                }} {{ user.numero_documento }}</strong
+              <strong class="text-dark">{{ user.get_tipo_documento_display|default:user.tipo_documento}} {{ user.numero_documento }}</strong
               >
             </div>
           </div>
@@ -479,10 +477,7 @@ endblock %} {% block content %}
                   style="min-height: 42px; display: flex; align-items: center"
                 >
                   <i class="bi bi-card-heading text-muted me-2"></i
-                  ><span
-                    >{{
-                    user.get_tipo_documento_display|default:user.tipo_documento
-                    }}</span
+                  ><span>{{user.get_tipo_documento_display|default:user.tipo_documento}}</span
                   >
                 </div>
               </div>
