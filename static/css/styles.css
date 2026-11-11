@@ -468,80 +468,12 @@ main .breadcrumb-item.active {
     -webkit-backface-visibility: hidden;
 }
 
-@keyframes smoothZoom {
-    0% { transform: scale(1) translateZ(0); }
-    100% { transform: scale(1.08) translateZ(0); }
-}
-
-.bg-zoom-anim {
-    animation: smoothZoom 14s ease-in-out infinite alternate;
-    will-change: transform;
-    transform-origin: center center;
-}
-
-.canvas-container {
-    z-index: 2;
-    background: #ffffff;
-    filter: blur(15px) contrast(38);
-    mix-blend-mode: screen;
-}
-
-.interface {
-    z-index: 3;
-    max-width: 800px;
-}
-
-.interface h1 {
-    color: #1c1c1a;
-    -webkit-text-stroke: 1.2px #000000;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: color 0.4s ease, -webkit-text-stroke 0.4s ease;
-}
-
-.interface p {
-    color: #1c1c1a;
-    transition: color 0.4s ease;
-}
-
-.interface .btn {
-    pointer-events: auto;
-    color: #1c1c1a;
-    -webkit-text-stroke: 0.4px #000000;
-    background-color: rgba(255, 255, 255, 0.4);
-    border: 1.5px solid #000000;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transition: all 0.4s ease;
-}
-
-.interface.hero-text-light h1 {
-    color: #ffffff !important;
-    -webkit-text-stroke: 1px rgba(0, 0, 0, 0.4);
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-.interface.hero-text-light p {
-    color: #ffffff !important;
-}
-
-.interface.hero-text-light .btn {
-    color: #ffffff !important;
-    -webkit-text-stroke: 0.4px rgba(0, 0, 0, 0.3);
-    background-color: rgba(255, 255, 255, 0.25) !important;
-    border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-}
-
 .hero-logo {
     max-height: 90px;
     object-fit: contain;
     display: block;
     filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
     transition: filter 0.4s ease, transform 0.4s ease;
-}
-
-.interface.hero-text-light .hero-logo {
-    filter: drop-shadow(0 4px 16px rgba(255, 255, 255, 0.60));
-    transform: scale(1.05);
 }
 
 
@@ -912,39 +844,9 @@ body:has(.menu-hamburguesa-premium.show) {
 }
 
 @media (max-width: 768px) {
-    #hero-reveal-section {
-        height: auto !important;
-        min-height: 85vh;
-        min-height: 85dvh;
-        padding-top: 3rem !important;
-        padding-bottom: 3rem !important;
-    }
-
-    .interface {
-        width: 100% !important;
-        max-width: 100%;
-        padding: 0 !important;
-    }
-    
-    .interface h1 {
-        font-size: clamp(2rem, 8vw, 3rem) !important;
-        margin-bottom: 0.75rem !important;
-    }
-    
     .hero-logo {
         max-height: 65px !important;
         margin-bottom: 0.5rem !important;
-    }
-    
-    .interface p.lead {
-        font-size: 1rem !important;
-        line-height: 1.5 !important;
-        margin-bottom: 1.5rem !important;
-    }
-    
-    .interface .btn {
-        padding: 10px 24px !important;
-        font-size: 0.85rem !important;
     }
 
     .sticky-md-top {
@@ -1359,3 +1261,38 @@ body:has(.menu-hamburguesa-premium.show) {
 }
 
 
+
+
+/* ===== Hero: efecto de ondas de agua (Vanta Waves) ===== */
+.hero-agua {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hero-agua img {
+  transition: transform 0.8s ease;
+}
+
+.hero-agua.activo img {
+  transform: scale(1.03);
+}
+
+.hero-agua-ondas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: overlay; /* mezcla las ondas con la imagen */
+  transition: opacity 0.6s ease;
+}
+
+.hero-agua.activo .hero-agua-ondas {
+  opacity: 0.85;
+}
+
+.hero-agua-ondas canvas {
+  width: 100% !important;
+  height: 100% !important;
+}

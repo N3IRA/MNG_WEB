@@ -526,12 +526,16 @@
           type="submit"
           id="btnRegistrarse"
           class="btn btn-success rounded-pill py-3 fw-bold shadow-sm"
+          title="Completar registro y crear mi cuenta en Monagua"
+          aria-label="Completar registro y crear mi cuenta en Monagua"
         >
           Crear Cuenta
         </button>
         <a
           href="{% url 'login' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}"
           class="btn btn-light rounded-pill py-3 fw-semibold text-secondary border-0 shadow-sm text-center"
+          title="Ir a iniciar sesión con una cuenta existente"
+          aria-label="Ir a iniciar sesión con una cuenta existente"
         >
           Ya tengo una cuenta
         </a>

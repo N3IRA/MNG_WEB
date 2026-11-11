@@ -1,4 +1,7 @@
-{% extends "base.html" %} {% load static %} {% block main_class %}pt-0{% endblock %} {% block content %}
+{% extends "base.html" %}
+{% load static %}
+{% block main_class %}pt-0{% endblock %}
+{% block content %}
 
 <!-- ============================================================ -->
 <!-- VERSIÓN MÓVIL: Fondo difuminado igual a registro.html        -->
@@ -6,7 +9,7 @@
 <div
   class="d-lg-none min-vh-100 d-flex flex-column justify-content-center align-items-center pt-5 pb-4 px-3"
   style="
-    background-image: url('{% static 'img/difuminado.webp' %}');
+    background-image: url('{% static "img/difuminado.webp" %}');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -37,7 +40,7 @@
       <div class="d-flex align-items-center gap-3">
         <div
           class="d-flex align-items-center justify-content-center bg-success text-white rounded-circle flex-shrink-0 shadow-sm"
-          style="width: 50px; height: 50px; min-width: 50px;"
+          style="width: 50px; height: 50px; min-width: 50px"
         >
           <i class="fa-solid fa-lightbulb fs-4"></i>
         </div>
@@ -65,7 +68,9 @@
 
       <!-- Input Usuario -->
       <div class="mb-3" data-aos="fade-up" data-aos-delay="300">
-        <label class="form-label small fw-semibold text-secondary ps-3 mb-1">Correo electrónico o nombre de usuario</label>
+        <label class="form-label small fw-semibold text-secondary ps-3 mb-1"
+          >Correo electrónico o nombre de usuario</label
+        >
         <input
           type="text"
           name="username"
@@ -77,7 +82,9 @@
 
       <!-- Input Password -->
       <div class="mb-3" data-aos="fade-up" data-aos-delay="400">
-        <label class="form-label small fw-semibold text-secondary ps-3 mb-1">Contraseña</label>
+        <label class="form-label small fw-semibold text-secondary ps-3 mb-1"
+          >Contraseña</label
+        >
         <div class="position-relative">
           <input
             type="password"
@@ -87,7 +94,8 @@
             required
           />
           <i
-            class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-4 text-secondary u-style-26590802"
+            class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-4 text-secondary"
+            style="cursor: pointer;"
             onclick="
               const input = this.previousElementSibling;
               if (input.type === 'password') {
@@ -107,8 +115,10 @@
         <button
           type="submit"
           class="btn btn-success rounded-pill py-3 fw-bold shadow-sm"
+          title="Iniciar sesión en su cuenta de Monagua"
+          aria-label="Iniciar sesión en su cuenta de Monagua"
         >
-          Iniciar Aventura
+          Iniciar Sesión
         </button>
       </div>
 
@@ -117,6 +127,8 @@
         <a
           href="{% url 'recuperar_clave' %}"
           class="small text-dark fw-semibold link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover"
+          title="Recuperar contraseña olvidada"
+          aria-label="Recuperar contraseña olvidada"
           >¿Olvidaste tu contraseña?</a
         >
       </div>
@@ -126,6 +138,8 @@
         <a
           href="{% url 'registro' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}"
           class="btn btn-outline-success rounded-pill py-3 fw-bold text-center text-decoration-none"
+          title="Registrarse y crear una nueva cuenta en Monagua"
+          aria-label="Registrarse y crear una nueva cuenta en Monagua"
           >Crear cuenta nueva</a
         >
       </div>
@@ -133,7 +147,12 @@
 
     <!-- Branding Sutil Estilo Meta -->
     <div class="d-flex align-items-center justify-content-center gap-2 mt-4">
-      <img src="{% static 'img/Logo.webp' %}" alt="Logo Monagua" width="22" height="22" />
+      <img
+        src="{% static 'img/Logo.webp' %}"
+        alt="Logo Monagua"
+        width="22"
+        height="22"
+      />
       <span class="fw-bold text-secondary opacity-75 fs-6">Monagua</span>
     </div>
   </div>
@@ -149,7 +168,7 @@
       <div
         class="col-lg-6 min-vh-100 login-hero-bg"
         style="
-          background-image: url('{% static 'img/Fondo6.png' %}');
+          background-image: url('{% static "img/Fondo6.png" %}');
           background-size: cover;
           background-position: center;
         "
@@ -161,7 +180,12 @@
       <div
         class="col-lg-6 bg-white d-flex align-items-center justify-content-center p-5 min-vh-100 overflow-auto"
       >
-        <div class="w-100" style="max-width: 480px" data-aos="fade-left" data-aos-duration="800">
+        <div
+          class="w-100"
+          style="max-width: 480px"
+          data-aos="fade-left"
+          data-aos-duration="800"
+        >
           <!-- Cabecera Editorial -->
           <div class="mb-5" data-aos="fade-up" data-aos-delay="100">
             <h1 class="display-4 fw-bold text-dark mb-1">¡Hola!</h1>
@@ -180,7 +204,7 @@
             <div class="d-flex align-items-center gap-3">
               <div
                 class="d-flex align-items-center justify-content-center bg-success text-white rounded-circle flex-shrink-0 shadow-sm"
-                style="width: 50px; height: 50px; min-width: 50px;"
+                style="width: 50px; height: 50px; min-width: 50px"
               >
                 <i class="fa-solid fa-lightbulb fs-4"></i>
               </div>
@@ -208,7 +232,10 @@
 
             <!-- Input Usuario -->
             <div class="mb-3" data-aos="fade-up" data-aos-delay="300">
-              <label class="form-label small fw-semibold text-secondary ps-3 mb-1">Correo electrónico o nombre de usuario</label>
+              <label
+                class="form-label small fw-semibold text-secondary ps-3 mb-1"
+                >Correo electrónico o nombre de usuario</label
+              >
               <input
                 type="text"
                 name="username"
@@ -220,7 +247,10 @@
 
             <!-- Input Password -->
             <div class="mb-3" data-aos="fade-up" data-aos-delay="400">
-              <label class="form-label small fw-semibold text-secondary ps-3 mb-1">Contraseña</label>
+              <label
+                class="form-label small fw-semibold text-secondary ps-3 mb-1"
+                >Contraseña</label
+              >
               <div class="position-relative">
                 <input
                   type="password"
@@ -230,7 +260,8 @@
                   required
                 />
                 <i
-                  class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-4 text-secondary u-style-26590802"
+                  class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-4 text-secondary"
+                  style="cursor: pointer;"
                   onclick="
                     const input = this.previousElementSibling;
                     if (input.type === 'password') {
@@ -246,29 +277,47 @@
             </div>
 
             <!-- Botón Principal -->
-            <div class="d-grid pt-2 mb-3" data-aos="fade-up" data-aos-delay="500">
+            <div
+              class="d-grid pt-2 mb-3"
+              data-aos="fade-up"
+              data-aos-delay="500"
+            >
               <button
                 type="submit"
                 class="btn btn-success rounded-pill py-3 fw-bold shadow-sm"
+                title="Iniciar sesión en su cuenta de Monagua"
+                aria-label="Iniciar sesión en su cuenta de Monagua"
               >
-                Iniciar Aventura
+                Iniciar Sesión
               </button>
             </div>
 
             <!-- Link Olvidaste tu contraseña -->
-            <div class="text-center mb-4" data-aos="fade-up" data-aos-delay="550">
+            <div
+              class="text-center mb-4"
+              data-aos="fade-up"
+              data-aos-delay="550"
+            >
               <a
                 href="{% url 'recuperar_clave' %}"
                 class="small text-dark fw-semibold link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover"
+                title="Recuperar contraseña olvidada"
+                aria-label="Recuperar contraseña olvidada"
                 >¿Olvidaste tu contraseña?</a
               >
             </div>
 
             <!-- Botón Secundario: Crear cuenta nueva -->
-            <div class="d-grid pt-2 mb-2" data-aos="fade-up" data-aos-delay="600">
+            <div
+              class="d-grid pt-2 mb-2"
+              data-aos="fade-up"
+              data-aos-delay="600"
+            >
               <a
                 href="{% url 'registro' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}"
                 class="btn btn-outline-success rounded-pill py-3 fw-bold text-center text-decoration-none"
+                title="Registrarse y crear una nueva cuenta en Monagua"
+                aria-label="Registrarse y crear una nueva cuenta en Monagua"
                 >Crear cuenta nueva</a
               >
             </div>
@@ -293,4 +342,5 @@
 </div>
 
 <script src="{% static 'js/auth/alertas.js' %}"></script>
-{% block mascota %}{% endblock %} {% endblock %}
+{% endblock %}
+{% block mascota %}{% endblock %}

@@ -4,118 +4,46 @@
 {% block main_class %}pt-0{% endblock %}
 
 {% block content %}
-<section id="hero-reveal-section" class="position-relative w-100 overflow-hidden bg-white d-flex align-items-center" style="height: 90vh;">
-  <!-- Imagen de Fondo con animación de Zoom -->
-  <div class="bg-image bg-zoom-anim position-absolute top-0 start-0 w-100 h-100"
-       style="background-image: url('{% static "img/hero_bg.webp" %}');"></div>
-
-  <!-- Overlay Oscuro más claro (para suavizar la imagen revelada) -->
-  <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0, 0, 0, 0.2); z-index: 1;"></div>
-
-  <!-- Canvas Interactivo -->
-  <div class="canvas-container position-absolute top-0 start-0 w-100 h-100 pe-none">
-    <canvas id="waterCanvas" class="w-100 h-100 d-block"></canvas>
-  </div>
-
-  <!-- Contenido Principal (Logo, Nombre, Descripción y Botón) -->
-  <div class="container position-relative px-4 px-md-5" style="z-index: 3;">
-    <div class="interface" style="max-width: 750px;" data-aos="fade-up" data-aos-duration="1000">
-      <!-- Logo Monagua -->
-      <div class="mb-3" data-aos="zoom-in" data-aos-delay="200">
-        <img src="{% static 'img/logo_monagua.webp' %}" alt="Logo Monagua" class="hero-logo img-fluid" style="max-height: 85px; object-fit: contain;">
-      </div>
-      
-      <!-- Nombre de la página -->
-      <h1 class="display-3 fw-bold mb-3" style="letter-spacing: -1.5px; line-height: 1.1;" data-aos="fade-up" data-aos-delay="300">
-        Monagua
-      </h1>
-      
-      <!-- Breve Descripción -->
-      <p class="lead mb-4" style="font-size: 1.15rem; max-width: 620px; font-weight: 400; line-height: 1.6;" data-aos="fade-up" data-aos-delay="400">
-        Monagua te guía a través de paisajes auténticos, fomentando el ecoturismo y el respeto por las tradiciones locales. Sumérgete en la riqueza natural y patrimonial de Boyacá.
-      </p>
-      
-      <!-- Botón de acción transparente y redondeado -->
-      <a href="{% url 'tours' %}" class="btn rounded-pill px-4 py-2 d-inline-flex align-items-center gap-2 hover-slide-right" 
-         style="font-size: 0.95rem; font-weight: 500; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);" data-aos="zoom-in" data-aos-delay="500">
-        Conocer más <span style="font-size: 1.1rem; vertical-align: middle;">→</span>
-      </a>
-    </div>
-  </div>
-
-</section>
-
-{% if banners %}
-<!-- SECCIÓN DE BANNERS PROMOCIONALES (CARRUSEL) -->
-<section class="py-4" style="background-color: #f8f9fa;">
-  <div class="container">
-    <div id="promotionalBanners" class="carousel slide carousel-fade shadow-sm rounded-4 overflow-hidden" data-bs-ride="carousel" data-aos="fade-up">
-      <!-- Indicadores -->
-      <div class="carousel-indicators">
-        {% for banner in banners %}
-          <button type="button" data-bs-target="#promotionalBanners" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Slide {{ forloop.counter }}"></button>
-        {% endfor %}
+<section class="bg-white d-flex align-items-center" style="min-height: 706px;">
+  <div class="container-fluid py-4 ps-0" style="padding-left: 59px !important; padding-right: 59px;">
+    <div class="row align-items-center g-4 g-lg-5">
+      <!-- Contenedor Imagen (Lado Izquierdo) -->
+      <div class="col-12 col-lg-7 ps-0" data-aos="fade-right">
+        <!-- Imagen con efecto de ondas de agua al pasar el cursor (Vanta Waves) -->
+        <div id="hero-agua" class="hero-agua rounded-4 shadow-sm">
+          <img src="{% static 'img/hero_bg.webp' %}" alt="Monagua" width="840" height="630" class="img-fluid w-100 object-fit-cover d-block" style="height: 520px; max-height: 630px; aspect-ratio: 840 / 630;">
+          <div id="hero-agua-ondas" class="hero-agua-ondas" aria-hidden="true"></div>
+        </div>
       </div>
 
-      <!-- Estilos Responsive para el Banner -->
-      <style>
-        .banner-img-responsive {
-          width: 100%;
-          height: 30vh;
-          min-height: 250px;
-          max-height: 450px;
-          object-fit: cover;
-          object-position: center;
-        }
-        @media (max-width: 768px) {
-          .banner-img-responsive {
-            min-height: 200px;
-          }
-          .carousel-caption {
-            bottom: 10px !important;
-            padding: 5px !important;
-          }
-          .carousel-caption h5 {
-            font-size: 1rem;
-          }
-        }
-      </style>
-      
-      <!-- Imágenes -->
-      <div class="carousel-inner">
-        {% for banner in banners %}
-          <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="5000">
-            {% if banner.enlace %}
-              <a href="{{ banner.enlace }}" target="_blank">
-            {% endif %}
-            
-            <img src="{{ banner.imagen.url }}" class="d-block banner-img-responsive" alt="{{ banner.titulo }}">
-            
-            {% if banner.enlace %}
-              </a>
-            {% endif %}
-            
-            <!-- Título Opcional -->
-            <div class="carousel-caption d-none d-md-block" style="background: rgba(0,0,0,0.5); border-radius: 8px; padding: 10px; backdrop-filter: blur(5px); bottom: 20px;">
-              <h5 class="mb-0 fw-light text-white">{{ banner.titulo }}</h5>
-            </div>
-          </div>
-        {% endfor %}
+      <!-- Contenedor Texto (Lado Derecho, alineado a la izquierda) -->
+      <div class="col-12 col-lg-5 text-start" data-aos="fade-left">
+        <!-- Logo Monagua -->
+        <div class="mb-3" data-aos="zoom-in" data-aos-delay="200">
+          <img src="{% static 'img/logo_monagua.webp' %}" alt="Logo Monagua" class="hero-logo img-fluid">
+        </div>
+        
+        <!-- Nombre de la página -->
+        <h1 class="display-3 fw-bold text-dark mb-3" data-aos="fade-up" data-aos-delay="300">
+          Monagua
+        </h1>
+        
+        <!-- Breve Descripción -->
+        <p class="lead text-secondary mb-4" data-aos="fade-up" data-aos-delay="400">
+          Monagua te guía a través de paisajes auténticos, fomentando el ecoturismo y el respeto por las tradiciones locales. Sumérgete en la riqueza natural y patrimonial de Boyacá.
+        </p>
+        
+        <!-- Botón de acción -->
+        <div data-aos="zoom-in" data-aos-delay="500">
+          <a href="{% url 'tours' %}" class="btn btn-outline-dark rounded-pill px-4 py-2 d-inline-flex align-items-center gap-2 hover-slide-right">
+            Conocer más <span>→</span>
+          </a>
+        </div>
       </div>
-
-      <!-- Controles -->
-      <button class="carousel-control-prev" type="button" data-bs-target="#promotionalBanners" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Anterior</span>
-      </button>
-      <button class="carousel-control-next" type="button" data-bs-target="#promotionalBanners" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Siguiente</span>
-      </button>
     </div>
   </div>
 </section>
-{% endif %}
+
 
 <!-- SECCIÓN DE CARRERAS (ESTILO PREMIUM - BOOTSTRAP 5) -->
 <section class="py-5" style="background-color: #1A261F; color: #1c1c1a;">
@@ -352,7 +280,7 @@
         <div class="content-box">
             <div class="panel-badge panel-badge-naturaleza"><i class="fa-solid fa-mountain"></i> Aventura</div>
             <h1 class="panel-title">Explora la majestuosidad de la Laguna Negra y sus leyendas sagradas</h1>
-            <a href="#" class="panel-btn-action">Descubrir Laguna Negra</a>
+            <a href="{% url 'tours' %}" class="panel-btn-action" title="Explorar el destino Laguna Negra" aria-label="Descubrir Laguna Negra">Descubrir Laguna Negra</a>
         </div>
     </section>
 
@@ -363,7 +291,7 @@
         <div class="content-box">
             <div class="panel-badge panel-badge-replastic"><i class="fa-solid fa-leaf"></i> Páramo</div>
             <h1 class="panel-title">Camina entre gigantes de agua en el místico Páramo de Ocetá</h1>
-            <a href="#" class="panel-btn-action">Explorar Páramo</a>
+            <a href="{% url 'tours' %}" class="panel-btn-action" title="Explorar el destino Páramo de Ocetá" aria-label="Explorar Páramo">Explorar Páramo</a>
         </div>
     </section>
 
@@ -374,7 +302,7 @@
         <div class="content-box">
             <div class="panel-badge panel-badge-urbano"><i class="fa-solid fa-monument"></i> Historia</div>
             <h1 class="panel-title">Descubre las pictografías ancestrales y el legado arqueológico</h1>
-            <a href="#" class="panel-btn-action">Ver Pictografías</a>
+            <a href="{% url 'tours' %}" class="panel-btn-action" title="Ver recorrido por las Pictografías" aria-label="Ver Pictografías">Ver Pictografías</a>
         </div>
     </section>
 
@@ -385,7 +313,7 @@
         <div class="content-box">
             <div class="panel-badge panel-badge-golf"><i class="fa-solid fa-church"></i> Cultura</div>
             <h1 class="panel-title">Recorre las calles coloniales y la historia del Templo Parroquial</h1>
-            <a href="#" class="panel-btn-action">Conocer Mongua</a>
+            <a href="{% url 'tours' %}" class="panel-btn-action" title="Conocer destinos culturales de Mongua" aria-label="Conocer Mongua">Conocer Mongua</a>
         </div>
     </section>
 
@@ -396,7 +324,7 @@
         <div class="content-box">
             <div class="panel-badge panel-badge-detalles"><i class="fa-solid fa-palette"></i> Tradición</div>
             <h1 class="panel-title">Maravíllate con el arte del tejido en lana y las artesanías de Mongua</h1>
-            <a href="#" class="panel-btn-action">Ver Artesanías</a>
+            <a href="{% url 'tours' %}" class="panel-btn-action" title="Ver experiencias y artesanías de Mongua" aria-label="Ver Artesanías">Ver Artesanías</a>
         </div>
     </section>
 </div>
@@ -557,6 +485,7 @@
 <script src="{% static 'js/librerias/animaciones_gsap.min.js' %}"></script>
 <script src="{% static 'js/librerias/animaciones_scroll_trigger.min.js' %}"></script>
 <script src="{% static 'js/inicio_cartas.js' %}"></script>
-
-<script src="{% static 'js/hero_water.js' %}?v=4.0"></script>
+<script src="{% static 'js/three.min.js' %}"></script>
+<script src="{% static 'js/vanta.waves.min.js' %}"></script>
+<script src="{% static 'js/hero_agua.js' %}"></script>
 {% endblock content %}

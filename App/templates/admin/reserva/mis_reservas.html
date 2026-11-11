@@ -7,7 +7,7 @@
 {% include "partials/breadcrumbs.html" with current_title="Mis Reservas" current_icon="bi bi-calendar-check-fill" %}
 
 <!-- Contenedor dinámico SPA para HTMX -->
-<div id="mis-reservas-container" class="container py-4 mx-auto u-style-f694cf53">
+<div id="mis-reservas-container" class="container py-4 mx-auto">
 
     <!-- ── 1. Encabezado y Filtros Rápidos en Vivo con HTMX ── -->
     <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
@@ -67,11 +67,11 @@
                         <div class="row g-0 align-items-stretch">
                             
                             <!-- Foto del Paquete -->
-                            <div class="col-md-4 position-relative u-style-47f2ed6c" style="min-height: 240px;">
+                            <div class="col-md-4 position-relative" style="min-height: 240px;">
                                 {% if reserva.paquete.imagen %}
-                                    <img src="{{ reserva.paquete.imagen.url }}" class="w-100 h-100 position-absolute start-0 top-0 u-style-ca362336" style="object-fit: cover;" alt="{{ reserva.paquete.nombre }}">
+                                    <img src="{{ reserva.paquete.imagen.url }}" class="w-100 h-100 position-absolute start-0 top-0" style="object-fit: cover;" alt="{{ reserva.paquete.nombre }}">
                                 {% else %}
-                                    <img src="{% static 'img/Fondo.webp' %}" class="w-100 h-100 position-absolute start-0 top-0 u-style-ca362336" style="object-fit: cover;" alt="Imagen por defecto">
+                                    <img src="{% static 'img/Fondo.webp' %}" class="w-100 h-100 position-absolute start-0 top-0" style="object-fit: cover;" alt="Imagen por defecto">
                                 {% endif %}
                             </div>
 

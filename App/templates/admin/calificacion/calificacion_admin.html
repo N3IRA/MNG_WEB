@@ -8,7 +8,7 @@
 <!-- Top Bar -->
 <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
   <div>
-    <h2 class="fw-bold mb-0 text-success u-style-4a548d2f">Gestión de Calificaciones</h2>
+    <h2 class="fw-bold mb-0 text-success">Gestión de Calificaciones</h2>
     <p class="text-muted mb-0 small">Calificaciones y valoraciones de experiencias registradas por los usuarios.</p>
   </div>
   <div class="d-flex align-items-center gap-2 flex-wrap me-lg-5 pe-lg-2">
@@ -58,14 +58,14 @@
   </div>
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
-      <thead class="table-light text-uppercase tracking-wider u-style-0b04a8e1">
+      <thead class="table-light text-uppercase tracking-wider">
         <tr>
-          <th class="ps-4 py-3 u-style-e8dbada6">Usuario</th>
-          <th class="py-3 u-style-d9900c66">Destino / Título</th>
-          <th class="py-3 text-center u-style-d9900c66">Puntuación</th>
+          <th class="ps-4 py-3">Usuario</th>
+          <th class="py-3">Destino / Título</th>
+          <th class="py-3 text-center">Puntuación</th>
           <th class="py-3">Comentario &amp; Respuesta</th>
-          <th class="py-3 text-center u-style-b3a15a8a">Estado</th>
-          <th class="pe-4 py-3 text-end u-style-d9900c66">Acciones</th>
+          <th class="py-3 text-center">Estado</th>
+          <th class="pe-4 py-3 text-end">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -76,13 +76,13 @@
             <div class="d-flex align-items-center gap-3">
               <img src="{% if calificacion.usuario and calificacion.usuario.imagen_perfil %}{{ calificacion.usuario.imagen_perfil.url }}{% else %}{% static 'img/avatar_pred.webp' %}{% endif %}"
                    alt="{{ calificacion.usuario.get_full_name|default:calificacion.usuario.username|default:'Usuario' }}"
-                   class="rounded-circle border u-style-a2bbb072"
+                   class="rounded-circle border"
                    width="40" height="40">
               <div>
-                <div class="fw-semibold text-dark u-style-8e9648ec">
+                <div class="fw-semibold text-dark">
                   {{ calificacion.usuario.get_full_name|default:calificacion.usuario.username|default:"Usuario" }}
                 </div>
-                <div class="text-muted small u-style-199b5800">
+                <div class="text-muted small">
                   {{ calificacion.usuario.email|default:"Sin correo registrado" }}
                 </div>
               </div>

@@ -18,8 +18,8 @@
             <p class="text-muted mb-0 small">Gestiona los periodos temporales (eco-verano, vacaciones, festivos) del año.</p>
         </div>
         <div class="d-flex align-items-center gap-2 flex-wrap me-lg-5 pe-lg-2">
-            <a href="{% url 'dashboard_admin' %}" class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 shadow-sm">
-                <i class="bi bi-grid-1x2"></i> Dashboard
+            <a href="{% url 'dashboard_admin' %}" class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 shadow-sm" title="Ir al Panel de Control de administración" aria-label="Ir al Panel de Control de administración">
+                <i class="bi bi-grid-1x2"></i> Panel de Control
             </a>
             <a href="{% url 'listar_paquetes' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-none d-md-inline-flex align-items-center gap-1 shadow-sm">
                 <i class="bi bi-box"></i> Paquetes
@@ -194,11 +194,11 @@
                         
                         <div class="row g-2 mb-3">
                             <div class="col-6">
-                                <small class="text-muted d-block text-uppercase fw-bold u-style-10b9dc21">Fecha Inicio</small>
+                                <small class="text-muted d-block text-uppercase fw-bold">Fecha Inicio</small>
                                 <span class="fw-semibold text-secondary small">{{ t.fecha_inicio|date:"d M, Y" }}</span>
                             </div>
                             <div class="col-6">
-                                <small class="text-muted d-block text-uppercase fw-bold u-style-10b9dc21">Fecha Fin</small>
+                                <small class="text-muted d-block text-uppercase fw-bold">Fecha Fin</small>
                                 <span class="fw-semibold text-secondary small">{{ t.fecha_fin|date:"d M, Y" }}</span>
                             </div>
                         </div>

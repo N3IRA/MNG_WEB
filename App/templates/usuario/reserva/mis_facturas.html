@@ -2,7 +2,7 @@
 {% load static %}
 {% load humanize %}
 
-{% block title %}Mis facturas  | Monagua{% endblock %}
+{% block title %}Mis Facturas | Monagua{% endblock %}
 
 {% block content %}
 {% include "partials/breadcrumbs.html" with current_title="Mis Facturas" current_icon="bi bi-file-earmark-ruled" %}
@@ -19,15 +19,13 @@
         </div>
     </div>
 
-
-
     <!-- Vista de Tabla para Escritorio -->
     <div class="card border-0 shadow-sm rounded-4 bg-white d-none d-md-block">
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
-                        <tr class="text-secondary small fw-bold text-uppercase u-style-65e738b5">
+                        <tr class="text-secondary small fw-bold text-uppercase">
                             <th class="ps-4 py-3">Nº Factura</th>
                             <th class="py-3">Aventura / Paquete</th>
                             <th class="py-3">Pasajeros</th>
@@ -63,13 +61,21 @@
                             </td>
                             <td class="text-end pe-4">
                                 <div class="d-inline-flex gap-2">
-                                    <a href="{% url 'ver_factura' r.id %}" class="btn btn-sm btn-outline-success px-3 rounded-pill fw-semibold shadow-sm">
+                                    <a href="{% url 'ver_factura' r.id %}" class="btn btn-sm btn-outline-success px-3 rounded-pill fw-semibold shadow-sm" title="Ver detalle de factura digital" aria-label="Ver factura FAC-1000{{ r.id }}">
                                         <i class="bi bi-eye-fill me-1"></i> Ver
                                     </a>
-                                    <a href="{% url 'descargar_factura' r.id %}" class="btn btn-sm btn-success px-3 rounded-pill fw-semibold shadow-sm">
+                                    <a href="{% url 'descargar_factura' r.id %}" class="btn btn-sm btn-success px-3 rounded-pill fw-semibold shadow-sm" title="Descargar factura en formato PDF" aria-label="Descargar factura FAC-1000{{ r.id }} en PDF">
                                         <i class="bi bi-download me-1"></i> PDF
                                     </a>
                                 </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <i class="bi bi-file-earmark-excel text-muted display-4 d-block mb-3"></i>
+                                <h5 class="fw-bold text-dark">Sin Facturas Registradas</h5>
+                                <p class="text-muted mx-auto" style="max-width: 480px;">Las facturas se generan automáticamente para tus aventuras cuando el pago es aprobado por el administrador.</p>
                             </td>
                         </tr>
                         {% endfor %}
@@ -110,10 +116,10 @@
                 </div>
 
                 <div class="d-flex gap-2 justify-content-end mt-4">
-                    <a href="{% url 'ver_factura' r.id %}" class="btn btn-sm btn-outline-success px-4 rounded-pill fw-semibold shadow-sm w-50 py-2">
+                    <a href="{% url 'ver_factura' r.id %}" class="btn btn-sm btn-outline-success px-4 rounded-pill fw-semibold shadow-sm w-50 py-2" title="Ver factura" aria-label="Ver factura FAC-1000{{ r.id }}">
                         <i class="bi bi-eye-fill me-1"></i> Ver
                     </a>
-                    <a href="{% url 'descargar_factura' r.id %}" class="btn btn-sm btn-success px-4 rounded-pill fw-semibold shadow-sm w-50 py-2">
+                    <a href="{% url 'descargar_factura' r.id %}" class="btn btn-sm btn-success px-4 rounded-pill fw-semibold shadow-sm w-50 py-2" title="Descargar factura PDF" aria-label="Descargar factura FAC-1000{{ r.id }}">
                         <i class="bi bi-download me-1"></i> PDF
                     </a>
                 </div>
@@ -122,9 +128,9 @@
         {% empty %}
         <div class="card border-0 shadow-sm rounded-4 bg-white py-5">
             <div class="card-body text-center py-4">
-                <i class="bi bi-file-earmark-excel text-muted u-style-212b6b2b"></i>
+                <i class="bi bi-file-earmark-excel text-muted display-3"></i>
                 <h5 class="fw-bold text-dark mt-3">Sin Facturas Registradas</h5>
-                <p class="text-muted mx-auto u-style-6bdce2a0">Las facturas se generan automáticamente para tus aventuras cuando el pago es aprobado por el administrador.</p>
+                <p class="text-muted mx-auto" style="max-width: 480px;">Las facturas se generan automáticamente para tus aventuras cuando el pago es aprobado por el administrador.</p>
             </div>
         </div>
         {% endfor %}

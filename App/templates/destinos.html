@@ -4,7 +4,7 @@
 {% load humanize %}
 
 {% block content %}
-{% include "partials/breadcrumbs.html" with current_title="Tours y Destinos" current_icon="bi bi-map-fill" %}
+{% include "partials/breadcrumbs.html" with current_title="Destinos y Paquetes" current_icon="bi bi-map-fill" %}
 
     <div id="carouselTours" class="carousel slide carousel-fade shadow-lg" data-bs-ride="carousel" data-bs-interval="5000">
         <div class="carousel-indicators mb-4">
@@ -89,7 +89,7 @@
     <div class="bg-white p-4 p-md-5 rounded-4 shadow-lg border border-light search-card-float">
         <div class="text-center mb-4" data-aos="fade-up" data-aos-delay="100">
             <h2 class="display-6 fw-bold text-dark mb-2">¿Listo para la aventura?</h2>
-            <p class="text-muted">Encuentra el tour perfecto en Mongua.</p>
+            <p class="text-muted">Encuentra el plan turístico perfecto en Mongua.</p>
         </div>
         
       <form method="GET" action="{% url 'tours' %}" class="mx-auto" style="max-width: 900px;" data-aos="fade-up" data-aos-delay="200">
@@ -127,8 +127,8 @@
         </div>
         
         <div class="col-md-3">
-            <button class="btn btn-success btn-lg w-100 shadow-sm fw-bold btn-hover-scale" type="submit">
-                <i class="bi bi-search me-1"></i> BUSCAR
+            <button class="btn btn-success btn-lg w-100 shadow-sm fw-bold btn-hover-scale" type="submit" title="Buscar destinos según los filtros seleccionados" aria-label="Buscar destinos según los filtros seleccionados">
+                <i class="bi bi-search me-1"></i> BUSCAR PLANES
             </button>
         </div>
     </div>
@@ -137,9 +137,9 @@
         <div class="col-md-9"> 
             <div class="input-group input-group-lg shadow-sm">
                 <span class="input-group-text bg-white text-muted fs-5"><i class="bi bi-people-fill"></i></span>
-                <select name="apto_menores" class="form-select fw-semibold text-dark fs-5" onchange="this.form.submit()" style="cursor: pointer;">
+                <select name="apto_menores" class="form-select fw-semibold text-dark fs-5" onchange="this.form.submit()" style="cursor: pointer;" title="Filtrar por admisión de menores" aria-label="Filtrar por admisión de menores">
                     <option value="" class="fw-normal text-muted">¿Viajas con menores? (Mostrar todos los planes)</option>
-                    <option value="si" {% if request.GET.apto_menores == 'si' %}selected{% endif %} class="text-success">¡Sí! Solo tours aptos para menores</option>
+                    <option value="si" {% if request.GET.apto_menores == 'si' %}selected{% endif %} class="text-success">¡Sí! Solo destinos aptos para menores</option>
                     <option value="no" {% if request.GET.apto_menores == 'no' %}selected{% endif %}>Solo adultos / No aptos para menores</option>
                 </select>
             </div>
@@ -161,7 +161,7 @@
     </div>
 
     <div class="mt-3 text-center text-md-start">
-        <a href="{% url 'tours' %}" class="text-decoration-none small text-muted hover-success transition-all d-inline-flex align-items-center gap-1">
+        <a href="{% url 'tours' %}" class="text-decoration-none small text-muted hover-success transition-all d-inline-flex align-items-center gap-1" title="Restablecer todos los filtros de búsqueda" aria-label="Restablecer todos los filtros de búsqueda">
             <i class="bi bi-x-circle"></i> Limpiar filtros
         </a>
     </div>
@@ -194,11 +194,11 @@
                                 <!-- Izquierda: Tipo y Descuento si aplica -->
                                 <div class="d-flex flex-column align-items-start gap-1">
                                     <span class="badge bg-dark bg-opacity-75 text-white px-2.5 py-1.5 rounded-pill shadow-sm d-inline-flex align-items-center badge-interactive" style="backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.3px;">
-                                        <i class="bi bi-geo-alt-fill text-success me-1"></i>Tour
+                                        <i class="bi bi-geo-alt-fill text-success me-1"></i>Destino
                                     </span>
                                     {% if tour.tiene_promocion %}
                                         <span class="badge bg-danger text-white px-2.5 py-1.5 rounded-pill shadow-sm d-inline-flex align-items-center fw-bold badge-interactive" style="font-size: 0.78rem; letter-spacing: 0.3px; box-shadow: 0 4px 10px rgba(220,53,69,0.35) !important;">
-                                            <i class="bi bi-tag-fill me-1"></i>-{{ tour.porcentaje_descuento_calculado|default:tour.promocion_activa.porcentaje_descuento }}% OFF
+                                            <i class="bi bi-tag-fill me-1"></i>-{{ tour.porcentaje_descuento_calculado|default:tour.promocion_activa.porcentaje_descuento }}% Descuento
                                         </span>
                                     {% endif %}
                                 </div>
@@ -278,16 +278,18 @@
                             <div class="d-flex gap-2 mt-2">
                                 <button type="button" class="btn btn-light text-success btn-lg w-100 rounded-pill fw-bold border fs-6 shadow-sm btn-hover-scale" 
                                         data-bs-toggle="modal" 
-                                        data-bs-target="#modalActividades-{{ tour.id }}">
-                                    <i class="bi bi-info-circle me-1"></i> Detalles
+                                        data-bs-target="#modalActividades-{{ tour.id }}"
+                                        title="Ver detalles e itinerario de {{ tour.nombre }}"
+                                        aria-label="Ver detalles e itinerario de {{ tour.nombre }}">
+                                    <i class="bi bi-info-circle me-1"></i> Ver Detalles
                                 </button>
                                 {% if not user.is_authenticated or user.es_turista %}
-                                    <a href="{% url 'reservas' %}?paquete_id={{ tour.id }}" class="btn btn-success btn-lg w-100 rounded-pill fw-bold fs-6 shadow-sm btn-hover-scale">
-                                        <i class="bi bi-calendar2-check me-1"></i> RESERVAR
+                                    <a href="{% url 'reservas' %}?paquete_id={{ tour.id }}" class="btn btn-success btn-lg w-100 rounded-pill fw-bold fs-6 shadow-sm btn-hover-scale" title="Reservar este destino ahora" aria-label="Reservar el destino {{ tour.nombre }} ahora">
+                                        <i class="bi bi-calendar2-check me-1"></i> RESERVAR AHORA
                                     </a>
                                 {% elif user.es_admin %}
-                                    <a href="{% url 'editar_paquete' tour.id %}" class="btn btn-outline-primary btn-lg w-100 rounded-pill fw-bold fs-6 shadow-sm btn-hover-scale">
-                                        <i class="bi bi-pencil-square me-1"></i> Editar
+                                    <a href="{% url 'editar_paquete' tour.id %}" class="btn btn-outline-primary btn-lg w-100 rounded-pill fw-bold fs-6 shadow-sm btn-hover-scale" title="Editar paquete turístico {{ tour.nombre }}" aria-label="Editar paquete turístico {{ tour.nombre }}">
+                                        <i class="bi bi-pencil-square me-1"></i> Editar Paquete
                                     </a>
                                 {% endif %}
                             </div>                 
