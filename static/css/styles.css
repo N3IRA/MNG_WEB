@@ -1262,35 +1262,28 @@ body:has(.menu-hamburguesa-premium.show) {
 
 
 
-/* ===== Hero: efecto de ondas de agua aplicadas a la imagen (jQuery Ripples WebGL) ===== */
+/* ===== Hero: Efecto de Ondas WebGL (jQuery Ripples) ===== */
 .hero-agua {
-  position: relative;
-  overflow: hidden;
-  border-radius: 1rem;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
-  cursor: pointer;
-  height: 520px;
-  max-height: 630px;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
 }
 
-.hero-agua img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  max-height: 630px;
-  object-fit: cover;
-  transition: opacity 0.5s ease;
+.hero-agua:hover {
+  transform: translateY(-3px) scale(1.003);
 }
 
-/* Cuando jquery.ripples está activo, oculta la etiqueta img para que el canvas de agua sea el protagonista */
+.hero-anim-item {
+  will-change: transform, opacity;
+}
+
+/* Cuando jquery.ripples está activo, oculta el fallback <img> para dar paso al canvas */
 .hero-agua.jquery-ripples img {
   opacity: 0;
   visibility: hidden;
 }
 
-/* El canvas WebGL de jquery.ripples se posiciona correctamente sobre el contenedor */
+/* El canvas WebGL de jquery.ripples se acopla exactamente al contenedor */
 .hero-agua canvas {
   position: absolute !important;
   inset: 0 !important;

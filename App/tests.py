@@ -537,7 +537,7 @@ class CancelacionReservaTests(TestCase):
             paquete=self.paquete,
             numero_adultos=2,
             numero_menores=0,
-            estado_reserva='confirmada',
+            estado_reserva='pendiente',
             fecha_inicio=date.today() + timedelta(days=10),
             estado_cancelacion=None
         )
@@ -572,7 +572,7 @@ class CancelacionReservaTests(TestCase):
             paquete=self.paquete,
             numero_adultos=2,
             numero_menores=0,
-            estado_reserva='confirmada',
+            estado_reserva='pendiente',
             fecha_inicio=None,
             estado_cancelacion=None
         )
@@ -665,7 +665,7 @@ class CancelacionReservaTests(TestCase):
             monto_total=Decimal('350000.00'),
             numero_adultos=2,
             numero_menores=0,
-            estado_reserva='confirmada',
+            estado_reserva='pendiente',
             fecha_inicio=date.today() + timedelta(days=30)
         )
         pendiente = Reserva.objects.create(
@@ -674,7 +674,7 @@ class CancelacionReservaTests(TestCase):
             monto_total=Decimal('350000.00'),
             numero_adultos=2,
             numero_menores=0,
-            estado_reserva='confirmada',
+            estado_reserva='pendiente',
             fecha_inicio=date.today() + timedelta(days=15),
             estado_cancelacion='pendiente',
             motivo_cancelacion='Solicituda de cancelación'
@@ -696,7 +696,7 @@ class CancelacionReservaTests(TestCase):
             monto_total=Decimal('350000.00'),
             numero_adultos=2,
             numero_menores=0,
-            estado_reserva='confirmada',
+            estado_reserva='pendiente',
             fecha_inicio=date.today() + timedelta(days=20),
             estado_cancelacion='aprobada',
             motivo_cancelacion='Se descartó por falta de pago'
@@ -742,7 +742,7 @@ class CancelacionReservaTests(TestCase):
             monto_total=Decimal('350000.00'),
             numero_adultos=2,
             numero_menores=0,
-            estado_reserva='confirmada',
+            estado_reserva='pendiente',
             fecha_inicio=date.today() + timedelta(days=15),
             estado_cancelacion='aprobada',
             motivo_cancelacion='Se marcó con aprobación pero quedó activa'
@@ -775,7 +775,7 @@ class CancelacionReservaTests(TestCase):
             monto_total=Decimal('350000.00'),
             numero_adultos=2,
             numero_menores=0,
-            estado_reserva='confirmada',
+            estado_reserva='pendiente',
             fecha_inicio=date.today() + timedelta(days=15),
             estado_cancelacion='pendiente',
             motivo_cancelacion='Solicituda de cancelación'
@@ -786,7 +786,7 @@ class CancelacionReservaTests(TestCase):
             monto_total=Decimal('350000.00'),
             numero_adultos=2,
             numero_menores=0,
-            estado_reserva='confirmada',
+            estado_reserva='pendiente',
             fecha_inicio=date.today() + timedelta(days=20),
             estado_cancelacion='rechazada',
             motivo_cancelacion='No procede'
@@ -800,6 +800,99 @@ class CancelacionReservaTests(TestCase):
         self.assertIn(aprobada, cancelaciones)
         self.assertIn(pendiente, cancelaciones)
         self.assertNotIn(rechazada, cancelaciones)
+
+
+class ConfirmacionReservaTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.admin = Usuario.objects.create_user(
+            username='admin_confirmacion',
+            email='admin_confirmacion@monagua.com',
+            password='Password123#',
+            first_name='Admin',
+            last_name='Confirmacion',
+            numero_documento='1000000001',
+            tipo_documento='CC',
+            rol=Usuario.Roles.ADMIN,
+            is_staff=True,
+            is_superuser=False,
+        )
+        self.turista = Usuario.objects.create_user(
+            username='turista_confirmacion',
+            email='turista_confirmacion@monagua.com',
+            password='Password123#',
+            first_name='Laura',
+            last_name='Rios',
+            numero_documento='1000000002',
+            tipo_documento='CC',
+            rol=Usuario.Roles.CLIENTE,
+            is_staff=False,
+            is_superuser=False,
+        )
+        self.categoria = Categoria.objects.create(nombre='Aventura')
+        self.paquete = Paquete.objects.create(
+            nombre='Tour de confirmación',
+            descripcion='Reserva de prueba',
+            categoria=self.categoria,
+            punto_encuentro='Plaza central',
+            hora_encuentro='08:00:00',
+            dias_duracion=1,
+            noches_duracion=0,
+            imagen=SimpleUploadedFile('test.jpg', b'contenido_imagen', content_type='image/jpeg')
+        )
+
+    def test_confirmacion_rechaza_reserva_sin_pago_aprobado(self):
+        reserva = Reserva.objects.create(
+            usuario=self.turista,
+            paquete=self.paquete,
+            monto_total=Decimal('350000.00'),
+            numero_adultos=2,
+            numero_menores=0,
+            estado_reserva='pendiente',
+            fecha_inicio=date.today() + timedelta(days=30),
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('editar_reserva', args=[reserva.id]),
+            {'estado_reserva': 'confirmada'}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.estado_reserva, 'pendiente')
+        self.assertContains(response, 'No se puede confirmar la reserva sin un pago aprobado.')
+
+    def test_confirmacion_acepta_reserva_con_pago_aprobado(self):
+        reserva = Reserva.objects.create(
+            usuario=self.turista,
+            paquete=self.paquete,
+            monto_total=Decimal('350000.00'),
+            numero_adultos=2,
+            numero_menores=0,
+            estado_reserva='pendiente',
+            fecha_inicio=date.today() + timedelta(days=30),
+        )
+        Pago.objects.create(
+            reserva=reserva,
+            referencia='CONF-001',
+            banco_origen='Bancolombia',
+            metodo_pago='Transferencia Bancaria',
+            monto=Decimal('350000.00'),
+            imagen_comprobante=SimpleUploadedFile('pago.gif', b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;', content_type='image/gif'),
+            descripcion='Pago validado',
+            estado_transaccion='aprobado'
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('editar_reserva', args=[reserva.id]),
+            {'estado_reserva': 'confirmada'}
+        )
+
+        self.assertEqual(response.status_code, 302)
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.estado_reserva, 'confirmada')
 
 
 class EmailReservaYCancelacionTests(TestCase):

@@ -488,8 +488,8 @@ class Reserva(models.Model):
     id = models.AutoField(primary_key=True)
     ESTADO_CHOICES = [
         ('pendiente', 'Pendiente'),
-        ('confirmado', 'Confirmado'),
-        ('rechazado', 'Rechazado'),
+        ('confirmada', 'Confirmada'),
+        ('cancelada', 'Cancelada'),
     ]
     estado_cancelacion = models.CharField(
         max_length=30,
@@ -539,6 +539,12 @@ class Reserva(models.Model):
             raise ValidationError('La reserva debe incluir al menos una persona.')
 
     def save(self, *args, **kwargs):
+        # Regla de negocio crítica: una reserva no puede quedar confirmada sin un pago aprobado.
+        if self.estado_reserva == 'confirmada':
+            pago = getattr(self, 'pago', None)
+            if pago is None or getattr(pago, 'estado_transaccion', None) != 'aprobado':
+                raise ValidationError('No se puede confirmar la reserva sin un pago aprobado.')
+
         self.clean()
 
         # El monto solo se calcula al crear la reserva; nunca se recalcula en

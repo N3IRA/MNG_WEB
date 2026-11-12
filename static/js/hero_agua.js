@@ -1,7 +1,6 @@
 /**
  * Inicialización de Ondas de Agua sobre la Imagen del Hero (Monagua)
- * Utiliza la librería jQuery Ripples (WebGL) configurada para ondas
- * rítmicas cada 1.5s con presencia clara pero elegante.
+ * Con animación de entrada cinematográfica premium (GSAP) y WebGL Ripples.
  */
 
 $(document).ready(function () {
@@ -10,49 +9,79 @@ $(document).ready(function () {
 
   // Respetar preferencias de accesibilidad (reducción de movimiento)
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (prefersReducedMotion) return;
 
+  // 1. Inicializar WebGL Ripples sobre la imagen
   try {
-    // Inicializar jQuery Ripples con mayor visibilidad y definición
     $hero.ripples({
       resolution: 512,       // Alta resolución para ondas nítidas y cristalinas
-      dropRadius: 16,        // Tamaño de onda bien definido y visible (antes 12)
-      perturbance: 0.02,     // Refracción un poco más notoria sin deformar en exceso (antes 0.012)
+      dropRadius: 16,        // Tamaño de onda bien definido y visible
+      perturbance: 0.02,     // Refracción acuática equilibrada y notoria
       interactive: true      // Ondas dinámicas al interactuar con el cursor o toque
     });
+  } catch (err) {
+    console.warn('[Ripples] No fue posible inicializar WebGL Ripples:', err);
+  }
 
-    // Ondas periódicas cada 1.5 segundos para mantener el agua viva y notoria
-    let dropTimer = setInterval(function () {
+  function triggerDrop(relX, relY, radius, strength) {
+    try {
+      const width = $hero.innerWidth();
+      const height = $hero.innerHeight();
+      if (!width || !height) return;
+      $hero.ripples('drop', width * relX, height * relY, radius, strength);
+    } catch (e) {}
+  }
+
+  // 2. Transición de Entrada Cinematográfica Premium con GSAP
+  if (window.gsap && !prefersReducedMotion) {
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+    // La imagen entra con escala sutil y elevación flotante de 0 a 1
+    tl.fromTo('#hero-agua',
+      { opacity: 0, scale: 0.95, y: 35 },
+      { opacity: 1, scale: 1, y: 0, duration: 1.25, clearProps: 'transform' }
+    )
+    // En el clímax del asentamiento (a los ~0.8s), cae una gota de bienvenida en el centro del lago
+    .add(function () {
+      triggerDrop(0.5, 0.46, 20, 0.024);
+    }, '-=0.45')
+    // Cascada rítmica y suave de textos, botones y badges
+    .fromTo('.hero-anim-item',
+      { opacity: 0, y: 24 },
+      { opacity: 1, y: 0, duration: 0.85, stagger: 0.09, clearProps: 'transform' },
+      '-=0.9'
+    );
+  }
+
+  // 3. Gotas periódicas cada 1.5s para mantener el agua viva en reposo
+  if (!prefersReducedMotion) {
+    setInterval(function () {
       if (!$hero.is(':visible')) return;
 
       const width = $hero.innerWidth();
       const height = $hero.innerHeight();
       if (!width || !height) return;
 
-      // Coordenadas aleatorias para cada gota de agua
       const x = Math.random() * width;
       const y = Math.random() * height;
       const dropRadius = 14 + Math.random() * 8;       // Radio notable (14px a 22px)
-      const strength = 0.014 + Math.random() * 0.012;  // Fuerza más notoria (0.014 a 0.026)
+      const strength = 0.014 + Math.random() * 0.012;  // Fuerza notable (0.014 a 0.026)
 
       $hero.ripples('drop', x, y, dropRadius, strength);
     }, 1500);
+  }
 
-    // Pausar y reanudar la animación según visibilidad en pantalla (ahorro de recursos)
-    if ('IntersectionObserver' in window) {
-      const observer = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            $hero.ripples('play');
-          } else {
-            $hero.ripples('pause');
-          }
-        });
-      }, { threshold: 0.05 });
+  // 4. Pausar y reanudar la animación según visibilidad en pantalla (ahorro de GPU)
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          $hero.ripples('play');
+        } else {
+          $hero.ripples('pause');
+        }
+      });
+    }, { threshold: 0.05 });
 
-      observer.observe($hero[0]);
-    }
-  } catch (err) {
-    console.warn('[Ripples] No fue posible inicializar WebGL Ripples:', err);
+    observer.observe($hero[0]);
   }
 });
