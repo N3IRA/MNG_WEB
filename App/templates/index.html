@@ -4,49 +4,83 @@
 {% block main_class %}pt-0{% endblock %}
 
 {% block content %}
-<section class="bg-white d-flex align-items-center" style="min-height: 706px;">
-  <div class="container-fluid py-4 ps-0" style="padding-left: 59px !important; padding-right: 59px;">
+<section class="bg-white d-flex align-items-center py-4 py-lg-5" style="min-height: 85vh;">
+  <div class="container-fluid px-3 px-sm-4 px-lg-5">
     <div class="row align-items-center g-4 g-lg-5">
-      <!-- Contenedor Imagen (Lado Izquierdo) -->
-      <div class="col-12 col-lg-7 ps-0" data-aos="fade-right">
-        <!-- Imagen con efecto de ondas de agua al pasar el cursor (Vanta Waves) -->
-        <div id="hero-agua" class="hero-agua rounded-4 shadow-sm">
-          <img src="{% static 'img/hero_bg.webp' %}" alt="Monagua" width="840" height="630" class="img-fluid w-100 object-fit-cover d-block" style="height: 520px; max-height: 630px; aspect-ratio: 840 / 630;">
-          <div id="hero-agua-ondas" class="hero-agua-ondas" aria-hidden="true"></div>
+      
+      <!-- Contenedor Texto (Arriba en móviles, Lado Derecho en escritorio) -->
+      <div class="col-12 col-lg-5 text-start order-1 order-lg-2">
+        
+
+
+        <!-- Logo Monagua -->
+        <div class="mb-2 hero-anim-item">
+          <img src="{% static 'img/logo_monagua.webp' %}" alt="Logo Monagua" class="img-fluid" style="max-height: 80px;">
+        </div>
+        
+        <!-- Nombre de la página y subtítulo evocativo -->
+        <h1 class="display-4 display-lg-3 fw-bold text-dark mb-1 hero-anim-item" style="letter-spacing: -1.5px; line-height: 1.1;">
+          Monagua
+        </h1>
+        <p class="h6 fw-normal mb-3 text-success hero-anim-item" style="letter-spacing: -0.3px;">
+          Donde el agua sagrada despierta tus sentidos
+        </p>
+        
+        <!-- Breve Descripción intrigante y sensorial -->
+        <p class="text-secondary mb-4 hero-anim-item" style="font-size: 1.05rem; line-height: 1.65; max-width: 520px;">
+          Toca el agua, siente la bruma del páramo y sumérgete en senderos ancestrales. Conectamos viajeros con las lagunas más puras, la biodiversidad de Ocetá y la calidez campesina de Mongua.
+        </p>
+        
+        <!-- Grupo de Botones de Acción (Reutilizando estilos nativos del proyecto) -->
+        <div class="d-flex flex-wrap align-items-center gap-2 gap-sm-3 mb-4 hero-anim-item">
+          <a href="{% url 'tours' %}" class="btn btn-success rounded-pill px-4 py-2.5 shadow-sm fw-semibold d-inline-flex align-items-center gap-2 btn-hover-scale hover-slide-right">
+            <i class="bi bi-compass"></i> Explorar Rutas <span>→</span>
+          </a>
+          <a href="#destinos-mongua" class="btn btn-outline-dark rounded-pill px-4 py-2.5 fw-semibold d-inline-flex align-items-center gap-2 btn-hover-scale">
+            <i class="bi bi-arrow-down-short fs-5"></i> Descubrir Mongua
+          </a>
+        </div>
+
+        <!-- Micro-pills de confianza e identidad -->
+        <div class="d-flex flex-wrap align-items-center gap-2 gap-sm-3 pt-3 border-top border-secondary border-opacity-10 hero-anim-item">
+          <div class="d-flex align-items-center gap-1.5 text-secondary small">
+            <i class="bi bi-droplet-fill text-success"></i>
+            <span class="fw-medium">Laguna Negra</span>
+          </div>
+          <span class="text-black-50 small d-none d-sm-inline">•</span>
+          <div class="d-flex align-items-center gap-1.5 text-secondary small">
+            <i class="bi bi-geo-alt-fill text-success"></i>
+            <span class="fw-medium">Páramo de Ocetá</span>
+          </div>
+          <span class="text-black-50 small d-none d-sm-inline">•</span>
+          <div class="d-flex align-items-center gap-1.5 text-secondary small">
+            <i class="bi bi-shield-check text-success"></i>
+            <span class="fw-medium">Turismo Comunitario</span>
+          </div>
         </div>
       </div>
 
-      <!-- Contenedor Texto (Lado Derecho, alineado a la izquierda) -->
-      <div class="col-12 col-lg-5 text-start" data-aos="fade-left">
-        <!-- Logo Monagua -->
-        <div class="mb-3" data-aos="zoom-in" data-aos-delay="200">
-          <img src="{% static 'img/logo_monagua.webp' %}" alt="Logo Monagua" class="hero-logo img-fluid">
-        </div>
-        
-        <!-- Nombre de la página -->
-        <h1 class="display-3 fw-bold text-dark mb-3" data-aos="fade-up" data-aos-delay="300">
-          Monagua
-        </h1>
-        
-        <!-- Breve Descripción -->
-        <p class="lead text-secondary mb-4" data-aos="fade-up" data-aos-delay="400">
-          Monagua te guía a través de paisajes auténticos, fomentando el ecoturismo y el respeto por las tradiciones locales. Sumérgete en la riqueza natural y patrimonial de Boyacá.
-        </p>
-        
-        <!-- Botón de acción -->
-        <div data-aos="zoom-in" data-aos-delay="500">
-          <a href="{% url 'tours' %}" class="btn btn-outline-dark rounded-pill px-4 py-2 d-inline-flex align-items-center gap-2 hover-slide-right">
-            Conocer más <span>→</span>
-          </a>
+      <!-- Contenedor Imagen (Abajo en móviles, Lado Izquierdo en escritorio) -->
+      <div class="col-12 col-lg-7 order-2 order-lg-1">
+        <!-- Imagen con efecto interactivo de ondas de agua aplicadas a la imagen (jQuery Ripples WebGL) -->
+        <div id="hero-agua" class="hero-agua position-relative rounded-4 shadow overflow-hidden w-100" style="aspect-ratio: 4 / 3; max-height: 600px; background-image: url('{% static 'img/hero_bg.webp' %}'); cursor: pointer;">
+          <img src="{% static 'img/hero_bg.webp' %}" alt="Monagua" width="840" height="630" class="img-fluid w-100 h-100 object-fit-cover d-block">
+          
+          <!-- Badge interactivo flotante en vidrio (Glassmorphism) -->
+          <div class="position-absolute bottom-0 start-0 m-3 px-3 py-1.5 rounded-pill bg-dark bg-opacity-75 text-white small d-inline-flex align-items-center gap-2 border border-white border-opacity-25 shadow-sm pe-none z-2" style="backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-size: 0.72rem; letter-spacing: 0.4px;">
+            <span class="rounded-circle bg-success d-inline-block" style="width: 7px; height: 7px; box-shadow: 0 0 8px #4caf50;"></span>
+            <span class="fw-normal opacity-90"><i class="bi bi-hand-index-thumb me-1"></i>Toca el agua para interactuar</span>
+          </div>
         </div>
       </div>
+
     </div>
   </div>
 </section>
 
 
 <!-- SECCIÓN DE CARRERAS (ESTILO PREMIUM - BOOTSTRAP 5) -->
-<section class="py-5" style="background-color: #1A261F; color: #1c1c1a;">
+<section id="destinos-mongua" class="py-5" style="background-color: #1A261F; color: #1c1c1a;">
     <div class="container py-5 d-flex flex-column justify-content-between" style="min-height: 500px;">
         
         <!-- Parte Superior: Etiqueta, Título e Imagen -->
@@ -490,7 +524,8 @@
 <script src="{% static 'js/librerias/animaciones_gsap.min.js' %}"></script>
 <script src="{% static 'js/librerias/animaciones_scroll_trigger.min.js' %}"></script>
 <script src="{% static 'js/inicio_cartas.js' %}"></script>
-<script src="{% static 'js/three.min.js' %}"></script>
-<script src="{% static 'js/vanta.waves.min.js' %}"></script>
+<!-- Librería WebGL de Ondas de Agua para Imágenes (jQuery Ripples) -->
+<script src="{% static 'js/librerias/jquery.min.js' %}"></script>
+<script src="{% static 'js/librerias/jquery.ripples.min.js' %}"></script>
 <script src="{% static 'js/hero_agua.js' %}"></script>
 {% endblock content %}
