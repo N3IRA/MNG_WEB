@@ -9,10 +9,9 @@
     <div class="row align-items-center g-4 g-lg-5">
       <!-- Contenedor Imagen (Lado Izquierdo) -->
       <div class="col-12 col-lg-7 ps-0" data-aos="fade-right">
-        <!-- Imagen con efecto de ondas de agua al pasar el cursor (Vanta Waves) -->
-        <div id="hero-agua" class="hero-agua rounded-4 shadow-sm">
+        <!-- Imagen con efecto interactivo de ondas de agua aplicadas a la imagen (jQuery Ripples WebGL) -->
+        <div id="hero-agua" class="hero-agua rounded-4 shadow-sm" style="background-image: url('{% static 'img/hero_bg.webp' %}');">
           <img src="{% static 'img/hero_bg.webp' %}" alt="Monagua" width="840" height="630" class="img-fluid w-100 object-fit-cover d-block" style="height: 520px; max-height: 630px; aspect-ratio: 840 / 630;">
-          <div id="hero-agua-ondas" class="hero-agua-ondas" aria-hidden="true"></div>
         </div>
       </div>
 
@@ -485,7 +484,8 @@
 <script src="{% static 'js/librerias/animaciones_gsap.min.js' %}"></script>
 <script src="{% static 'js/librerias/animaciones_scroll_trigger.min.js' %}"></script>
 <script src="{% static 'js/inicio_cartas.js' %}"></script>
-<script src="{% static 'js/three.min.js' %}"></script>
-<script src="{% static 'js/vanta.waves.min.js' %}"></script>
+<!-- Librería WebGL de Ondas de Agua para Imágenes (jQuery Ripples) -->
+<script src="{% static 'js/librerias/jquery.min.js' %}"></script>
+<script src="{% static 'js/librerias/jquery.ripples.min.js' %}"></script>
 <script src="{% static 'js/hero_agua.js' %}"></script>
 {% endblock content %}

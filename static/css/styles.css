@@ -1263,36 +1263,40 @@ body:has(.menu-hamburguesa-premium.show) {
 
 
 
-/* ===== Hero: efecto de ondas de agua (Vanta Waves) ===== */
+/* ===== Hero: efecto de ondas de agua aplicadas a la imagen (jQuery Ripples WebGL) ===== */
 .hero-agua {
   position: relative;
   overflow: hidden;
-  isolation: isolate;
+  border-radius: 1rem;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  height: 520px;
+  max-height: 630px;
 }
 
 .hero-agua img {
-  transition: transform 0.8s ease;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: 630px;
+  object-fit: cover;
+  transition: opacity 0.5s ease;
 }
 
-.hero-agua.activo img {
-  transform: scale(1.03);
-}
-
-.hero-agua-ondas {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
+/* Cuando jquery.ripples está activo, oculta la etiqueta img para que el canvas de agua sea el protagonista */
+.hero-agua.jquery-ripples img {
   opacity: 0;
-  pointer-events: none;
-  mix-blend-mode: overlay; /* mezcla las ondas con la imagen */
-  transition: opacity 0.6s ease;
+  visibility: hidden;
 }
 
-.hero-agua.activo .hero-agua-ondas {
-  opacity: 0.85;
-}
-
-.hero-agua-ondas canvas {
+/* El canvas WebGL de jquery.ripples se posiciona correctamente sobre el contenedor */
+.hero-agua canvas {
+  position: absolute !important;
+  inset: 0 !important;
   width: 100% !important;
   height: 100% !important;
+  z-index: 1 !important;
+  pointer-events: none;
 }
