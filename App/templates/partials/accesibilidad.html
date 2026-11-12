@@ -1,7 +1,87 @@
-<!-- ── Widget de Accesibilidad Sienna (Open Source) ── -->
+<!-- ── Widget de Accesibilidad: Sienna (Open Source) ── -->
 <script
   src="https://cdn.jsdelivr.net/npm/sienna-accessibility/dist/sienna-accessibility.umd.js"
-  data-primary-color="#198754"
+  data-primary-color="#005215"
   data-position="bottom-left"
+  data-asw-lang="es"
   defer
 ></script>
+
+<!-- Estilos personalizados para integración de Sienna en Monagua -->
+<style>
+  :root {
+    --asw-primary: #005215 !important;
+    --asw-primary-dark: #003e10 !important;
+  }
+
+  /* Botón flotante principal de Sienna en Verde Oscuro */
+  .asw-menu-btn {
+    background: linear-gradient(135deg, #005215 0%, #157347 100%) !important;
+    background-color: #005215 !important;
+    border: 1px solid rgba(76, 175, 112, 0.45) !important;
+    box-shadow: 0 8px 24px rgba(0, 82, 21, 0.45) !important;
+    color: #ffffff !important;
+    border-radius: 50% !important;
+    z-index: 999990 !important;
+    transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+  }
+
+  .asw-menu-btn:hover {
+    transform: scale(1.08) !important;
+    background: linear-gradient(135deg, #00681b 0%, #198754 100%) !important;
+    box-shadow: 0 12px 28px rgba(0, 82, 21, 0.6) !important;
+  }
+
+  .asw-menu-btn svg,
+  .asw-menu-btn i {
+    fill: #ffffff !important;
+    color: #ffffff !important;
+  }
+
+  /* Encabezado y acentos del panel desplegable */
+  .asw-menu-header {
+    background: linear-gradient(135deg, #005215 0%, #157347 100%) !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid rgba(76, 175, 112, 0.3) !important;
+  }
+
+  .asw-btn.asw-selected,
+  .asw-btn:hover {
+    border-color: #005215 !important;
+  }
+
+  /* En dashboards con barra lateral fija izquierda (≥992px), desplazar */
+  @media (min-width: 992px) {
+    body:has(#mainSidebar) .asw-menu-btn,
+    body:has(#mainSidebar) .asw-menu {
+      left: 280px !important;
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    // Asegurar compatibilidad y color verde oscuro tras la carga
+    function aplicarVerdeSienna() {
+      var btn = document.querySelector(".asw-menu-btn");
+      if (btn) {
+        btn.style.setProperty(
+          "background",
+          "linear-gradient(135deg, #005215 0%, #157347 100%)",
+          "important"
+        );
+        btn.style.setProperty("color", "#ffffff", "important");
+      }
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(aplicarVerdeSienna, 400);
+        setTimeout(aplicarVerdeSienna, 1200);
+      });
+    } else {
+      setTimeout(aplicarVerdeSienna, 400);
+      setTimeout(aplicarVerdeSienna, 1200);
+    }
+  })();
+</script>
