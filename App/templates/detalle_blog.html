@@ -1,230 +1,380 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block titulo %}{{ post.titulo }} | Blog Monagua{% endblock %}
+{% block titulo %}
+  {{ post.titulo }} | Blog Monagua
+{% endblock %}
 
 {% block content %}
-{% include "partials/breadcrumbs.html" with current_title=post.titulo|truncatechars:35 current_icon="bi bi-chat-quote-fill" %}
+{% include "partials/breadcrumbs.html" with
+   current_title=post.titulo|truncatechars:35
+   current_icon="bi bi-chat-quote-fill"
+%}
 
 <article class="pb-5">
-    <div class="container">
-        
-        <!-- Botón Volver -->
-        <div class="mb-4" data-aos="fade-right">
-            <a href="{% url 'blog' %}" class="btn btn-light border rounded-pill px-4 py-2 shadow-sm text-dark d-inline-flex align-items-center gap-2">
-                <i class="bi bi-arrow-left text-success"></i>
-                <span class="fw-semibold">Regresar al Blog</span>
-            </a>
-        </div>
+  <div class="container px-3 px-sm-4">
 
-        <!-- Cabecera de Imagen Hero (100% Bootstrap 5) -->
-        <div class="card border-0 shadow-lg overflow-hidden rounded-4 mb-4 position-relative text-white bg-dark" data-aos="zoom-in" data-aos-duration="800">
-            <div class="ratio ratio-21x9">
-                {% if post.imagen_destacada %}
-                    <img src="{{ post.imagen_destacada.url }}" class="card-img w-100 h-100 object-fit-cover opacity-50" alt="{{ post.titulo }}">
-                {% else %}
-                    <img src="{% static 'img/lagunanegra.webp' %}" class="card-img w-100 h-100 object-fit-cover opacity-50" alt="{{ post.titulo }}">
-                {% endif %}
-            </div>
+    <!-- Botón Volver -->
+    <div class="mb-4" data-aos="fade-right">
+      <a
+        href="{% url 'blog' %}"
+        class="btn btn-light border rounded-pill px-3 px-sm-4 py-2
+               shadow-sm text-dark d-inline-flex align-items-center gap-2"
+      >
+        <i class="bi bi-arrow-left text-success"></i>
+        <span class="fw-semibold">Regresar al blog</span>
+      </a>
+    </div>
 
-            <div class="card-img-overlay d-flex flex-column justify-content-end p-4 p-md-5 bg-dark bg-opacity-50">
-                <div class="align-self-start mb-3">
-                    <span class="badge bg-success text-white rounded-pill px-3 py-2 shadow-sm d-inline-flex align-items-center gap-1 fw-bold small">
-                        <i class="bi bi-geo-alt-fill"></i> Crónicas de Mongua
-                    </span>
-                </div>
-
-                <h1 class="display-4 fw-bold text-white mb-3">
-                    {{ post.titulo }}
-                </h1>
-
-                <p class="text-white text-opacity-90 fs-5 mb-0 col-lg-8">
-                    Relatos de naturaleza, senderismo y patrimonio de la tierra de Monagua.
-                </p>
-            </div>
-        </div>
-
-        <!-- Barra de Metadatos (KPIs del Post) -->
-        <div class="row g-3 mb-4" data-aos="fade-up" data-aos-delay="100">
-            <!-- Autor -->
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3 d-flex flex-row align-items-center gap-3">
-                    <div class="rounded-3 p-3 d-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success">
-                        <i class="bi bi-person-badge-fill fs-4"></i>
-                    </div>
-                    <div>
-                        <h6 class="fw-bold mb-0 text-dark">{{ post.usuario.get_full_name|default:post.usuario.username }}</h6>
-                        <small class="text-success fw-semibold text-uppercase">
-                            <i class="bi bi-patch-check-fill me-1"></i> Autor / Anfitrión
-                        </small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Fecha -->
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3 d-flex flex-row align-items-center gap-3">
-                    <div class="rounded-3 p-3 d-flex align-items-center justify-content-center bg-info bg-opacity-10 text-info">
-                        <i class="bi bi-calendar-event-fill fs-4"></i>
-                    </div>
-                    <div>
-                        <h6 class="fw-bold mb-0 text-dark">{{ post.fecha_publicacion|date:"d \d\e F, Y" }}</h6>
-                        <small class="text-muted">Fecha de Publicación</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Ubicación / Destino -->
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3 d-flex flex-row align-items-center gap-3">
-                    <div class="rounded-3 p-3 d-flex align-items-center justify-content-center bg-warning bg-opacity-10 text-warning">
-                        <i class="bi bi-compass-fill fs-4"></i>
-                    </div>
-                    <div>
-                        <h6 class="fw-bold mb-0 text-dark">Mongua, Boyacá</h6>
-                        <small class="text-muted">Destino y Ecoturismo</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Contenido y Barra Lateral -->
-        <div class="row g-4">
-            
-            <!-- Cuerpo del Post -->
-            <div class="col-lg-8" data-aos="fade-up" data-aos-delay="200">
-                <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-md-5 mb-4">
-                    
-                    {% if post.informacion_adicional %}
-                    <!-- Cita o Información Destacada -->
-                    <div class="position-relative mb-4 p-4 rounded-3 bg-success bg-opacity-10 border-start border-4 border-success">
-                        <div class="fs-5 fw-medium lh-base text-dark fst-italic">
-                            "{{ post.informacion_adicional }}"
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- Texto del Artículo -->
-                    <div class="fs-5 lh-lg text-secondary">
-                        {{ post.contenido|linebreaks }}
-                    </div>
-
-                    <hr class="my-5 opacity-25">
-
-                    <!-- Pie del Post: Navegación & Etiquetas -->
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">
-                                <i class="bi bi-tag-fill text-success me-1"></i> Mongua
-                            </span>
-                            <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">
-                                <i class="bi bi-tree-fill text-success me-1"></i> Ecoturismo
-                            </span>
-                        </div>
-                        <a href="{% url 'blog' %}" class="text-decoration-none text-success fw-bold d-inline-flex align-items-center gap-1">
-                            <span>Ver más crónicas</span>
-                            <i class="bi bi-arrow-right"></i>
-                        </a>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Columna Lateral: Compartir y Tours -->
-            <div class="col-lg-4" data-aos="fade-left" data-aos-delay="250">
-                <div class="sticky-top pt-2">
-                    
-                    <!-- Card Compartir (100% Nativo sin JS) -->
-                    <div class="card border-0 shadow-sm rounded-4 p-4 text-center bg-white mb-4">
-                        <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-3">
-                            <i class="bi bi-share-fill fs-4"></i>
-                        </div>
-                        <h5 class="fw-bold text-dark mb-2">¿Te gustó esta historia?</h5>
-                        <p class="text-muted small mb-4">Compártela con otros viajeros y ayúdanos a difundir los tesoros de Mongua.</p>
-                        
-                        <div class="d-flex flex-column gap-2">
-                            <a href="https://api.whatsapp.com/send?text=Mira%20esta%20gran%20historia%20sobre%20Mongua:%20{{ request.build_absolute_uri }}"
-                               target="_blank"
-                               class="btn btn-success rounded-pill py-2.5 fw-semibold shadow-sm d-inline-flex align-items-center justify-content-center gap-2">
-                                <i class="bi bi-whatsapp fs-5"></i>
-                                <span>Compartir en WhatsApp</span>
-                            </a>
-                            <a href="mailto:?subject={{ post.titulo|urlencode }}&body=Te%20comparto%20este%20art%C3%ADculo%20de%20Mongua:%20{{ request.build_absolute_uri }}"
-                               class="btn btn-outline-dark rounded-pill py-2.5 fw-semibold border d-inline-flex align-items-center justify-content-center gap-2">
-                                <i class="bi bi-envelope-fill"></i>
-                                <span>Compartir por Correo</span>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Card CTA Tours -->
-                    <div class="card border-0 shadow-sm rounded-4 p-4 bg-dark text-white text-center mb-4">
-                        <span class="badge bg-success rounded-pill px-3 py-1.5 small fw-bold mb-3 mx-auto">
-                            <i class="bi bi-compass"></i> EXPERIENCIAS GUIADAS
-                        </span>
-                        <h5 class="fw-bold text-white mb-2">Visita este destino</h5>
-                        <p class="text-white text-opacity-75 small mb-4">
-                            Descubre los paquetes turísticos oficiales y reserva tu cupo con guías locales.
-                        </p>
-                        <a href="{% url 'tours' %}" class="btn btn-success fw-bold rounded-pill py-2.5 w-100 shadow-sm d-inline-flex align-items-center justify-content-center gap-2">
-                            <i class="bi bi-map-fill"></i> Ver Tours Disponibles
-                        </a>
-                    </div>
-
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Sección de Otras Historias Recomendadas -->
-        {% if otros_blogs %}
-        <div class="mt-5 pt-4 border-top" data-aos="fade-up">
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <div>
-                    <h3 class="fw-bold text-dark mb-0">Otras Historias de Mongua</h3>
-                    <small class="text-muted">Continúa descubriendo más aventuras y crónicas</small>
-                </div>
-                <a href="{% url 'blog' %}" class="btn btn-outline-success btn-sm rounded-pill px-3 py-2 fw-semibold">
-                    Ver Todo el Blog
-                </a>
-            </div>
-
-            <div class="row g-4">
-                {% for otro in otros_blogs %}
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden bg-white d-flex flex-column justify-content-between">
-                        <div class="ratio ratio-16x9">
-                            {% if otro.imagen_destacada %}
-                                <img src="{{ otro.imagen_destacada.url }}" class="card-img-top object-fit-cover" alt="{{ otro.titulo }}" loading="lazy">
-                            {% else %}
-                                <img src="{% static 'img/lagunanegra.webp' %}" class="card-img-top object-fit-cover" alt="{{ otro.titulo }}" loading="lazy">
-                            {% endif %}
-                        </div>
-                        <div class="card-body p-4 d-flex flex-column justify-content-between flex-grow-1">
-                            <div>
-                                <small class="text-muted d-block mb-2">
-                                    <i class="bi bi-calendar3 text-success me-1"></i>{{ otro.fecha_publicacion|date:"d M, Y" }}
-                                </small>
-                                <h5 class="fw-bold text-dark mb-2">
-                                    {{ otro.titulo|truncatechars:45 }}
-                                </h5>
-                                <p class="text-muted small mb-3">
-                                    {{ otro.contenido|truncatewords:14 }}
-                                </p>
-                            </div>
-                            <div>
-                                <a href="{{ otro.get_absolute_url }}" class="btn btn-outline-success btn-sm rounded-pill px-3 py-1.5 fw-semibold stretched-link text-decoration-none">
-                                    Leer artículo <i class="bi bi-arrow-right ms-1"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+    <!-- Cabecera Hero Responsiva -->
+    <div
+      class="card border-0 shadow-lg overflow-hidden rounded-4 mb-4
+             position-relative text-white bg-dark"
+      data-aos="zoom-in"
+      data-aos-duration="800"
+    >
+      <div
+        class="position-relative w-100 overflow-hidden d-flex
+               flex-column justify-content-end"
+        style="min-height: 280px; max-height: 480px;"
+      >
+        {% if post.imagen_destacada %}
+          <img
+            src="{{ post.imagen_destacada.url }}"
+            class="position-absolute top-0 start-0 w-100 h-100
+                   object-fit-cover opacity-50"
+            alt="{{ post.titulo }}"
+          />
+        {% else %}
+          <img
+            src="{% static 'img/lagunanegra.webp' %}"
+            class="position-absolute top-0 start-0 w-100 h-100
+                   object-fit-cover opacity-50"
+            alt="{{ post.titulo }}"
+          />
         {% endif %}
 
+        <div
+          class="position-relative p-3 p-sm-4 p-md-5 d-flex flex-column
+                 justify-content-end w-100 h-100"
+          style="background: linear-gradient(to top, rgba(0,0,0,0.85) 0%,
+                 rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.2) 100%);"
+        >
+          <div class="align-self-start mb-2 mb-md-3">
+            <span
+              class="badge bg-success text-white rounded-pill px-3 py-2
+                     shadow-sm d-inline-flex align-items-center gap-1
+                     fw-bold small"
+            >
+              <i class="bi bi-geo-alt-fill"></i> Crónicas de Mongua
+            </span>
+          </div>
+
+          <h1
+            class="fw-bold text-white mb-2 mb-md-3 fs-2 fs-md-1
+                   display-md-5 lh-sm"
+          >
+            {{ post.titulo }}
+          </h1>
+
+          <p
+            class="text-white text-opacity-90 fs-6 fs-md-5 mb-0 col-lg-8
+                   fw-normal"
+          >
+            Relatos de naturaleza, senderismo y patrimonio de la tierra
+            de Monagua.
+          </p>
+        </div>
+      </div>
     </div>
+
+    <!-- Barra de Metadatos (KPIs) -->
+    <div class="row g-3 mb-4" data-aos="fade-up" data-aos-delay="100">
+      <!-- Autor -->
+      <div class="col-12 col-sm-6 col-md-4">
+        <div
+          class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3
+                 d-flex flex-row align-items-center gap-3"
+        >
+          <div
+            class="rounded-3 p-3 d-flex align-items-center
+                   justify-content-center bg-success bg-opacity-10
+                   text-success flex-shrink-0"
+          >
+            <i class="bi bi-person-badge-fill fs-4"></i>
+          </div>
+          <div class="text-truncate">
+            <h6 class="fw-bold mb-0 text-dark text-truncate">
+              {{ post.usuario.get_full_name|default:post.usuario.username }}
+            </h6>
+            <small class="text-success fw-semibold text-uppercase">
+              <i class="bi bi-patch-check-fill me-1"></i> Autor / anfitrión
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fecha -->
+      <div class="col-12 col-sm-6 col-md-4">
+        <div
+          class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3
+                 d-flex flex-row align-items-center gap-3"
+        >
+          <div
+            class="rounded-3 p-3 d-flex align-items-center
+                   justify-content-center bg-info bg-opacity-10
+                   text-info flex-shrink-0"
+          >
+            <i class="bi bi-calendar-event-fill fs-4"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold mb-0 text-dark">
+              {{ post.fecha_publicacion|date:"d \d\e F, Y" }}
+            </h6>
+            <small class="text-muted">Fecha de publicación</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ubicación -->
+      <div class="col-12 col-sm-12 col-md-4">
+        <div
+          class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3
+                 d-flex flex-row align-items-center gap-3"
+        >
+          <div
+            class="rounded-3 p-3 d-flex align-items-center
+                   justify-content-center bg-warning bg-opacity-10
+                   text-warning flex-shrink-0"
+          >
+            <i class="bi bi-compass-fill fs-4"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold mb-0 text-dark">Mongua, Boyacá</h6>
+            <small class="text-muted">Destino y ecoturismo</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenido y Barra Lateral -->
+    <div class="row g-4">
+      <!-- Cuerpo del Post -->
+      <div class="col-lg-8" data-aos="fade-up" data-aos-delay="200">
+        <div
+          class="card border-0 shadow-sm rounded-4 bg-white
+                 p-3 p-sm-4 p-md-5 mb-4"
+        >
+          {% if post.informacion_adicional %}
+            <!-- Cita o Información Destacada -->
+            <div
+              class="position-relative mb-4 p-3 p-md-4 rounded-3
+                     bg-success bg-opacity-10 border-start border-4
+                     border-success"
+            >
+              <div class="fs-6 fs-md-5 fw-medium lh-base text-dark fst-italic">
+                "{{ post.informacion_adicional }}"
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- Texto del Artículo -->
+          <div class="fs-6 fs-md-5 lh-lg text-secondary">
+            {{ post.contenido|linebreaks }}
+          </div>
+
+          <hr class="my-4 my-md-5 opacity-25" />
+
+          <!-- Pie del Post: Navegación & Etiquetas -->
+          <div
+            class="d-flex flex-wrap align-items-center
+                   justify-content-between gap-3"
+          >
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span
+                class="badge bg-light text-dark border px-3 py-2
+                       rounded-pill"
+              >
+                <i class="bi bi-tag-fill text-success me-1"></i> Mongua
+              </span>
+              <span
+                class="badge bg-light text-dark border px-3 py-2
+                       rounded-pill"
+              >
+                <i class="bi bi-tree-fill text-success me-1"></i> Ecoturismo
+              </span>
+            </div>
+            <a
+              href="{% url 'blog' %}"
+              class="text-decoration-none text-success fw-bold
+                     d-inline-flex align-items-center gap-1"
+            >
+              <span>Ver más crónicas</span>
+              <i class="bi bi-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Lateral: Compartir y Tours -->
+      <div class="col-lg-4" data-aos="fade-left" data-aos-delay="250">
+        <div class="sticky-lg-top pt-2">
+          <!-- Card Compartir -->
+          <div
+            class="card border-0 shadow-sm rounded-4 p-4 text-center
+                   bg-white mb-4"
+          >
+            <div
+              class="bg-success bg-opacity-10 text-success rounded-circle
+                     d-inline-flex align-items-center justify-content-center
+                     p-3 mb-3 mx-auto"
+              style="width: 56px; height: 56px;"
+            >
+              <i class="bi bi-share-fill fs-4"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-2">¿Te gustó esta historia?</h5>
+            <p class="text-muted small mb-4">
+              Compártela con otros viajeros y ayúdanos a difundir
+              los tesoros de Mongua.
+            </p>
+
+            <div class="d-flex flex-column gap-2">
+              <a
+                href="https://api.whatsapp.com/send?text=Mira%20esta%20gran%20historia%20sobre%20Mongua:%20{{ request.build_absolute_uri }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-success rounded-pill py-2.5 fw-semibold
+                       shadow-sm d-inline-flex align-items-center
+                       justify-content-center gap-2 w-100"
+              >
+                <i class="bi bi-whatsapp fs-5"></i>
+                <span>Compartir en WhatsApp</span>
+              </a>
+              <a
+                href="mailto:?subject={{ post.titulo|urlencode }}&amp;body=Te%20comparto%20este%20art%C3%ADculo%20de%20Mongua:%20{{ request.build_absolute_uri }}"
+                class="btn btn-outline-dark rounded-pill py-2.5 fw-semibold
+                       border d-inline-flex align-items-center
+                       justify-content-center gap-2 w-100"
+              >
+                <i class="bi bi-envelope-fill"></i>
+                <span>Compartir por correo</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Card CTA Tours -->
+          <div
+            class="card border-0 shadow-sm rounded-4 p-4 bg-dark
+                   text-white text-center mb-4"
+          >
+            <span
+              class="badge bg-success rounded-pill px-3 py-1.5 small
+                     fw-bold mb-3 mx-auto"
+            >
+              <i class="bi bi-compass"></i> Experiencias guiadas
+            </span>
+            <h5 class="fw-bold text-white mb-2">Visita este destino</h5>
+            <p class="text-white text-opacity-75 small mb-4">
+              Descubre los paquetes turísticos oficiales y reserva
+              tu cupo con guías locales.
+            </p>
+            <a
+              href="{% url 'tours' %}"
+              class="btn btn-success fw-bold rounded-pill py-2.5 w-100
+                     shadow-sm d-inline-flex align-items-center
+                     justify-content-center gap-2"
+            >
+              <i class="bi bi-map-fill"></i>
+              <span>Ver tours disponibles</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección de Otras Historias Recomendadas -->
+    {% if otros_blogs %}
+      <div class="mt-5 pt-4 border-top" data-aos="fade-up">
+        <div
+          class="d-flex flex-column flex-sm-row align-items-start
+                 align-items-sm-center justify-content-between gap-3 mb-4"
+        >
+          <div>
+            <h3 class="fw-bold text-dark mb-0">
+              Otras historias de Mongua
+            </h3>
+            <small class="text-muted">
+              Continúa descubriendo más aventuras y crónicas
+            </small>
+          </div>
+          <a
+            href="{% url 'blog' %}"
+            class="btn btn-outline-success btn-sm rounded-pill px-3 py-2
+                   fw-semibold align-self-start align-self-sm-auto"
+          >
+            Ver todo el blog
+          </a>
+        </div>
+
+        <div class="row g-4">
+          {% for otro in otros_blogs %}
+            <div class="col-12 col-md-6 col-lg-4">
+              <div
+                class="card h-100 border-0 shadow-sm rounded-4
+                       overflow-hidden bg-white d-flex flex-column
+                       justify-content-between"
+              >
+                <div class="ratio ratio-16x9">
+                  {% if otro.imagen_destacada %}
+                    <img
+                      src="{{ otro.imagen_destacada.url }}"
+                      class="card-img-top object-fit-cover"
+                      alt="{{ otro.titulo }}"
+                      loading="lazy"
+                    />
+                  {% else %}
+                    <img
+                      src="{% static 'img/lagunanegra.webp' %}"
+                      class="card-img-top object-fit-cover"
+                      alt="{{ otro.titulo }}"
+                      loading="lazy"
+                    />
+                  {% endif %}
+                </div>
+                <div
+                  class="card-body p-4 d-flex flex-column
+                         justify-content-between flex-grow-1"
+                >
+                  <div>
+                    <small class="text-muted d-block mb-2">
+                      <i class="bi bi-calendar3 text-success me-1"></i>
+                      {{ otro.fecha_publicacion|date:"d M, Y" }}
+                    </small>
+                    <h5 class="fw-bold text-dark mb-2">
+                      {{ otro.titulo|truncatechars:45 }}
+                    </h5>
+                    <p class="text-muted small mb-3">
+                      {{ otro.contenido|truncatewords:14 }}
+                    </p>
+                  </div>
+                  <div>
+                    <a
+                      href="{{ otro.get_absolute_url }}"
+                      class="btn btn-outline-success btn-sm rounded-pill
+                             px-3 py-1.5 fw-semibold stretched-link
+                             text-decoration-none"
+                    >
+                      Leer artículo <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
 </article>
 {% endblock %}
