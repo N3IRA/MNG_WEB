@@ -6,7 +6,6 @@ from App.views.pago import views as pago_views
 from App.views.terminos_y_condiciones import views as terminos_views
 from App.views.notificacion import views as notificacion_views
 from App.views.bitacora import views as bitacora_views
-from App.views.accesibilidad import views as accesibilidad_views
 from App.views.blog import views as blog_views
 from App.views.pqrs.views import PQRSListView, contestar_pqrs, mis_pqrs_view, guardar_pqrs, pqrs, pqrs_publica, api_guardar_pqrs
 from App.views.usuario import views as usuario_views
@@ -38,10 +37,6 @@ urlpatterns = [
     path('panel-rapido/', usuario_views.panel_rapido_view, name='panel_rapido'),
     path('perfil/', usuario_views.perfil_turista_view, name='perfil_detalles'),
     path('configuracion/', usuario_views.configuracion_usuario_view, name='configuracion_usuario'),
-
-    # Accesibilidad API
-    # Accesibilidad API
-    path('api/accesibilidad/save/', accesibilidad_views.guardar_accesibilidad, name='guardar_accesibilidad'),
 
     # Chat API Condy
     path('api/chat/', condy_chat_api, name='api_chat'),
