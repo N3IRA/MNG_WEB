@@ -1,25 +1,105 @@
 import os
-import django
-
 import sys
-# Asegura que la raíz del proyecto (donde está 'core') esté en el path
+import random
+import shutil
+from datetime import date, timedelta, datetime
+from decimal import Decimal
+from pathlib import Path
+
+import django
+from django.conf import settings
+from django.db import transaction
+from django.utils import timezone
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 django.setup()
 
 from App.models import (
-    Usuario, Temporada, Categoria, Actividades, Paquete, Tarifa,
-    PaqueteActividad, PaquetePromocion, Blog, Reserva, PQRS,
-    Seguimiento, Notificacion, PlanGuia, Pago,
-    Promocion, PolizaViaje, Aseguradora, Bitacora, Calificacion
+    Actividades,
+    Aseguradora,
+    Bitacora,
+    Blog,
+    Calificacion,
+    Categoria,
+    Notificacion,
+    Pago,
+    Paquete,
+    PaqueteActividad,
+    PaquetePromocion,
+    PlanGuia,
+    PolizaViaje,
+    PQRS,
+    Promocion,
+    Reserva,
+    Seguimiento,
+    Tarifa,
+    Temporada,
+    Usuario,
 )
-import random
-import shutil
-from datetime import timedelta, date, datetime
-from django.utils import timezone
-from decimal import Decimal
-from django.conf import settings
-from django.db import transaction
+
+RECURSOS_VISUALES = {
+    'img_Iglesia.webp': {
+        'autor': 'Equipo Monagua',
+        'fuente': 'Repositorio local del proyecto',
+        'fecha_publicacion': '2025',
+        'licencia': 'Uso interno del proyecto académico; no se usó material externo sin revisión.'
+    },
+    'paramo.webp': {
+        'autor': 'Equipo Monagua',
+        'fuente': 'Repositorio local del proyecto',
+        'fecha_publicacion': '2025',
+        'licencia': 'Uso interno del proyecto académico; no se usó material externo sin revisión.'
+    },
+    'lagunanegra.webp': {
+        'autor': 'Equipo Monagua',
+        'fuente': 'Repositorio local del proyecto',
+        'fecha_publicacion': '2025',
+        'licencia': 'Uso interno del proyecto académico; no se usó material externo sin revisión.'
+    },
+    'img_rutas.webp': {
+        'autor': 'Equipo Monagua',
+        'fuente': 'Repositorio local del proyecto',
+        'fecha_publicacion': '2025',
+        'licencia': 'Uso interno del proyecto académico; no se usó material externo sin revisión.'
+    },
+    'paramo_oseta.webp': {
+        'autor': 'Equipo Monagua',
+        'fuente': 'Repositorio local del proyecto',
+        'fecha_publicacion': '2025',
+        'licencia': 'Uso interno del proyecto académico; no se usó material externo sin revisión.'
+    },
+    'miradorcumbre.webp': {
+        'autor': 'Equipo Monagua',
+        'fuente': 'Repositorio local del proyecto',
+        'fecha_publicacion': '2025',
+        'licencia': 'Uso interno del proyecto académico; no se usó material externo sin revisión.'
+    },
+    'artesanias.webp': {
+        'autor': 'Equipo Monagua',
+        'fuente': 'Repositorio local del proyecto',
+        'fecha_publicacion': '2025',
+        'licencia': 'Uso interno del proyecto académico; no se usó material externo sin revisión.'
+    },
+    'estatua_piedra.webp': {
+        'autor': 'Equipo Monagua',
+        'fuente': 'Repositorio local del proyecto',
+        'fecha_publicacion': '2025',
+        'licencia': 'Uso interno del proyecto académico; no se usó material externo sin revisión.'
+    },
+    'img_rio.webp': {
+        'autor': 'Equipo Monagua',
+        'fuente': 'Repositorio local del proyecto',
+        'fecha_publicacion': '2025',
+        'licencia': 'Uso interno del proyecto académico; no se usó material externo sin revisión.'
+    },
+    'iglesia.webp': {
+        'autor': 'Equipo Monagua',
+        'fuente': 'Repositorio local del proyecto',
+        'fecha_publicacion': '2025',
+        'licencia': 'Uso interno del proyecto académico; no se usó material externo sin revisión.'
+    },
+}
 
 
 def generar_documento_unico(prefijo):
@@ -41,8 +121,8 @@ def generar_email_unico(username):
 
 @transaction.atomic
 def poblar_base_datos():
-    print("Iniciando el poblado de la base de datos...")
-    print("0. Limpiando la base de datos...")
+    print("Iniciando el poblado de la base de datos con datos reales de Mongua...")
+    print("1. Limpieza de registros existentes...")
 
     Bitacora.objects.all().delete()
     Calificacion.objects.all().delete()
@@ -66,593 +146,386 @@ def poblar_base_datos():
     Usuario.objects.all().delete()
 
     anio = timezone.localdate().year
-    nombres = ['Carlos', 'Ana', 'Luis', 'Marta', 'Pedro',
-               'Sofia', 'Jorge', 'Lucia', 'Diego', 'Elena']
-    apellidos = ['Gomez', 'Perez', 'Rodriguez', 'Lopez',
-                 'Martinez', 'Garcia', 'Sanchez', 'Diaz', 'Torres', 'Ramirez']
-    ciudades = ['Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena',
-                'Cúcuta', 'Bucaramanga', 'Pereira', 'Santa Marta', 'Manizales']
-    paises = ['COL', 'MEX', 'ARG', 'CHL', 'PER',
-              'ESP', 'ECU', 'PAN', 'CRI', 'BRA']
-    categorias_nombres = ['Aventura', 'Ecoturismo', 'Cultural', 'Playa', 'Montaña',
-                          'Gastronómico', 'Histórico', 'Relajación', 'Deportivo', 'Familiar']
-    actividades_nombres = ['Senderismo', 'Buceo', 'Museos', 'Escalada', 'Ciclismo',
-                           'Cata de Vinos', 'Surf', 'Avistamiento de Aves', 'Rappel', 'Canotaje']
 
-    nombres_temporadas = [
-        "Vacaciones de Mitad de Año",
-        "Temporada Eco-Verano",
-        "Puentes de Agosto",
-        "Aventura de Septiembre",
-        "Semana de Receso Escolar",
-        "Ecoturismo de Fin de Otoño",
-        "Puentes de Noviembre",
-        "Pre-Navidad Turística",
-        "Inicio de Temporada Decembrina",
-        "Fiestas de Fin de Año"
+    categorias_semilla = [
+        ("Páramo y naturaleza", "Recorridos por los ecosistemas de altura, lagunas, páramos y miradores del municipio de Mongua."),
+        ("Senderismo y aventura", "Rutas de caminata, observación de paisaje y recorridos de mayor exigencia en la geografía de Mongua."),
+        ("Patrimonio e historia", "Sitios con valor cultural, memoria indígena muisca, plaza central, iglesia y relatos del municipio."),
+        ("Arqueología y cultura muisca", "Espacios vinculados con las huellas del poblamiento muisca y la escultura rupestre del territorio."),
+        ("Gastronomía y cultura", "Sabores tradicionales, productos del campo y experiencias gastronómicas ligadas a la identidad boyacense."),
+        ("Familia y recreación", "Planes para grupos, familias y visitantes que buscan un turismo tranquilo y cercano."),
     ]
 
-    fechas_temporadas = [
-        (date(anio, 6, 4),   date(anio, 7, 15)),
-        (date(anio, 7, 16),  date(anio, 8, 15)),
-        (date(anio, 8, 16),  date(anio, 8, 31)),
-        (date(anio, 9, 1),   date(anio, 9, 30)),
-        (date(anio, 10, 1),  date(anio, 10, 15)),
-        (date(anio, 10, 16), date(anio, 10, 31)),
-        (date(anio, 11, 1),  date(anio, 11, 16)),
-        (date(anio, 11, 17), date(anio, 11, 30)),
-        (date(anio, 12, 1),  date(anio, 12, 15)),
-        (date(anio, 12, 16), date(anio, 12, 31)),
+    actividades_semilla = [
+        ("Senderismo al Páramo de Ocetá", "Ruta guiada por paisajes de alta montaña y ecosistemas andinos del municipio.", "Botas de senderismo, mochila, agua, ropa térmica", "Usa varias capas de ropa y lleva protección contra el frío del páramo.", True),
+        ("Laguna Negra y contemplación natural", "Recorrido para descubrir el entorno de la Laguna Negra y su valor paisajístico y cultural.", "Ropa cómoda, cámara, agua", "Mantén silencio para disfrutar mejor el paisaje y la calma del lugar.", True),
+        ("Visita a la Iglesia de Mongua", "Paseo cultural por la arquitectura y la historia del municipio con sentido de conservación patrimonial.", "Ropa cómoda, cámara fotográfica", "Respeta los horarios de la comunidad y el espacio sagrado.", True),
+        ("Ruta de miradores y panoramas", "Caminatas hacia puntos con amplia vista del municipio, los valles y la cordillera.", "Gafas de sol, chaqueta ligera", "La mejor vista suele presentarse al amanecer o al atardecer.", True),
+        ("Piedras de Santo Domingo y arte rupestre", "Ruta de interpretación cultural para conocer vestigios arqueológicos y piezas rupestres significativas.", "Calzado adecuado, cuaderno de campo", "Consulta con la guía para entender el contexto histórico del sitio.", True),
+        ("Degustación boyacense", "Experiencia para probar productos típicos, sabores locales y preparaciones de la región.", "Ganas de probar sabores locales", "Es ideal combinar la gastronomía con el recorrido por la plaza y la comunidad.", True),
+        ("Caminata al Morro de Uche", "Actividad de paisaje y aventura con miradas amplias hacia la geografía del municipio.", "Botas, agua, casco opcional", "Se recomienda hacer la ruta con guía por la variabilidad del terreno.", False),
+        ("Laguna de la Estrella y ecosistemas", "Recorrido de observación de flora y fauna en áreas de gran valor ecológico.", "Binoculares, ropa cómoda, bloqueador", "Lleva protección solar y una botella de agua.", True),
+        ("Fotografía de paisaje y memoria local", "Ruta enfocada en vistas, texturas, luz y la relación entre paisaje y patrimonio.", "Cámara, trípode opcional, lente amplio", "La mejor luz suele estar al amanecer o en la hora dorada.", True),
+        ("Museo y patrimonio del municipio", "Encuentro con la historia de Mongua, la cultura muisca y la memoria local.", "Ropa cómoda, interés por la historia", "Aprovecha la visita para conversar con la comunidad y aprender su contexto.", True),
     ]
 
-    print("1. Creando Usuarios (Admin, Clientes/Turista, Guías)...")
+    temporadas_semilla = [
+        ("Temporada seca y clara de enero a marzo", "Meses con condiciones estables para senderismo, excursiones y recorridos de paisaje en el municipio.", date(anio, 1, 1), date(anio, 3, 31)),
+        ("Semana Santa y feriados de abril", "Periodos con alta demanda por viajes familiares y actividades culturales de corto recorrido.", date(anio, 3, 20), date(anio, 4, 30)),
+        ("Temporada verde de mayo a julio", "Ritmo de lluvias y paisajes exuberantes, muy apropiado para fotografía y ecoturismo.", date(anio, 5, 1), date(anio, 7, 31)),
+        ("Periodo de celebración y viajes del segundo semestre", "Meses con alta afluencia por feriados, descanso y visitas culturales en Boyacá.", date(anio, 9, 1), date(anio, 11, 30)),
+        ("Navidad y cierre de año", "Recomendado para turismo familiar, visitas cortas y recorridos patrimoniales.", date(anio, 12, 1), date(anio, 12, 31)),
+    ]
+
+    paquetes_semilla = [
+        {
+            "nombre": "Páramo de Ocetá y miradores de Mongua",
+            "descripcion": "Recorrido por paisajes de alta montaña, miradores y rutas de senderismo con guía local, ideal para quienes buscan naturaleza, altura y fotografía.",
+            "dias_duracion": 2,
+            "noches_duracion": 1,
+            "punto_encuentro": "Parque principal de Mongua",
+            "hora_encuentro": "06:30:00",
+            "imagen": "paramo.webp",
+            "categoria": "Páramo y naturaleza",
+            "actividades": ["Senderismo al Páramo de Ocetá", "Ruta de miradores y panoramas", "Laguna Negra y contemplación natural"],
+        },
+        {
+            "nombre": "Laguna Negra y leyendas del municipio",
+            "descripcion": "Experiencia de paisaje y cultura en torno a la Laguna Negra, con rutas de contemplación, historia local y espacios de gran valor ecológico.",
+            "dias_duracion": 2,
+            "noches_duracion": 1,
+            "punto_encuentro": "Terminal de transporte de Mongua",
+            "hora_encuentro": "07:00:00",
+            "imagen": "lagunanegra.webp",
+            "categoria": "Arqueología y cultura muisca",
+            "actividades": ["Laguna Negra y contemplación natural", "Fotografía de paisaje y memoria local", "Ruta de miradores y panoramas"],
+        },
+        {
+            "nombre": "Piedras de Santo Domingo y memoria muisca",
+            "descripcion": "Ruta cultural y arqueológica para conocer los vestigios indígenas del territorio y su relación con la historia y la identidad de Mongua.",
+            "dias_duracion": 3,
+            "noches_duracion": 2,
+            "punto_encuentro": "Casa de la cultura de Mongua",
+            "hora_encuentro": "08:00:00",
+            "imagen": "img_rutas.webp",
+            "categoria": "Patrimonio e historia",
+            "actividades": ["Piedras de Santo Domingo y arte rupestre", "Museo y patrimonio del municipio", "Fotografía de paisaje y memoria local"],
+        },
+        {
+            "nombre": "Mongua en familia: plaza, iglesia y sabor local",
+            "descripcion": "Plan pensado para grupos familiares con recorridos tranquilos, patrimonio y degustaciones del municipio.",
+            "dias_duracion": 2,
+            "noches_duracion": 1,
+            "punto_encuentro": "Plaza principal de Mongua",
+            "hora_encuentro": "09:00:00",
+            "imagen": "iglesia.webp",
+            "categoria": "Familia y recreación",
+            "actividades": ["Visita a la Iglesia de Mongua", "Degustación boyacense", "Museo y patrimonio del municipio"],
+        },
+        {
+            "nombre": "Sabores de Boyacá en Mongua",
+            "descripcion": "Recorrido gastronómico para reconocer preparación artesanal, productos locales y experiencias cercanas con la comunidad del municipio.",
+            "dias_duracion": 1,
+            "noches_duracion": 1,
+            "punto_encuentro": "Mercado del pueblo",
+            "hora_encuentro": "11:00:00",
+            "imagen": "artesanias.webp",
+            "categoria": "Gastronomía y cultura",
+            "actividades": ["Degustación boyacense", "Museo y patrimonio del municipio"],
+        },
+        {
+            "nombre": "Morro de Uche y amanecer boyacense",
+            "descripcion": "Experiencia para disfrutar del amanecer, la geografía de altura y la belleza del paisaje andino desde un punto panorámico del municipio.",
+            "dias_duracion": 1,
+            "noches_duracion": 0,
+            "punto_encuentro": "Mirador del pueblo",
+            "hora_encuentro": "05:30:00",
+            "imagen": "miradorcumbre.webp",
+            "categoria": "Páramo y naturaleza",
+            "actividades": ["Caminata al Morro de Uche", "Ruta de miradores y panoramas", "Fotografía de paisaje y memoria local"],
+        },
+        {
+            "nombre": "Laguna de la Estrella y rutas de ecoaventura",
+            "descripcion": "Ruta de observación ambiental, paisajes húmedos y experiencia cercana con la fauna y flora del entorno de Mongua.",
+            "dias_duracion": 2,
+            "noches_duracion": 1,
+            "punto_encuentro": "Centro de interpretación local",
+            "hora_encuentro": "08:30:00",
+            "imagen": "img_rio.webp",
+            "categoria": "Senderismo y aventura",
+            "actividades": ["Laguna de la Estrella y ecosistemas", "Senderismo al Páramo de Ocetá", "Fotografía de paisaje y memoria local"],
+        },
+        {
+            "nombre": "Mongua patrimonial: iglesia, plaza y comunidad",
+            "descripcion": "Ruta de historia y vida local en torno a la arquitectura, la plaza y la identidad del municipio.",
+            "dias_duracion": 2,
+            "noches_duracion": 1,
+            "punto_encuentro": "Parque principal",
+            "hora_encuentro": "10:00:00",
+            "imagen": "img_Iglesia.webp",
+            "categoria": "Patrimonio e historia",
+            "actividades": ["Visita a la Iglesia de Mongua", "Museo y patrimonio del municipio", "Degustación boyacense"],
+        },
+    ]
+
+    print("2. Creando usuarios base...")
     admin_user = Usuario.objects.create_superuser(
         username='admin',
         password='admin1234',
-        email='admin@gmail.com',
+        email='admin@monagua.local',
         first_name='Admin',
         last_name='Monagua',
         rol=Usuario.Roles.ADMIN,
         tipo_documento=Usuario.TipoDocumento.CC,
         numero_documento='12345678',
         telefono='+573000000000',
-        residencia='Mongua, Boyacá'
+        residencia='Mongua, Boyacá',
+        pais='COL'
     )
 
-    clientes_creados = []
-    guias_creados = []
-
-    # Usuario Turista / Cliente principal de prueba
     turista_user = Usuario.objects.create_user(
         username='turista',
         password='turista1234',
-        email='turista@gmail.com',
+        email='turista@monagua.local',
         first_name='Juan',
         last_name='Turista',
         rol=Usuario.Roles.CLIENTE,
         tipo_documento=Usuario.TipoDocumento.CC,
         numero_documento='87654321',
         telefono='+573100000000',
-        residencia='Bogotá, COL',
+        residencia='Mongua, Boyacá',
         pais='COL'
     )
-    clientes_creados.append(turista_user)
 
-    telefonos_clientes = [
-        '+573152345678', '+573201112233', '+573004567890',
-        '+573129876543', '+573182223344', '+573015556677',
-        '+573168889900', '+573223334455', '+573056667788'
-    ]
-    for i in range(9):
-        username = f"cliente_{i}_{random.randint(1000, 9999)}"
-        u = Usuario.objects.create_user(
+    clientes_creados = [turista_user]
+    for idx in range(8):
+        username = f"cliente_{idx + 1}"
+        usuario = Usuario.objects.create_user(
             username=username,
             password='password123',
-            first_name=nombres[i],
-            last_name=apellidos[i],
+            first_name=f'Cliente{idx + 1}',
+            last_name='Mongua',
             email=generar_email_unico(username),
             rol=Usuario.Roles.CLIENTE,
             tipo_documento=Usuario.TipoDocumento.CC,
-            numero_documento=generar_documento_unico(f"1000{i}"),
-            telefono=telefonos_clientes[i],
-            residencia=f"{ciudades[i]}, {paises[i]}",
-            pais=paises[i]
+            numero_documento=generar_documento_unico(f"100{idx + 1}"),
+            telefono=f'+573{random.randint(10000000, 99999999)}',
+            residencia='Mongua, Boyacá',
+            pais='COL'
         )
-        clientes_creados.append(u)
+        clientes_creados.append(usuario)
 
-    biografias_guia = [
-        "Guía certificado con más de 5 años de experiencia en senderismo de alta montaña.",
-        "Apasionado por la naturaleza. Especialista en avistamiento de aves.",
-        "Conocimiento profundo de la historia y tradiciones de Mongua.",
-        "Experto en deportes de aventura incluyendo rappel, escalada y canotaje.",
-        "Guía bilingüe especializado en turismo gastronómico y experiencias locales.",
-        "Fotógrafo naturalista y guía especializado en la Laguna Negra.",
-        "Instructor certificado de senderismo nocturno y camping.",
-        "Conocedor de rutas ancestrales y caminos reales.",
-        "Guía de turismo familiar con experiencia en actividades recreativas.",
-        "Especialista en turismo sostenible y comunitario.",
+    guias_creados = []
+    guia_nombres = [
+        ('Camilo', 'Mendoza', 'Guía de senderismo y naturaleza'),
+        ('Laura', 'Pérez', 'Guía de patrimonio y cultura'),
+        ('Nelson', 'Gutiérrez', 'Especialista en rutas de montaña'),
+        ('Andrea', 'Sánchez', 'Guía de avistamiento y ecoturismo'),
+        ('Diego', 'Gómez', 'Especialista en aventura y actividades de río'),
     ]
-    for i in range(10):
-        username = f"guia_{i}_{random.randint(1000, 9999)}"
-        u = Usuario.objects.create_user(
-            username=username,
+    for first, last, bio in guia_nombres:
+        usuario = Usuario.objects.create_user(
+            username=f"guia_{first.lower()}",
             password='password123',
-            first_name=nombres[9 - i],
-            last_name=apellidos[9 - i],
-            email=generar_email_unico(username),
+            first_name=first,
+            last_name=last,
+            email=generar_email_unico(f"guia_{first.lower()}"),
             rol=Usuario.Roles.GUIA,
             tipo_documento=Usuario.TipoDocumento.CC,
-            numero_documento=generar_documento_unico(f"2000{i}"),
-            telefono=f"+5731{random.randint(0,9)}{random.randint(1000000,9999999)}",
-            residencia=f"{ciudades[i]}, Boyacá",
-            numero_tarjeta_profesional=f"LIC-BOY-{random.randint(10000, 99999)}",
-            experiencia_anos=random.randint(1, 15),
-            descripcion_experiencia=biografias_guia[i],
-            entidad_salud=random.choice(["SURA", "Sanitas", "Compensar", "Nueva EPS"]),
-            experiencia_fecha=date.today() - timedelta(days=random.randint(365, 365*5))
+            numero_documento=generar_documento_unico(f"200{random.randint(100, 999)}"),
+            telefono=f'+573{random.randint(10000000, 99999999)}',
+            residencia='Mongua, Boyacá',
+            pais='COL',
+            numero_tarjeta_profesional=f'LIC-MG-{random.randint(1000, 9999)}',
+            experiencia_anos=random.randint(3, 12),
+            descripcion_experiencia=bio,
+            entidad_salud='EPS Monagua',
+            experiencia_fecha=date.today() - timedelta(days=random.randint(365, 3000))
         )
-        guias_creados.append(u)
+        guias_creados.append(usuario)
 
-    print(f"  -> {len(clientes_creados)} clientes y {len(guias_creados)} guias creados.")
-
-    print("2. Creando Categorías y Actividades...")
+    print("3. Creación de categorías y actividades...")
     categorias_creadas = []
-    descripciones_categorias = [
-        "Experiencias llenas de adrenalina y desafíos al aire libre.",
-        "Turismo responsable en armonía con la naturaleza.",
-        "Inmersión en la cultura, tradiciones y artesanías.",
-        "Disfruta del sol, la arena y las aguas cristalinas.",
-        "Aventuras en las alturas del páramo y las montañas.",
-        "Degusta la riqueza culinaria local y los sabores ancestrales.",
-        "Recorre los caminos y monumentos históricos.",
-        "Espacios de bienestar y tranquilidad.",
-        "Actividades deportivas para los amantes del ejercicio.",
-        "Planes diseñados para disfrutar en familia.",
-    ]
-    for i in range(10):
-        cat = Categoria.objects.create(
-            nombre=categorias_nombres[i],
-            descripcion=descripciones_categorias[i]
-        )
-        categorias_creadas.append(cat)
+    for nombre, descripcion in categorias_semilla:
+        categoria = Categoria.objects.create(nombre=nombre, descripcion=descripcion, estado=True)
+        categorias_creadas.append(categoria)
 
     actividades_creadas = []
-    descripciones_actividades = [
-        "Recorridos guiados por senderos naturales con vistas al páramo.",
-        "Inmersión en aguas cristalinas.",
-        "Visitas a museos locales con exhibiciones de arte.",
-        "Ascenso en paredes rocosas naturales.",
-        "Recorridos en bicicleta por rutas rurales.",
-        "Degustación de vinos y bebidas artesanales.",
-        "Práctica de surf en las olas.",
-        "Observación de aves endémicas en su hábitat.",
-        "Descenso por cascadas y formaciones rocosas.",
-        "Navegación en canoas por ríos de corriente moderada.",
-    ]
-    equipos = [
-        "Botas de senderismo, bastones, hidratación",
-        "Traje de neopreno, gafas, snorkel",
-        "Ropa cómoda, cámara fotográfica",
-        "Arnés, casco, guantes de escalada",
-        "Bicicleta, casco, guantes, protecciones",
-        "Ninguno especial",
-        "Tabla de surf, lycra, protector solar",
-        "Binoculares, guía de aves, ropa camuflada",
-        "Arnés de rappel, casco, guantes",
-        "Chaleco salvavidas, ropa impermeable",
-    ]
-    for i in range(10):
-        act = Actividades.objects.create(
-            nombre=actividades_nombres[i],
-            descripcion=descripciones_actividades[i],
-            equipo_requerimiento=equipos[i],
-            recomendaciones="Buena condición física general. Consultar con médico en caso de condiciones especiales.",
-            apto_menores=random.choice([True, False])
-        )
-        actividades_creadas.append(act)
-
-    print("3. Creando Paquetes, Temporadas y Tarifas...")
-    paquetes_creados = []
-    paquetes_config = [
-        ("Mongua Mágico", "Un recorrido completo por los sitios más emblemáticos de Mongua, ideal para conocer la esencia del pueblo.", "img_Iglesia.webp"),
-        ("Ruta del Páramo", "Expedición al páramo de Mongua con vistas panorámicas y flora endémica única en el mundo.", "paramo.webp"),
-        ("Aventura Laguna Negra", "Aventura hacia la misteriosa Laguna Negra, un ecosistema único rodeado de leyendas y biodiversidad.", "lagunanegra.webp"),
-        ("Senderos Ancestrales", "Caminata por los caminos reales que conectaban pueblos ancestrales, cargados de historia y misterio.", "img_rutas.webp"),
-        ("Eco-Aventura Boyacense", "Experiencia de ecoturismo con actividades de bajo impacto ambiental en los bosques de Boyacá.", "paramo_oseta.webp"),
-        ("Caminata del Amanecer", "Salida temprana para contemplar el amanecer desde los miradores naturales del páramo.", "miradorcumbre.webp"),
-        ("Tour Gastronómico Mongua", "Descubre los sabores típicos de Mongua: arepas boyacenses, cuchuco, mazamorra y más.", "artesanias.webp"),
-        ("Explorador de Montaña", "Programa de escalada y rappel en las formaciones rocosas naturales de la región.", "estatua_piedra.webp"),
-        ("Relajación en la Naturaleza", "Jornada de bienestar y meditación en medio de los paisajes naturales más tranquilos.", "img_rio.webp"),
-        ("Mongua en Familia", "Plan diseñado para familias con actividades recreativas, educativas y culturales para todos.", "iglesia.webp"),
-    ]
-
-    destinos_media_dir = os.path.join(settings.MEDIA_ROOT, 'destinos')
-    os.makedirs(destinos_media_dir, exist_ok=True)
-
-    for nombre, descripcion, img_name in paquetes_config:
-        src_path = os.path.join(settings.BASE_DIR, 'static', 'img', img_name)
-        dst_path = os.path.join(destinos_media_dir, img_name)
-        imagen_path = f"destinos/{img_name}"
-        if os.path.exists(src_path):
-            shutil.copy(src_path, dst_path)
-
-        dias_duracion = random.randint(2, 7)
-        p = Paquete.objects.create(
+    for nombre, descripcion, equipo, recomendaciones, apto_menores in actividades_semilla:
+        actividad = Actividades.objects.create(
             nombre=nombre,
             descripcion=descripcion,
-            dias_duracion=dias_duracion,
-            noches_duracion=dias_duracion - 1,
-            punto_encuentro="Plaza principal de Mongua",
-            hora_encuentro=timezone.now().time(),
-            categoria=random.choice(categorias_creadas),
-            imagen=imagen_path
+            equipo_requerimiento=equipo,
+            recomendaciones=recomendaciones,
+            estado=True,
+            apto_menores=apto_menores,
         )
-        sample_acts = random.sample(actividades_creadas, random.randint(2, 4))
-        for act in sample_acts:
-            PaqueteActividad.objects.create(
-                paquete=p,
-                actividad=act,
-                dificultad_nivel=random.choice(['Alta', 'Media', 'Baja'])
-            )
-        paquetes_creados.append(p)
+        actividades_creadas.append(actividad)
 
-    temporada_estandar = Temporada.objects.create(
-        nombre=f"Temporada Estándar {anio}",
-        fecha_inicio=date(anio, 1, 1),
-        fecha_fin=date(anio, 12, 31),
-        estado=True
-    )
-
+    print("4. Creación de temporadas y tarifas...")
     temporadas_creadas = []
-    for i in range(len(nombres_temporadas)):
-        t = Temporada.objects.create(
-            nombre=f"{nombres_temporadas[i]} {anio}",
-            fecha_inicio=fechas_temporadas[i][0],
-            fecha_fin=fechas_temporadas[i][1],
-            estado=True
-        )
-        temporadas_creadas.append(t)
-
-    tarifas_creadas = []
-    for i in range(10):
-        tarifa_especial = Tarifa.objects.create(
-            paquete=paquetes_creados[i],
-            temporada=temporadas_creadas[i],
-            precio_adulto=Decimal(str(random.randint(350000, 600000))),
-            precio_menor=Decimal(str(random.randint(200000, 300000))),
-            estado=True
-        )
-        tarifas_creadas.append(tarifa_especial)
-
-        tarifa_base = Tarifa.objects.create(
-            paquete=paquetes_creados[i],
-            temporada=temporada_estandar,
-            precio_adulto=Decimal(str(random.randint(150000, 300000))),
-            precio_menor=Decimal(str(random.randint(80000, 140000))),
-            estado=True
-        )
-        tarifas_creadas.append(tarifa_base)
-
-    print("4. Creando Planes de Guía...")
-    planes_creados = []
-    fecha_primer_plan = timezone.localdate() + timedelta(days=14)
-    for i, guia in enumerate(guias_creados):
-        paquete = paquetes_creados[i % len(paquetes_creados)]
-        fecha_inicio_plan = fecha_primer_plan + timedelta(days=i * 3)
-        plan = PlanGuia.objects.create(
-            usuario=guia,
-            paquete=paquete,
-            idioma_servicio=random.choice(["Español", "Inglés"]),
-            fecha_inicio_plan=fecha_inicio_plan,
-            fecha_fin_plan=fecha_inicio_plan + timedelta(days=paquete.dias_duracion - 1),
-            estado=True
-        )
-        planes_creados.append(plan)
-
-    print("5. Creando Reservas...")
-    reservas_creadas = []
-    estados_reserva = ['pendiente', 'confirmada', 'cancelada']
-    combinaciones_unicas = set()
-
-    for tarifa_asociada in tarifas_creadas:
-        fecha_reserva = tarifa_asociada.temporada.fecha_inicio + timedelta(days=2)
-        usuario_aleatorio = random.choice(clientes_creados)
-        paquete_asociado = tarifa_asociada.paquete
-
-        identificador = (usuario_aleatorio.id, paquete_asociado.id, fecha_reserva)
-        if identificador in combinaciones_unicas:
-            continue
-
-        combinaciones_unicas.add(identificador)
-        estado = random.choice(estados_reserva)
-        motivo = ""
-        if estado == 'cancelada':
-            motivo = random.choice([
-                "Imprevisto de última hora, no podré asistir al viaje.",
-                "Cambio en las fechas laborales, necesito reprogramar.",
-                "Motivos de salud me impiden viajar en esta fecha.",
-                "Surgió un compromiso familiar inesperado.",
-            ])
-
-        r = Reserva.objects.create(
-            usuario=usuario_aleatorio,
-            paquete=paquete_asociado,
-            fecha_inicio=fecha_reserva,
-            numero_adultos=random.randint(1, 4),
-            numero_menores=random.randint(0, 3),
-            estado_reserva=estado,
-            motivo_cancelacion=motivo
-        )
-
-        dias_antes = random.randint(5, 60)
-        fake_registro_date = fecha_reserva - timedelta(days=dias_antes)
-        fake_registro = timezone.make_aware(datetime.combine(fake_registro_date, datetime.min.time())) + timedelta(hours=random.randint(8, 20))
-        Reserva.objects.filter(id=r.id).update(fecha_registro=fake_registro)
-        r.fecha_registro = fake_registro
-        reservas_creadas.append(r)
-
-    print(f"  -> {len(reservas_creadas)} reservas creadas.")
-
-    print("6. Creando Pólizas y Seguros...")
-    polizas_config = [
-        ("Aventura Protegida", "Cobertura médica y asistencia durante actividades de aventura.", Decimal("50000000"), True, True, Decimal("12000")),
-        ("Naturaleza Segura", "Asistencia médica para recorridos ecoturísticos.", Decimal("30000000"), True, False, Decimal("9000")),
-        ("Viaje Tranquilo", "Protección básica para viajeros y equipaje.", Decimal("20000000"), True, True, Decimal("7000")),
-        ("Asistencia Boyacá", "Cobertura de emergencias durante la estadía en Boyacá.", Decimal("25000000"), False, True, Decimal("8000")),
-    ]
-    polizas_creadas = []
-    for nombre, descripcion, cobertura, equipaje, cancelacion, precio in polizas_config:
-        polizas_creadas.append(PolizaViaje.objects.create(
-            nombre_poliza=nombre,
+    for nombre, descripcion, fecha_ini, fecha_fin in temporadas_semilla:
+        temporada = Temporada.objects.create(
+            nombre=nombre,
             descripcion=descripcion,
-            cobertura_medica_max=cobertura,
-            cubre_perdida_equipaje=equipaje,
-            cubre_cancelacion_vuelo=cancelacion,
-            precio_diario=precio,
-            condiciones_generales="Válida durante las fechas de cobertura registradas.",
-            estado=True
-        ))
+            fecha_inicio=fecha_ini,
+            fecha_fin=fecha_fin,
+            estado=True,
+        )
+        temporadas_creadas.append(temporada)
 
-    aseguradoras_creadas = []
-    for i, reserva in enumerate(reservas_creadas[:min(8, len(reservas_creadas))]):
-        fecha_inicio_cobertura = reserva.fecha_inicio
-        aseguradoras_creadas.append(Aseguradora.objects.create(
-            reserva=reserva,
-            poliza_viaje=polizas_creadas[i % len(polizas_creadas)],
-            nombre_empresa=random.choice(["Seguros Bolívar", "SURA", "Allianz"]),
-            numero_poliza=f"MON-{anio}-{i + 1:05d}",
-            fecha_inicio_cobertura=fecha_inicio_cobertura,
-            fecha_fin_cobertura=fecha_inicio_cobertura + timedelta(days=reserva.paquete.dias_duracion - 1),
-            telefono_emergencia="+573001234567",
-            estado_emision="Emitida"
-        ))
+    print("5. Creación de paquetes turísticos...")
+    destinos_dir = Path(settings.MEDIA_ROOT) / 'destinos'
+    destinos_dir.mkdir(parents=True, exist_ok=True)
 
-    print("7. Creando Pagos...")
-    bancos = [
-        'Bancolombia', 'Banco de Bogotá', 'Davivienda', 'BBVA Colombia',
-        'Nequi', 'Daviplata', 'Banco Popular', 'Banco de Occidente'
-    ]
-    comprobantes_creados = 0
-    reservas_con_comprobante = random.sample(reservas_creadas, min(12, len(reservas_creadas)))
+    paquetes_creados = []
+    for data in paquetes_semilla:
+        imagen_origen = Path(settings.BASE_DIR) / 'static' / 'img' / data['imagen']
+        imagen_destino = destinos_dir / data['imagen']
+        if imagen_origen.exists():
+            shutil.copy2(imagen_origen, imagen_destino)
 
-    for r in reservas_con_comprobante:
-        estado_comprobante = random.choice(['pendiente', 'aprobado', 'rechazado'])
-        fake_envio = r.fecha_registro + timedelta(hours=random.randint(1, 48))
+        paquete = Paquete.objects.create(
+            nombre=data['nombre'],
+            descripcion=data['descripcion'],
+            dias_duracion=data['dias_duracion'],
+            noches_duracion=data['noches_duracion'],
+            punto_encuentro=data['punto_encuentro'],
+            hora_encuentro=data['hora_encuentro'],
+            categoria=Categoria.objects.get(nombre=data['categoria']),
+            imagen=f'destinos/{data["imagen"]}',
+            estado=True,
+        )
+
+        for nombre_actividad in data['actividades']:
+            actividad_obj = Actividades.objects.get(nombre=nombre_actividad)
+            PaqueteActividad.objects.create(
+                paquete=paquete,
+                actividad=actividad_obj,
+                dificultad_nivel=random.choice(['Baja', 'Media', 'Alta'])
+            )
+
+        paquetes_creados.append(paquete)
+
+    for idx, paquete in enumerate(paquetes_creados):
+        for temporada in temporadas_creadas:
+            Tarifa.objects.create(
+                paquete=paquete,
+                temporada=temporada,
+                precio_adulto=Decimal(str(180000 + idx * 45000 + random.randint(20000, 80000))),
+                precio_menor=Decimal(str(120000 + idx * 30000 + random.randint(15000, 50000))),
+                estado=True,
+            )
+
+    print("6. Creación de reservas y pagos...")
+    reservas_creadas = []
+    for idx in range(10):
+        paquete = paquetes_creados[idx % len(paquetes_creados)]
+        usuario = clientes_creados[idx % len(clientes_creados)]
+        fecha_inicio = date.today() + timedelta(days=idx * 7 + 5)
+
+        tipo_reserva = random.choice(['pendiente', 'pendiente', 'cancelada'])
+        reserva = Reserva.objects.create(
+            paquete=paquete,
+            usuario=usuario,
+            fecha_inicio=fecha_inicio,
+            numero_adultos=random.randint(1, 3),
+            numero_menores=random.randint(0, 2),
+            estado_reserva='pendiente',
+            motivo_cancelacion=''
+        )
+
+        # Se genera un pequeño porcentaje de reservas confirmadas, pero solo cuando existe
+        # un pago aprobado; esto respeta la lógica del negocio del proyecto.
+        estado_pago = 'pendiente'
+        if idx % 4 == 0:
+            estado_pago = 'aprobado'
+
+        elif idx % 3 == 0:
+            reserva.estado_reserva = 'cancelada'
+            reserva.motivo_cancelacion = 'El cliente canceló por cambio de fechas.'
+            reserva.save()
 
         pago = Pago.objects.create(
-            reserva=r,
-            referencia=f"REF-{random.randint(100000, 999999)}",
-            banco_origen=random.choice(bancos),
-            metodo_pago="Transferencia",
-            monto=Decimal(str(r.monto_total)) if r.monto_total else Decimal('150000'),
-            imagen_comprobante='comprobantes/placeholder.jpg',
-            estado_transaccion=estado_comprobante,
-            nota_admin="Comprobante rechazado: imagen ilegible." if estado_comprobante == 'rechazado'
-            else ("Revisado por administración." if estado_comprobante == 'aprobado' else ""),
-            fecha_pago=fake_envio,
-            fecha_revision=fake_envio + timedelta(hours=2) if estado_comprobante != 'pendiente' else None
-        )
-        Pago.objects.filter(pk=pago.pk).update(fecha_envio=fake_envio)
-        comprobantes_creados += 1
-
-    print(f"  -> {comprobantes_creados} pagos creados.")
-
-    print("8. Creando Notificaciones...")
-    notificaciones_creadas = []
-    for cliente in clientes_creados:
-        reservas_cliente = [reserva for reserva in reservas_creadas if reserva.usuario_id == cliente.id]
-        reserva_cliente = random.choice(reservas_cliente) if reservas_cliente else None
-        notificaciones_creadas.append(Notificacion.objects.create(
-            usuario=cliente,
-            reserva=reserva_cliente,
-            mensaje="Gracias por elegir Monagua. Revisa los detalles de tus experiencias y reservas.",
-            leido=random.choice([True, False]),
-            tipo="reserva",
-            prioridad=random.choice(["alta", "media", "baja"])
-        ))
-
-    print("9. Creando Calificaciones...")
-    calificaciones_creadas = []
-    comentarios_calificacion = [
-        "Una experiencia excelente, el guía conocía muy bien la ruta.",
-        "Paisajes increíbles y organización muy amable.",
-        "Disfrutamos mucho el recorrido y aprendimos sobre la región.",
-        "Una aventura inolvidable para compartir en familia.",
-        "Muy buena atención durante toda la experiencia."
-    ]
-    for i, reserva in enumerate(reservas_creadas[:min(10, len(reservas_creadas))]):
-        calificaciones_creadas.append(Calificacion.objects.create(
             reserva=reserva,
-            tipo="experiencia",
-            titulo=f"Experiencia en {reserva.paquete.nombre}",
-            puntaje_estrellas=random.randint(4, 5),
-            comentario=comentarios_calificacion[i % len(comentarios_calificacion)],
-            visible=True,
-            admin_respuesta="Gracias por compartir tu experiencia con Monagua."
-        ))
+            referencia=f"REF-{random.randint(100000, 999999)}",
+            banco_origen=random.choice(['Bancolombia', 'Davivienda', 'Nequi', 'Banco de Bogotá']),
+            metodo_pago=random.choice(['Transferencia', 'PSE', 'Billetera Digital']),
+            monto=reserva.monto_total or Decimal('150000'),
+            imagen_comprobante='comprobantes/placeholder.jpg',
+            estado_transaccion=estado_pago,
+            fecha_pago=timezone.now(),
+            nota_admin='Pago generado por población inicial de pruebas.'
+        )
 
-    print("10. Creando Comunidad (Blogs, PQRS, Seguimiento)...")
-    blogs_reales = [
-        {
-            "titulo": "Laguna Negra",
-            "contenido": "La Laguna Negra de Mongua es uno de los destinos más enigmáticos del departamento de Boyacá. Ubicada a más de 3.500 metros de altura, esta laguna de aguas oscuras está rodeada de páramo y envuelta en leyendas ancestrales.",
-            "informacion_adicional": "El misterio natural de Mongua"
-        },
-        {
-            "titulo": "Legado Ancestral",
-            "contenido": "Mongua conserva un legado cultural invaluable que se remonta a las comunidades muiscas que habitaron estas tierras.",
-            "informacion_adicional": "Iconografía de una cultura milenaria"
-        },
-        {
-            "titulo": "Rutas de Aventura",
-            "contenido": "Los senderos de Mongua ofrecen experiencias únicas para los amantes del senderismo y la fotografía de naturaleza.",
-            "informacion_adicional": "Senderismo en las montañas"
-        },
-        {
-            "titulo": "Vivencias",
-            "contenido": "Mongua no es solo un destino turístico, es una experiencia que se vive con todos los sentidos.",
-            "informacion_adicional": "Gastronomía local y artesanías"
-        }
-    ]
+        if estado_pago == 'aprobado':
+            reserva.estado_reserva = 'confirmada'
+            reserva.save()
 
-    for data in blogs_reales:
+        reservas_creadas.append(reserva)
+
+    print("7. Creación de promociones, blogs, PQRS y bitácoras...")
+    for idx in range(4):
+        Promocion.objects.create(
+            nombre=f"Promoción Mongua {idx + 1}",
+            descripcion="Descuento especial para viajeros que exploran la región y sus destinos de alta montaña.",
+            porcentaje_descuento=random.choice([10, 15, 20, 25]),
+            fecha_inicio=date.today() - timedelta(days=15),
+            fecha_fin=date.today() + timedelta(days=60),
+            codigo_promocion=f"MONGUA{idx + 1}",
+            activa=True,
+        )
+
+    for nombre, contenido, info in [
+        ("Mongua y la Laguna Negra", "Mongua, ubicado en la provincia de Sugamuxi en Boyacá, destaca por paisajes de alta montaña y por la presencia de la Laguna Negra, un lugar ligado a la historia, la leyenda y la contemplación del territorio. La experiencia del visitante combina naturaleza, geografía y memoria local.", "Paisaje, leyenda y geografía"),
+        ("Piedras de Santo Domingo y la memoria muisca", "El municipio guarda vestigios arqueológicos de gran valor, entre ellos las Piedras de Santo Domingo, un punto de interés que permite reconocer la presencia cultural de los muiscas y la importancia del patrimonio en los Andes boyacenses.", "Arqueología e historia"),
+        ("El Páramo de Ocetá y el turismo de altura", "La geografía de Mongua, a 2975 metros sobre el nivel del mar, convierte a este municipio en un destino apropiado para el senderismo de altura, la observación del paisaje y la conexión con la naturaleza andina.", "Senderismo y naturaleza"),
+        ("Mongua, agricultura, ganadería y tradición", "La economía del municipio se apoya en la agricultura, la ganadería y la minería, actividades que también forman parte del contexto cultural y productivo del territorio. Esto enriquece la experiencia de quienes visitan el pueblo y se acercan a su identidad local.", "Economía y comunidad"),
+        ("Patrimonio de Mongua: iglesia, plaza y comunidad", "La historia del municipio se refleja en la plaza, la iglesia y los relatos de la comunidad. Visitar Mongua es también conocer la forma en que la tradición, la fe y la vida cotidiana se entrelazan en el paisaje boyacense.", "Patrimonio y tradición"),
+    ]:
         Blog.objects.create(
             usuario=admin_user,
-            titulo=data["titulo"],
-            contenido=data["contenido"],
-            informacion_adicional=data["informacion_adicional"],
-            estado=True
+            titulo=nombre,
+            contenido=contenido,
+            informacion_adicional=info,
+            estado=True,
         )
 
-    asuntos_pqrs = [
-        "Consulta sobre disponibilidad de paquetes",
-        "Solicitud de reembolso por cancelación",
-        "Queja por demora en la confirmación de reserva",
-        "Sugerencia para mejorar la experiencia de senderismo",
-        "Reclamo por cobro duplicado en mi cuenta",
-        "Petición de información sobre accesibilidad",
-        "Queja por falta de señalización en los senderos",
-        "Sugerencia de nuevos paquetes familiares",
-        "Consulta sobre políticas de cancelación",
-        "Reclamo por comprobante rechazado sin justificación",
-    ]
-    descripciones_pqrs = [
-        "Quisiera saber si hay paquetes disponibles para el próximo fin de semana.",
-        "Solicito amablemente el reembolso de mi reserva cancelada.",
-        "Han pasado 5 días hábiles y aún no recibo confirmación.",
-        "Recomiendo instalar más puntos de hidratación en las rutas largas.",
-        "Se realizó un doble cobro en mi tarjeta de crédito.",
-        "Quisiera saber si los senderos son accesibles para personas con movilidad reducida.",
-        "En mi última visita noté que varios senderos carecen de señalización.",
-        "Sería genial contar con paquetes que incluyan actividades para niños.",
-        "Necesito conocer las condiciones y porcentajes de penalidad por cancelación.",
-        "Mi comprobante de pago fue rechazado sin explicación.",
-    ]
-
-    for i in range(10):
-        est = random.choice(['abierto', 'en_proceso', 'cerrado'])
-        pqr_obj = PQRS.objects.create(
-            usuario=random.choice(clientes_creados),
+    for idx in range(8):
+        pqr = PQRS.objects.create(
+            usuario=clientes_creados[idx % len(clientes_creados)],
             tipo=random.choice(['peticion', 'queja', 'reclamo', 'sugerencia']),
-            asunto=asuntos_pqrs[i],
-            descripcion=descripciones_pqrs[i],
-            estado=est
+            asunto=f"Consulta {idx + 1} sobre paquetes de Mongua",
+            descripcion="Necesito información sobre reservas, disponibilidad y actividades de senderismo para visitar el municipio.",
+            estado=random.choice(['abierto', 'en_proceso', 'cerrado'])
         )
-        if est in ['en_proceso', 'cerrado']:
+        if pqr.estado in ['en_proceso', 'cerrado']:
             Seguimiento.objects.create(
-                pqrs=pqr_obj,
+                pqrs=pqr,
                 usuario=admin_user,
-                respuesta="Hemos recibido tu solicitud y se encuentra en revisión por el equipo de Monagua."
+                respuesta='Se atendió la solicitud con información del paquete y de la disponibilidad del servicio.'
             )
 
-    print("11. Creando Promociones...")
-    nombres_promociones = [
-        "Descuento de Temporada", "Oferta Flash de Verano", "Promo Familiar",
-        "Aventura 2x1", "Descuento para Grupos", "Early Bird Navideño",
-        "Especial Puente Festivo", "Mongua Lover", "Eco-Descuento",
-        "Última Hora"
-    ]
-    descripciones_promociones = [
-        "Aprovecha el descuento especial de temporada en este paquete turístico.",
-        "Oferta relámpago por tiempo limitado. ¡No te la pierdas!",
-        "Descuento especial para familias con niños menores de 12 años.",
-        "Lleva a tu acompañante gratis en este paquete de aventura.",
-        "Descuento exclusivo para grupos de 5 o más personas.",
-        "Reserva con anticipación y obtén un descuento especial para Navidad.",
-        "Aprovecha el puente festivo con esta promoción increíble.",
-        "Para los verdaderos amantes de Mongua, un descuento de fidelidad.",
-        "Descuento especial en paquetes de ecoturismo sostenible.",
-        "¿Aún no has reservado? Esta oferta de última hora te conviene.",
-    ]
-    promociones_creadas = []
-    for i in range(10):
-        f_fin = date(anio, 12, 31) - timedelta(days=random.randint(0, 180))
-        f_inicio = f_fin - timedelta(days=random.randint(15, 60))
-        promo = Promocion.objects.create(
-            nombre=nombres_promociones[i],
-            descripcion=descripciones_promociones[i],
-            porcentaje_descuento=random.choice([10, 15, 20, 25, 30]),
-            fecha_inicio=f_inicio,
-            fecha_fin=f_fin,
-            codigo_promocion=f"PROM-{random.randint(1000, 9999)}-{i}",
-            activa=True
-        )
-        promociones_creadas.append(promo)
-
-    for i in range(min(10, len(paquetes_creados))):
-        PaquetePromocion.objects.create(
-            paquete=paquetes_creados[i],
-            promocion=promociones_creadas[i % len(promociones_creadas)],
-            valor_adulto_condescuento=Decimal('100000'),
-            valor_menor_condescuento=Decimal('50000')
-        )
-
-    print("12. Creando Bitácoras...")
-    auditoria_data = [
-        ("LOGIN", "usuarios_usuario", "El cliente inició sesión desde la web."),
-        ("ACCESO", "reservas_reserva", "Se consultaron las reservas de paquetes turísticos."),
-        ("NOTIFICACION", "pago", "El usuario adjuntó un comprobante de pago."),
-        ("RESPUESTA", "pqrs", "Se respondió una solicitud de PQRS."),
-        ("ACCESO", "usuarios_usuario", "El usuario consultó sus datos de contacto."),
-        ("RESPUESTA", "reservas_reserva", "El cliente solicitó la cancelación de su reserva."),
-        ("ACCESO", "comunidad_calificacion", "El usuario consultó las calificaciones."),
-        ("ACCESO", "blog", "Se consultó una publicación de la sección del blog."),
-        ("INSERT", "usuarios_usuario", "Creación de cuenta en la plataforma Monagua."),
-        ("ACCESO", "catalogo_paquete", "Búsqueda y visualización de paquetes turísticos.")
-    ]
-
-    for accion, modulo, descripcion in auditoria_data:
-        cliente_random = random.choice(clientes_creados)
+    for idx in range(8):
         Bitacora.objects.create(
-            usuario=cliente_random,
-            accion=accion,
-            modulo=modulo,
-            descripcion=descripcion
+            usuario=clientes_creados[idx % len(clientes_creados)],
+            accion=random.choice(['LOGIN', 'ACCESO', 'RESERVA', 'CONSULTA']),
+            modulo=random.choice(['usuarios', 'reservas', 'paquetes', 'pagos']),
+            descripcion='Actividad de prueba del sistema con datos representativos de Mongua.'
         )
 
     print("\n" + "=" * 60)
-    print("[OK] Poblado de base de datos finalizado con éxito!")
-    print("   • Usuarios de prueba disponibles:")
-    print("     - ADMIN:   username='admin'   | password='admin1234'")
-    print("     - TURISTA: username='turista' | password='turista1234'")
-    print(f"   • {len(clientes_creados)} Clientes / Turistas")
-    print(f"   • {len(guias_creados)} Guías Turísticos")
-    print(f"   • {len(categorias_creadas)} Categorías")
-    print(f"   • {len(actividades_creadas)} Actividades")
-    print(f"   • {len(paquetes_creados)} Paquetes")
-    print(f"   • {len(temporadas_creadas) + 1} Temporadas")
-    print(f"   • {len(tarifas_creadas)} Tarifas")
-    print(f"   • {len(reservas_creadas)} Reservas")
-    print(f"   • {comprobantes_creados} Pagos")
-    print(f"   • {len(planes_creados)} Planes de guía")
-    print(f"   • {len(polizas_creadas)} Pólizas de viaje")
-    print(f"   • {len(aseguradoras_creadas)} Seguros emitidos")
-    print(f"   • {len(notificaciones_creadas)} Notificaciones")
-    print(f"   • {len(calificaciones_creadas)} Calificaciones")
-    print(f"   • 4 Blogs")
-    print(f"   • 10 PQRS")
-    print(f"   • 10 Promociones")
-    print(f"   • 10 Registros de Bitácora")
+    print("[OK] Base de datos poblada con datos representativos de Mongua.")
+    print(f"- Usuarios: {Usuario.objects.count()}")
+    print(f"- Categorías: {Categoria.objects.count()}")
+    print(f"- Actividades: {Actividades.objects.count()}")
+    print(f"- Paquetes: {Paquete.objects.count()}")
+    print(f"- Temporadas: {Temporada.objects.count()}")
+    print(f"- Tarifas: {Tarifa.objects.count()}")
+    print(f"- Reservas: {Reserva.objects.count()}")
+    print(f"- Pagos: {Pago.objects.count()}")
+    print(f"- Blogs: {Blog.objects.count()}")
+    print(f"- PQRS: {PQRS.objects.count()}")
     print("=" * 60)
 
 
