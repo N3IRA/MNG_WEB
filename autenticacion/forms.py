@@ -263,18 +263,7 @@ class RegistroForm(forms.ModelForm):
 
 
 class RecuperacionPersonalizadaForm(forms.Form):
-    """Formulario para solicitar restablecimiento validando nombre de usuario, documento y correo."""
-    username = forms.CharField(
-        label="Nombre de Usuario",
-        error_messages={
-            'required': 'El nombre de usuario es obligatorio.'
-        },
-        widget=forms.TextInput(attrs={
-            'class': 'form-control rounded-pill py-3 px-4',
-            'placeholder': 'aventurero_mongua',
-            'required': True
-        })
-    )
+    """Formulario para solicitar restablecimiento validando documento y correo."""
     numero_documento = forms.CharField(
         label="Número de Documento",
         error_messages={
@@ -301,13 +290,11 @@ class RecuperacionPersonalizadaForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        username = cleaned_data.get('username', '').strip()
         numero_documento = cleaned_data.get('numero_documento', '').strip()
         email = cleaned_data.get('email', '').strip().lower()
 
-        if username and numero_documento and email:
+        if numero_documento and email:
             usuario = Usuario.objects.filter(
-                username__iexact=username,
                 numero_documento=numero_documento,
                 email__iexact=email
             ).first()
@@ -315,7 +302,7 @@ class RecuperacionPersonalizadaForm(forms.Form):
             if not usuario:
                 raise ValidationError(
                     "Los datos ingresados no coinciden con ninguna cuenta activa en Monagua. "
-                    "Verifica tu nombre de usuario, número de documento y correo electrónico."
+                    "Verifica tu número de documento y correo electrónico."
                 )
             cleaned_data['usuario_encontrado'] = usuario
 

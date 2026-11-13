@@ -100,3 +100,41 @@ class GeografiaLocalTestCase(TestCase):
         self.assertEqual(user.nombre_pais, 'Colombia')
         self.assertIn('boyac', user.nombre_departamento.lower())
         self.assertEqual(user.nombre_ciudad, 'Mongua')
+
+
+class RecuperacionClaveTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.usuario = Usuario.objects.create_user(
+            username='aventurero_test',
+            email='test_recuperar@monagua.com',
+            password='Password123!',
+            numero_documento='1234567890',
+            first_name='Juan',
+            last_name='Perez'
+        )
+
+    def test_ruta_recuperar_apodo_eliminada(self):
+        """Verifica que la ruta de recuperación de apodo ha sido eliminada del sistema."""
+        resp = self.client.get('/autenticacion/recuperar-apodo/')
+        self.assertEqual(resp.status_code, 404)
+
+    def test_formulario_recuperar_clave_sin_apodo(self):
+        """Verifica que el formulario de recuperación de clave no incluya ni requiera el apodo."""
+        resp = self.client.get(reverse('recuperar_clave'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, 'name="username"')
+        self.assertNotContains(resp, 'recuperar_apodo')
+        self.assertContains(resp, 'name="numero_documento"')
+        self.assertContains(resp, 'name="email"')
+
+    def test_recuperacion_clave_post_exitoso_solo_con_documento_y_correo(self):
+        """Verifica que solo enviando documento y correo válidos se inicie el flujo de recuperación."""
+        resp = self.client.post(reverse('recuperar_clave'), {
+            'numero_documento': '1234567890',
+            'email': 'test_recuperar@monagua.com'
+        })
+        self.assertRedirects(resp, reverse('verificar_otp_clave'))
+        self.assertEqual(self.client.session.get('reset_email'), 'test_recuperar@monagua.com')
+        self.assertEqual(self.client.session.get('reset_user_id'), self.usuario.id)
+

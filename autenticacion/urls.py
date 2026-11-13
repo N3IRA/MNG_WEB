@@ -1,7 +1,6 @@
 from django.urls import path
 from autenticacion.views.login import views as login_views
 from autenticacion.views.registro import views as registro_views
-from autenticacion.views.recuperar_apodo import views as apodo_views
 from autenticacion.views.recuperar_clave import views as clave_views
 from autenticacion.views.ajax import views as ajax_views
 from autenticacion.views.htmx import views as htmx_views
@@ -16,9 +15,6 @@ urlpatterns = [
     path('registro/', registro_views.registro_vista, name='registro'),
     path('registro/verificar-otp/', registro_views.verificar_otp_registro_vista, name='verificar_otp_registro'),
     path('registro/reenviar-otp/', registro_views.reenviar_otp_registro_vista, name='reenviar_otp_registro'),
-
-    # Recuperación de Nombre de Usuario / Apodo
-    path('recuperar-apodo/', apodo_views.recuperar_apodo_vista, name='recuperar_apodo'),
 
     # Recuperación de Contraseña con OTP y Enlace
     path('recuperar-clave/', clave_views.recuperar_clave_vista, name='recuperar_clave'),

@@ -24,7 +24,7 @@ from django_ratelimit.decorators import ratelimit
 @ratelimit(key='ip', rate='5/m', block=False)
 def recuperar_clave_vista(request):
     """
-    Inicia el flujo de recuperación de contraseña validando apodo, documento y correo.
+    Inicia el flujo de recuperación de contraseña validando documento y correo.
     Genera un código OTP de 6 dígitos y lo envía por correo electrónico.
     Protegido con rate-limiting para evitar ataques de denegación o spam de correos.
     """

@@ -4,7 +4,6 @@ from .registro.views import (
     verificar_otp_registro_vista,
     reenviar_otp_registro_vista,
 )
-from .recuperar_apodo.views import recuperar_apodo_vista
 from .recuperar_clave.views import (
     recuperar_clave_vista,
     verificar_otp_recuperar_vista,
