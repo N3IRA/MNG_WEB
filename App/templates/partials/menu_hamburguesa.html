@@ -105,6 +105,13 @@
               >Destinos</a
             >
             <a
+              href="{% url 'promociones_publicas' %}"
+              class="menu-hamburguesa-premium__main-link"
+              title="Ver ofertas y descuentos especiales"
+              aria-label="Ver ofertas y descuentos especiales"
+              >Ofertas</a
+            >
+            <a
               href="{% url 'nosotros' %}"
               class="menu-hamburguesa-premium__main-link"
               title="Conocer más sobre Monagua"
@@ -167,12 +174,32 @@
             {% endif %} {# Guía Turístico #} {% if user.rol == 3 %}
             <li>
               <a
+                class="menu-hamburguesa-premium__secondary-link fw-bold text-success"
+                href="{% url 'dashboard_guia' %}"
+                title="Ir al panel de control del guía"
+                aria-label="Ir al panel de control del guía"
+              >
+                <i class="bi bi-grid-1x2-fill me-2"></i>Panel del guía
+              </a>
+            </li>
+            <li>
+              <a
+                class="menu-hamburguesa-premium__secondary-link"
+                href="{% url 'mis_asignaciones_guia' %}"
+                title="Ver mis asignaciones de tours"
+                aria-label="Ver mis asignaciones de tours"
+              >
+                <i class="bi bi-pin-map-fill me-2"></i>Mis asignaciones
+              </a>
+            </li>
+            <li>
+              <a
                 class="menu-hamburguesa-premium__secondary-link"
                 href="{% url 'mis_calificaciones' %}"
                 title="Ver mis calificaciones y opiniones"
                 aria-label="Ver mis calificaciones y opiniones"
               >
-                <i class="bi bi-star-fill me-2"></i>Mis Calificaciones
+                <i class="bi bi-star-fill me-2"></i>Mis calificaciones
               </a>
             </li>
             {% endif %}

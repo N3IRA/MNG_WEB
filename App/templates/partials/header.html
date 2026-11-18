@@ -43,6 +43,14 @@
       </li>
       <li>
         <a
+          class="navbar-glass__link nav-link text-dark small fw-bold px-1.5 px-xl-2.5 py-1 text-nowrap {% if request.resolver_match.url_name == 'promociones_publicas' %}active text-success{% endif %}"
+          href="{% url 'promociones_publicas' %}"
+          title="Ver ofertas y descuentos especiales"
+          ><i class="bi bi-tag-fill me-1"></i>OFERTAS</a
+        >
+      </li>
+      <li>
+        <a
           class="navbar-glass__link nav-link text-dark small fw-bold px-1.5 px-xl-2.5 py-1 text-nowrap {% if request.resolver_match.url_name in 'mis_calificaciones listar_calificaciones' %}active text-success{% endif %}"
           href="{% if user.is_authenticated and user.is_staff or user.is_superuser or user.rol == 'ADMIN' %}{% url 'listar_calificaciones' %}{% else %}{% url 'mis_calificaciones' %}{% endif %}"
           title="Ver opiniones y calificaciones de viajeros"

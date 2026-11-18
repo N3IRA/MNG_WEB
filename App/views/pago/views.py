@@ -48,8 +48,8 @@ def enviar_comprobante(request):
             pago.nota_admin = ''
             pago.fecha_revision = None
             pago.fecha_pago = timezone.now()
-            if not pago.metodo_pago:
-                pago.metodo_pago = 'Transferencia Bancaria'
+            metodo = request.POST.get('metodo_pago', '').strip()
+            pago.metodo_pago = metodo or 'Transferencia Bancaria'
             pago.save()
 
             # Notificar al turista

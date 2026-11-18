@@ -116,7 +116,6 @@ def guias_guardar(request):
             experiencia_anos = 0
 
         if user_id:
-            # Actualización de Guía
             user_obj = get_object_or_404(Usuario, pk=user_id)
             user_obj.first_name = first_name
             user_obj.last_name = last_name
@@ -131,10 +130,6 @@ def guias_guardar(request):
             user_obj.descripcion_experiencia = descripcion_experiencia
             user_obj.entidad_salud = entidad_salud
             user_obj.rol = Usuario.Roles.GUIA
-
-            disponibilidad = request.POST.get('disponibilidad')
-            if disponibilidad == 'Ocupado':
-                user_obj.is_active = True
 
             if password:
                 user_obj.set_password(password)
@@ -159,7 +154,6 @@ def guias_guardar(request):
                 f"actualizado correctamente."
             )
         else:
-            # Nuevo Registro de Guía
             username = request.POST.get('username', '').strip()
             if not username:
                 username = email.split('@')[0] if email else f"guia_{numero_documento}"
@@ -222,7 +216,10 @@ def asignar_rol_guia(request, id):
 
         if user_obj.rol == Usuario.Roles.GUIA:
             user_obj.rol = Usuario.Roles.CLIENTE
-            msg = f"Se ha retirado el rol de guía a '{user_obj.username}' (ahora es Cliente/Turista)."
+            msg = (
+                f"Se ha retirado el rol de guía a '{user_obj.username}' "
+                f"(ahora es Cliente/Turista)."
+            )
         else:
             user_obj.rol = Usuario.Roles.GUIA
             msg = f"Se ha asignado el rol de guía turístico a '{user_obj.username}'."
@@ -244,7 +241,7 @@ def asignar_rol_guia(request, id):
 def asignar_tour_guia(request, guia_id):
     """
     Asigna un paquete turístico a un guía para fechas específicas.
-    Previene solapamientos con otros tours ya asignados y activos.
+    Previene solapamientos con asignaciones activas previas.
     """
     if request.method == 'POST':
         guia = get_object_or_404(Usuario, pk=guia_id, rol=Usuario.Roles.GUIA)
@@ -259,7 +256,7 @@ def asignar_tour_guia(request, guia_id):
         if not paquete_id or not fecha_inicio_raw:
             messages.error(
                 request,
-                "Debe seleccionar un paquete y la fecha programada para el servicio."
+                "Debe seleccionar un paquete y la fecha de inicio del servicio."
             )
             return redirect('gestion_guias')
 
@@ -273,17 +270,17 @@ def asignar_tour_guia(request, guia_id):
                 duracion_dias = getattr(paquete, 'dias_duracion', 1) or 1
                 fecha_fin = fecha_inicio + timedelta(days=max(duracion_dias - 1, 0))
         except ValueError:
-            messages.error(request, "Formato de fecha inválido. Utilice AAAA-MM-DD.")
+            messages.error(request, "Formato de fecha inválido. Use AAAA-MM-DD.")
             return redirect('gestion_guias')
 
         if fecha_fin < fecha_inicio:
             messages.error(
                 request,
-                "La fecha de finalización no puede ser anterior a la fecha de inicio."
+                "La fecha de fin no puede ser anterior a la fecha de inicio."
             )
             return redirect('gestion_guias')
 
-        # Verificación de solapamiento de fechas para el guía
+        # Verificar solapamiento de fechas
         solapamiento = PlanGuia.objects.filter(
             usuario=guia,
             estado=True,
@@ -294,14 +291,15 @@ def asignar_tour_guia(request, guia_id):
             conflicto = solapamiento.first()
             messages.warning(
                 request,
-                f"El guía '{guia.get_full_name() or guia.username}' ya tiene una asignación activa "
-                f"en esas fechas: paquete '{conflicto.paquete.nombre}' "
-                f"del {conflicto.fecha_inicio_plan.strftime('%d/%m/%Y')} al "
+                f"El guía '{guia.get_full_name() or guia.username}' ya tiene "
+                f"una asignación activa en esas fechas: "
+                f"'{conflicto.paquete.nombre}' del "
+                f"{conflicto.fecha_inicio_plan.strftime('%d/%m/%Y')} al "
                 f"{conflicto.fecha_fin_plan.strftime('%d/%m/%Y')}."
             )
             return redirect('gestion_guias')
 
-        nuevo_plan = PlanGuia.objects.create(
+        PlanGuia.objects.create(
             usuario=guia,
             paquete=paquete,
             fecha_inicio_plan=fecha_inicio,
@@ -313,8 +311,10 @@ def asignar_tour_guia(request, guia_id):
         crear_notificacion_sistema(
             usuario=guia,
             mensaje=(
-                f"Has sido asignado como guía oficial para el paquete '{paquete.nombre}' "
-                f"del {fecha_inicio.strftime('%d/%m/%Y')} al {fecha_fin.strftime('%d/%m/%Y')}."
+                f"Has sido asignado como guía oficial para el paquete "
+                f"'{paquete.nombre}' del "
+                f"{fecha_inicio.strftime('%d/%m/%Y')} al "
+                f"{fecha_fin.strftime('%d/%m/%Y')}."
             ),
             tipo="Asignación de Tour",
             prioridad="alta"
@@ -322,8 +322,9 @@ def asignar_tour_guia(request, guia_id):
 
         messages.success(
             request,
-            f"Asignación registrada exitosamente: {guia.get_full_name() or guia.username} "
-            f"— {paquete.nombre} ({fecha_inicio.strftime('%d/%m/%Y')} a {fecha_fin.strftime('%d/%m/%Y')})."
+            f"Asignación registrada: {guia.get_full_name() or guia.username} "
+            f"— {paquete.nombre} "
+            f"({fecha_inicio.strftime('%d/%m/%Y')} — {fecha_fin.strftime('%d/%m/%Y')})."
         )
 
     return redirect('gestion_guias')
@@ -345,3 +346,49 @@ def toggle_plan_guia(request, plan_id):
         )
     return redirect('gestion_guias')
 
+
+# ==============================================================================
+# PANEL Y ASIGNACIONES DEL GUÍA TURÍSTICO (VISTA PERSONAL)
+# ==============================================================================
+
+@login_required
+def dashboard_guia(request):
+    """Panel de control personal del guía turístico autenticado."""
+    if not getattr(request.user, 'es_guia', False):
+        return redirect('index')
+
+    hoy = timezone.now().date()
+    mis_planes = (
+        PlanGuia.objects.filter(usuario=request.user)
+        .select_related('paquete')
+        .order_by('fecha_inicio_plan')
+    )
+    planes_activos = mis_planes.filter(estado=True, fecha_fin_plan__gte=hoy)
+    planes_pasados = mis_planes.filter(estado=True, fecha_fin_plan__lt=hoy)
+    plan_proximo = planes_activos.order_by('fecha_inicio_plan').first()
+
+    return render(request, 'usuario/guia/dashboard_guia.html', {
+        'mis_planes': mis_planes,
+        'planes_activos': planes_activos,
+        'planes_pasados': planes_pasados,
+        'plan_proximo': plan_proximo,
+        'hoy': hoy,
+    })
+
+
+@login_required
+def mis_asignaciones_guia(request):
+    """Lista completa de los tours asignados al guía autenticado."""
+    if not getattr(request.user, 'es_guia', False):
+        return redirect('index')
+
+    hoy = timezone.now().date()
+    mis_planes = (
+        PlanGuia.objects.filter(usuario=request.user)
+        .select_related('paquete')
+        .order_by('-fecha_inicio_plan')
+    )
+    return render(request, 'usuario/guia/mis_asignaciones.html', {
+        'mis_planes': mis_planes,
+        'hoy': hoy,
+    })

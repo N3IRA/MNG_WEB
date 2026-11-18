@@ -52,7 +52,7 @@
       </a>
 
       <a
-        href="#"
+        href="{% url 'dashboard_guia' %}"
         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'dashboard_guia' %}bg-success text-white shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
         style="width: 44px; height: 44px"
         data-bs-toggle="tooltip"
@@ -238,10 +238,10 @@
       </a>
 
       <a
-        href="#"
+        href="{% url 'dashboard_guia' %}"
         class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'dashboard_guia' %}bg-success text-white fw-semibold shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
-        title="Ir al Panel de Control"
-        aria-label="Ir al Panel de Control"
+        title="Ir al panel de control del guía"
+        aria-label="Ir al panel de control del guía"
       >
         <i class="bi bi-grid-1x2 fs-6" style="width: 20px"></i>
         <span class="small">Panel de Control</span>
@@ -296,8 +296,8 @@
           >
             <li>
               <a
-                href="#"
-                class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'mis_asignaciones' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
+                href="{% url 'mis_asignaciones_guia' %}"
+                class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'mis_asignaciones_guia' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
                 ><i class="bi bi-pin-map"></i> Asignaciones</a
               >
             </li>
@@ -350,16 +350,16 @@
           >
             <li>
               <a
-                href="#"
-                class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'calificaciones_guia' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
-                ><i class="bi bi-star"></i> Mis Calificaciones</a
+                href="{% url 'mis_calificaciones' %}"
+                class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'mis_calificaciones' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
+                ><i class="bi bi-star"></i> Mis calificaciones</aa
               >
             </li>
             <li>
               <a
-                href="#"
-                class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'blog_usuario' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
-                ><i class="bi bi-journal-text"></i> Blog</a
+                href="{% url 'blog' %}"
+                class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'blog' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
+                ><i class="bi bi-journal-text"></i> Blog</aa
               >
             </li>
           </ul>

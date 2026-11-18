@@ -171,6 +171,10 @@ urlpatterns = [
     path('admin/guias/asignar/<int:guia_id>/', guias_views.asignar_tour_guia, name='asignar_tour_guia'),
     path('admin/guias/plan/toggle/<int:plan_id>/', guias_views.toggle_plan_guia, name='toggle_plan_guia'),
 
+    # Panel del Guía Turístico (Usuario / Guía)
+    path('guia/dashboard/', guias_views.dashboard_guia, name='dashboard_guia'),
+    path('guia/mis-asignaciones/', guias_views.mis_asignaciones_guia, name='mis_asignaciones_guia'),
+
     # Calificaciones (Administración / Staff & Turista / Cliente)
     path('admin/calificaciones/', calificacion_views.listar_calificaciones_admin, name='listar_calificaciones'),
     path('admin/calificaciones/toggle-visible/<int:pk>/', calificacion_views.toggle_visible_calificacion, name='toggle_visible_calificacion'),
