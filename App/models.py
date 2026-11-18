@@ -13,6 +13,7 @@ import ssl
 from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.templatetags.static import static
 
 
 class PositiveTinyIntegerField(models.PositiveSmallIntegerField):
@@ -471,6 +472,41 @@ class Blog(models.Model):
     def get_absolute_url(self):
         """Retorna la URL de detalle de este post del blog."""
         return reverse("detalle_blog", kwargs={"id": self.id})
+
+    def get_imagen_url(self):
+        """Retorna la URL de la imagen destacada o una imagen temática del proyecto por defecto."""
+        if self.imagen_destacada:
+            return self.imagen_destacada.url
+        
+        # Mapeo según el tema o identificador del post a imágenes estáticas reales de Mongua
+        titulo_lower = (self.titulo or '').lower()
+        if 'laguna' in titulo_lower:
+            return static('img/lagunanegra.webp')
+        elif 'muisca' in titulo_lower or 'piedra' in titulo_lower or 'santo domingo' in titulo_lower:
+            return static('img/pictografias.webp')
+        elif 'paramo' in titulo_lower or 'ocet' in titulo_lower or 'páramo' in titulo_lower:
+            return static('img/paramo_oseta.webp')
+        elif 'agricultura' in titulo_lower or 'ganader' in titulo_lower or 'campo' in titulo_lower:
+            return static('img/miradorcumbre.webp')
+        elif 'iglesia' in titulo_lower or 'plaza' in titulo_lower or 'patrimonio' in titulo_lower or 'pueblo' in titulo_lower:
+            return static('img/iglesia.webp')
+        elif 'artesan' in titulo_lower or 'tejido' in titulo_lower:
+            return static('img/artesanias.webp')
+        elif 'museo' in titulo_lower:
+            return static('img/museo.webp')
+        
+        # Alternativa rotativa según el ID si el título no coincide con palabras clave
+        imagenes_default = [
+            'img/blog1.webp',
+            'img/paramo_oseta.webp',
+            'img/pictografias.webp',
+            'img/iglesia.webp',
+            'img/lagunanegra.webp',
+            'img/miradorcumbre.webp',
+            'img/blogg.webp',
+        ]
+        img_elegida = imagenes_default[(self.id or 0) % len(imagenes_default)]
+        return static(img_elegida)
 
     def __str__(self):
         """Retorna el título y el autor del blog."""

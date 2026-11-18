@@ -1,18 +1,14 @@
-from datetime import datetime, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from django.utils import timezone
-from App.models import Usuario, Paquete, PlanGuia
+from App.models import Usuario
 from App.utils import crear_notificacion_sistema
 
 
+from django.db.models import Q
+
 def es_administrador(user):
-    return (
-        user.is_authenticated
-        and user.is_active
-        and (user.is_staff or getattr(user, 'rol', None) == Usuario.Roles.ADMIN)
-    )
+    return user.is_authenticated and user.is_active and (user.is_staff or getattr(user, 'rol', None) == Usuario.Roles.ADMIN)
 
 
 # ==============================================================================
@@ -21,25 +17,43 @@ def es_administrador(user):
 
 @user_passes_test(es_administrador)
 def gestion_guias_view(request):
-    """Directorio y gestión integral de guías turísticos y sus asignaciones."""
-    guias = (
-        Usuario.objects.filter(rol=Usuario.Roles.GUIA)
-        .prefetch_related('planes_guia__paquete')
-        .order_by('-id')
-    )
-    guias_activos = guias.filter(is_active=True).count()
-    paquetes_disponibles = Paquete.objects.filter(estado=True).order_by('nombre')
-    planes_activos = (
-        PlanGuia.objects.filter(estado=True)
-        .select_related('usuario', 'paquete')
-        .order_by('-fecha_inicio_plan')
-    )
+    """Directorio y gestión de guías turísticos con soporte para filtros y métricas."""
+    estado = request.GET.get('estado', '').strip().lower()
+    query = request.GET.get('q', '').strip()
+
+    guias_base = Usuario.objects.filter(rol=Usuario.Roles.GUIA)
+    total_guias = guias_base.count()
+    guias_activos = guias_base.filter(is_active=True).count()
+    guias_inactivos = guias_base.filter(is_active=False).count()
+    guias_con_tarjeta = guias_base.filter(numero_tarjeta_profesional__isnull=False).exclude(numero_tarjeta_profesional='').count()
+
+    guias = guias_base.order_by('-id')
+
+    if estado == 'activos':
+        guias = guias.filter(is_active=True)
+    elif estado == 'inactivos':
+        guias = guias.filter(is_active=False)
+    elif estado in ['con_tarjeta', 'licencia']:
+        guias = guias.filter(numero_tarjeta_profesional__isnull=False).exclude(numero_tarjeta_profesional='')
+
+    if query:
+        guias = guias.filter(
+            Q(username__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(email__icontains=query) |
+            Q(numero_documento__icontains=query) |
+            Q(numero_tarjeta_profesional__icontains=query) |
+            Q(telefono__icontains=query)
+        )
 
     contexto = {
         'guias': guias,
+        'total_guias': total_guias,
         'guias_activos': guias_activos,
-        'paquetes_disponibles': paquetes_disponibles,
-        'planes_activos': planes_activos,
+        'guias_inactivos': guias_inactivos,
+        'guias_con_tarjeta': guias_con_tarjeta,
+        'estado_seleccionado': estado,
     }
     return render(request, 'admin/guias/gestion_guias.html', contexto)
 
@@ -49,66 +63,19 @@ def guias_guardar(request):
     """Registra o actualiza la información y credenciales de un guía turístico."""
     if request.method == 'POST':
         user_id = request.POST.get('id') or request.POST.get('guia_id')
-        first_name = (
-            request.POST.get('first_name')
-            or request.POST.get('nombre', '')
-        ).strip()
-        last_name = (
-            request.POST.get('last_name')
-            or request.POST.get('apellido', '')
-        ).strip()
-        email = (
-            request.POST.get('email')
-            or request.POST.get('correo', '')
-        ).strip()
+        first_name = (request.POST.get('first_name') or request.POST.get('nombre') or '').strip()
+        last_name = (request.POST.get('last_name') or request.POST.get('apellido') or '').strip()
+        email = (request.POST.get('email') or request.POST.get('correo') or '').strip()
         telefono = request.POST.get('telefono', '').strip()
         tipo_documento = request.POST.get('tipo_documento', 'CC').strip()
-        numero_documento = (
-            request.POST.get('numero_documento')
-            or request.POST.get('documento', '')
-        ).strip()
+        numero_documento = (request.POST.get('numero_documento') or request.POST.get('documento') or '').strip()
         residencia = request.POST.get('residencia', '').strip()
-        tarjeta_profesional = (
-            request.POST.get('numero_tarjeta_profesional')
-            or request.POST.get('licencia_turismo', '')
-        ).strip()
-        experiencia_anos_raw = (
-            request.POST.get('experiencia_anos')
-            or request.POST.get('experiencia', 0)
-        )
-        descripcion_experiencia = (
-            request.POST.get('descripcion_experiencia')
-            or request.POST.get('biografia', '')
-        ).strip()
+        tarjeta_profesional = (request.POST.get('numero_tarjeta_profesional') or request.POST.get('licencia_turismo') or '').strip()
+        experiencia_anos_raw = request.POST.get('experiencia_anos') or request.POST.get('experiencia') or 0
+        descripcion_experiencia = (request.POST.get('descripcion_experiencia') or request.POST.get('biografia') or '').strip()
         entidad_salud = request.POST.get('entidad_salud', '').strip()
         password = request.POST.get('password', '').strip()
         imagen_perfil = request.FILES.get('imagen_perfil')
-
-        # Formateo complementario si viene de modal de perfil extendido
-        especialidad = request.POST.get('especialidad', '').strip()
-        idiomas = request.POST.get('idiomas', '').strip()
-        certificaciones = request.POST.get('certificaciones', '').strip()
-        notas = request.POST.get('notas', '').strip()
-
-        detalles_extra = []
-        if especialidad:
-            detalles_extra.append(f"Especialidad: {especialidad}")
-        if idiomas:
-            detalles_extra.append(f"Idiomas: {idiomas}")
-        if certificaciones:
-            detalles_extra.append(f"Certificaciones: {certificaciones}")
-        if notas:
-            detalles_extra.append(f"Notas: {notas}")
-
-        if detalles_extra:
-            texto_extra = "\n".join(detalles_extra)
-            if descripcion_experiencia:
-                if especialidad not in descripcion_experiencia:
-                    descripcion_experiencia = (
-                        f"{descripcion_experiencia}\n\n{texto_extra}"
-                    )
-            else:
-                descripcion_experiencia = texto_extra
 
         try:
             experiencia_anos = int(experiencia_anos_raw) if experiencia_anos_raw else 0
@@ -116,7 +83,17 @@ def guias_guardar(request):
             experiencia_anos = 0
 
         if user_id:
+            # Actualización
             user_obj = get_object_or_404(Usuario, pk=user_id)
+
+            if email and Usuario.objects.filter(email=email).exclude(pk=user_obj.pk).exists():
+                messages.error(request, f"El correo '{email}' ya se encuentra registrado por otro usuario.")
+                return redirect('gestion_guias')
+
+            if numero_documento and Usuario.objects.filter(numero_documento=numero_documento).exclude(pk=user_obj.pk).exists():
+                messages.error(request, f"El número de documento '{numero_documento}' ya pertenece a otro usuario.")
+                return redirect('gestion_guias')
+
             user_obj.first_name = first_name
             user_obj.last_name = last_name
             if email:
@@ -141,19 +118,13 @@ def guias_guardar(request):
 
             crear_notificacion_sistema(
                 usuario=request.user,
-                mensaje=(
-                    f"Se ha actualizado la información del guía turístico: "
-                    f"'{user_obj.get_full_name() or user_obj.username}'."
-                ),
+                mensaje=f"Se ha actualizado la información del guía turístico: '{user_obj.get_full_name() or user_obj.username}'.",
                 tipo="Guía Turístico",
                 prioridad="media"
             )
-            messages.success(
-                request,
-                f"Guía '{user_obj.get_full_name() or user_obj.username}' "
-                f"actualizado correctamente."
-            )
+            messages.success(request, f"Guía '{user_obj.get_full_name() or user_obj.username}' actualizado correctamente.")
         else:
+            # Nuevo Registro
             username = request.POST.get('username', '').strip()
             if not username:
                 username = email.split('@')[0] if email else f"guia_{numero_documento}"
@@ -164,6 +135,10 @@ def guias_guardar(request):
 
             if email and Usuario.objects.filter(email=email).exists():
                 messages.error(request, f"El correo '{email}' ya se encuentra registrado.")
+                return redirect('gestion_guias')
+
+            if numero_documento and Usuario.objects.filter(numero_documento=numero_documento).exists():
+                messages.error(request, f"El documento '{numero_documento}' ya se encuentra registrado.")
                 return redirect('gestion_guias')
 
             user_obj = Usuario.objects.create_user(
@@ -189,18 +164,35 @@ def guias_guardar(request):
 
             crear_notificacion_sistema(
                 usuario=request.user,
-                mensaje=(
-                    f"Se ha registrado un nuevo guía turístico: "
-                    f"'{user_obj.get_full_name() or user_obj.username}'."
-                ),
+                mensaje=f"Se ha registrado un nuevo guía turístico: '{user_obj.get_full_name() or user_obj.username}'.",
                 tipo="Guía Turístico",
                 prioridad="media"
             )
-            messages.success(
-                request,
-                f"Guía '{user_obj.get_full_name() or user_obj.username}' "
-                f"registrado exitosamente."
-            )
+            messages.success(request, f"Guía '{user_obj.get_full_name() or user_obj.username}' registrado exitosamente.")
+
+    return redirect('gestion_guias')
+
+
+@user_passes_test(es_administrador)
+def guias_toggle_estado(request, id):
+    """Activa o desactiva la cuenta de un guía turístico."""
+    if request.method == 'POST':
+        user_obj = get_object_or_404(Usuario, pk=id)
+        if user_obj.id == request.user.id:
+            messages.error(request, "No puedes desactivar tu propia cuenta de administrador.")
+            return redirect('gestion_guias')
+
+        user_obj.is_active = not user_obj.is_active
+        user_obj.save()
+
+        estado_txt = "activada" if user_obj.is_active else "desactivada"
+        crear_notificacion_sistema(
+            usuario=request.user,
+            mensaje=f"La cuenta del guía '{user_obj.username}' ha sido {estado_txt}.",
+            tipo="Guía Turístico",
+            prioridad="media"
+        )
+        messages.success(request, f"La cuenta del guía '{user_obj.username}' ha sido {estado_txt}.")
 
     return redirect('gestion_guias')
 
@@ -216,179 +208,21 @@ def asignar_rol_guia(request, id):
 
         if user_obj.rol == Usuario.Roles.GUIA:
             user_obj.rol = Usuario.Roles.CLIENTE
-            msg = (
-                f"Se ha retirado el rol de guía a '{user_obj.username}' "
-                f"(ahora es Cliente/Turista)."
-            )
+            accion = "ROL DE GUÍA RETIRADO"
+            msg = f"Se ha retirado el rol de guía a '{user_obj.username}' (ahora es Cliente/Turista)."
         else:
             user_obj.rol = Usuario.Roles.GUIA
+            accion = "ROL DE GUÍA ASIGNADO"
             msg = f"Se ha asignado el rol de guía turístico a '{user_obj.username}'."
 
         user_obj.save()
 
         crear_notificacion_sistema(
             usuario=request.user,
-            mensaje=f"Cambio de rol para '{user_obj.username}': {msg}",
+            mensaje="Alteración de rol de usuario",
             tipo="Guía Turístico",
             prioridad="media"
         )
         messages.success(request, msg)
 
     return redirect('gestion_guias')
-
-
-@user_passes_test(es_administrador)
-def asignar_tour_guia(request, guia_id):
-    """
-    Asigna un paquete turístico a un guía para fechas específicas.
-    Previene solapamientos con asignaciones activas previas.
-    """
-    if request.method == 'POST':
-        guia = get_object_or_404(Usuario, pk=guia_id, rol=Usuario.Roles.GUIA)
-        paquete_id = request.POST.get('paquete_id')
-        fecha_inicio_raw = (
-            request.POST.get('fecha_servicio')
-            or request.POST.get('fecha_inicio_plan')
-        )
-        fecha_fin_raw = request.POST.get('fecha_fin_plan')
-        idioma = request.POST.get('idioma_servicio', 'Español').strip() or 'Español'
-
-        if not paquete_id or not fecha_inicio_raw:
-            messages.error(
-                request,
-                "Debe seleccionar un paquete y la fecha de inicio del servicio."
-            )
-            return redirect('gestion_guias')
-
-        paquete = get_object_or_404(Paquete, pk=paquete_id)
-
-        try:
-            fecha_inicio = datetime.strptime(fecha_inicio_raw, '%Y-%m-%d').date()
-            if fecha_fin_raw:
-                fecha_fin = datetime.strptime(fecha_fin_raw, '%Y-%m-%d').date()
-            else:
-                duracion_dias = getattr(paquete, 'dias_duracion', 1) or 1
-                fecha_fin = fecha_inicio + timedelta(days=max(duracion_dias - 1, 0))
-        except ValueError:
-            messages.error(request, "Formato de fecha inválido. Use AAAA-MM-DD.")
-            return redirect('gestion_guias')
-
-        if fecha_fin < fecha_inicio:
-            messages.error(
-                request,
-                "La fecha de fin no puede ser anterior a la fecha de inicio."
-            )
-            return redirect('gestion_guias')
-
-        # Verificar solapamiento de fechas
-        solapamiento = PlanGuia.objects.filter(
-            usuario=guia,
-            estado=True,
-            fecha_inicio_plan__lte=fecha_fin,
-            fecha_fin_plan__gte=fecha_inicio
-        )
-        if solapamiento.exists():
-            conflicto = solapamiento.first()
-            messages.warning(
-                request,
-                f"El guía '{guia.get_full_name() or guia.username}' ya tiene "
-                f"una asignación activa en esas fechas: "
-                f"'{conflicto.paquete.nombre}' del "
-                f"{conflicto.fecha_inicio_plan.strftime('%d/%m/%Y')} al "
-                f"{conflicto.fecha_fin_plan.strftime('%d/%m/%Y')}."
-            )
-            return redirect('gestion_guias')
-
-        PlanGuia.objects.create(
-            usuario=guia,
-            paquete=paquete,
-            fecha_inicio_plan=fecha_inicio,
-            fecha_fin_plan=fecha_fin,
-            idioma_servicio=idioma,
-            estado=True
-        )
-
-        crear_notificacion_sistema(
-            usuario=guia,
-            mensaje=(
-                f"Has sido asignado como guía oficial para el paquete "
-                f"'{paquete.nombre}' del "
-                f"{fecha_inicio.strftime('%d/%m/%Y')} al "
-                f"{fecha_fin.strftime('%d/%m/%Y')}."
-            ),
-            tipo="Asignación de Tour",
-            prioridad="alta"
-        )
-
-        messages.success(
-            request,
-            f"Asignación registrada: {guia.get_full_name() or guia.username} "
-            f"— {paquete.nombre} "
-            f"({fecha_inicio.strftime('%d/%m/%Y')} — {fecha_fin.strftime('%d/%m/%Y')})."
-        )
-
-    return redirect('gestion_guias')
-
-
-@user_passes_test(es_administrador)
-def toggle_plan_guia(request, plan_id):
-    """Activa o desactiva una asignación de tour (PlanGuia)."""
-    if request.method == 'POST':
-        plan = get_object_or_404(PlanGuia, pk=plan_id)
-        plan.estado = not plan.estado
-        plan.save(update_fields=['estado'])
-        estado_desc = "activada" if plan.estado else "desactivada"
-        messages.success(
-            request,
-            f"La asignación del paquete '{plan.paquete.nombre}' a "
-            f"'{plan.usuario.get_full_name() or plan.usuario.username}' "
-            f"ha sido {estado_desc}."
-        )
-    return redirect('gestion_guias')
-
-
-# ==============================================================================
-# PANEL Y ASIGNACIONES DEL GUÍA TURÍSTICO (VISTA PERSONAL)
-# ==============================================================================
-
-@login_required
-def dashboard_guia(request):
-    """Panel de control personal del guía turístico autenticado."""
-    if not getattr(request.user, 'es_guia', False):
-        return redirect('index')
-
-    hoy = timezone.now().date()
-    mis_planes = (
-        PlanGuia.objects.filter(usuario=request.user)
-        .select_related('paquete')
-        .order_by('fecha_inicio_plan')
-    )
-    planes_activos = mis_planes.filter(estado=True, fecha_fin_plan__gte=hoy)
-    planes_pasados = mis_planes.filter(estado=True, fecha_fin_plan__lt=hoy)
-    plan_proximo = planes_activos.order_by('fecha_inicio_plan').first()
-
-    return render(request, 'usuario/guia/dashboard_guia.html', {
-        'mis_planes': mis_planes,
-        'planes_activos': planes_activos,
-        'planes_pasados': planes_pasados,
-        'plan_proximo': plan_proximo,
-        'hoy': hoy,
-    })
-
-
-@login_required
-def mis_asignaciones_guia(request):
-    """Lista completa de los tours asignados al guía autenticado."""
-    if not getattr(request.user, 'es_guia', False):
-        return redirect('index')
-
-    hoy = timezone.now().date()
-    mis_planes = (
-        PlanGuia.objects.filter(usuario=request.user)
-        .select_related('paquete')
-        .order_by('-fecha_inicio_plan')
-    )
-    return render(request, 'usuario/guia/mis_asignaciones.html', {
-        'mis_planes': mis_planes,
-        'hoy': hoy,
-    })
