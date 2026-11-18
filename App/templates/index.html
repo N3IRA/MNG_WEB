@@ -9,7 +9,7 @@
     <div class="row align-items-center g-4 g-lg-5">
       
       <!-- Contenedor Texto (Arriba en móviles, Lado Derecho en escritorio) -->
-      <div class="col-12 col-lg-5 text-start order-1 order-lg-2">
+      <div class="col-12 col-lg-5 text-start order-1 order-lg-2 pt-5 pt-lg-0">
         
 
 
@@ -65,12 +65,6 @@
         <!-- Imagen con efecto interactivo de ondas de agua aplicadas a la imagen (jQuery Ripples WebGL) -->
         <div id="hero-agua" class="hero-agua position-relative rounded-4 shadow overflow-hidden w-100" style="aspect-ratio: 4 / 3; max-height: 600px; background-image: url('{% static 'img/hero_bg.webp' %}'); cursor: pointer;">
           <img src="{% static 'img/hero_bg.webp' %}" alt="Monagua" width="840" height="630" class="img-fluid w-100 h-100 object-fit-cover d-block">
-          
-          <!-- Badge interactivo flotante en vidrio (Glassmorphism) -->
-          <div class="position-absolute bottom-0 start-0 m-3 px-3 py-1.5 rounded-pill bg-dark bg-opacity-75 text-white small d-inline-flex align-items-center gap-2 border border-white border-opacity-25 shadow-sm pe-none z-2" style="backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-size: 0.72rem; letter-spacing: 0.4px;">
-            <span class="rounded-circle bg-success d-inline-block" style="width: 7px; height: 7px; box-shadow: 0 0 8px #4caf50;"></span>
-            <span class="fw-normal opacity-90"><i class="bi bi-hand-index-thumb me-1"></i>Toca el agua para interactuar</span>
-          </div>
         </div>
       </div>
 
