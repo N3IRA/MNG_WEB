@@ -1,5 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
+from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -196,10 +197,11 @@ class PromocionUpdateView(StaffRequiredMixin, UpdateView):
             )
 
         # Auditoría / Notificación del sistema
+        cantidad_paquetes = len(nuevos_paquetes) if hasattr(nuevos_paquetes, '__len__') else (nuevos_paquetes.count() if hasattr(nuevos_paquetes, 'count') else 0)
         valor_nuevo = (
             f"Nombre: {promocion.nombre}, Código: {promocion.codigo_promocion}, "
             f"Descuento: {promocion.porcentaje_descuento}%, Activa: {promocion.activa}, "
-            f"Paquetes vinculados: {nuevos_paquetes.count()}"
+            f"Paquetes vinculados: {cantidad_paquetes}"
         )
         crear_notificacion_sistema(
             usuario=self.request.user,
@@ -272,3 +274,32 @@ def toggle_estado_promocion(request, pk):
 
     messages.info(request, f"La promoción '{promocion.nombre}' ahora está {nuevo_estado_str}.")
     return redirect('gestion_promociones')
+
+
+# ==============================================================================
+# 6. VISTA PÚBLICA DE PROMOCIONES Y OFERTAS VIGENTES (TURISTA / PÚBLICO)
+# ==============================================================================
+def promociones_publicas(request):
+    """
+    Despliega el catálogo público de promociones y descuentos activos
+    con vigencia válida a la fecha de consulta.
+    """
+    hoy = (
+        timezone.localdate()
+        if hasattr(timezone, 'localdate')
+        else timezone.now().date()
+    )
+    promociones = (
+        Promocion.objects.filter(
+            activa=True,
+            fecha_inicio__lte=hoy,
+            fecha_fin__gte=hoy
+        )
+        .prefetch_related('paquetepromocion_set__paquete')
+        .order_by('-porcentaje_descuento', 'fecha_fin')
+    )
+    return render(request, 'usuario/promocion/promociones.html', {
+        'promociones': promociones,
+        'hoy': hoy,
+    })
+

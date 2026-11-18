@@ -68,12 +68,14 @@ def admin_reconsiderar_pago(request, pk):
             pago.reserva.estado_reserva = 'confirmada'
             pago.reserva.save()
 
-        crear_notificacion_sistema(
-            usuario=request.user,
-            mensaje=f"El comprobante #{pago.pk} fue reconsiderado y aprobado. Reserva #{pago.reserva.id if pago.reserva else 'N/A'} confirmada.",
-            tipo="Comprobante de Pago",
-            prioridad="alta"
-        )
+        if pago.reserva and pago.reserva.usuario:
+            crear_notificacion_sistema(
+                usuario=pago.reserva.usuario,
+                reserva=pago.reserva,
+                mensaje=f"¡Tu pago #{pago.pk} fue reconsiderado y aprobado! Tu reserva #{pago.reserva.id} ha sido confirmada.",
+                tipo="Comprobante de Pago",
+                prioridad="alta"
+            )
         messages.success(request, f"¡Pago #{pago.pk} reconsiderado y aprobado con éxito! La reserva ha sido confirmada.")
     return redirect('admin_pagos_rechazados')
 
@@ -92,12 +94,14 @@ def admin_reabrir_pago(request, pk):
         pago.nota_admin = f"Pago reabierto para re-validación por {request.user.get_full_name() or request.user.username}."
         pago.save()
 
-        crear_notificacion_sistema(
-            usuario=request.user,
-            mensaje=f"El comprobante #{pago.pk} fue reabierto y retornado a estado pendiente.",
-            tipo="Comprobante de Pago",
-            prioridad="media"
-        )
+        if pago.reserva and pago.reserva.usuario:
+            crear_notificacion_sistema(
+                usuario=pago.reserva.usuario,
+                reserva=pago.reserva,
+                mensaje=f"Tu comprobante #{pago.pk} fue reabierto y retornado a estado pendiente para nueva validación.",
+                tipo="Comprobante de Pago",
+                prioridad="media"
+            )
         messages.info(request, f"El pago #{pago.pk} ha sido retornado a estado 'Pendiente' para su re-evaluación.")
     return redirect('admin_pagos_rechazados')
 
@@ -118,12 +122,14 @@ def admin_actualizar_nota_rechazo(request, pk):
             pago.nota_admin = nueva_nota
             pago.fecha_revision = timezone.now()
             pago.save()
-            crear_notificacion_sistema(
-                usuario=request.user,
-                mensaje=f"Se actualizó la justificación de rechazo para el comprobante #{pago.pk}.",
-                tipo="Comprobante de Pago",
-                prioridad="baja"
-            )
+            if pago.reserva and pago.reserva.usuario:
+                crear_notificacion_sistema(
+                    usuario=pago.reserva.usuario,
+                    reserva=pago.reserva,
+                    mensaje=f"Se actualizó la observación sobre el comprobante #{pago.pk}: {nueva_nota}",
+                    tipo="Comprobante de Pago",
+                    prioridad="media"
+                )
             messages.success(request, f"Motivo de rechazo del comprobante #{pago.pk} actualizado correctamente.")
     return redirect('admin_pagos_rechazados')
 
@@ -144,12 +150,14 @@ def admin_cancelar_reserva_rechazada(request, pk):
             reserva.motivo_cancelacion = motivo
             reserva.save()
 
-            crear_notificacion_sistema(
-                usuario=request.user,
-                mensaje=f"La reserva #{reserva.id} fue cancelada definitivamente debido a comprobante de pago rechazado.",
-                tipo="Reserva",
-                prioridad="alta"
-            )
+            if reserva.usuario:
+                crear_notificacion_sistema(
+                    usuario=reserva.usuario,
+                    reserva=reserva,
+                    mensaje=f"Tu reserva #{reserva.id} fue cancelada definitivamente debido a comprobante de pago no subsanado.",
+                    tipo="Reserva",
+                    prioridad="alta"
+                )
             messages.warning(request, f"La reserva #{reserva.id} ha sido marcada como 'Cancelada' definitivamente.")
         else:
             messages.error(request, "El comprobante no tiene una reserva asociada.")

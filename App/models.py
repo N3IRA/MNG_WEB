@@ -306,21 +306,16 @@ class Paquete(models.Model):
     @property
     def paquete_promocion_activo(self):
         from django.utils import timezone
-        hoy = timezone.now().date()
-        # 1. Promoción activa y vigente dentro del rango de fechas
-        for pp in self.paquetepromocion_set.all():
+        hoy = timezone.localdate()
+        # Promoción activa y vigente dentro del rango de fechas
+        for pp in self.paquetepromocion_set.select_related('promocion').all():
             p = getattr(pp, 'promocion', None)
             if p and getattr(p, 'activa', False):
                 if p.fecha_inicio and p.fecha_fin:
                     if p.fecha_inicio <= hoy <= p.fecha_fin:
                         return pp
-                else:
+                elif not p.fecha_fin or p.fecha_fin >= hoy:
                     return pp
-        # 2. Promoción activa asignada (fallback si las fechas son abiertas o de prueba)
-        for pp in self.paquetepromocion_set.all():
-            p = getattr(pp, 'promocion', None)
-            if p and getattr(p, 'activa', False):
-                return pp
         return None
 
     @property
@@ -585,11 +580,13 @@ class Reserva(models.Model):
                     ).select_related('promocion').first()
 
                     if pp:
-                        if pp.valor_adulto_condescuento and pp.valor_adulto_condescuento > 0 and pp.valor_menor_condescuento and pp.valor_menor_condescuento > 0:
-                            self.monto_total = (pp.valor_adulto_condescuento * num_adultos) + (pp.valor_menor_condescuento * num_menores)
-                        elif pp.promocion and pp.promocion.porcentaje_descuento:
-                            desc = Decimal(pp.promocion.porcentaje_descuento) / Decimal(100)
-                            self.monto_total = round(base_monto * (Decimal(1) - desc), 2)
+                        if pp.promocion and pp.promocion.porcentaje_descuento:
+                            desc = Decimal(str(pp.promocion.porcentaje_descuento)) / Decimal('100')
+                            self.monto_total = round(base_monto * (Decimal('1') - desc), 2)
+                        elif pp.valor_adulto_condescuento and pp.valor_adulto_condescuento > 0:
+                            val_adulto = pp.valor_adulto_condescuento
+                            val_menor = pp.valor_menor_condescuento if (pp.valor_menor_condescuento and pp.valor_menor_condescuento > 0) else tarifa.precio_menor
+                            self.monto_total = (val_adulto * num_adultos) + (val_menor * num_menores)
                         else:
                             self.monto_total = base_monto
                     else:

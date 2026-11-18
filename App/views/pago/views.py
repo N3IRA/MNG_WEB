@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Sum, Q
-from App.models import Pago, Reserva
+from django.utils import timezone
+from App.models import Pago, Reserva, Usuario
 from App.utils import crear_notificacion_sistema
 
 from App.forms.pago.forms import ComprobantePagoForm
@@ -34,14 +35,24 @@ def enviar_comprobante(request):
             messages.warning(request, "Esta reserva ya tiene un comprobante registrado o en proceso de revisión.")
             return redirect('mis_comprobantes')
 
-        form = ComprobantePagoForm(request.POST, request.FILES)
+        if pago_existente and pago_existente.estado_transaccion == 'rechazado':
+            form = ComprobantePagoForm(request.POST, request.FILES, instance=pago_existente)
+        else:
+            form = ComprobantePagoForm(request.POST, request.FILES)
+
         if form.is_valid():
             pago = form.save(commit=False)
             pago.reserva = reserva
             pago.monto = reserva.penalidad if es_penalidad else reserva.monto_total
             pago.estado_transaccion = 'pendiente'
+            pago.nota_admin = ''
+            pago.fecha_revision = None
+            pago.fecha_pago = timezone.now()
+            if not pago.metodo_pago:
+                pago.metodo_pago = 'Transferencia Bancaria'
             pago.save()
 
+            # Notificar al turista
             crear_notificacion_sistema(
                 usuario=request.user,
                 reserva=reserva,
@@ -49,6 +60,19 @@ def enviar_comprobante(request):
                 tipo="Comprobante de Pago",
                 prioridad="alta"
             )
+
+            # Notificar a los administradores para su oportuna revisión
+            admins = Usuario.objects.filter(is_active=True).filter(
+                Q(is_staff=True) | Q(rol=Usuario.Roles.ADMIN)
+            ).distinct()
+            for admin_user in admins:
+                crear_notificacion_sistema(
+                    usuario=admin_user,
+                    reserva=reserva,
+                    mensaje=f"Nuevo comprobante de pago recibido de {request.user.get_full_name() or request.user.username} para la reserva #{reserva.id}.",
+                    tipo="Comprobante de Pago",
+                    prioridad="alta"
+                )
 
             messages.success(request, "¡Tu comprobante de pago ha sido enviado exitosamente y será revisado en breve!")
             return redirect('mis_comprobantes')
@@ -63,7 +87,9 @@ def enviar_comprobante(request):
     ).filter(
         Q(estado_reserva='pendiente') |
         Q(estado_cancelacion='aprobada', penalidad__gt=0)
-    ).exclude(pago__isnull=False))
+    ).exclude(
+        pago__estado_transaccion__in=['pendiente', 'aprobado']
+    ).distinct())
 
     selected_tipo = 'reserva'
     selected_reserva = None

@@ -124,13 +124,21 @@ def admin_revisar_comprobante(request, pk):
                         ip_origen=request.META.get('REMOTE_ADDR')
                     )
 
-                    # Registrar notificación en el sistema
-                    crear_notificacion_sistema(
-                        usuario=request.user,
-                        mensaje=f"El comprobante #{comprobante.pk} ha sido actualizado de '{estado_anterior}' a '{estado_transaccion}'.",
-                        tipo="Comprobante de Pago",
-                        prioridad="alta"
-                    )
+                    # Notificar al turista dueño de la reserva
+                    if comprobante.reserva and comprobante.reserva.usuario:
+                        detalle_msg = f"Tu comprobante de pago #{comprobante.pk} para la reserva #{comprobante.reserva.id} ha sido {estado_transaccion}."
+                        if estado_transaccion == 'rechazado' and nota_admin:
+                            detalle_msg += f" Motivo: {nota_admin}"
+                        elif estado_transaccion == 'aprobado':
+                            detalle_msg += " ¡Tu reserva ha sido confirmada exitosamente!"
+
+                        crear_notificacion_sistema(
+                            usuario=comprobante.reserva.usuario,
+                            reserva=comprobante.reserva,
+                            mensaje=detalle_msg,
+                            tipo="Comprobante de Pago",
+                            prioridad="alta" if estado_transaccion == 'aprobado' else "media"
+                        )
 
                     messages.success(request, f"Comprobante #{comprobante.pk} actualizado como '{estado_transaccion.capitalize()}' exitosamente.")
                     destino_url = reverse('admin_comprobantes')

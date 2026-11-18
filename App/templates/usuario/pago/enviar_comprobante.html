@@ -103,14 +103,26 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="form-group col-md-6 mb-3">
-                                <label for="id_referencia" class="form-label requiredField">Nº de Referencia / Transacción<span class="asteriskField">*</span></label>
-                                <input type="text" name="referencia" maxlength="100" class="textinput form-control" required id="id_referencia" placeholder="Ej. CUS-123456789">
+                            <div class="form-group col-md-4 mb-3">
+                                <label for="id_referencia" class="form-label requiredField">
+                                    Nº de Referencia / Transacción<span class="asteriskField">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="referencia"
+                                    maxlength="100"
+                                    class="textinput form-control"
+                                    required
+                                    id="id_referencia"
+                                    placeholder="Ej. CUS-123456789"
+                                >
                             </div>
-                            <div class="form-group col-md-6 mb-3">
-                                <label for="id_banco_origen" class="form-label requiredField">Banco o Medio de Pago<span class="asteriskField">*</span></label>
+                            <div class="form-group col-md-4 mb-3">
+                                <label for="id_banco_origen" class="form-label requiredField">
+                                    Banco o Entidad<span class="asteriskField">*</span>
+                                </label>
                                 <select name="banco_origen" class="select form-select" required id="id_banco_origen">
-                                    <option value="" selected>— Selecciona el banco o medio de pago —</option>
+                                    <option value="" selected>— Selecciona la entidad —</option>
                                     <option value="Nequi">Nequi</option>
                                     <option value="Daviplata">Daviplata</option>
                                     <option value="Bancolombia">Bancolombia</option>
@@ -121,6 +133,18 @@
                                     <option value="Lulo Bank">Lulo Bank</option>
                                     <option value="RappiPay">RappiPay</option>
                                     <option value="Otro">Otro (Especificar en descripción)</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4 mb-3">
+                                <label for="id_metodo_pago" class="form-label requiredField">
+                                    Método de Pago<span class="asteriskField">*</span>
+                                </label>
+                                <select name="metodo_pago" class="select form-select" required id="id_metodo_pago">
+                                    <option value="Transferencia Bancaria" selected>Transferencia Bancaria</option>
+                                    <option value="Billetera Digital">Billetera Digital</option>
+                                    <option value="Depósito en Corresponsal">Depósito en Corresponsal</option>
+                                    <option value="PSE / Enlace de Pago">PSE / Enlace de Pago</option>
+                                    <option value="Otro">Otro Método</option>
                                 </select>
                             </div>
                         </div>

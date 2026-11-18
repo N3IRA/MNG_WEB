@@ -117,7 +117,8 @@ urlpatterns = [
     path('admin/blog/editar/<int:pk>/', blog_views.BlogUpdateView.as_view(), name='editar_blog'),
     path('admin/blog/eliminar/<int:pk>/', blog_views.BlogDeleteView.as_view(), name='eliminar_blog'),
 
-    # Promociones (Administración / Staff)
+    # Promociones (Público y Administración / Staff)
+    path('promociones/', promocion_views.promociones_publicas, name='promociones_publicas'),
     path('admin/promociones/', promocion_views.PromocionListView.as_view(), name='gestion_promociones'),
     path('admin/promociones/listar/', promocion_views.PromocionListView.as_view(), name='listar_promociones'),
     path('admin/promociones/agregar/', promocion_views.PromocionCreateView.as_view(), name='agregar_promocion'),
@@ -167,6 +168,8 @@ urlpatterns = [
     path('admin/guias/', guias_views.gestion_guias_view, name='gestion_guias'),
     path('admin/guias/guardar/', guias_views.guias_guardar, name='guias_guardar'),
     path('admin/guias/asignar-rol/<int:id>/', guias_views.asignar_rol_guia, name='asignar_rol_guia'),
+    path('admin/guias/asignar/<int:guia_id>/', guias_views.asignar_tour_guia, name='asignar_tour_guia'),
+    path('admin/guias/plan/toggle/<int:plan_id>/', guias_views.toggle_plan_guia, name='toggle_plan_guia'),
 
     # Calificaciones (Administración / Staff & Turista / Cliente)
     path('admin/calificaciones/', calificacion_views.listar_calificaciones_admin, name='listar_calificaciones'),
