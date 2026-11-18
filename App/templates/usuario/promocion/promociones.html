@@ -1,108 +1,360 @@
 {% extends "base.html" %}
 {% load static %}
+{% load humanize %}
+
+{% block titulo %}
+  Ofertas de Temporada & Descuentos | Monagua Turismo
+{% endblock %}
 
 {% block content %}
-{% include "partials/breadcrumbs.html" with current_title="Ofertas y promociones" current_icon="bi bi-tag-fill" %}
+{% include "partials/breadcrumbs.html" with current_title="Ofertas y Promociones" current_icon="bi bi-tag-fill" %}
 
-<main class="container py-4 py-lg-5">
-  <div class="row mb-4 mb-lg-5">
-    <div class="col-12 text-center">
-      <h1 class="display-5 fw-bold text-success text-uppercase">
-        Ofertas de temporada
-      </h1>
-      <p class="text-muted">
-        Explora Mongua con precios especiales y descuentos exclusivos
-      </p>
-      <hr
-        class="mx-auto border-success border-2 opacity-75"
-        style="width: 80px;"
-      />
-    </div>
-  </div>
+<div class="container py-3 py-lg-4">
 
-  <section class="row g-4">
-    {% for promo in promociones %}
-      {% with paquete_asoc=promo.paquetepromocion_set.first.paquete %}
-      <div class="col-12 col-md-6 col-lg-4">
-        <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
-          <div class="ratio ratio-4x3 position-relative">
-            {% if paquete_asoc and paquete_asoc.imagen %}
-              <img
-                src="{{ paquete_asoc.imagen.url }}"
-                class="card-img-top object-fit-cover"
-                alt="{{ promo.nombre }}"
-              />
-            {% else %}
-              <img
-                src="{% static 'img/lagunanegra.webp' %}"
-                class="card-img-top object-fit-cover"
-                alt="Monagua"
-              />
-            {% endif %}
+  <!-- ── 1. Hero Banner de Ofertas ── -->
+  <section class="position-relative overflow-hidden text-white rounded-4 shadow-lg mb-4 mb-lg-5 p-4 p-md-5"
+           style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(20, 83, 45, 0.88) 100%), url('{% static 'img/carousel/paramo.webp' %}') center/cover no-repeat;"
+           data-aos="fade-down" data-aos-duration="700">
+    <div class="row align-items-center justify-content-between g-4 position-relative" style="z-index: 2;">
+      <div class="col-12 col-lg-8">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          {% if max_descuento > 0 %}
+            <span class="badge bg-danger text-white rounded-pill px-3 py-2 fw-bold text-uppercase shadow-sm fs-7">
+              <i class="bi bi-lightning-charge-fill me-1"></i> Hasta {{ max_descuento }}% de Descuento
+            </span>
+          {% endif %}
+          <span class="badge bg-white bg-opacity-20 text-black border border-white border-opacity-25 rounded-pill px-3 py-2 fw-semibold small">
+            <i class="bi bi-geo-alt-fill text-warning me-1"></i> Mongua, Boyacá
+          </span>
+          <span class="badge bg-success text-white rounded-pill px-3 py-2 fw-semibold small">
+            <i class="bi bi-shield-check me-1"></i> Tarifas Oficiales
+          </span>
+        </div>
 
-            <div class="position-absolute top-0 end-0 m-3">
-              <span class="badge bg-danger fs-5 shadow">
-                -{{ promo.porcentaje_descuento }}%
-              </span>
-            </div>
+        <h1 class="display-5 fw-bold text-white mb-2 lh-sm">
+          Ofertas Especiales & Promociones
+        </h1>
+        <p class="lead text-white text-opacity-90 fs-6 fs-md-5 mb-4 col-xl-10">
+          Aprovecha tarifas rebajadas en paquetes seleccionados por tiempo limitado. Recorre páramos sagrados, lagunas míticas y senderos ancestrales con guías nativos.
+        </p>
+
+        <div class="d-flex flex-wrap align-items-center gap-3">
+          <a href="#catalogo-ofertas" class="btn btn-success rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2">
+            <i class="bi bi-tags-fill"></i>
+            <span>Ver promociones activas</span>
+          </a>
+          <a href="{% url 'tours' %}" class="btn btn-outline-light rounded-pill px-4 py-2.5 fw-semibold d-inline-flex align-items-center gap-2">
+            <i class="bi bi-compass"></i>
+            <span>Ver todos los tours</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Resumen flotante -->
+      <div class="col-12 col-lg-4 d-none d-lg-block">
+        <div class="card border-0 rounded-4 bg-white bg-opacity-10 backdrop-blur border border-white border-opacity-25 p-4 text-center text-white shadow">
+          <div class="d-inline-flex align-items-center justify-content-center bg-warning text-dark rounded-circle mx-auto mb-3 shadow" style="width: 58px; height: 58px;">
+            <i class="bi bi-gift-fill fs-3"></i>
           </div>
-
-          <div class="card-body text-center d-flex flex-column p-4">
-            <h5 class="fw-bold text-dark mb-2">
-              {{ promo.nombre }}
-            </h5>
-            <p class="small text-muted flex-grow-1 mb-3">
-              {{ promo.descripcion }}
-            </p>
-
-            <div class="mb-3">
-              <h4 class="text-success fw-bold">¡Precio especial!</h4>
-              <p class="text-muted small mb-0">
-                Válido hasta: {{ promo.fecha_fin|date:"d/m/Y" }}
-              </p>
-            </div>
-
-            {% if paquete_asoc %}
-              <a
-                href="{% url 'guardar_reserva' paquete_asoc.id %}"
-                class="btn btn-success w-100 mb-2 shadow-sm fw-bold rounded-pill"
-                title="Reservar este paquete promocional"
-                aria-label="Reservar el paquete {{ paquete_asoc.nombre }}"
-              >
-                Reservar ahora
-              </a>
-            {% else %}
-              <a
-                href="{% url 'tours' %}"
-                class="btn btn-success w-100 mb-2 shadow-sm fw-bold rounded-pill"
-                title="Explorar destinos y reservar"
-                aria-label="Explorar catálogo de destinos"
-              >
-                Reservar ahora
-              </a>
-            {% endif %}
+          <h4 class="fw-bold mb-1 text-white">{{ total_ofertas }} Oferta{{ total_ofertas|pluralize }} Disponible{{ total_ofertas|pluralize }}</h4>
+          <p class="small text-white text-opacity-80 mb-3">
+            Descuentos directos aplicados al reservar en línea con cupos garantizados.
+          </p>
+          <div class="border-top border-white border-opacity-25 pt-3 small text-white text-opacity-90 d-flex justify-content-center gap-3">
+            <span><i class="bi bi-check-circle-fill text-success me-1"></i>Sin cargos ocultos</span>
+            <span><i class="bi bi-check-circle-fill text-success me-1"></i>Cupos seguros</span>
           </div>
         </div>
       </div>
-      {% endwith %}
-    {% empty %}
-      <div class="col-12 text-center py-5">
-        <h3 class="text-muted fw-light">
-          No hay promociones disponibles en este momento.
-        </h3>
-        <p class="text-secondary small">
-          Descubre todas nuestras rutas y paquetes turísticos regulares.
-        </p>
-        <a
-          href="{% url 'tours' %}"
-          class="btn btn-success rounded-pill px-4 py-2 mt-2"
-          title="Explorar todos los destinos turísticos"
-          aria-label="Explorar catálogo de destinos"
-        >
-          <i class="bi bi-compass me-2"></i>Explorar destinos
-        </a>
-      </div>
-    {% endfor %}
+    </div>
   </section>
-</main>
+
+  <!-- ── 2. Franja de Ventajas ── -->
+  <section class="row g-3 mb-5" data-aos="fade-up" data-aos-duration="600">
+    <div class="col-12 col-md-4">
+      <div class="card border-0 rounded-4 shadow-sm p-3 h-100 bg-white d-flex flex-row align-items-center gap-3">
+        <div class="rounded-3 p-3 bg-black bg-opacity-10 text-success flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+          <i class="bi bi-percent fs-4 text-success"></i>
+        </div>
+        <div>
+          <h6 class="fw-bold mb-0 text-dark">Descuentos Reales</h6>
+          <small class="text-muted">Precios transparentes con ahorro directo en tu reserva.</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="card border-0 rounded-4 shadow-sm p-3 h-100 bg-white d-flex flex-row align-items-center gap-3">
+        <div class="rounded-3 p-3 bg-primary bg-opacity-10 text-primary flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+          <i class="bi bi-calendar-check fs-4 text-primary"></i>
+        </div>
+        <div>
+          <h6 class="fw-bold mb-0 text-dark">Confirmación Inmediata</h6>
+          <small class="text-muted">Asegura tu fecha y número de viajeros al instante.</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="card border-0 rounded-4 shadow-sm p-3 h-100 bg-white d-flex flex-row align-items-center gap-3">
+        <div class="rounded-3 p-3 bg-warning bg-opacity-10 text-warning flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+          <i class="bi bi-person-badge fs-4 text-warning"></i>
+        </div>
+        <div>
+          <h6 class="fw-bold mb-0 text-dark">Guías Locales Pro</h6>
+          <small class="text-muted">Acompañamiento por anfitriones nativos de Mongua.</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 3. Catálogo de Promociones ── -->
+  <section id="catalogo-ofertas" class="mb-5">
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4 pb-2 border-bottom">
+      <div>
+        <span class="badge bg-white bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1.5 fw-bold small text-uppercase mb-2">
+          <i class="bi bi-stars me-1"></i> Tarifas Especiales
+        </span>
+        <h2 class="fw-bold text-dark mb-1">Promociones Activas en Mongua</h2>
+        <p class="text-muted small mb-0">Selecciona el paquete de tu interés y asegura tu cupo con tarifa de temporada.</p>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fw-semibold">
+          <i class="bi bi-check2-circle text-success me-1"></i> {{ total_ofertas }} disponibles
+        </span>
+      </div>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+      {% for promo in promociones %}
+        {% with paquetes_rel=promo.paquetepromocion_set.all %}
+        <div class="col-12 col-md-6 col-lg-6 col-xl-6" data-aos="fade-up" data-aos-duration="650">
+          <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden bg-white d-flex flex-column transition-all"
+               style="transition: transform 0.3s ease, box-shadow 0.3s ease;">
+
+            <!-- Cabecera de la Tarjeta: Imagen y Badges -->
+            <div class="position-relative overflow-hidden ratio ratio-16x9">
+              {% with primer_paquete=paquetes_rel.first.paquete %}
+                {% if primer_paquete and primer_paquete.imagen %}
+                  <img src="{{ primer_paquete.imagen.url }}" class="card-img-top object-fit-cover" alt="{{ promo.nombre }}" loading="lazy">
+                {% else %}
+                  <img src="{% static 'img/carousel/paramo.webp' %}" class="card-img-top object-fit-cover" alt="{{ promo.nombre }}" loading="lazy">
+                {% endif %}
+              {% endwith %}
+
+              <!-- Gradiente de Contraste -->
+              <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 45%, rgba(0,0,0,0.7) 100%);"></div>
+
+              <!-- Badge Descuento Superior Derecho -->
+              <div class="position-absolute top-0 end-0 m-3">
+                <span class="badge bg-danger text-white fs-6 fw-bold shadow-sm px-3 py-2 rounded-pill">
+                  -{{ promo.porcentaje_descuento }}% OFF
+                </span>
+              </div>
+
+              <!-- Badge Vigencia Superior Izquierdo -->
+              <div class="position-absolute top-0 start-0 m-3">
+                <span class="badge bg-dark bg-opacity-80 text-white small px-3 py-1.5 rounded-pill shadow-sm">
+                  <i class="bi bi-clock-history text-warning me-1"></i> Válido hasta {{ promo.fecha_fin|date:"d M, Y" }}
+                </span>
+              </div>
+
+              <!-- Título sobre la imagen (pie inferior de imagen) -->
+              <div class="position-absolute bottom-0 start-0 w-100 p-3 p-md-4 text-white">
+                <h4 class="fw-bold mb-1 text-white text-shadow-sm">{{ promo.nombre }}</h4>
+              </div>
+            </div>
+
+            <!-- Cuerpo de la Tarjeta -->
+            <div class="card-body p-4 d-flex flex-column justify-content-between flex-grow-1">
+              <div>
+                <p class="text-secondary small mb-3 lh-base">
+                  {{ promo.descripcion }}
+                </p>
+
+                <!-- Caja de Código Promocional / Cupón -->
+                {% if promo.codigo_promocion or promo.codigo_cupon %}
+                <div class="d-flex align-items-center justify-content-between p-2.5 px-3 rounded-3 bg-light border border-light-subtle mb-4">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-ticket-perforated-fill text-success fs-5"></i>
+                    <div>
+                      <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Código de Promoción</small>
+                      <strong class="text-dark font-monospace fs-6">{{ promo.codigo_cupon|default:promo.codigo_promocion }}</strong>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 btn-copiar-promo fw-semibold"
+                          data-codigo="{{ promo.codigo_cupon|default:promo.codigo_promocion }}"
+                          title="Copiar código al portapapeles">
+                    <i class="bi bi-copy me-1"></i> Copiar
+                  </button>
+                </div>
+                {% endif %}
+
+                <!-- Paquetes Incluidos en la Oferta -->
+                <h6 class="fw-bold text-dark mb-2 d-flex align-items-center gap-2 small text-uppercase" style="letter-spacing: 0.5px;">
+                  <i class="bi bi-compass text-success"></i> Destinos con esta promoción
+                </h6>
+
+                {% if paquetes_rel %}
+                  <div class="d-flex flex-column gap-3 mb-3">
+                    {% for pp in paquetes_rel %}
+                    <div class="p-3 rounded-3 border bg-light bg-opacity-50">
+                      <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-2">
+                        <div>
+                          <span class="badge bg-white text-success border border-success rounded-pill px-3 py-1.5 small fw-bold mb-1 shadow-sm">
+                            <i class="bi bi-tag-fill me-1"></i>{{ pp.paquete.categoria.nombre|default:"Turismo de Naturaleza" }}
+                          </span>
+                          <h6 class="fw-bold text-dark mb-1">{{ pp.paquete.nombre }}</h6>
+                          <div class="text-muted small d-flex align-items-center gap-2">
+                            <span><i class="bi bi-clock me-1 text-success"></i>{{ pp.paquete.dias_duracion }}D / {{ pp.paquete.noches_duracion }}N</span>
+                            <span>•</span>
+                            <span><i class="bi bi-geo-alt me-1 text-success"></i>Mongua</span>
+                          </div>
+                        </div>
+
+                        <!-- Precios Antes / Ahora -->
+                        <div class="text-end">
+                          {% if pp.paquete.precio_minimo and pp.paquete.precio_minimo > pp.paquete.precio_final %}
+                            <div class="text-muted text-decoration-line-through small" style="font-size: 0.82rem;">
+                              Antes: ${{ pp.paquete.precio_minimo|floatformat:0|intcomma }}
+                            </div>
+                          {% endif %}
+                          <div class="fs-5 fw-bold text-success mb-0">
+                            ${{ pp.paquete.precio_final|floatformat:0|intcomma }} <small class="fs-7 text-muted fw-normal">COP</small>
+                          </div>
+                          {% if pp.paquete.ahorro_promocion and pp.paquete.ahorro_promocion > 0 %}
+                            <span class="badge bg-success text-white rounded-pill px-2 py-0.5 fw-bold" style="font-size: 0.7rem;">
+                              Ahorras ${{ pp.paquete.ahorro_promocion|floatformat:0|intcomma }}
+                            </span>
+                          {% endif %}
+                        </div>
+                      </div>
+
+                      <div class="pt-2 border-top mt-2">
+                        <a href="{% url 'guardar_reserva' pp.paquete.id %}"
+                           class="btn btn-success text-white btn-sm rounded-pill fw-bold w-100 py-2 shadow-sm d-flex align-items-center justify-content-center gap-2"
+                           title="Reservar el paquete {{ pp.paquete.nombre }} con tarifa promocional">
+                          <span>Reservar este paquete</span>
+                          <i class="bi bi-arrow-right"></i>
+                        </a>
+                      </div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="p-3 rounded-3 border bg-light text-center mb-3">
+                    <p class="text-muted small mb-2">Válido en los principales recorridos de temporada.</p>
+                    <a href="{% url 'tours' %}" class="btn btn-outline-success btn-sm rounded-pill px-4 fw-semibold">
+                      Explorar paquetes disponibles
+                    </a>
+                  </div>
+                {% endif %}
+
+                {% if promo.condiciones %}
+                <div class="small text-muted mt-2 d-flex align-items-start gap-1">
+                  <i class="bi bi-info-circle text-secondary flex-shrink-0 mt-0.5"></i>
+                  <span><strong>Condiciones:</strong> {{ promo.condiciones }}</span>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+          </div>
+        </div>
+        {% endwith %}
+      {% empty %}
+        <!-- Estado Vacío -->
+        <div class="col-12" data-aos="zoom-in" data-aos-duration="600">
+          <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-4">
+            <div class="bg-light border border-success border-opacity-25 text-success rounded-circle d-inline-flex align-items-center justify-content-center p-4 mb-3 mx-auto" style="width: 76px; height: 76px;">
+              <i class="bi bi-tag fs-1 text-success"></i>
+            </div>
+            <h3 class="fw-bold text-dark mb-2">No hay promociones activas en este momento</h3>
+            <p class="text-muted mb-4 col-md-6 mx-auto">
+              Estamos preparando nuevas ofertas de temporada para que descubras Mongua al mejor precio. Mientras tanto, puedes explorar nuestro catálogo regular de tours y experiencias.
+            </p>
+            <div>
+              <a href="{% url 'tours' %}" class="btn btn-success rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2">
+                <i class="bi bi-compass"></i>
+                <span>Ver todos los paquetes disponibles</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ── 4. Cómo Reservar con Descuento (Guía Rápida) ── -->
+  <section class="card border-0 rounded-4 shadow-sm p-4 p-md-5 bg-white mb-5" data-aos="fade-up">
+    <div class="row align-items-center g-4">
+      <div class="col-12 col-lg-5">
+        <span class="badge bg-white text-success border border-success border-opacity-50 rounded-pill px-3 py-1.5 fw-bold small text-uppercase mb-2 shadow-xs">
+          Paso a Paso
+        </span>
+        <h3 class="fw-bold text-dark mb-2">¿Cómo aprovechar tus ofertas en Monagua?</h3>
+        <p class="text-muted small mb-0">
+          Garantizamos un proceso transparente para que disfrutes de tu aventura sin complicaciones ni cargos sorpresa.
+        </p>
+      </div>
+
+      <div class="col-12 col-lg-7">
+        <div class="row g-3">
+          <div class="col-12 col-md-4">
+            <div class="p-3 rounded-3 bg-light h-100 border text-center text-md-start">
+              <span class="badge bg-success rounded-circle p-2 mb-2 fs-6 fw-bold" style="width: 32px; height: 32px;">1</span>
+              <h6 class="fw-bold text-dark mb-1">Elige tu Tour</h6>
+              <p class="text-muted small mb-0">Selecciona el paquete con el descuento que más te guste.</p>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <div class="p-3 rounded-3 bg-light h-100 border text-center text-md-start">
+              <span class="badge bg-success rounded-circle p-2 mb-2 fs-6 fw-bold" style="width: 32px; height: 32px;">2</span>
+              <h6 class="fw-bold text-dark mb-1">Define Fechas</h6>
+              <p class="text-muted small mb-0">Indica el día de tu visita y el número de acompañantes.</p>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <div class="p-3 rounded-3 bg-light h-100 border text-center text-md-start">
+              <span class="badge bg-success rounded-circle p-2 mb-2 fs-6 fw-bold" style="width: 32px; height: 32px;">3</span>
+              <h6 class="fw-bold text-dark mb-1">¡Listo!</h6>
+              <p class="text-muted small mb-0">Recibe confirmación y comprobante con tarifa de oferta asegurada.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Script interactivo ligero para copiar código promocional -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.btn-copiar-promo').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const codigo = this.getAttribute('data-codigo');
+      if (!codigo) return;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(codigo).then(() => {
+          const originalHTML = btn.innerHTML;
+          btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> ¡Copiado!';
+          btn.classList.remove('btn-outline-success');
+          btn.classList.add('btn-success', 'text-white');
+
+          setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('btn-success', 'text-white');
+            btn.classList.add('btn-outline-success');
+          }, 2000);
+        });
+      }
+    });
+  });
+});
+</script>
 {% endblock %}

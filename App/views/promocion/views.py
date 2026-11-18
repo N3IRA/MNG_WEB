@@ -295,11 +295,21 @@ def promociones_publicas(request):
             fecha_inicio__lte=hoy,
             fecha_fin__gte=hoy
         )
-        .prefetch_related('paquetepromocion_set__paquete')
+        .prefetch_related(
+            'paquetepromocion_set__paquete__tarifas__temporada',
+            'paquetepromocion_set__paquete__categoria',
+            'paquetepromocion_set__paquete__actividades'
+        )
         .order_by('-porcentaje_descuento', 'fecha_fin')
     )
+
+    max_descuento = promociones.first().porcentaje_descuento if promociones.exists() else 0
+    total_ofertas = promociones.count()
+
     return render(request, 'usuario/promocion/promociones.html', {
         'promociones': promociones,
         'hoy': hoy,
+        'max_descuento': max_descuento,
+        'total_ofertas': total_ofertas,
     })
 

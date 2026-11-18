@@ -52,6 +52,9 @@ urlpatterns = [
     # Tours / Paquetes públicos
     path('tours/', paquete_views.tours, name='tours'),
 
+    # Ofertas y Promociones públicas
+    path('ofertas/', promocion_views.promociones_publicas, name='promociones_publicas'),
+
     # Categorías (Administración / Staff)
     path('admin/categorias/', categoria_views.CategoriaListView.as_view(), name='listar_categorias'),
     path('admin/categorias/agregar/', categoria_views.CategoriaCreateView.as_view(), name='agregar_categoria'),

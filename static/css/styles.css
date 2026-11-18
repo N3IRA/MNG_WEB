@@ -402,8 +402,8 @@ main .breadcrumb-item.active {
 }
 
 .btn-success,
-.bg-success,
-.badge.bg-success,
+.bg-success:not([class*="bg-opacity-"]),
+.badge.bg-success:not([class*="bg-opacity-"]),
 .card-header.bg-success {
     background-color: var(--verde-main, #2c6e3c) !important;
     border-color: var(--verde-main, #2c6e3c) !important;
