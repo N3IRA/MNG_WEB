@@ -137,6 +137,7 @@
     {% include 'partials/aside-admin.html' %}
     {% include 'partials/accesibilidad.html' %}
     {% include 'partials/notificacion/notificaciones.html' %}
+    {% include 'partials/modal_confirmacion.html' %}
 
     <main id="mainContent" class="p-4 position-relative">
       {% block content %}{% endblock %}
@@ -157,7 +158,7 @@
 
     <script src="{% static 'js/librerias/bootstrap.paquete.min.js' %}"></script>
     <script src="{% static 'js/base_admin.js' %}"></script>
-    {% block scripts %}{% endblock %} {% include
-    'partials/bitacora/bitacora.html' %}
+    {% block scripts %}{% endblock %}
+    {% include 'partials/bitacora/bitacora.html' %}
   </body>
 </html>

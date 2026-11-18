@@ -6,10 +6,7 @@
 {% endblock %}
 
 {% block content %}
-{% include "partials/breadcrumbs.html" with
-   current_title="Blog y Experiencias"
-   current_icon="bi bi-chat-quote-fill"
-%}
+{% include "partials/breadcrumbs.html" with current_title="Blog y Experiencias" current_icon="bi bi-chat-quote-fill" %}
 
 <!-- ── 1. Hero Section ── -->
 <header
@@ -118,21 +115,12 @@
               <!-- Imagen con Ratio y Badges -->
               <div class="position-relative overflow-hidden">
                 <div class="ratio ratio-16x9">
-                  {% if post.imagen_destacada %}
-                    <img
-                      src="{{ post.imagen_destacada.url }}"
-                      class="card-img-top object-fit-cover"
-                      alt="{{ post.titulo }}"
-                      loading="lazy"
-                    />
-                  {% else %}
-                    <img
-                      src="{% static 'img/lagunanegra.webp' %}"
-                      class="card-img-top object-fit-cover"
-                      alt="{{ post.titulo }}"
-                      loading="lazy"
-                    />
-                  {% endif %}
+                  <img
+                    src="{{ post.get_imagen_url }}"
+                    class="card-img-top object-fit-cover"
+                    alt="{{ post.titulo }}"
+                    loading="lazy"
+                  />
                 </div>
 
                 <!-- Insignias -->

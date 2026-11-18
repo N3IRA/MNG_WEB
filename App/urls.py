@@ -167,6 +167,7 @@ urlpatterns = [
     path('admin/guias/', guias_views.gestion_guias_view, name='gestion_guias'),
     path('admin/guias/guardar/', guias_views.guias_guardar, name='guias_guardar'),
     path('admin/guias/asignar-rol/<int:id>/', guias_views.asignar_rol_guia, name='asignar_rol_guia'),
+    path('admin/guias/toggle-estado/<int:id>/', guias_views.guias_toggle_estado, name='guias_toggle_estado'),
 
     # Calificaciones (Administración / Staff & Turista / Cliente)
     path('admin/calificaciones/', calificacion_views.listar_calificaciones_admin, name='listar_calificaciones'),

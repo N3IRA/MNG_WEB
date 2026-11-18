@@ -6,10 +6,7 @@
 {% endblock %}
 
 {% block content %}
-{% include "partials/breadcrumbs.html" with
-   current_title=post.titulo|truncatechars:35
-   current_icon="bi bi-chat-quote-fill"
-%}
+{% include "partials/breadcrumbs.html" with current_title=post.titulo|truncatechars:35 current_icon="bi bi-chat-quote-fill" %}
 
 <article class="pb-5">
   <div class="container px-3 px-sm-4">
@@ -38,21 +35,12 @@
                flex-column justify-content-end"
         style="min-height: 280px; max-height: 480px;"
       >
-        {% if post.imagen_destacada %}
-          <img
-            src="{{ post.imagen_destacada.url }}"
-            class="position-absolute top-0 start-0 w-100 h-100
-                   object-fit-cover opacity-50"
-            alt="{{ post.titulo }}"
-          />
-        {% else %}
-          <img
-            src="{% static 'img/lagunanegra.webp' %}"
-            class="position-absolute top-0 start-0 w-100 h-100
-                   object-fit-cover opacity-50"
-            alt="{{ post.titulo }}"
-          />
-        {% endif %}
+        <img
+          src="{{ post.get_imagen_url }}"
+          class="position-absolute top-0 start-0 w-100 h-100
+                 object-fit-cover opacity-50"
+          alt="{{ post.titulo }}"
+        />
 
         <div
           class="position-relative p-3 p-sm-4 p-md-5 d-flex flex-column
@@ -98,10 +86,10 @@
         >
           <div
             class="rounded-3 p-3 d-flex align-items-center
-                   justify-content-center bg-success bg-opacity-10
+                   justify-content-center bg-light border border-success border-opacity-25
                    text-success flex-shrink-0"
           >
-            <i class="bi bi-person-badge-fill fs-4"></i>
+            <i class="bi bi-person-badge-fill fs-4 text-success"></i>
           </div>
           <div class="text-truncate">
             <h6 class="fw-bold mb-0 text-dark text-truncate">
@@ -169,10 +157,10 @@
             <!-- Cita o Información Destacada -->
             <div
               class="position-relative mb-4 p-3 p-md-4 rounded-3
-                     bg-success bg-opacity-10 border-start border-4
-                     border-success"
+                     bg-success text-white shadow-sm border-start border-4
+                     border-dark"
             >
-              <div class="fs-6 fs-md-5 fw-medium lh-base text-dark fst-italic">
+              <div class="fs-6 fs-md-5 fw-medium lh-base text-white fst-italic">
                 "{{ post.informacion_adicional }}"
               </div>
             </div>
@@ -225,12 +213,12 @@
                    bg-white mb-4"
           >
             <div
-              class="bg-success bg-opacity-10 text-success rounded-circle
+              class="bg-success text-white rounded-circle shadow-sm
                      d-inline-flex align-items-center justify-content-center
                      p-3 mb-3 mx-auto"
               style="width: 56px; height: 56px;"
             >
-              <i class="bi bi-share-fill fs-4"></i>
+              <i class="bi bi-share-fill fs-4 text-white"></i>
             </div>
             <h5 class="fw-bold text-dark mb-2">¿Te gustó esta historia?</h5>
             <p class="text-muted small mb-4">
@@ -325,21 +313,12 @@
                        justify-content-between"
               >
                 <div class="ratio ratio-16x9">
-                  {% if otro.imagen_destacada %}
-                    <img
-                      src="{{ otro.imagen_destacada.url }}"
-                      class="card-img-top object-fit-cover"
-                      alt="{{ otro.titulo }}"
-                      loading="lazy"
-                    />
-                  {% else %}
-                    <img
-                      src="{% static 'img/lagunanegra.webp' %}"
-                      class="card-img-top object-fit-cover"
-                      alt="{{ otro.titulo }}"
-                      loading="lazy"
-                    />
-                  {% endif %}
+                  <img
+                    src="{{ otro.get_imagen_url }}"
+                    class="card-img-top object-fit-cover"
+                    alt="{{ otro.titulo }}"
+                    loading="lazy"
+                  />
                 </div>
                 <div
                   class="card-body p-4 d-flex flex-column

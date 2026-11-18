@@ -1,0 +1,233 @@
+{% load static %}
+<!-- Modal de Confirmación Propio de Monagua (Bootstrap 5) -->
+<div class="modal fade" id="modalConfirmacionMonagua" tabindex="-1" aria-labelledby="modalConfirmacionMonaguaTitulo" aria-hidden="true" style="z-index: 1080 !important;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+        <div class="modal-content border-0 rounded-4 shadow-lg text-center p-4">
+            <div class="modal-body p-2">
+                <!-- Icono animado/destacado -->
+                <div id="modalConfirmacionMonaguaIconoContainer" class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle shadow-sm mb-3" style="width: 72px; height: 72px;">
+                    <i id="modalConfirmacionMonaguaIcono" class="bi bi-question-circle-fill text-white" style="font-size: 2.25rem;"></i>
+                </div>
+                
+                <!-- Título -->
+                <h5 class="fw-bold text-dark mb-2" id="modalConfirmacionMonaguaTitulo">
+                    ¿Confirmar Acción?
+                </h5>
+                
+                <!-- Mensaje descriptivo -->
+                <p class="text-muted small mb-4 px-2" id="modalConfirmacionMonaguaMensaje">
+                    ¿Estás seguro de que deseas realizar este cambio en el sistema?
+                </p>
+                
+                <!-- Acciones -->
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-semibold shadow-sm" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success rounded-pill px-4 fw-semibold shadow-sm" id="btnConfirmarAccionMonagua">
+                        <i class="bi bi-check-circle me-1"></i> Sí, confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    let targetFormToSubmit = null;
+    let targetSubmitter = null;
+    let lastClickedSubmitButton = null;
+
+    function getModal() {
+        const el = document.getElementById('modalConfirmacionMonagua');
+        if (!el || typeof bootstrap === 'undefined') return null;
+        return bootstrap.Modal.getOrCreateInstance(el);
+    }
+
+    function obtenerConfigConfirmacion(form, submitter) {
+        if (!form) return null;
+        if ((form.method || '').toUpperCase() === 'GET') return null;
+        if (form.dataset && form.dataset.noConfirm === 'true') return null;
+        if (submitter && submitter.dataset && submitter.dataset.noConfirm === 'true') return null;
+
+        let confirmMsg = (submitter && submitter.dataset && submitter.dataset.confirmMessage) || (form.dataset && form.dataset.confirmMessage);
+        let confirmTitle = (submitter && submitter.dataset && submitter.dataset.confirmTitle) || (form.dataset && form.dataset.confirmTitle);
+        let confirmBtnText = (submitter && submitter.dataset && submitter.dataset.confirmBtn) || (form.dataset && form.dataset.confirmBtn);
+        let confirmBtnClass = (submitter && submitter.dataset && submitter.dataset.confirmBtnClass) || (form.dataset && form.dataset.confirmBtnClass);
+
+        // Detectar automáticamente botones de Guardar / Registrar / Crear / Actualizar
+        if (!confirmMsg && submitter) {
+            const textoBoton = (submitter.textContent || submitter.value || '').trim().toLowerCase();
+            if (
+                textoBoton.includes('guardar') ||
+                textoBoton.includes('registrar') ||
+                textoBoton.includes('crear') ||
+                textoBoton.includes('actualizar')
+            ) {
+                confirmTitle = confirmTitle || '¿Confirmar Guardado?';
+                confirmMsg = '¿Estás seguro de que deseas guardar estos cambios en la base de datos?';
+                confirmBtnText = confirmBtnText || 'Sí, guardar';
+                confirmBtnClass = confirmBtnClass || 'btn-success';
+            }
+        }
+
+        if (!confirmMsg) return null;
+
+        return {
+            title: confirmTitle || '¿Estás seguro de continuar?',
+            message: confirmMsg,
+            btnText: confirmBtnText || 'Sí, confirmar',
+            btnClass: confirmBtnClass || 'btn-success'
+        };
+    }
+
+    function mostrarModalConfirmacion(form, submitter, config) {
+        targetFormToSubmit = form;
+        targetSubmitter = submitter || null;
+
+        const titleEl = document.getElementById('modalConfirmacionMonaguaTitulo');
+        const msgEl = document.getElementById('modalConfirmacionMonaguaMensaje');
+        const btnConfirm = document.getElementById('btnConfirmarAccionMonagua');
+        const iconContainer = document.getElementById('modalConfirmacionMonaguaIconoContainer');
+        const iconEl = document.getElementById('modalConfirmacionMonaguaIcono');
+
+        if (titleEl) titleEl.textContent = config.title;
+        if (msgEl) msgEl.textContent = config.message;
+
+        if (btnConfirm) {
+            btnConfirm.innerHTML = `<i class="bi bi-check-circle me-1"></i> ${config.btnText}`;
+            btnConfirm.className = `btn rounded-pill px-4 fw-semibold shadow-sm ${config.btnClass}`;
+        }
+
+        if (iconContainer && iconEl) {
+            if (config.btnClass.includes('danger')) {
+                iconContainer.className = 'd-inline-flex align-items-center justify-content-center bg-danger text-white rounded-circle shadow-sm mb-3';
+                iconEl.className = 'bi bi-slash-circle-fill fs-2 text-white';
+            } else if (config.btnClass.includes('warning')) {
+                iconContainer.className = 'd-inline-flex align-items-center justify-content-center bg-warning text-white rounded-circle shadow-sm mb-3';
+                iconEl.className = 'bi bi-exclamation-triangle-fill fs-2 text-white';
+            } else {
+                iconContainer.className = 'd-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle shadow-sm mb-3';
+                iconEl.className = 'bi bi-question-circle-fill fs-2 text-white';
+            }
+        }
+
+        const modal = getModal();
+        if (modal) {
+            modal.show();
+        }
+    }
+
+    // Interceptar clic en botones submit (ej: botones de Guardar)
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('button[type="submit"], input[type="submit"]');
+        if (!btn) return;
+        lastClickedSubmitButton = btn;
+
+        const form = btn.form || btn.closest('form');
+        if (!form || form.dataset.confirmed === 'true') return;
+
+        const config = obtenerConfigConfirmacion(form, btn);
+        if (config) {
+            if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+                if (typeof form.reportValidity === 'function') {
+                    form.reportValidity();
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
+            mostrarModalConfirmacion(form, btn, config);
+        }
+    }, true);
+
+    // Respaldo en evento submit del formulario (por ej. al presionar Enter)
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        if (!form) return;
+
+        if (form.dataset.confirmed === 'true') {
+            delete form.dataset.confirmed;
+            return;
+        }
+
+        const submitter = e.submitter || lastClickedSubmitButton;
+        const config = obtenerConfigConfirmacion(form, submitter);
+
+        if (config) {
+            if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+                if (typeof form.reportValidity === 'function') {
+                    form.reportValidity();
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
+            mostrarModalConfirmacion(form, submitter, config);
+        }
+    }, true);
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnConfirm = document.getElementById('btnConfirmarAccionMonagua');
+        const modalEl = document.getElementById('modalConfirmacionMonagua');
+
+        if (btnConfirm) {
+            btnConfirm.addEventListener('click', function() {
+                if (targetFormToSubmit) {
+                    const form = targetFormToSubmit;
+                    const submitter = targetSubmitter;
+                    targetFormToSubmit = null;
+                    targetSubmitter = null;
+
+                    form.dataset.confirmed = 'true';
+
+                    // Preservar name/value si el botón presionado tenía atributo name
+                    if (submitter && submitter.name) {
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = submitter.name;
+                        hiddenInput.value = submitter.value || '';
+                        form.appendChild(hiddenInput);
+                    }
+
+                    const modal = getModal();
+                    if (modal) {
+                        modal.hide();
+                    }
+                    HTMLFormElement.prototype.submit.call(form);
+                }
+            });
+        }
+
+        if (modalEl) {
+            // Asegurar que el modal y su backdrop se sitúen por encima de cualquier offcanvas o modal previo
+            modalEl.addEventListener('show.bs.modal', function() {
+                modalEl.style.setProperty('z-index', '1080', 'important');
+                setTimeout(function() {
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    if (backdrops.length > 0) {
+                        backdrops[backdrops.length - 1].style.setProperty('z-index', '1075', 'important');
+                    }
+                }, 10);
+            });
+
+            // Si hay un offcanvas o modal abierto debajo, mantener el scroll bloqueado en el body
+            modalEl.addEventListener('hidden.bs.modal', function() {
+                if (document.querySelector('.offcanvas.show, .modal.show')) {
+                    document.body.classList.add('modal-open');
+                    document.body.style.overflow = 'hidden';
+                }
+                targetFormToSubmit = null;
+                targetSubmitter = null;
+            });
+        }
+    });
+})();
+</script>

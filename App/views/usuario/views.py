@@ -271,8 +271,23 @@ def gestion_usuarios_admin(request):
 
     usuarios = Usuario.objects.all().order_by('-id')
 
+    rol_mapping = {
+        'ADMIN': Usuario.Roles.ADMIN,
+        '1': Usuario.Roles.ADMIN,
+        'CLIENTE': Usuario.Roles.CLIENTE,
+        '2': Usuario.Roles.CLIENTE,
+        'GUIA': Usuario.Roles.GUIA,
+        '3': Usuario.Roles.GUIA,
+    }
+
     if filtro:
-        usuarios = usuarios.filter(rol=filtro)
+        filtro_norm = filtro.upper()
+        if filtro_norm in rol_mapping:
+            usuarios = usuarios.filter(rol=rol_mapping[filtro_norm])
+        elif filtro_norm in ['ACTIVO', 'ACTIVOS']:
+            usuarios = usuarios.filter(is_active=True)
+        elif filtro_norm in ['INACTIVO', 'INACTIVOS']:
+            usuarios = usuarios.filter(is_active=False)
 
     if query:
         usuarios = usuarios.filter(
@@ -280,9 +295,11 @@ def gestion_usuarios_admin(request):
             Q(first_name__icontains=query) |
             Q(last_name__icontains=query) |
             Q(email__icontains=query) |
-            Q(numero_documento__icontains=query)
+            Q(numero_documento__icontains=query) |
+            Q(telefono__icontains=query)
         )
 
+    total_usuarios = Usuario.objects.count()
     total_admins = Usuario.objects.filter(rol=Usuario.Roles.ADMIN).count()
     total_guias = Usuario.objects.filter(rol=Usuario.Roles.GUIA).count()
     total_clientes = Usuario.objects.filter(rol=Usuario.Roles.CLIENTE).count()
@@ -290,6 +307,7 @@ def gestion_usuarios_admin(request):
     contexto = {
         'usuarios': usuarios,
         'filtro_actual': filtro,
+        'total_usuarios': total_usuarios,
         'total_admins': total_admins,
         'total_guias': total_guias,
         'total_clientes': total_clientes,
@@ -299,7 +317,7 @@ def gestion_usuarios_admin(request):
 
 @user_passes_test(es_administrador)
 def usuarios_guardar(request):
-    """Crea o actualiza la información y rol de un usuario."""
+    """Crea o actualiza la información básica de un usuario (sin alteración de rol)."""
     if request.method == 'POST':
         user_id = request.POST.get('id')
         first_name = request.POST.get('first_name', '').strip()
@@ -309,12 +327,20 @@ def usuarios_guardar(request):
         tipo_documento = request.POST.get('tipo_documento', 'CC').strip()
         numero_documento = request.POST.get('numero_documento', '').strip()
         residencia = request.POST.get('residencia', '').strip()
-        rol = request.POST.get('rol', Usuario.Roles.CLIENTE).strip()
         password = request.POST.get('password', '').strip()
         imagen_perfil = request.FILES.get('imagen_perfil')
 
         if user_id:
             user_obj = get_object_or_404(Usuario, pk=user_id)
+
+            if email and Usuario.objects.filter(email=email).exclude(pk=user_obj.pk).exists():
+                messages.error(request, f"El correo '{email}' ya se encuentra registrado por otro usuario.")
+                return redirect('gestion_usuarios')
+
+            if numero_documento and Usuario.objects.filter(numero_documento=numero_documento).exclude(pk=user_obj.pk).exists():
+                messages.error(request, f"El número de documento '{numero_documento}' ya pertenece a otro usuario.")
+                return redirect('gestion_usuarios')
+
             user_obj.first_name = first_name
             user_obj.last_name = last_name
             if email:
@@ -323,13 +349,14 @@ def usuarios_guardar(request):
             user_obj.tipo_documento = tipo_documento
             user_obj.numero_documento = numero_documento
             user_obj.residencia = residencia
-            user_obj.rol = rol
-            if rol == Usuario.Roles.ADMIN:
-                user_obj.is_staff = True
+
+            # NOTA: El rol del usuario NO se modifica en este módulo.
+
             if password:
                 user_obj.set_password(password)
             if imagen_perfil:
                 user_obj.imagen_perfil = imagen_perfil
+
             user_obj.save()
 
             crear_notificacion_sistema(
@@ -351,6 +378,14 @@ def usuarios_guardar(request):
             if email and Usuario.objects.filter(email=email).exists():
                 messages.error(request, f"El correo '{email}' ya se encuentra registrado.")
                 return redirect('gestion_usuarios')
+
+            if numero_documento and Usuario.objects.filter(numero_documento=numero_documento).exists():
+                messages.error(request, f"El número de documento '{numero_documento}' ya se encuentra registrado.")
+                return redirect('gestion_usuarios')
+
+            # Para nuevos registros: Administrador o Cliente (por defecto Cliente)
+            rol_input = request.POST.get('rol', '').strip()
+            rol = Usuario.Roles.ADMIN if str(rol_input).upper() in ['ADMIN', '1'] else Usuario.Roles.CLIENTE
 
             user_obj = Usuario.objects.create_user(
                 username=username,
