@@ -28,6 +28,8 @@ document.addEventListener("DOMContentLoaded", function () {
               addMessage(msg.text, msg.sender, false);
           } else if (msg.type === 'options') {
               showOptions(msg.options, false);
+          } else if (msg.type === 'custom_link') {
+              showCustomLink(msg.url, msg.text, false);
           } else if (msg.type === 'fallback') {
               showFallbackOption(false);
           }
@@ -112,6 +114,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (data.response) {
         addMessage(data.response, "bot");
       }
+      if (data.link_url && data.link_text) {
+        showCustomLink(data.link_url, data.link_text);
+      }
       if (data.options && data.options.length > 0) {
         showOptions(data.options);
       }
@@ -182,14 +187,29 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  function showCustomLink(url, text, save = true) {
+    const div = document.createElement('div');
+    div.className = 'mt-2 mb-2 d-flex flex-wrap gap-2 justify-content-start';
+    div.innerHTML = `
+      <a href="${url}" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm d-inline-flex align-items-center gap-1" style="background-color: #2c6e3c; color: #fff; font-weight: 600; text-decoration: none;">
+        <i class="bi bi-box-arrow-up-right"></i> ${text}
+      </a>
+    `;
+    messagesContainer.appendChild(div);
+    scrollToBottom();
+    if (save) {
+      saveToHistory({ type: 'custom_link', url: url, text: text });
+    }
+  }
+
   function showFallbackOption(save = true) {
     const div = document.createElement('div');
     div.className = 'mt-2 mb-2 d-flex flex-wrap gap-2 justify-content-start';
     div.innerHTML = `
-      <a href="/contactanos/" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm d-inline-flex align-items-center gap-1" style="background-color: #198754; color: #fff; font-weight: 600; text-decoration: none;">
-        <i class="bi bi-envelope-paper-heart"></i> Radicar PQRS
+      <a href="/pqrs/" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm d-inline-flex align-items-center gap-1" style="background-color: #2c6e3c; color: #fff; font-weight: 600; text-decoration: none;">
+        <i class="bi bi-pencil-square"></i> Radicar PQRS
       </a>
-      <a href="/mis_pqrs/" class="btn btn-sm btn-outline-success rounded-pill px-3 shadow-sm d-inline-flex align-items-center gap-1" style="border-color: #198754; color: #198754; font-weight: 600; text-decoration: none;">
+      <a href="/mis_pqrs/" class="btn btn-sm btn-outline-success rounded-pill px-3 shadow-sm d-inline-flex align-items-center gap-1" style="border-color: #2c6e3c; color: #2c6e3c; font-weight: 600; text-decoration: none;">
         <i class="bi bi-inbox"></i> Mis Solicitudes
       </a>
     `;

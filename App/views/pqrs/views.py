@@ -38,11 +38,11 @@ def notificar_admines_pqrs(pqrs):
         )
 
 
-@login_required
 def pqrs(request):
-    mis_reservas = Reserva.objects.filter(usuario=request.user)
-    form = PqrsForm(user=request.user)
-    pqrs_usuario = PQRS.objects.filter(usuario=request.user)
+    user = request.user if request.user.is_authenticated else None
+    mis_reservas = Reserva.objects.filter(usuario=user) if user else Reserva.objects.none()
+    form = PqrsForm(user=user)
+    pqrs_usuario = PQRS.objects.filter(usuario=user) if user else PQRS.objects.none()
     
     context = {
         'pqrs': pqrs_usuario,
@@ -147,19 +147,20 @@ def contestar_pqrs(request, pqrs_id):
 from django_ratelimit.decorators import ratelimit
 
 
-@login_required
 @ratelimit(key='ip', rate='10/m', block=False)
 def guardar_pqrs(request):
     if getattr(request, 'limited', False):
         messages.error(request, "Has enviado demasiadas solicitudes en poco tiempo. Por favor espera unos minutos.")
-        return redirect('mis_pqrs')
+        return redirect('pqrs')
     if request.method == 'POST':
-        form = PqrsForm(request.POST, user=request.user)
+        user = request.user if request.user.is_authenticated else None
+        form = PqrsForm(request.POST, user=user)
 
         if form.is_valid():
             # 1. Guardar la PQRS principal
             nueva_pqrs = form.save(commit=False)
-            nueva_pqrs.usuario = request.user
+            if user:
+                nueva_pqrs.usuario = user
             nueva_pqrs.estado = 'abierto'
             nueva_pqrs.save()
 
@@ -169,18 +170,19 @@ def guardar_pqrs(request):
             # 3. CREAR EL SEGUIMIENTO ASOCIANDO LA RESERVA EN BD
             Seguimiento.objects.create(
                 pqrs=nueva_pqrs,
-                usuario=request.user,
+                usuario=user,
                 reserva=reserva_seleccionada
             )
 
             # 4. Notificación para el usuario que radica la PQRS
-            crear_notificacion_sistema(
-                usuario=request.user,
-                reserva=reserva_seleccionada,
-                mensaje=f"Tu PQRS #{nueva_pqrs.id} ha sido radicada correctamente y quedará en revisión.",
-                tipo="PQRS",
-                prioridad="media"
-            )
+            if user:
+                crear_notificacion_sistema(
+                    usuario=user,
+                    reserva=reserva_seleccionada,
+                    mensaje=f"Tu PQRS #{nueva_pqrs.id} ha sido radicada correctamente y quedará en revisión.",
+                    tipo="PQRS",
+                    prioridad="media"
+                )
 
             # 5. Notificar a administradores de la nueva PQRS
             notificar_admines_pqrs(nueva_pqrs)
@@ -188,11 +190,13 @@ def guardar_pqrs(request):
             # 6. Mensaje de confirmación
             reserva_txt = f" para la Reserva #{reserva_seleccionada.id}" if reserva_seleccionada else ""
             messages.success(request, f"Tu PQRS ha sido radicada con éxito{reserva_txt}.")
-            return redirect('mis_pqrs')
+            if user:
+                return redirect('mis_pqrs')
+            return redirect('pqrs')
         else:
             messages.error(request, "Por favor verifica los campos del formulario.")
 
-    return redirect('mis_pqrs')
+    return redirect('pqrs')
 
 @login_required
 def mis_pqrs_view(request):
@@ -211,9 +215,8 @@ from django.core.mail import EmailMessage
 from django.conf import settings
 
 def pqrs_publica(request):
-    """Renderiza el formulario público de PQRS para visitantes anónimos."""
-    form = PqrsForm()
-    return render(request, 'public/pqrs.html', {'form': form})
+    """Redirige al apartado oficial de PQRS de la plataforma."""
+    return redirect('pqrs')
 
 @ratelimit(key='ip', rate='10/m', block=False)
 def api_guardar_pqrs(request):
