@@ -1,4 +1,7 @@
 import re
+import io
+import pypdf
+from PIL import Image
 from datetime import date, timedelta
 from decimal import Decimal
 from django.test import TestCase, Client
@@ -6,7 +9,7 @@ from django.urls import reverse
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.exceptions import ValidationError
-from App.models import Usuario, Paquete, Reserva, Categoria, Pago
+from App.models import Usuario, Paquete, Reserva, Categoria, Pago, Temporada, Tarifa, Notificacion, Bitacora
 from App.forms.usuario.forms import PerfilTuristaForm
 from App.forms.pago.forms import ComprobantePagoForm
 from autenticacion.forms import IniciarSesionForm
@@ -1226,4 +1229,563 @@ class PruebasSeguridadYFuncionalidadCompletas(TestCase):
         self.assertIn('response', data)
         self.assertEqual(data.get('action'), 'pqrs')
         self.assertIn('pqrs', data.get('response', '').lower())
+
+
+class FlujoReservaPagoFacturaRigurosoTests(TestCase):
+    """
+    Suite de pruebas rigurosas e integrales para el ciclo de vida completo de:
+    1. RESERVA:
+       - Creación exitosa con cálculo automático de tarifas por temporada.
+       - Validación de anticipación mínima (al menos 2 días).
+       - Rechazo de fechas pasadas y formatos no válidos.
+       - Validación de pasajeros (mínimo 1 adulto, límites máximos).
+       - Prevención de reservas duplicadas (mismo usuario, paquete y fecha).
+       - Restricción de modelo: imposible confirmar sin pago aprobado.
+    2. PAGO / COMPROBANTE:
+       - Envío exitoso con validación de banco, método y archivo (JPEG / PDF).
+       - Estado inicial 'pendiente' y notificaciones al usuario y administradores.
+       - Bloqueo de envíos duplicados mientras exista comprobante en proceso.
+       - Protección contra archivos maliciosos, ejecutables o scripts.
+       - Rechazo por administrador con nota obligatoria y registro en Bitácora.
+       - Rechazo sin nota administrativa falla.
+       - Reintento de comprobante por el turista tras rechazo previo.
+       - Validación del monto mínimo requerido para aprobación.
+       - Aprobación por administrador que sincroniza automáticamente la reserva a 'confirmada'.
+    3. FACTURACIÓN Y PDF:
+       - 'mis_facturas' lista únicamente reservas confirmadas/pagadas.
+       - 'ver_factura' bloquea reservas pendientes o no confirmadas.
+       - 'ver_factura' bloquea acceso no autorizado de otros turistas (Zero-Trust).
+       - 'ver_factura' renderiza exitosamente para el titular y el administrador (QR, totales, datos).
+       - 'descargar_factura' entrega archivo 'application/pdf' con cabecera válida %PDF-.
+       - Protección criptográfica del PDF con número de documento del usuario (pypdf).
+       - 'descargar_factura' bloquea descarga a usuarios no autorizados.
+    """
+
+    def setUp(self):
+        self.client = Client()
+
+        # Usuario Administrador
+        self.admin = Usuario.objects.create_user(
+            username='admin_riguroso',
+            email='admin_riguroso@monagua.com',
+            password='AdminPassword123#',
+            first_name='Admin',
+            last_name='Monagua',
+            rol=Usuario.Roles.ADMIN,
+            is_staff=True,
+            is_superuser=True
+        )
+
+        # Turista titular
+        self.turista = Usuario.objects.create_user(
+            username='turista_riguroso',
+            email='turista_riguroso@monagua.com',
+            password='TuristaPassword123#',
+            first_name='Carlos',
+            last_name='Gomez',
+            rol=Usuario.Roles.CLIENTE,
+            tipo_documento='CC',
+            numero_documento='1049583726',
+            is_staff=False,
+            is_superuser=False
+        )
+
+        # Otro turista para pruebas de control de acceso cruzado
+        self.otro_turista = Usuario.objects.create_user(
+            username='otro_turista_riguroso',
+            email='otro_turista@monagua.com',
+            password='OtroPassword123#',
+            first_name='Lucia',
+            last_name='Morales',
+            rol=Usuario.Roles.CLIENTE,
+            tipo_documento='CC',
+            numero_documento='9876543210',
+            is_staff=False,
+            is_superuser=False
+        )
+
+        # Categoría y Paquete turístico
+        self.categoria = Categoria.objects.create(nombre='Ecoturismo Riguroso')
+        self.paquete = Paquete.objects.create(
+            nombre='Tour Páramo Riguroso',
+            descripcion='Aventura ecológica de prueba rigurosa',
+            categoria=self.categoria,
+            punto_encuentro='Parque Principal Mongua',
+            hora_encuentro='07:30:00',
+            dias_duracion=2,
+            noches_duracion=1,
+            estado=True
+        )
+
+        # Temporada activa y Tarifa
+        self.temporada = Temporada.objects.create(
+            nombre='Temporada Vigente Rigurosa',
+            fecha_inicio=date.today() - timedelta(days=30),
+            fecha_fin=date.today() + timedelta(days=90),
+            estado=True
+        )
+        self.tarifa = Tarifa.objects.create(
+            paquete=self.paquete,
+            temporada=self.temporada,
+            precio_adulto=Decimal('150000.00'),
+            precio_menor=Decimal('100000.00'),
+            estado=True
+        )
+
+    def _crear_imagen_valida(self, nombre='recibo.jpg'):
+        img = Image.new('RGB', (100, 100), color='green')
+        buf = io.BytesIO()
+        img.save(buf, format='JPEG')
+        buf.seek(0)
+        return SimpleUploadedFile(nombre, buf.getvalue(), content_type='image/jpeg')
+
+    def _crear_reserva_base(self, dias=6):
+        fecha = date.today() + timedelta(days=dias)
+        return Reserva.objects.create(
+            usuario=self.turista,
+            paquete=self.paquete,
+            fecha_inicio=fecha,
+            numero_adultos=2,
+            numero_menores=1,
+            estado_reserva='pendiente'
+        )
+
+    def _crear_reserva_confirmada_con_pago(self, dias=15):
+        fecha = date.today() + timedelta(days=dias)
+        reserva = Reserva.objects.create(
+            usuario=self.turista,
+            paquete=self.paquete,
+            fecha_inicio=fecha,
+            numero_adultos=2,
+            numero_menores=1,
+            estado_reserva='pendiente'
+        )
+        pago = Pago.objects.create(
+            reserva=reserva,
+            referencia=f'REF-FAC-{reserva.id}',
+            banco_origen='Bancolombia',
+            metodo_pago='Transferencia Bancaria',
+            monto=reserva.monto_total,
+            imagen_comprobante=self._crear_imagen_valida('pago.jpg'),
+            estado_transaccion='aprobado'
+        )
+        reserva.refresh_from_db()
+        return reserva, pago
+
+    # --------------------------------------------------------------------------
+    # 1. PRUEBAS DE RESERVA
+    # --------------------------------------------------------------------------
+    def test_01_reserva_creacion_exitosa_y_calculo_monto(self):
+        """Crea una reserva válida y verifica el cálculo exacto del monto_total y notificación."""
+        self.client.force_login(self.turista)
+        fecha_viaje = (date.today() + timedelta(days=5)).strftime('%Y-%m-%d')
+        response = self.client.post(reverse('guardar_reserva', args=[self.paquete.id]), {
+            'fecha': fecha_viaje,
+            'adultos': '2',
+            'menores': '1'
+        })
+        self.assertRedirects(response, reverse('mis_reservas_usuario'))
+
+        reserva = Reserva.objects.filter(usuario=self.turista, paquete=self.paquete).first()
+        self.assertIsNotNone(reserva)
+        self.assertEqual(reserva.estado_reserva, 'pendiente')
+        self.assertEqual(reserva.numero_adultos, 2)
+        self.assertEqual(reserva.numero_menores, 1)
+        # 2 adultos * 150.000 + 1 menor * 100.000 = 400.000
+        self.assertEqual(reserva.monto_total, Decimal('400000.00'))
+
+        # Notificación al turista
+        notif = Notificacion.objects.filter(usuario=self.turista, reserva=reserva).first()
+        self.assertIsNotNone(notif)
+        self.assertIn('Tour Páramo Riguroso', notif.mensaje)
+
+    def test_02_reserva_rechaza_fechas_menores_a_dos_dias_o_pasadas(self):
+        """Verifica que no se permita reservar con menos de 2 días de anticipación ni en fechas pasadas."""
+        self.client.force_login(self.turista)
+
+        # Mañana (solo 1 día de anticipación)
+        fecha_manana = (date.today() + timedelta(days=1)).strftime('%Y-%m-%d')
+        res_manana = self.client.post(reverse('guardar_reserva', args=[self.paquete.id]), {
+            'fecha': fecha_manana,
+            'adultos': '1',
+            'menores': '0'
+        })
+        self.assertEqual(res_manana.status_code, 302)
+        self.assertFalse(Reserva.objects.filter(usuario=self.turista, fecha_inicio=fecha_manana).exists())
+
+        # Ayer (fecha pasada)
+        fecha_ayer = (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')
+        res_ayer = self.client.post(reverse('guardar_reserva', args=[self.paquete.id]), {
+            'fecha': fecha_ayer,
+            'adultos': '1',
+            'menores': '0'
+        })
+        self.assertEqual(res_ayer.status_code, 302)
+        self.assertFalse(Reserva.objects.filter(usuario=self.turista, fecha_inicio=fecha_ayer).exists())
+
+    def test_03_reserva_rechaza_cero_adultos_y_limites_excedidos(self):
+        """Verifica que el servidor rechace reservas sin adultos o superando los límites máximos permitidos."""
+        self.client.force_login(self.turista)
+        fecha_valida = (date.today() + timedelta(days=10)).strftime('%Y-%m-%d')
+
+        # Cero adultos
+        res_cero = self.client.post(reverse('guardar_reserva', args=[self.paquete.id]), {
+            'fecha': fecha_valida,
+            'adultos': '0',
+            'menores': '2'
+        })
+        self.assertEqual(res_cero.status_code, 302)
+        self.assertFalse(Reserva.objects.filter(usuario=self.turista, fecha_inicio=fecha_valida).exists())
+
+        # Más de 30 adultos
+        res_exceso = self.client.post(reverse('guardar_reserva', args=[self.paquete.id]), {
+            'fecha': fecha_valida,
+            'adultos': '35',
+            'menores': '0'
+        })
+        self.assertEqual(res_exceso.status_code, 302)
+        self.assertFalse(Reserva.objects.filter(usuario=self.turista, fecha_inicio=fecha_valida).exists())
+
+    def test_04_reserva_previene_duplicados_mismo_usuario_paquete_fecha(self):
+        """Verifica que un usuario no pueda duplicar una reserva para el mismo paquete y fecha."""
+        self.client.force_login(self.turista)
+        fecha_valida = (date.today() + timedelta(days=8)).strftime('%Y-%m-%d')
+
+        # Primera reserva exitosa
+        self.client.post(reverse('guardar_reserva', args=[self.paquete.id]), {
+            'fecha': fecha_valida,
+            'adultos': '1',
+            'menores': '0'
+        })
+        self.assertEqual(Reserva.objects.filter(usuario=self.turista, fecha_inicio=fecha_valida).count(), 1)
+
+        # Segundo intento idéntico
+        res_dup = self.client.post(reverse('guardar_reserva', args=[self.paquete.id]), {
+            'fecha': fecha_valida,
+            'adultos': '1',
+            'menores': '0'
+        })
+        self.assertEqual(res_dup.status_code, 302)
+        # Sigue existiendo exactamente 1
+        self.assertEqual(Reserva.objects.filter(usuario=self.turista, fecha_inicio=fecha_valida).count(), 1)
+
+    def test_05_reserva_bloquea_confirmacion_sin_pago_aprobado(self):
+        """Verifica la restricción de modelo: una reserva NO puede tener estado 'confirmada' sin pago aprobado."""
+        fecha_valida = date.today() + timedelta(days=12)
+        reserva = Reserva.objects.create(
+            usuario=self.turista,
+            paquete=self.paquete,
+            fecha_inicio=fecha_valida,
+            numero_adultos=1,
+            numero_menores=0,
+            estado_reserva='pendiente'
+        )
+
+        reserva.estado_reserva = 'confirmada'
+        with self.assertRaises(ValidationError):
+            reserva.save()
+
+    # --------------------------------------------------------------------------
+    # 2. PRUEBAS DE PAGO Y COMPROBANTE
+    # --------------------------------------------------------------------------
+    def test_06_enviar_comprobante_exitoso_y_notificaciones(self):
+        """Verifica que el turista pueda subir un comprobante válido y se notifique a administradores."""
+        reserva = self._crear_reserva_base(dias=6)
+        self.client.force_login(self.turista)
+
+        imagen = self._crear_imagen_valida('recibo_pago.jpg')
+        res = self.client.post(reverse('enviar_comprobante'), {
+            'reserva': reserva.id,
+            'referencia': 'CUS-20261118',
+            'banco_origen': 'Bancolombia',
+            'metodo_pago': 'Transferencia Bancaria',
+            'imagen_comprobante': imagen,
+            'descripcion': 'Pago total verificado desde App Bancolombia'
+        })
+        self.assertRedirects(res, reverse('mis_comprobantes'))
+
+        pago = Pago.objects.filter(reserva=reserva).first()
+        self.assertIsNotNone(pago)
+        self.assertEqual(pago.estado_transaccion, 'pendiente')
+        self.assertEqual(pago.monto, reserva.monto_total)
+        self.assertEqual(pago.referencia, 'CUS-20261118')
+        self.assertEqual(pago.banco_origen, 'Bancolombia')
+
+        # Reserva sigue en pendiente hasta aprobación del admin
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.estado_reserva, 'pendiente')
+
+        # Notificación al turista y al admin
+        self.assertTrue(Notificacion.objects.filter(usuario=self.turista, reserva=reserva, tipo="Comprobante de Pago").exists())
+        self.assertTrue(Notificacion.objects.filter(usuario=self.admin, reserva=reserva, tipo="Comprobante de Pago").exists())
+
+    def test_07_enviar_comprobante_bloquea_duplicados_mientras_este_pendiente(self):
+        """Verifica que no se permita enviar un segundo comprobante si ya existe uno en revisión."""
+        reserva = self._crear_reserva_base(dias=7)
+        self.client.force_login(self.turista)
+
+        # Primer comprobante
+        self.client.post(reverse('enviar_comprobante'), {
+            'reserva': reserva.id,
+            'referencia': 'REF-001',
+            'banco_origen': 'Nequi',
+            'metodo_pago': 'Transferencia Bancaria',
+            'imagen_comprobante': self._crear_imagen_valida('c1.jpg'),
+        })
+        self.assertEqual(Pago.objects.filter(reserva=reserva).count(), 1)
+
+        # Segundo intento mientras sigue pendiente
+        res_dup = self.client.post(reverse('enviar_comprobante'), {
+            'reserva': reserva.id,
+            'referencia': 'REF-002',
+            'banco_origen': 'Daviplata',
+            'metodo_pago': 'Transferencia Bancaria',
+            'imagen_comprobante': self._crear_imagen_valida('c2.jpg'),
+        })
+        self.assertRedirects(res_dup, reverse('mis_comprobantes'))
+        self.assertEqual(Pago.objects.filter(reserva=reserva).count(), 1)
+
+    def test_08_enviar_comprobante_rechaza_extensiones_peligrosas(self):
+        """Verifica el rechazo estricto de archivos maliciosos (ej. scripts o dobles extensiones)."""
+        reserva = self._crear_reserva_base(dias=8)
+        self.client.force_login(self.turista)
+
+        archivo_malicioso = SimpleUploadedFile('recibo.php.png', b'<?php phpinfo(); ?>', content_type='image/png')
+        res = self.client.post(reverse('enviar_comprobante'), {
+            'reserva': reserva.id,
+            'referencia': 'MALICIOUS-01',
+            'banco_origen': 'Bancolombia',
+            'metodo_pago': 'Transferencia Bancaria',
+            'imagen_comprobante': archivo_malicioso,
+        })
+        self.assertEqual(Pago.objects.filter(reserva=reserva).count(), 0)
+
+    def test_09_admin_rechazar_comprobante_con_nota_y_auditoria(self):
+        """Verifica que el admin pueda rechazar un comprobante ilegible indicando la nota y registrando en Bitácora."""
+        reserva = self._crear_reserva_base(dias=9)
+        pago = Pago.objects.create(
+            reserva=reserva,
+            referencia='REF-BORROSO',
+            banco_origen='Bancolombia',
+            metodo_pago='Transferencia Bancaria',
+            monto=reserva.monto_total,
+            imagen_comprobante=self._crear_imagen_valida('borroso.jpg'),
+            estado_transaccion='pendiente'
+        )
+
+        self.client.force_login(self.admin)
+        res = self.client.post(reverse('admin_revisar_comprobante', args=[pago.id]), {
+            'estado_transaccion': 'rechazado',
+            'banco_origen': 'Bancolombia',
+            'monto': str(reserva.monto_total),
+            'nota_admin': 'El comprobante no muestra el número de aprobación. Por favor sube una captura nítida.'
+        })
+        self.assertRedirects(res, reverse('admin_comprobantes'))
+
+        pago.refresh_from_db()
+        self.assertEqual(pago.estado_transaccion, 'rechazado')
+        self.assertIn('captura nítida', pago.nota_admin)
+
+        # Reserva sigue en estado 'pendiente'
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.estado_reserva, 'pendiente')
+
+        # Bitácora registrada
+        bitacora = Bitacora.objects.filter(registro_id=pago.id, modulo='Comprobantes de Pago').first()
+        self.assertIsNotNone(bitacora)
+        self.assertEqual(bitacora.accion, 'UPDATE')
+
+        # Notificación con motivo al turista
+        notif = Notificacion.objects.filter(usuario=self.turista, reserva=reserva).order_by('-id').first()
+        self.assertIn('captura nítida', notif.mensaje)
+
+    def test_10_admin_rechazar_sin_nota_falla(self):
+        """Verifica que el administrador no pueda rechazar un comprobante sin proporcionar una nota explicativa."""
+        reserva = self._crear_reserva_base(dias=10)
+        pago = Pago.objects.create(
+            reserva=reserva,
+            referencia='REF-SIN-NOTA',
+            banco_origen='Nequi',
+            metodo_pago='Transferencia Bancaria',
+            monto=reserva.monto_total,
+            imagen_comprobante=self._crear_imagen_valida('recibo.jpg'),
+            estado_transaccion='pendiente'
+        )
+
+        self.client.force_login(self.admin)
+        res = self.client.post(reverse('admin_revisar_comprobante', args=[pago.id]), {
+            'estado_transaccion': 'rechazado',
+            'banco_origen': 'Nequi',
+            'monto': str(reserva.monto_total),
+            'nota_admin': ''  # Vacía
+        })
+        self.assertEqual(res.status_code, 200)  # Re-renderiza formulario con error
+        pago.refresh_from_db()
+        self.assertEqual(pago.estado_transaccion, 'pendiente')
+
+    def test_11_turista_reintenta_comprobante_tras_rechazo(self):
+        """Verifica que el turista pueda volver a enviar un comprobante sobre la reserva tras un rechazo."""
+        reserva = self._crear_reserva_base(dias=11)
+        pago = Pago.objects.create(
+            reserva=reserva,
+            referencia='REF-INICIAL',
+            banco_origen='Nequi',
+            metodo_pago='Transferencia Bancaria',
+            monto=reserva.monto_total,
+            imagen_comprobante=self._crear_imagen_valida('inicial.jpg'),
+            estado_transaccion='rechazado',
+            nota_admin='Comprobante borroso'
+        )
+
+        self.client.force_login(self.turista)
+        res = self.client.post(reverse('enviar_comprobante'), {
+            'reserva': reserva.id,
+            'referencia': 'REF-CORREGIDA',
+            'banco_origen': 'Nequi',
+            'metodo_pago': 'Transferencia Bancaria',
+            'imagen_comprobante': self._crear_imagen_valida('corregido.jpg'),
+            'descripcion': 'Adjunto nuevo comprobante nítido'
+        })
+        self.assertRedirects(res, reverse('mis_comprobantes'))
+
+        pago.refresh_from_db()
+        self.assertEqual(pago.estado_transaccion, 'pendiente')
+        self.assertEqual(pago.referencia, 'REF-CORREGIDA')
+        self.assertEqual(pago.nota_admin, '')
+
+    def test_12_admin_no_puede_aprobar_con_monto_insuficiente(self):
+        """Verifica que no se pueda aprobar un pago cuyo monto verificado sea menor al total de la reserva."""
+        reserva = self._crear_reserva_base(dias=12)
+        pago = Pago.objects.create(
+            reserva=reserva,
+            referencia='REF-INSUFICIENTE',
+            banco_origen='Daviplata',
+            metodo_pago='Transferencia Bancaria',
+            monto=reserva.monto_total,
+            imagen_comprobante=self._crear_imagen_valida('recibo.jpg'),
+            estado_transaccion='pendiente'
+        )
+
+        self.client.force_login(self.admin)
+        res = self.client.post(reverse('admin_revisar_comprobante', args=[pago.id]), {
+            'estado_transaccion': 'aprobado',
+            'banco_origen': 'Daviplata',
+            'monto': '50000.00',  # Mucho menor a 400.000
+            'nota_admin': 'Aprobación parcial indebida'
+        })
+        self.assertEqual(res.status_code, 200)
+        pago.refresh_from_db()
+        reserva.refresh_from_db()
+        self.assertEqual(pago.estado_transaccion, 'pendiente')
+        self.assertEqual(reserva.estado_reserva, 'pendiente')
+
+    def test_13_admin_aprobar_comprobante_sincroniza_reserva_confirmada(self):
+        """Verifica que la aprobación del comprobante por el administrador actualice automáticamente la reserva a confirmada."""
+        reserva = self._crear_reserva_base(dias=13)
+        pago = Pago.objects.create(
+            reserva=reserva,
+            referencia='REF-VALIDA-TOTAL',
+            banco_origen='Bancolombia',
+            metodo_pago='Transferencia Bancaria',
+            monto=reserva.monto_total,
+            imagen_comprobante=self._crear_imagen_valida('recibo.jpg'),
+            estado_transaccion='pendiente'
+        )
+
+        self.client.force_login(self.admin)
+        res = self.client.post(reverse('admin_revisar_comprobante', args=[pago.id]), {
+            'estado_transaccion': 'aprobado',
+            'banco_origen': 'Bancolombia',
+            'monto': str(reserva.monto_total),
+            'nota_admin': 'Pago verificado en extracto bancario'
+        })
+        self.assertRedirects(res, reverse('admin_comprobantes'))
+
+        pago.refresh_from_db()
+        reserva.refresh_from_db()
+        self.assertEqual(pago.estado_transaccion, 'aprobado')
+        self.assertEqual(reserva.estado_reserva, 'confirmada')
+
+        # Notificación de confirmación al turista
+        notif = Notificacion.objects.filter(usuario=self.turista, reserva=reserva).order_by('-id').first()
+        self.assertIn('confirmada exitosamente', notif.mensaje)
+
+    # --------------------------------------------------------------------------
+    # 3. PRUEBAS DE FACTURACIÓN Y DESCARGA PDF
+    # --------------------------------------------------------------------------
+    def test_14_mis_facturas_muestra_solo_reservas_confirmadas(self):
+        """Verifica que 'mis_facturas' únicamente liste reservas con pago aprobado/confirmadas."""
+        reserva_pend = self._crear_reserva_base(dias=14)
+        reserva_conf, _ = self._crear_reserva_confirmada_con_pago(dias=15)
+
+        self.client.force_login(self.turista)
+        res = self.client.get(reverse('mis_facturas'))
+        self.assertEqual(res.status_code, 200)
+        reservas_en_contexto = list(res.context['reservas'])
+
+        self.assertIn(reserva_conf, reservas_en_contexto)
+        self.assertNotIn(reserva_pend, reservas_en_contexto)
+
+    def test_15_ver_factura_bloquea_reserva_pendiente(self):
+        """Verifica que 'ver_factura' no permita visualizar facturas de reservas sin confirmar."""
+        reserva_pend = self._crear_reserva_base(dias=16)
+
+        self.client.force_login(self.turista)
+        res = self.client.get(reverse('ver_factura', args=[reserva_pend.id]))
+        self.assertRedirects(res, reverse('mis_reservas_usuario'))
+
+    def test_16_ver_factura_control_acceso_otro_turista_bloqueado(self):
+        """Verifica el principio de menor privilegio / Zero-Trust: otro usuario no puede ver la factura del titular."""
+        reserva_conf, _ = self._crear_reserva_confirmada_con_pago(dias=17)
+
+        self.client.force_login(self.otro_turista)
+        res = self.client.get(reverse('ver_factura', args=[reserva_conf.id]))
+        self.assertRedirects(res, reverse('mis_reservas_usuario'))
+
+    def test_17_ver_factura_renderiza_ok_para_titular_y_admin(self):
+        """Verifica que el titular y el administrador puedan ver la factura HTML con QR y montos exactos."""
+        reserva_conf, _ = self._crear_reserva_confirmada_con_pago(dias=18)
+
+        # Vista por el titular
+        self.client.force_login(self.turista)
+        res_turista = self.client.get(reverse('ver_factura', args=[reserva_conf.id]))
+        self.assertEqual(res_turista.status_code, 200)
+        contenido = res_turista.content.decode('utf-8')
+        self.assertIn(f'FAC-1000{reserva_conf.id}', contenido)
+        self.assertIn('Tour Páramo Riguroso', contenido)
+        self.assertIn('data:image/png;base64', contenido)  # QR Code
+
+        # Vista por el administrador
+        self.client.force_login(self.admin)
+        res_admin = self.client.get(reverse('ver_factura', args=[reserva_conf.id]))
+        self.assertEqual(res_admin.status_code, 200)
+
+    def test_18_descargar_factura_pdf_encriptado_con_documento(self):
+        """Verifica la generación de PDF en 'descargar_factura', su formato y cifrado con numero_documento."""
+        reserva_conf, _ = self._crear_reserva_confirmada_con_pago(dias=19)
+
+        self.client.force_login(self.turista)
+        res = self.client.get(reverse('descargar_factura', args=[reserva_conf.id]))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res['Content-Type'], 'application/pdf')
+        self.assertIn(f'factura_FAC-1000{reserva_conf.id}.pdf', res['Content-Disposition'])
+        self.assertTrue(res.content.startswith(b'%PDF-'))
+
+        # Verificación criptográfica con pypdf
+        reader = pypdf.PdfReader(io.BytesIO(res.content))
+        self.assertTrue(reader.is_encrypted, "El archivo PDF debe estar encriptado por seguridad de datos personales.")
+
+        # Desencriptación exitosa con el número de documento del usuario
+        resultado_desencriptado = reader.decrypt(self.turista.numero_documento)
+        self.assertNotEqual(resultado_desencriptado, pypdf.PasswordType.NOT_DECRYPTED)
+        self.assertGreater(len(reader.pages), 0)
+
+    def test_19_descargar_factura_bloquea_usuario_no_autorizado(self):
+        """Verifica que usuarios ajenos no puedan descargar el PDF de la factura."""
+        reserva_conf, _ = self._crear_reserva_confirmada_con_pago(dias=20)
+
+        self.client.force_login(self.otro_turista)
+        res = self.client.get(reverse('descargar_factura', args=[reserva_conf.id]))
+        self.assertRedirects(res, reverse('mis_reservas_usuario'))
+
 

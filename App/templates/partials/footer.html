@@ -36,6 +36,7 @@
             <ul class="list-unstyled d-flex flex-column gap-2 small">
              <li><a href="{% url 'nosotros' %}" class="footer-monagua__link text-white-50" title="Conocer sobre Monagua" aria-label="Nosotros">Nosotros</a></li>
              <li><a href="{% url 'terminos' %}" class="footer-monagua__link text-white-50" title="Consultar términos y condiciones legales" aria-label="Términos y Condiciones">Términos y Condiciones</a></li>
+             <li><a href="{% url 'derechos_autor' %}" class="footer-monagua__link text-white-50" title="Derechos de autor, licencias y créditos del proyecto" aria-label="Derechos de Autor">Derechos de Autor</a></li>
               <li><a href="{% url 'pqrs_publica' %}" class="footer-monagua__link text-white-50" title="Radicar peticiones, quejas o reclamos" aria-label="PQRS">Contáctanos / PQRS</a></li>
             </ul>
           </div>
@@ -57,8 +58,8 @@
       </div>
     </div>
     <hr class="my-5 opacity-25">
-    <div class="text-center small opacity-50">
-      &copy; {{ year|default:"2026" }} MONAGUA Agencia de Viajes. Todos los derechos reservados.
+    <div class="text-center small opacity-75">
+      &copy; {{ year|default:"2026" }} MONAGUA Agencia de Viajes. Todos los derechos reservados. &bull; <a href="{% url 'derechos_autor' %}" class="text-white text-decoration-underline" title="Atribuciones, licencias y créditos legales">Derechos de Autor y Créditos</a>
     </div>
   </div>
 </footer>
