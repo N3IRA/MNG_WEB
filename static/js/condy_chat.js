@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   const btnOpen = document.getElementById("condor-img"); // Usar la imagen de la mascota
   const btnClose = document.getElementById("condy-chat-close");
+  const btnClear = document.getElementById("condy-chat-clear");
   const window = document.getElementById("condy-chat-window");
   const messagesContainer = document.getElementById("condy-chat-messages");
   const input = document.getElementById("condy-chat-input-text");
@@ -49,6 +50,29 @@ document.addEventListener("DOMContentLoaded", function () {
           e.stopPropagation();
           toggleChat(false);
       });
+  }
+
+  if (btnClear) {
+      btnClear.addEventListener("click", (e) => {
+          e.stopPropagation();
+          reiniciarChat();
+      });
+  }
+
+  document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !window.classList.contains("d-none")) {
+          toggleChat(false);
+      }
+  });
+
+  function reiniciarChat() {
+      sessionStorage.removeItem('condy_chat_history');
+      chatHistory = [];
+      messagesContainer.innerHTML = '';
+      hideOptions();
+      const greeting = "¡Hola! He reiniciado nuestra conversación. Soy Cóndy, tu asistente en Monagua Turismo. ¿En qué te puedo colaborar?";
+      addMessage(greeting, "bot");
+      showOptions(initialOptions);
   }
 
   function toggleChat(forceState = null) {
@@ -131,11 +155,29 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  function formatText(text) {
+    if (!text) return '';
+    let formatted = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // Negritas **texto**
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Cursiva *texto*
+    formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    // Código en línea `codigo`
+    formatted = formatted.replace(/`([^`]+)`/g, '<code class="bg-light px-1 rounded text-dark">$1</code>');
+    // Saltos de línea
+    formatted = formatted.replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
+
+    return formatted;
+  }
+
   function addMessage(text, sender, save = true) {
     const bubble = document.createElement('div');
     bubble.className = `chat-bubble ${sender}`;
-    // Convertir saltos de línea a <br>
-    bubble.innerHTML = text.replace(/\\n/g, '<br>');
+    bubble.innerHTML = formatText(text);
     messagesContainer.appendChild(bubble);
     scrollToBottom();
     

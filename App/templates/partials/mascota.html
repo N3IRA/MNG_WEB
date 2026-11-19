@@ -16,13 +16,18 @@
 <div id="condy-chat-window" class="condy-chat-window shadow-lg rounded-4 overflow-hidden d-none d-flex flex-column position-fixed" role="dialog" aria-modal="false" aria-labelledby="condy-chat-title">
         <!-- Header -->
         <div class="condy-chat-header d-flex justify-content-between align-items-center p-3 text-white">
-        <div class="d-flex align-items-center gap-2">
+          <div class="d-flex align-items-center gap-2">
             <i class="fa-solid fa-robot fs-4"></i>
             <h6 class="mb-0 fw-bold" id="condy-chat-title">Condy - Asistente Virtual</h6>
-        </div>
-        <button id="condy-chat-close" class="btn btn-sm text-white border-0" title="Cerrar asistente virtual" aria-label="Cerrar chat de asistente virtual">
-            <i class="fa-solid fa-xmark fs-5"></i>
-        </button>
+          </div>
+          <div class="d-flex align-items-center gap-1">
+            <button id="condy-chat-clear" class="btn btn-sm text-white border-0 p-1" title="Reiniciar conversación" aria-label="Reiniciar conversación">
+              <i class="bi bi-arrow-clockwise fs-5"></i>
+            </button>
+            <button id="condy-chat-close" class="btn btn-sm text-white border-0 p-1" title="Cerrar asistente virtual" aria-label="Cerrar chat de asistente virtual">
+              <i class="fa-solid fa-xmark fs-5"></i>
+            </button>
+          </div>
         </div>
 
         <!-- Mensajes -->

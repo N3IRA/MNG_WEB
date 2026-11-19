@@ -188,6 +188,9 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # Prevenir ataques de confusión MIME en toda la página
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
+# Asistente Virtual Cóndy (opcional: clave de Google Gemini AI para inteligencia híbrida)
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '').strip()
+
 # Protección estricta contra Clickjacking (impide que se incruste tu sitio en un iframe)
 X_FRAME_OPTIONS = 'DENY'
 
