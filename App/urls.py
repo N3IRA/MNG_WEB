@@ -96,7 +96,8 @@ urlpatterns = [
     path('reservas/cancelar/<int:reserva_id>/', reserva_views.cancelar_reserva_usuario, name='cancelar_reserva_usuario'),
     path('reservas/comprobante/<int:reserva_id>/', reserva_views.comprobante_reserva_html, name='comprobante_reserva'),
     path('reservas/comprobante-multiple/', reserva_views.comprobante_multiple, name='comprobante_multiple'),
-    
+    path('reservas/<int:reserva_id>/personas/modificar/', reserva_views.modificar_personas_reserva, name='modificar_personas_reserva'),
+
     # Reservas (Administración / Staff)
     path('admin/reservas/', reserva_views.GestionReservasListView.as_view(), name='gestion_reservas'),
     path('admin/reservas/agregar/', reserva_views.CrearReservaAdminView.as_view(), name='agregar_reserva'),

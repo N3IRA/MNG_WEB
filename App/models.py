@@ -13,6 +13,7 @@ import ssl
 from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from datetime import datetime, time, timedelta
 
 
 class PositiveTinyIntegerField(models.PositiveSmallIntegerField):
@@ -537,6 +538,10 @@ class Reserva(models.Model):
             raise ValidationError({'numero_menores': 'El número de menores no puede ser negativo.'})
         if adultos + menores <= 0:
             raise ValidationError('La reserva debe incluir al menos una persona.')
+        if adultos > 10:
+            raise ValidationError({'numero_adultos': 'El cupo de adultos no puede superar las 10 personas.'})
+        if menores > 10:
+            raise ValidationError({'numero_menores': 'El cupo de menores no puede superar las 10 personas.'})
 
     def save(self, *args, **kwargs):
         # Regla de negocio crítica: una reserva no puede quedar confirmada sin un pago aprobado.
@@ -616,6 +621,69 @@ class Reserva(models.Model):
             fecha_str = self.fecha_inicio.strftime('%d/%m/%Y')
             return f"Reserva #{self.id} - {nombre_paquete} ({fecha_str})"
         return f"Reserva #{self.id} - {nombre_paquete}"
+
+    def puede_modificar_personas(self):
+        """Indica si todavía se pueden modificar pasajeros antes de iniciar el pago."""
+        if self.estado_reserva == 'cancelada' or not self.fecha_inicio:
+            return False
+
+        pago = getattr(self, 'pago', None)
+        if pago is not None:
+            return False
+
+        inicio_viaje = timezone.make_aware(
+            datetime.combine(self.fecha_inicio, time.min),
+            timezone.get_current_timezone()
+        )
+        return inicio_viaje - timezone.now() >= timedelta(hours=48)
+
+    def recalcular_monto(self):
+        """Calcula el monto vigente usando la tarifa y promoción de la fecha de la reserva."""
+        if not self.paquete or not self.fecha_inicio:
+            self.monto_total = Decimal('0.00')
+            return
+
+        temporadas = Temporada.objects.filter(
+            estado=True,
+            fecha_inicio__lte=self.fecha_inicio,
+            fecha_fin__gte=self.fecha_inicio
+        ).order_by('-fecha_inicio')
+
+        tarifa = None
+        for temporada in temporadas:
+            tarifa = Tarifa.objects.filter(
+                paquete=self.paquete,
+                temporada=temporada,
+                estado=True
+            ).first()
+            if tarifa:
+                break
+
+        if not tarifa:
+            self.monto_total = Decimal('0.00')
+            return
+
+        adultos = self.numero_adultos or 0
+        menores = self.numero_menores or 0
+        base_monto = (tarifa.precio_adulto * adultos) + (tarifa.precio_menor * menores)
+
+        pp = PaquetePromocion.objects.filter(
+            paquete=self.paquete,
+            promocion__activa=True,
+            promocion__fecha_inicio__lte=self.fecha_inicio,
+            promocion__fecha_fin__gte=self.fecha_inicio
+        ).select_related('promocion').first()
+
+        if pp:
+            if pp.valor_adulto_condescuento and pp.valor_adulto_condescuento > 0 and pp.valor_menor_condescuento and pp.valor_menor_condescuento > 0:
+                self.monto_total = (pp.valor_adulto_condescuento * adultos) + (pp.valor_menor_condescuento * menores)
+            elif pp.promocion and pp.promocion.porcentaje_descuento:
+                descuento = Decimal(pp.promocion.porcentaje_descuento) / Decimal(100)
+                self.monto_total = round(base_monto * (Decimal(1) - descuento), 2)
+            else:
+                self.monto_total = base_monto
+        else:
+            self.monto_total = base_monto
 
 # ==============================================================================
 # PQRS
@@ -1036,4 +1104,28 @@ try:
     auditlog.register(Pago)
 except Exception as e:
     logger.warning("No se pudo registrar modelos en auditlog: %s", e)
+
+# ==============================================================================
+# MODIFICACION RESERVA
+# ==============================================================================
+
+class ModificacionReserva(models.Model):
+    reserva = models.ForeignKey('Reserva', on_delete=models.CASCADE, related_name='modificaciones_personas')
+    usuario = models.ForeignKey('Usuario', on_delete=models.SET_NULL, null=True, blank=True, related_name='modificaciones_reserva')
+    adultos_anteriores = models.PositiveSmallIntegerField()
+    adultos_nuevos = models.PositiveSmallIntegerField()
+    menores_anteriores = models.PositiveSmallIntegerField()
+    menores_nuevos = models.PositiveSmallIntegerField()
+    monto_anterior = models.DecimalField(max_digits=12, decimal_places=2)
+    monto_nuevo = models.DecimalField(max_digits=12, decimal_places=2)
+    motivo = models.TextField(blank=True)
+    realizado_por_admin = models.BooleanField(default=False)
+    fecha_modificacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'modificacion_reserva'
+        ordering = ['-fecha_modificacion']
+
+    def __str__(self):
+        return f'Modificación de reserva #{self.reserva_id} — {self.fecha_modificacion}'
 

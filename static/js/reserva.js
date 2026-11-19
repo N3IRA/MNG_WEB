@@ -237,7 +237,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
         if (type === 'adultos' && currentValue + change < 1) return; 
         if (type === 'menores' && currentValue + change < 0) return; 
-        if (currentValue + change > 20) return; 
+        if (currentValue + change > 10) return;
         
         currentValue += change;
         input.value = currentValue;

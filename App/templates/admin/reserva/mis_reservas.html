@@ -58,6 +58,8 @@
         </div>
     </div>
 
+    {% include "partials/politicas_cancelacion.html" with modo='reserva' %}
+
     <!-- ── 2. Listado de Reservas ── -->
     {% if reservas %}
         <div class="row g-4">
@@ -128,6 +130,50 @@
                                         </div>
                                     </div>
 
+                                    <!-- Información completa del paquete reservado -->
+                                    <div class="border rounded-4 p-3 mb-3 bg-white">
+                                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                                            <h6 class="fw-bold text-dark mb-0">
+                                                <i class="bi bi-info-circle me-1 text-secondary"></i> Información del paquete
+                                            </h6>
+                                            <span class="badge bg-light text-dark border">
+                                                {{ reserva.paquete.dias_duracion }} día{{ reserva.paquete.dias_duracion|pluralize }} / {{ reserva.paquete.noches_duracion }} noche{{ reserva.paquete.noches_duracion|pluralize:"s" }}
+                                            </span>
+                                        </div>
+                                        <div class="row g-2 small">
+                                            <div class="col-md-4">
+                                                <span class="text-muted d-block">Hora de encuentro</span>
+                                                <strong class="text-dark"><i class="bi bi-clock me-1"></i>{{ reserva.paquete.hora_encuentro|time:"H:i" }}</strong>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <span class="text-muted d-block">Punto de encuentro</span>
+                                                <strong class="text-dark"><i class="bi bi-geo-alt me-1"></i>{{ reserva.paquete.punto_encuentro }}</strong>
+                                            </div>
+                                        </div>
+                                        {% if reserva.paquete.descripcion %}
+                                            <p class="small text-secondary mb-2 mt-3">{{ reserva.paquete.descripcion|truncatechars:180 }}</p>
+                                        {% endif %}
+                                        {% if reserva.paquete.actividades.all %}
+                                            <div class="small">
+                                                <span class="text-muted d-block mb-1">Actividades incluidas</span>
+                                                <div class="d-flex flex-wrap gap-1">
+                                                    {% for actividad in reserva.paquete.actividades.all %}
+                                                        <span class="badge bg-white text-dark border fw-normal px-2 py-1">
+                                                            <i class="bi bi-check-circle-fill text-success me-1"></i>{{ actividad.nombre }}
+                                                            {% if actividad.apto_menores %}<span class="text-success ms-1">· Apta para menores</span>{% else %}<span class="text-secondary ms-1">· Solo adultos</span>{% endif %}
+                                                        </span>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Reglas claras de modificación y fecha -->
+                                    <div class="border rounded-3 px-3 py-2 mb-3 bg-light small text-secondary">
+                                        <div><i class="bi bi-calendar-x me-1"></i><strong>Fecha fija:</strong> no puede cambiarse desde esta opción. Para cambiarla debes cancelar y crear una nueva reserva.</div>
+                                        <div class="mt-1"><i class="bi bi-clock-history me-1"></i><strong>Modificar personas:</strong> disponible hasta 48 horas exactas antes del viaje y antes de enviar o registrar un comprobante de pago.</div>
+                                    </div>
+
                                     <!-- Sección de Pago y Visualización del Comprobante (Sin recargar) -->
                                     {% if reserva.pago %}
                                         <div class="mb-3 border-top pt-3">
@@ -194,6 +240,39 @@
                                         </div>
                                     {% endif %}
 
+                                    <!-- Modificación de personas (máximo 10) -->
+                                    {% if reserva.puede_modificar_personas %}
+                                        <div class="mb-3">
+                                            <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-2 fw-semibold"
+                                                    onclick="document.getElementById('personas-panel-{{ reserva.id }}').classList.toggle('d-none');">
+                                                <i class="bi bi-people-fill me-1"></i> Modificar personas
+                                            </button>
+                                            <div id="personas-panel-{{ reserva.id }}" class="d-none mt-3 p-3 bg-white rounded-4 border">
+                                                <div class="small text-muted mb-2">
+                                                    Máximo 10 adultos y máximo 10 menores. Debes realizar el cambio como mínimo 48 horas antes del viaje.
+                                                </div>
+                                                <form method="POST" action="{% url 'modificar_personas_reserva' reserva.id %}">
+                                                    {% csrf_token %}
+                                                    <div class="row g-2 align-items-end">
+                                                        <div class="col-5">
+                                                            <label class="form-label small fw-bold">Adultos</label>
+                                                            <input type="number" name="adultos" class="form-control" min="1" max="10" value="{{ reserva.numero_adultos }}" required>
+                                                        </div>
+                                                        <div class="col-5">
+                                                            <label class="form-label small fw-bold">Menores</label>
+                                                            <input type="number" name="menores" class="form-control" min="0" max="10" value="{{ reserva.numero_menores }}" required>
+                                                        </div>
+                                                        <div class="col-2">
+                                                            <button type="submit" class="btn btn-dark w-100 fw-semibold" title="Guardar cantidad de personas">
+                                                                <i class="bi bi-check-circle me-1"></i> Guardar
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
                                     <!-- Panel Inline de Cancelación (HTMX Directo sin Modales) -->
                                     <div id="cancelar-panel-{{ reserva.id }}" class="d-none mt-3 p-3.5 bg-danger bg-opacity-10 rounded-4 border border-danger border-opacity-25">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -219,7 +298,7 @@
                                                     Esta reserva aún no tiene un pago confirmado. <strong>Se cancelará de inmediato sin penalidad ni costo alguno</strong>.
                                                 </div>
                                             {% else %}
-                                                {% include "partials/politicas_cancelacion.html" %}
+                                                {% include "partials/politicas_cancelacion.html" with modo='cancelacion' %}
                                             {% endif %}
 
                                             <div class="mb-3 text-start">

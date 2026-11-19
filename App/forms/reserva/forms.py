@@ -38,13 +38,17 @@ class ReservaForm(forms.ModelForm):
             self.fields['estado_reserva'].empty_label = 'Seleccione un estado'
             self.fields['estado_reserva'].choices = [
                 ('', 'Seleccione un estado'),
-                *self.fields['estado_reserva'].choices[1:]
+                ('pendiente', 'Pendiente'),
+                ('confirmada', 'Confirmada'),
+                ('cancelada', 'Cancelada'),
             ]
 
         if self.instance.pk:
             for field_name in list(self.fields):
-                if field_name != 'estado_reserva':
+                if field_name not in ('numero_adultos', 'numero_menores', 'estado_reserva'):
                     self.fields.pop(field_name)
+            self.fields['numero_adultos'].required = False
+            self.fields['numero_menores'].required = False
 
         # Se exigen al menos 5 días de anticipación para reservas nuevas
         if not self.instance.pk:
@@ -78,39 +82,29 @@ class ReservaForm(forms.ModelForm):
         return fecha_reserva
 
     def clean_numero_adultos(self):
-            adultos = self.cleaned_data.get('numero_adultos')
-            if adultos is None or adultos < 1:
-                raise ValidationError("Debe haber al menos 1 adulto en la reserva.")
-            if adultos > 10:
-                raise ValidationError("El número de adultos no puede superar 10.")
-            return adultos
+        adultos = self.cleaned_data.get('numero_adultos')
+        if self.instance.pk and adultos is None:
+            return self.instance.numero_adultos
+        if adultos is None or adultos < 1:
+            raise ValidationError("Debe haber al menos 1 adulto en la reserva.")
+        return adultos
 
     def clean_numero_menores(self):
         menores = self.cleaned_data.get('numero_menores')
+        if self.instance.pk and menores is None:
+            return self.instance.numero_menores
         if menores is None or menores < 0:
             raise ValidationError("El número de menores no puede ser negativo.")
-        if menores > 10:
-            raise ValidationError("El número de menores no puede superar 10.")
         return menores
-
-    def clean_paquete(self):
-        paquete = self.cleaned_data.get('paquete')
-        if not paquete:
-            raise ValidationError("Debes seleccionar un paquete turístico.")
-        if not paquete.estado:
-            raise ValidationError("El paquete seleccionado no se encuentra activo actualmente.")
-        return paquete
-
-    def clean_usuario(self):
-        usuario = self.cleaned_data.get('usuario')
-        if not usuario:
-            raise ValidationError("Debes especificar un usuario para la reserva.")
-        if not usuario.is_active:
-            raise ValidationError("El usuario seleccionado se encuentra inactivo.")
-        return usuario
 
     def clean(self):
         cleaned_data = super().clean()
+        adultos = cleaned_data.get('numero_adultos')
+        menores = cleaned_data.get('numero_menores')
+        if adultos is not None and adultos > 10:
+            raise ValidationError("El cupo de adultos no puede superar las 10 personas.")
+        if menores is not None and menores > 10:
+            raise ValidationError("El cupo de menores no puede superar las 10 personas.")
 
         if self.instance.pk:
             return cleaned_data
@@ -133,3 +127,6 @@ class ReservaForm(forms.ModelForm):
                 raise ValidationError("Este usuario ya tiene una reserva registrada para el mismo paquete en la fecha seleccionada.")
 
         return cleaned_data
+
+
+

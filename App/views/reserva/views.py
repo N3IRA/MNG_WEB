@@ -11,11 +11,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.db.models import Count, Q
-from django.conf import settings
-from django.core.mail import send_mail, EmailMultiAlternatives
-from django.http import HttpResponse
-from django.template.loader import render_to_string
-from App.models import Reserva, Paquete, Tarifa, Pago
+from django.db import transaction
+from django.utils import timezone
+
+from App.models import Reserva, Paquete, Tarifa, Pago, ModificacionReserva
 
 logger = logging.getLogger(__name__)
 from App.forms.reserva.forms import ReservaForm
@@ -162,6 +161,33 @@ class EditarReservaAdminView(UpdateView):
         nuevo_estado = form.cleaned_data.get('estado_reserva')
 
         reserva_antigua = self.get_object()
+        adultos_anteriores = reserva_antigua.numero_adultos
+        menores_anteriores = reserva_antigua.numero_menores
+        monto_anterior = reserva_antigua.monto_total
+
+        adultos_nuevos = form.cleaned_data.get('numero_adultos', adultos_anteriores)
+        menores_nuevos = form.cleaned_data.get('numero_menores', menores_anteriores)
+        personas_cambiaron = adultos_nuevos != adultos_anteriores or menores_nuevos != menores_anteriores
+
+        motivo_modificacion = (self.request.POST.get('motivo_modificacion') or '').strip()
+        if personas_cambiaron:
+            if getattr(reserva_antigua, 'pago', None) is not None:
+                form.add_error('numero_adultos', 'No se pueden cambiar personas porque ya existe un comprobante o pago registrado.')
+                return self.form_invalid(form)
+            if reserva_antigua.estado_reserva == 'cancelada':
+                form.add_error('numero_adultos', 'No se pueden cambiar personas de una reserva cancelada.')
+                return self.form_invalid(form)
+            if len(motivo_modificacion) < 5:
+                form.add_error('numero_adultos', 'Debes indicar un motivo válido para corregir la cantidad de personas.')
+                return self.form_invalid(form)
+
+            inicio_viaje = timezone.make_aware(
+                datetime.combine(reserva_antigua.fecha_inicio, datetime.min.time()),
+                timezone.get_current_timezone()
+            )
+            if inicio_viaje - timezone.now() < timedelta(hours=48):
+                form.add_error('numero_adultos', 'Solo se pueden cambiar personas con al menos 48 horas de anticipación.')
+                return self.form_invalid(form)
 
         if nuevo_estado == 'confirmada':
             pago = getattr(reserva_antigua, 'pago', None)
@@ -180,6 +206,22 @@ class EditarReservaAdminView(UpdateView):
         nombre_cliente = (reserva.usuario.first_name or reserva.usuario.username) if reserva.usuario else 'Cliente'
         
         valor_nuevo = f"Estado: {reserva.estado_reserva}, Fecha: {reserva.fecha_inicio}, Adultos: {reserva.numero_adultos}, Menores: {reserva.numero_menores}"
+
+        if personas_cambiaron:
+            reserva.recalcular_monto()
+            reserva.save(update_fields=['monto_total'])
+            ModificacionReserva.objects.create(
+                reserva=reserva,
+                usuario=self.request.user,
+                adultos_anteriores=adultos_anteriores,
+                adultos_nuevos=reserva.numero_adultos,
+                menores_anteriores=menores_anteriores,
+                menores_nuevos=reserva.numero_menores,
+                monto_anterior=monto_anterior,
+                monto_nuevo=reserva.monto_total,
+                motivo=motivo_modificacion,
+                realizado_por_admin=True
+            )
 
         if reserva.estado_reserva in ['confirmada', 'cancelada']:
             if reserva.usuario:
@@ -310,7 +352,7 @@ def obtener_contexto_mis_reservas(usuario, estado_filtro=''):
     if estado_filtro in ['pendiente', 'confirmada']:
         reservas = reservas.filter(estado_reserva=estado_filtro)
 
-    reservas = reservas.select_related('paquete').order_by('-fecha_registro')
+    reservas = reservas.select_related('paquete').prefetch_related('paquete__actividades').order_by('-fecha_registro')
 
     return {
         'reservas': reservas,
@@ -467,17 +509,13 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
     dias_para_tour = None
 
     if fecha_tour:
-        fecha_tour_date = fecha_tour.date() if hasattr(fecha_tour, 'date') else fecha_tour
-        dias_para_tour = (fecha_tour_date - date.today()).days
+        inicio_viaje = timezone.make_aware(
+            datetime.combine(fecha_tour, datetime.min.time()),
+            timezone.get_current_timezone()
+        )
+        tiempo_restante = inicio_viaje - timezone.now()
 
-        if dias_para_tour > 15:
-            penalidad_calculada = monto_total * Decimal('0.10')
-            politica_reembolso = "Favorable (Reembolso del 90% / Penalidad del 10%)."
-        elif dias_para_tour >= 2:
-            penalidad_calculada = monto_total * Decimal('0.50')
-            politica_reembolso = "Parcial (Reembolso del 50% / Penalidad del 50%)."
-        else:
-            # Menos de 2 días (menos de 48 horas) antes: no se acepta la cancelación.
+        if tiempo_restante < timedelta(hours=48):
             reserva.motivo_cancelacion = motivo
             reserva.estado_cancelacion = 'pendiente'
             reserva.save(update_fields=['motivo_cancelacion', 'estado_cancelacion'])
@@ -489,13 +527,20 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
                     'mostrarNotificacionBitacora': {
                         'tipo': 'warning',
                         'titulo': 'Cancelación Bloqueada',
-                        'mensaje': 'La cancelación no puede realizarse porque faltan menos de 2 días para el viaje.'
+                        'mensaje': 'La cancelación no puede realizarse porque faltan menos de 48 horas para el viaje.'
                     }
                 })
                 return response
 
-            messages.warning(request, 'La cancelación no puede realizarse porque faltan menos de 2 días para el viaje.')
+            messages.warning(request, 'La cancelación no puede realizarse porque faltan menos de 48 horas para el viaje.')
             return redirect('mis_reservas_usuario')
+
+        if tiempo_restante > timedelta(days=15):
+            penalidad_calculada = monto_total * Decimal('0.10')
+            politica_reembolso = "Favorable (Reembolso del 90% / Penalidad del 10%)."
+        else:
+            penalidad_calculada = monto_total * Decimal('0.50')
+            politica_reembolso = "Parcial (Reembolso del 50% / Penalidad del 50%)."
 
     reserva.motivo_cancelacion = motivo
     reserva.penalidad = penalidad_calculada
@@ -588,7 +633,7 @@ def mis_cancelaciones(request):
         Q(estado_reserva='cancelada', estado_cancelacion='aprobada')
     ).exclude(
         estado_cancelacion='rechazada'
-    ).select_related('paquete').order_by('-fecha_registro')
+    ).select_related('paquete').prefetch_related('paquete__actividades').order_by('-fecha_registro')
 
     context = {
         'cancelaciones': cancelaciones
@@ -605,7 +650,10 @@ def reservas_view(request):
     paquete_id = request.GET.get('paquete_id')
     paquete = None
     if paquete_id:
-        paquete = get_object_or_404(Paquete, id=paquete_id)
+        paquete = get_object_or_404(
+            Paquete.objects.prefetch_related('actividades', 'tarifas__temporada', 'paquetepromocion_set__promocion'),
+            id=paquete_id
+        )
 
     context = {
         'paquetes': paquetes,
@@ -716,20 +764,16 @@ def guardar_reserva(request, paquete_id):
             messages.error(request, "Debes seleccionar al menos 1 adulto para realizar la reserva.")
             return redirect(f"/reservas/reservar/?paquete_id={paquete_id}")
 
-        if adultos > 30:
-            messages.error(request, "El número máximo de adultos permitido por reserva es de 30 personas. Para grupos mayores, comunícate con la administración.")
+        if adultos > 10:
+            messages.error(request, "El cupo de adultos no puede superar las 10 personas.")
             return redirect(f"/reservas/reservar/?paquete_id={paquete_id}")
 
         if menores < 0:
             messages.error(request, "El número de menores no puede ser un valor negativo.")
             return redirect(f"/reservas/reservar/?paquete_id={paquete_id}")
 
-        if menores > 30:
-            messages.error(request, "El número máximo de menores permitido por reserva es de 30 personas.")
-            return redirect(f"/reservas/reservar/?paquete_id={paquete_id}")
-
-        if adultos + menores > 50:
-            messages.error(request, "El cupo total por reserva no puede superar las 50 personas.")
+        if menores > 10:
+            messages.error(request, "El cupo de menores no puede superar las 10 personas.")
             return redirect(f"/reservas/reservar/?paquete_id={paquete_id}")
 
         ya_existe = Reserva.objects.filter(
@@ -892,7 +936,7 @@ def listar_cancelaciones_admin(request):
 
     cancelaciones = Reserva.objects.filter(
         estado_cancelacion__in=['pendiente', 'aprobada', 'rechazada']
-    ).select_related('usuario', 'paquete').order_by('-id')
+    ).select_related('usuario', 'paquete').prefetch_related('paquete__actividades').order_by('-id')
 
     estado_seleccionado = request.GET.get('estado', '')
 
@@ -990,3 +1034,64 @@ def editar_cancelacion_admin(request, reserva_id):
     return render(request, 'admin/reserva/editar_cancelacion_admin.html', {
         'reserva': reserva
     })
+
+@login_required(login_url='login')
+@solo_turistas_requerido
+def modificar_personas_reserva(request, reserva_id):
+    if request.method != 'POST':
+        return redirect('mis_reservas_usuario')
+
+    with transaction.atomic():
+        reserva = Reserva.objects.select_for_update().select_related('paquete').get(
+            id=reserva_id,
+            usuario=request.user
+        )
+
+        if not reserva.puede_modificar_personas():
+            messages.error(request, 'No puedes modificar personas: la reserva está cancelada, tiene pago registrado o faltan menos de 48 horas.')
+            return redirect('mis_reservas_usuario')
+
+        try:
+            adultos = int(request.POST.get('adultos', 0))
+            menores = int(request.POST.get('menores', 0))
+        except (TypeError, ValueError):
+            messages.error(request, 'Los números de adultos y menores no son válidos.')
+            return redirect('mis_reservas_usuario')
+
+        if adultos < 1:
+            messages.error(request, 'Debe haber al menos 1 adulto en la reserva.')
+            return redirect('mis_reservas_usuario')
+        if menores < 0:
+            messages.error(request, 'El número de menores no puede ser negativo.')
+            return redirect('mis_reservas_usuario')
+        if adultos > 10:
+            messages.error(request, 'El cupo de adultos no puede superar las 10 personas.')
+            return redirect('mis_reservas_usuario')
+        if menores > 10:
+            messages.error(request, 'El cupo de menores no puede superar las 10 personas.')
+            return redirect('mis_reservas_usuario')
+
+        adultos_anteriores = reserva.numero_adultos
+        menores_anteriores = reserva.numero_menores
+        monto_anterior = reserva.monto_total
+
+        reserva.numero_adultos = adultos
+        reserva.numero_menores = menores
+        reserva.recalcular_monto()
+        reserva.save(update_fields=['numero_adultos', 'numero_menores', 'monto_total'])
+
+        ModificacionReserva.objects.create(
+            reserva=reserva,
+            usuario=request.user,
+            adultos_anteriores=adultos_anteriores,
+            adultos_nuevos=adultos,
+            menores_anteriores=menores_anteriores,
+            menores_nuevos=menores,
+            monto_anterior=monto_anterior,
+            monto_nuevo=reserva.monto_total,
+            motivo='Modificación realizada por el turista antes del pago.',
+            realizado_por_admin=False
+        )
+
+    messages.success(request, 'La cantidad de personas fue modificada correctamente.')
+    return redirect('mis_reservas_usuario')

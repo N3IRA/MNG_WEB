@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.exceptions import ValidationError
-from App.models import Usuario, Paquete, Reserva, Categoria, Pago
+from App.models import Usuario, Paquete, Reserva, Categoria, Pago, Temporada, Tarifa, ModificacionReserva
 from App.forms.usuario.forms import PerfilTuristaForm
 from App.forms.pago.forms import ComprobantePagoForm
 from autenticacion.forms import IniciarSesionForm
@@ -913,3 +913,196 @@ class CrudBootstrapConsistencyTests(TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertContains(response, 'bg-success text-white p-4 border-0')
                 self.assertContains(response, 'btn btn-success px-4 rounded-pill shadow-sm fw-bold')
+
+
+class ModificacionPersonasReservaTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.turista = Usuario.objects.create_user(
+            username='turista_personas',
+            email='turista_personas@monagua.com',
+            password='Password123#',
+            first_name='Pedro',
+            last_name='Turista',
+            rol=Usuario.Roles.CLIENTE,
+            is_staff=False,
+            is_superuser=False,
+            tipo_documento='CC',
+            numero_documento='PERSONAS100',
+            telefono='3000000001'
+        )
+        self.admin = Usuario.objects.create_user(
+            username='admin_personas',
+            email='admin_personas@monagua.com',
+            password='Password123#',
+            rol=Usuario.Roles.ADMIN,
+            is_staff=True,
+            is_superuser=False,
+            tipo_documento='CC',
+            numero_documento='PERSONAS200',
+            telefono='3000000002'
+        )
+        self.categoria = Categoria.objects.create(nombre='Personas QA')
+        self.paquete = Paquete.objects.create(
+            nombre='Paquete Personas QA',
+            descripcion='Prueba de cupos',
+            categoria=self.categoria,
+            punto_encuentro='Plaza central',
+            hora_encuentro='08:00:00',
+            dias_duracion=1,
+            noches_duracion=1,
+            imagen=SimpleUploadedFile('personas.jpg', b'contenido_imagen', content_type='image/jpeg')
+        )
+        hoy = date.today()
+        self.temporada = Temporada.objects.create(
+            nombre='Temporada QA',
+            fecha_inicio=hoy,
+            fecha_fin=hoy + timedelta(days=60),
+            estado=True
+        )
+        self.tarifa = Tarifa.objects.create(
+            paquete=self.paquete,
+            temporada=self.temporada,
+            precio_adulto=Decimal('100000.00'),
+            precio_menor=Decimal('50000.00'),
+            estado=True
+        )
+
+    def crear_reserva(self, dias=10):
+        return Reserva.objects.create(
+            usuario=self.turista,
+            paquete=self.paquete,
+            fecha_inicio=date.today() + timedelta(days=dias),
+            numero_adultos=2,
+            numero_menores=1,
+            estado_reserva='pendiente'
+        )
+
+    def test_turista_modifica_personas_y_recalcula_monto(self):
+        reserva = self.crear_reserva()
+        self.client.force_login(self.turista)
+
+        response = self.client.post(
+            reverse('modificar_personas_reserva', args=[reserva.id]),
+            {'adultos': 4, 'menores': 3}
+        )
+
+        reserva.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(reserva.numero_adultos, 4)
+        self.assertEqual(reserva.numero_menores, 3)
+        self.assertEqual(reserva.monto_total, Decimal('550000.00'))
+        self.assertTrue(reserva.modificaciones_personas.filter(realizado_por_admin=False).exists())
+
+    def test_turista_puede_tener_10_adultos_o_10_menores(self):
+        reserva = self.crear_reserva()
+        self.client.force_login(self.turista)
+
+        response = self.client.post(
+            reverse('modificar_personas_reserva', args=[reserva.id]),
+            {'adultos': 10, 'menores': 10}
+        )
+
+        reserva.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(reserva.numero_adultos, 10)
+        self.assertEqual(reserva.numero_menores, 10)
+
+    def test_turista_no_puede_superar_el_cupo_separado(self):
+        reserva = self.crear_reserva()
+        self.client.force_login(self.turista)
+
+        for adultos, menores in ((11, 0), (1, 11)):
+            response = self.client.post(
+                reverse('modificar_personas_reserva', args=[reserva.id]),
+                {'adultos': adultos, 'menores': menores}
+            )
+            self.assertEqual(response.status_code, 302)
+
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.numero_adultos, 2)
+        self.assertEqual(reserva.numero_menores, 1)
+
+    def test_turista_no_modifica_si_faltan_menos_de_48_horas(self):
+        reserva = self.crear_reserva(dias=1)
+        self.client.force_login(self.turista)
+
+        response = self.client.post(
+            reverse('modificar_personas_reserva', args=[reserva.id]),
+            {'adultos': 5, 'menores': 2}
+        )
+
+        reserva.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(reserva.numero_adultos, 2)
+        self.assertEqual(reserva.numero_menores, 1)
+
+    def test_turista_no_modifica_con_pago_registrado(self):
+        reserva = self.crear_reserva()
+        Pago.objects.create(
+            reserva=reserva,
+            referencia='PERSONAS-PAGO-1',
+            banco_origen='Bancolombia',
+            metodo_pago='Transferencia Bancaria',
+            monto=Decimal('250000.00'),
+            imagen_comprobante=SimpleUploadedFile('pago.gif', b'GIF89a', content_type='image/gif'),
+            estado_transaccion='pendiente'
+        )
+        self.client.force_login(self.turista)
+
+        response = self.client.post(
+            reverse('modificar_personas_reserva', args=[reserva.id]),
+            {'adultos': 5, 'menores': 2}
+        )
+
+        reserva.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(reserva.numero_adultos, 2)
+        self.assertEqual(reserva.numero_menores, 1)
+
+    def test_administrador_corrige_personas_con_motivo_y_fecha_sin_cambios(self):
+        reserva = self.crear_reserva(dias=30)
+        fecha_original = reserva.fecha_inicio
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('editar_reserva', args=[reserva.id]),
+            {
+                'numero_adultos': 6,
+                'numero_menores': 4,
+                'estado_reserva': 'pendiente',
+                'motivo_modificacion': 'Corrección solicitada por el cliente.'
+            }
+        )
+
+        reserva.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(reserva.fecha_inicio, fecha_original)
+        self.assertEqual(reserva.numero_adultos, 6)
+        self.assertEqual(reserva.numero_menores, 4)
+        self.assertEqual(reserva.monto_total, Decimal('800000.00'))
+
+        modificacion = ModificacionReserva.objects.filter(reserva=reserva).first()
+        self.assertIsNotNone(modificacion)
+        self.assertTrue(modificacion.realizado_por_admin)
+        self.assertEqual(modificacion.motivo, 'Corrección solicitada por el cliente.')
+
+    def test_administrador_debe_indicar_motivo(self):
+        reserva = self.crear_reserva(dias=30)
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('editar_reserva', args=[reserva.id]),
+            {
+                'numero_adultos': 5,
+                'numero_menores': 2,
+                'estado_reserva': 'pendiente',
+                'motivo_modificacion': ''
+            }
+        )
+
+        reserva.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Debes indicar un motivo válido')
+        self.assertEqual(reserva.numero_adultos, 2)
+        self.assertEqual(reserva.numero_menores, 1)
