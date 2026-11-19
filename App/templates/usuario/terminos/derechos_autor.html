@@ -1,0 +1,622 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}{{ block.super }} - Derechos de Autor y Créditos{% endblock %}
+
+{% block content %}
+{% include "partials/breadcrumbs.html" with current_title="Derechos de Autor y Créditos" current_icon="bi bi-c-circle-fill" %}
+
+<style>
+  @keyframes float-condy {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
+    100% { transform: translateY(0px); }
+  }
+  .condy-mascot-credits {
+    animation: float-condy 4s ease-in-out infinite;
+    filter: drop-shadow(0 15px 25px rgba(0,0,0,0.35));
+    max-width: 220px;
+  }
+  .legal-pill-nav .nav-link {
+    color: #495057;
+    font-weight: 500;
+    border-radius: 0.6rem;
+    padding: 0.75rem 1rem;
+    transition: all 0.25s ease;
+    border: 1px solid transparent;
+  }
+  .legal-pill-nav .nav-link:hover {
+    background-color: rgba(25, 135, 84, 0.08);
+    color: #198754;
+    border-color: rgba(25, 135, 84, 0.2);
+    transform: translateX(4px);
+  }
+  .legal-pill-nav .nav-link.active {
+    background: linear-gradient(135deg, #198754, #146c43);
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+  }
+  .card-attribution {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    border: 1px solid rgba(0,0,0,0.06);
+    background-color: #ffffff;
+  }
+  .card-attribution:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.08) !important;
+  }
+  .badge-license {
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 0.4rem 0.75rem;
+    font-weight: 600;
+  }
+  .icon-circle-credits {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #198754, #20c997);
+    color: white;
+    font-size: 1.35rem;
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.25);
+    flex-shrink: 0;
+  }
+  .thumbnail-preview {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-top-left-radius: calc(0.75rem - 1px);
+    border-top-right-radius: calc(0.75rem - 1px);
+    background-color: #f8f9fa;
+  }
+  .section-anchor {
+    scroll-margin-top: 90px;
+  }
+</style>
+
+<!-- ================= HERO HEADER ================= -->
+<section class="py-5 bg-dark position-relative overflow-hidden" style="background: linear-gradient(135deg, #142018 0%, #0d1310 100%);">
+  <div class="position-absolute top-50 start-50 translate-middle w-100 h-100" style="background: radial-gradient(circle, rgba(25,135,84,0.22) 0%, rgba(0,0,0,0) 70%); z-index: 0;"></div>
+
+  <div class="container py-4 position-relative z-1">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-8 text-center text-lg-start">
+        <span class="badge rounded-pill border border-success border-opacity-50 text-success bg-success bg-opacity-10 fw-bold px-3 py-2 mb-3 shadow-sm">
+          <i class="bi bi-shield-check me-2"></i> TRANSPARENCIA, PROPIEDAD INTELECTUAL & ATRIBUCIONES
+        </span>
+        <h1 class="fw-bolder mb-3 text-white display-5 lh-tight">
+          Derechos de Autor, Créditos y Licencias
+        </h1>
+        <p class="text-white-50 fs-5 mb-4 fw-light lh-base">
+          En <strong class="text-white">MONAGUA</strong> reconocemos, respetamos y promovemos la protección de los derechos morales y patrimoniales de autores, fotógrafos, sabedores ancestrales y creadores de tecnología. Aquí se detalla la procedencia y régimen de licenciamiento de todos los recursos que componen este portal.
+        </p>
+
+        <!-- Indicadores de Cumplimiento -->
+        <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-lg-start">
+          <span class="badge bg-white bg-opacity-10 text-light border border-light border-opacity-10 px-3 py-2 rounded-pill small">
+            <i class="bi bi-file-earmark-check-fill text-success me-1"></i> Ley 23 de 1982 (Colombia)
+          </span>
+          <span class="badge bg-white bg-opacity-10 text-light border border-light border-opacity-10 px-3 py-2 rounded-pill small">
+            <i class="bi bi-globe-americas text-info me-1"></i> Convenio de Berna / Decisión 351 CAN
+          </span>
+          <span class="badge bg-white bg-opacity-10 text-light border border-light border-opacity-10 px-3 py-2 rounded-pill small">
+            <i class="bi bi-cc-circle-fill text-warning me-1"></i> Creative Commons & Open Source
+          </span>
+        </div>
+      </div>
+
+      <div class="col-lg-4 text-center d-none d-lg-block">
+        <div class="position-relative d-inline-block">
+          <img src="{% static 'img/condor_mascota.webp' %}" alt="Condy — Mascota Oficial de Monagua" class="condy-mascot-credits img-fluid">
+          <div class="badge bg-dark bg-opacity-75 text-white border border-success border-opacity-50 rounded-pill px-3 py-2 mt-3 shadow-sm small">
+            <i class="bi bi-patch-check-fill text-success me-1"></i> Condy &copy; Monagua
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CUERPO PRINCIPAL ================= -->
+<section class="py-5 bg-light">
+  <div class="container py-2">
+    <div class="row g-4">
+
+      <!-- MENÚ LATERAL DE NAVEGACIÓN RÁPIDA -->
+      <aside class="col-lg-3">
+        <div class="sticky-top" style="top: 100px; z-index: 5;">
+          <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+            <h6 class="fw-bold text-dark px-2 mb-3 d-flex align-items-center">
+              <i class="bi bi-list-nested text-success me-2 fs-5"></i> Índice de Contenido
+            </h6>
+            <nav class="nav flex-column legal-pill-nav gap-1 small">
+              <a class="nav-link" href="#marco-legal"><i class="bi bi-bank me-2"></i>1. Marco Legal y Titularidad</a>
+              <a class="nav-link" href="#fotografias"><i class="bi bi-camera me-2"></i>2. Fotografías e Imágenes</a>
+              <a class="nav-link" href="#identidad"><i class="bi bi-palette me-2"></i>3. Identidad de Marca y Condy</a>
+              <a class="nav-link" href="#tipografia-iconos"><i class="bi bi-fonts me-2"></i>4. Tipografía e Iconografía</a>
+              <a class="nav-link" href="#tecnologias"><i class="bi bi-code-slash me-2"></i>5. Tecnologías Open Source</a>
+              <a class="nav-link" href="#patrimonio"><i class="bi bi-compass me-2"></i>6. Patrimonio Cultural y Saberes</a>
+              <a class="nav-link" href="#aviso-retiro"><i class="bi bi-envelope-exclamation me-2"></i>7. Protocolo de Reclamos</a>
+            </nav>
+
+            <hr class="my-3 opacity-25">
+
+            <div class="p-2.5 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25 small">
+              <div class="fw-bold text-success mb-1">
+                <i class="bi bi-info-circle-fill me-1"></i> ¿Eres titular de una obra?
+              </div>
+              <p class="mb-2 text-muted" style="font-size: 0.8rem;">
+                Si identificas material que requiera actualización de créditos o remoción, contáctanos de inmediato.
+              </p>
+              <a href="#aviso-retiro" class="btn btn-sm btn-success w-100 fw-semibold shadow-sm">
+                Canal de Notificación
+              </a>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CONTENIDO DETALLADO -->
+      <main class="col-lg-9">
+
+        <!-- 1. MARCO LEGAL -->
+        <article id="marco-legal" class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4 bg-white section-anchor">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="icon-circle-credits">
+              <i class="bi bi-bank"></i>
+            </div>
+            <div>
+              <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1 rounded-pill small">SECCIÓN 1</span>
+              <h2 class="h3 fw-bold mb-0 text-dark">Marco Legal y Declaración de Titularidad</h2>
+            </div>
+          </div>
+
+          <p class="text-secondary lh-base">
+            El sitio web oficial de <strong>MONAGUA</strong> (en adelante, la "Plataforma"), accesible a través de su dominio oficial y canales digitales autorizados, ha sido diseñado y desarrollado con el propósito exclusivo de difundir y prestar servicios de ecoturismo comunitario, senderismo ecológico y preservación del patrimonio natural e histórico del municipio de <strong>Mongua, Boyacá (Colombia)</strong>.
+          </p>
+
+          <p class="text-secondary lh-base">
+            Todas las creaciones, obras literarias, código informático, composiciones audiovisuales, marcas y signos distintivos contenidos en esta plataforma se encuentran amparados por la legislación nacional colombiana e internacional en materia de propiedad intelectual, particularmente:
+          </p>
+
+          <div class="row g-3 my-2">
+            <div class="col-md-6">
+              <div class="p-3 rounded-3 bg-light border border-light-subtle h-100">
+                <h6 class="fw-bold text-success mb-2"><i class="bi bi-check2-circle me-1"></i> Legislación Colombiana</h6>
+                <ul class="text-secondary small mb-0 ps-3 lh-base">
+                  <li><strong>Ley 23 de 1982:</strong> Sobre Derechos de Autor y Protección de Obras Científicas, Literarias y Artísticas.</li>
+                  <li><strong>Ley 44 de 1993:</strong> Modificatoria y adicionaria a la Ley de Derechos de Autor.</li>
+                  <li><strong>Ley 1915 de 2018:</strong> Actualización en el entorno digital y medidas tecnológicas de protección.</li>
+                  <li><strong>Ley 1581 de 2012:</strong> Régimen de Protección de Datos Personales (Habeas Data).</li>
+                </ul>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="p-3 rounded-3 bg-light border border-light-subtle h-100">
+                <h6 class="fw-bold text-success mb-2"><i class="bi bi-globe2 me-1"></i> Instrumentos Internacionales</h6>
+                <ul class="text-secondary small mb-0 ps-3 lh-base">
+                  <li><strong>Decisión 351 de la Comisión de la Comunidad Andina (CAN):</strong> Régimen Común sobre Derecho de Autor y Conexos.</li>
+                  <li><strong>Convenio de Berna:</strong> Para la Protección de las Obras Literarias y Artísticas (OMPI/WIPO).</li>
+                  <li><strong>Tratado de la OMPI sobre Derecho de Autor (WCT):</strong> Disposiciones relativas a la era de Internet.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="alert alert-success bg-success bg-opacity-10 border-success border-opacity-25 rounded-3 mt-3 mb-0 text-success small">
+            <i class="bi bi-shield-lock-fill me-1 fw-bold"></i> <strong>Compromiso Institucional:</strong> MONAGUA no persigue lucro derivado de la apropiación indebida de obras de terceros. Todo material ajeno incorporado cuenta con autorización expresa, licenciamiento libre verificado o se encuentra bajo el principio de <em>Uso Legítimo (Fair Use)</em> y excepción con fines de difusión turística y cultural.
+          </div>
+        </article>
+
+        <!-- 2. BANCO DE FOTOGRAFÍAS E IMÁGENES -->
+        <article id="fotografias" class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4 bg-white section-anchor">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="icon-circle-credits">
+              <i class="bi bi-camera-fill"></i>
+            </div>
+            <div>
+              <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1 rounded-pill small">SECCIÓN 2</span>
+              <h2 class="h3 fw-bold mb-0 text-dark">Fotografías, Ilustraciones y Banco de Imágenes</h2>
+            </div>
+          </div>
+
+          <p class="text-secondary lh-base mb-4">
+            El archivo fotográfico exhibido en el catálogo de paquetes, blog de experiencias y páginas del portal se divide en tres categorías claramente estructuradas:
+          </p>
+
+          <div class="row g-4">
+            <!-- Tarjeta 1: Expediciones Monagua -->
+            <div class="col-md-6">
+              <div class="card card-attribution h-100 rounded-3 overflow-hidden shadow-sm">
+                <img src="{% static 'img/paramo_oseta.webp' %}" alt="Páramo de Ocetá" class="thumbnail-preview">
+                <div class="card-body p-3.5">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-success badge-license text-white rounded-pill">
+                      <i class="bi bi-camera me-1"></i> PRODUCCIÓN PROPIA
+                    </span>
+                    <span class="badge bg-dark bg-opacity-10 text-dark badge-license rounded-pill">&copy; Monagua 2024-2026</span>
+                  </div>
+                  <h5 class="fw-bold text-dark fs-6 mb-1">Expediciones al Páramo de Ocetá y Frailejones</h5>
+                  <p class="text-muted small mb-2">
+                    Fotografías capturadas durante salidas de campo, expedición ecológica y georreferenciación de senderos en las cumbres de Mongua.
+                  </p>
+                  <div class="small bg-light p-2 rounded-2 text-secondary">
+                    <strong>Autor:</strong> Equipo de Guías y Fotógrafos de Monagua.<br>
+                    <strong>Licencia:</strong> Derechos Reservados. Prohibida su reproducción comercial sin autorización escrita.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tarjeta 2: Laguna Negra -->
+            <div class="col-md-6">
+              <div class="card card-attribution h-100 rounded-3 overflow-hidden shadow-sm">
+                <img src="{% static 'img/lagunanegra.webp' %}" alt="Laguna Negra de Mongua" class="thumbnail-preview">
+                <div class="card-body p-3.5">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-primary badge-license text-white rounded-pill">
+                      <i class="bi bi-cc-circle me-1"></i> COMUNITARIO / CC BY-SA 4.0
+                    </span>
+                    <span class="badge bg-light text-secondary badge-license rounded-pill">Colaboración Local</span>
+                  </div>
+                  <h5 class="fw-bold text-dark fs-6 mb-1">Laguna Negra y Cuenca Hídrica</h5>
+                  <p class="text-muted small mb-2">
+                    Registro paisajístico de la Laguna sagrada de Mongua, ecosistema protegido y reserva de agua del municipio.
+                  </p>
+                  <div class="small bg-light p-2 rounded-2 text-secondary">
+                    <strong>Fuente:</strong> Guías comunitarios de Mongua y Wikimedia Commons.<br>
+                    <strong>Licencia:</strong> Creative Commons Atribución-CompartirIgual 4.0 Internacional.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tarjeta 3: Patrimonio Religioso y Arquitectura -->
+            <div class="col-md-6">
+              <div class="card card-attribution h-100 rounded-3 overflow-hidden shadow-sm">
+                <img src="{% static 'img/iglesia.webp' %}" alt="Templo Doctrinero de Mongua" class="thumbnail-preview">
+                <div class="card-body p-3.5">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-secondary badge-license text-white rounded-pill">
+                      <i class="bi bi-building me-1"></i> PATRIMONIO PÚBLICO
+                    </span>
+                    <span class="badge bg-light text-secondary badge-license rounded-pill">Registro Documental</span>
+                  </div>
+                  <h5 class="fw-bold text-dark fs-6 mb-1">Templo Parroquial de San Jerónimo de Mongua</h5>
+                  <p class="text-muted small mb-2">
+                    Monumento arquitectónico e histórico de la época colonial. Fotografía de fachada y parque principal.
+                  </p>
+                  <div class="small bg-light p-2 rounded-2 text-secondary">
+                    <strong>Bien Cultural:</strong> Bien de Interés Cultural Municipal / Diócesis de Duitama-Sogamoso.<br>
+                    <strong>Uso:</strong> Fotografía con fines ilustrativos turísticos y patrimoniales.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tarjeta 4: Artesanías Boyacenses -->
+            <div class="col-md-6">
+              <div class="card card-attribution h-100 rounded-3 overflow-hidden shadow-sm">
+                <img src="{% static 'img/artesanias.webp' %}" alt="Tejidos y Artesanías de Mongua" class="thumbnail-preview">
+                <div class="card-body p-3.5">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-warning text-dark badge-license rounded-pill">
+                      <i class="bi bi-flower1 me-1"></i> SABERES TRADICIONALES
+                    </span>
+                    <span class="badge bg-light text-secondary badge-license rounded-pill">Comunidad Artesanal</span>
+                  </div>
+                  <h5 class="fw-bold text-dark fs-6 mb-1">Tejidos de Lana, Hilandería y Amasijos</h5>
+                  <p class="text-muted small mb-2">
+                    Registro de piezas artesanales elaboradas por mujeres campesinas y sabedores de la Provincia de Sugamuxi.
+                  </p>
+                  <div class="small bg-light p-2 rounded-2 text-secondary">
+                    <strong>Atribución:</strong> Colectivo de Artesanas de Mongua.<br>
+                    <strong>Finalidad:</strong> Promoción del comercio justo y visibilización de la identidad boyacense.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabla de inventario de recursos adicionales -->
+          <div class="mt-4">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-table text-success me-2"></i> Inventario de Recursos Gráficos y Atribuciones de Archivos</h6>
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover align-middle small mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col" style="width: 25%;">Recurso / Archivo</th>
+                    <th scope="col" style="width: 25%;">Descripción</th>
+                    <th scope="col" style="width: 25%;">Origen / Autor</th>
+                    <th scope="col" style="width: 25%;">Régimen de Licencia</th>
+                  </tr>
+                </thead>
+                <tbody class="text-secondary">
+                  <tr>
+                    <td><code>static/img/pictografias.webp</code></td>
+                    <td>Arte rupestre y pictogramas muiscas</td>
+                    <td>Ruta Arqueológica de Mongua</td>
+                    <td><span class="badge bg-info text-dark rounded-pill">Divulgación Cultural</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>static/img/estatua_piedra.webp</code></td>
+                    <td>Escultura lítica prehispánica</td>
+                    <td>Museo Arqueológico de Mongua</td>
+                    <td><span class="badge bg-info text-dark rounded-pill">Registro Patrimonial</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>static/img/miradorcumbre.webp</code></td>
+                    <td>Mirador Cumbre y cañones de montaña</td>
+                    <td>Archivo Monagua / Guías Locales</td>
+                    <td><span class="badge bg-success rounded-pill">&copy; Monagua</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>static/img/img_rutas.webp</code></td>
+                    <td>Caminos de herradura y senderos reales</td>
+                    <td>Archivo Monagua / Guías Locales</td>
+                    <td><span class="badge bg-success rounded-pill">&copy; Monagua</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>static/img/carousel/*</code></td>
+                    <td>Imágenes del carrusel de inicio y paisajes</td>
+                    <td>Unsplash / Pexels / Monagua</td>
+                    <td><span class="badge bg-secondary rounded-pill">Unsplash / Pexels License</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+
+        <!-- 3. IDENTIDAD DE MARCA Y CONDY -->
+        <article id="identidad" class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4 bg-white section-anchor">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="icon-circle-credits">
+              <i class="bi bi-palette-fill"></i>
+            </div>
+            <div>
+              <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1 rounded-pill small">SECCIÓN 3</span>
+              <h2 class="h3 fw-bold mb-0 text-dark">Identidad de Marca, Logotipo y Mascota Oficial</h2>
+            </div>
+          </div>
+
+          <div class="row align-items-center g-4">
+            <div class="col-md-4 text-center">
+              <div class="p-3 rounded-4 bg-light border border-light-subtle d-inline-block shadow-sm">
+                <img src="{% static 'img/Logo.webp' %}" alt="Logo Monagua" class="img-fluid mb-2" style="max-height: 90px;">
+                <div class="fw-bold text-dark small">MONAGUA &copy;</div>
+                <div class="text-muted" style="font-size: 0.75rem;">Marca Registrada</div>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <h5 class="fw-bold text-dark fs-6 mb-2">Marca Comercial y Logotipo</h5>
+              <p class="text-secondary small mb-0 lh-base">
+                El nombre comercial <strong>MONAGUA</strong>, su isotipo, paleta de colores corporativos (#198754, tonos esmeralda y tierra de Boyacá) y diseño de imagotipo son propiedad exclusiva de la agencia. Queda expresamente prohibido su uso, copia o imitación para actividades comerciales o publicitarias sin previo consentimiento por escrito.
+              </p>
+            </div>
+          </div>
+
+          <hr class="my-4 opacity-25">
+
+          <div class="row align-items-center g-4">
+            <div class="col-md-4 text-center">
+              <div class="p-3 rounded-4 bg-light border border-light-subtle d-inline-block shadow-sm">
+                <img src="{% static 'img/condor_mascota.webp' %}" alt="Condy Cóndor" class="img-fluid mb-2" style="max-height: 120px;">
+                <div class="fw-bold text-success small">Condy &copy; Monagua</div>
+                <div class="text-muted" style="font-size: 0.75rem;">Ilustración de Mascota Oficial</div>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <h5 class="fw-bold text-dark fs-6 mb-2">Mascota Oficial "Condy"</h5>
+              <p class="text-secondary small mb-0 lh-base">
+                El personaje ilustrado <strong>"Condy"</strong>, inspirado en el Cóndor de los Andes (<em>Vultur gryphus</em>) que surca los páramos de Ocetá y Boyacá, fue diseñado y comisionado como la mascota interactiva y guía virtual de la plataforma. La obra visual, sus expresiones y variantes gráficas (<code>condor0.webp</code> a <code>condor3.webp</code>) constituyen una obra artística protegida.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <!-- 4. TIPOGRAFÍA E ICONOGRAFÍA -->
+        <article id="tipografia-iconos" class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4 bg-white section-anchor">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="icon-circle-credits">
+              <i class="bi bi-fonts"></i>
+            </div>
+            <div>
+              <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1 rounded-pill small">SECCIÓN 4</span>
+              <h2 class="h3 fw-bold mb-0 text-dark">Tipografías e Iconografía</h2>
+            </div>
+          </div>
+
+          <p class="text-secondary lh-base mb-3">
+            Para garantizar una experiencia visual accesible, responsiva y estéticamente armónica, el proyecto utiliza fuentes tipográficas e íconos bajo licencias abiertas reconocidas mundialmente:
+          </p>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="p-3.5 rounded-3 border border-light-subtle bg-light h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="fw-bold text-dark mb-0"><i class="bi bi-type me-1 text-success"></i> Google Fonts (Poppins & Inter)</h6>
+                  <span class="badge bg-secondary badge-license rounded-pill">OFL 1.1</span>
+                </div>
+                <p class="text-secondary small mb-2">
+                  Tipografías geométricas, modernas y de alta legibilidad en pantallas táctiles y escritorios.
+                </p>
+                <div class="text-muted" style="font-size: 0.75rem;">
+                  <strong>Licencia:</strong> SIL Open Font License, Version 1.1.<br>
+                  <strong>Créditos:</strong> Indian Type Foundry, Rasmus Andersson y la comunidad de tipógrafos de Google Fonts.
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="p-3.5 rounded-3 border border-light-subtle bg-light h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="fw-bold text-dark mb-0"><i class="bi bi-bootstrap-fill me-1 text-primary"></i> Bootstrap Icons</h6>
+                  <span class="badge bg-primary badge-license rounded-pill">Licencia MIT</span>
+                </div>
+                <p class="text-secondary small mb-2">
+                  Colección completa de glifos vectoriales SVG utilizados en botones, migas de pan y formularios.
+                </p>
+                <div class="text-muted" style="font-size: 0.75rem;">
+                  <strong>Licencia:</strong> MIT License.<br>
+                  <strong>Créditos:</strong> The Bootstrap Authors / Mark Otto & Jacob Thornton.
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 5. TECNOLOGÍAS OPEN SOURCE -->
+        <article id="tecnologias" class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4 bg-white section-anchor">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="icon-circle-credits">
+              <i class="bi bi-code-slash"></i>
+            </div>
+            <div>
+              <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1 rounded-pill small">SECCIÓN 5</span>
+              <h2 class="h3 fw-bold mb-0 text-dark">Librerías y Tecnologías de Código Abierto</h2>
+            </div>
+          </div>
+
+          <p class="text-secondary lh-base mb-3">
+            La infraestructura técnica y de software de <strong>MONAGUA</strong> se sustenta en componentes de código abierto que impulsan la seguridad, estabilidad y rendimiento de la plataforma:
+          </p>
+
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle small mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Componente</th>
+                  <th>Propósito</th>
+                  <th>Autor / Proyecto</th>
+                  <th>Tipo de Licencia</th>
+                </tr>
+              </thead>
+              <tbody class="text-secondary">
+                <tr>
+                  <td><strong>Django Framework</strong></td>
+                  <td>Arquitectura Backend, ORM, Auth y Seguridad</td>
+                  <td>Django Software Foundation</td>
+                  <td><span class="badge bg-dark bg-opacity-75 text-white rounded-pill">BSD 3-Clause</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Bootstrap 5</strong></td>
+                  <td>Sistema de diseño responsivo y cuadrícula CSS</td>
+                  <td>The Bootstrap Authors</td>
+                  <td><span class="badge bg-primary rounded-pill">MIT License</span></td>
+                </tr>
+                <tr>
+                  <td><strong>HTMX</strong></td>
+                  <td>Interacciones asíncronas dinámicas sin recarga</td>
+                  <td>Big Sky Software</td>
+                  <td><span class="badge bg-info text-dark rounded-pill">0BSD (Zero-Clause)</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Python Runtime</strong></td>
+                  <td>Lenguaje de programación de propósito general</td>
+                  <td>Python Software Foundation</td>
+                  <td><span class="badge bg-warning text-dark rounded-pill">PSF License</span></td>
+                </tr>
+                <tr>
+                  <td><strong>xhtml2pdf & ReportLab</strong></td>
+                  <td>Generación de facturas electrónicas y comprobantes</td>
+                  <td>xhtml2pdf / ReportLab Inc.</td>
+                  <td><span class="badge bg-secondary rounded-pill">BSD / LGPL</span></td>
+                </tr>
+                <tr>
+                  <td><strong>pypdf & Pillow</strong></td>
+                  <td>Cifrado criptográfico y procesamiento de imágenes</td>
+                  <td>PyPDF Contributors / Jeffrey A. Clark</td>
+                  <td><span class="badge bg-secondary rounded-pill">BSD / HPND</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <!-- 6. PATRIMONIO CULTURAL Y SABERES -->
+        <article id="patrimonio" class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4 bg-white section-anchor">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="icon-circle-credits">
+              <i class="bi bi-compass-fill"></i>
+            </div>
+            <div>
+              <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1 rounded-pill small">SECCIÓN 6</span>
+              <h2 class="h3 fw-bold mb-0 text-dark">Patrimonio Cultural, Tradición Oral y Saberes Locales</h2>
+            </div>
+          </div>
+
+          <p class="text-secondary lh-base">
+            Los relatos, descripciones de rutas, nombres toponímicos y leyendas (como la <em>Leyenda del Cacique de Mongua</em>, los mitos de la <em>Laguna Negra</em> y la cosmovisión muisca sobre el <em>Páramo de Ocetá</em>) constituyen **Patrimonio Cultural Inmaterial** de la Nación colombiana y pertenecen colectivamente a la comunidad de Mongua y a los pueblos originarios de los Andes boyacenses.
+          </p>
+
+          <div class="p-3.5 rounded-3 bg-light border border-light-subtle">
+            <h6 class="fw-bold text-success mb-2"><i class="bi bi-heart-fill text-danger me-1"></i> Agradecimientos Especiales</h6>
+            <p class="text-secondary small mb-0 lh-base">
+              Agradecemos a los guías turísticos nativos, campesinos, artesanos, historiadores locales y vigías del patrimonio de Mongua por compartir su conocimiento, custodiar los senderos ecológicos y mantener vivas las tradiciones orales que enriquecen cada uno de nuestros paquetes turísticos.
+            </p>
+          </div>
+        </article>
+
+        <!-- 7. PROTOCOLO DE RECLAMOS / NOTICE AND TAKE-DOWN -->
+        <article id="aviso-retiro" class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white section-anchor border-top border-4 border-success">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="icon-circle-credits bg-danger bg-gradient">
+              <i class="bi bi-envelope-exclamation-fill"></i>
+            </div>
+            <div>
+              <span class="badge bg-danger bg-opacity-10 text-danger fw-bold px-2.5 py-1 rounded-pill small">SECCIÓN 7</span>
+              <h2 class="h3 fw-bold mb-0 text-dark">Canal de Atención y Protocolo de Retiro (Take-Down)</h2>
+            </div>
+          </div>
+
+          <p class="text-secondary lh-base">
+            Si usted es autor, fotógrafo, titular legítimo de derechos o representante legal de cualquier obra publicada en este sitio y considera que su material ha sido utilizado sin la debida mención, requiere una actualización de créditos o desea solicitar su <strong>retiro inmediato</strong>, ponemos a su disposición nuestro protocolo expedito de atención:
+          </p>
+
+          <div class="card bg-light border-0 rounded-3 p-4 mb-4">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-clipboard2-check me-2 text-success"></i> Información requerida para la solicitud:</h6>
+            <ol class="text-secondary small mb-0 ps-3 lh-base">
+              <li>Nombre completo del titular o representante y documento de identidad.</li>
+              <li>Identificación exacta de la obra en disputa (URL de la página o nombre del archivo).</li>
+              <li>Prueba sumaria de autoría (enlace a publicación original, metadatos EXIF o certificado de registro).</li>
+              <li>Acción solicitada: (a) Corrección/ampliación de créditos, o (b) Retiro preventivo del recurso.</li>
+            </ol>
+          </div>
+
+          <div class="row g-3 text-center">
+            <div class="col-md-6">
+              <div class="p-3 rounded-3 border border-success border-opacity-25 bg-success bg-opacity-10 h-100 d-flex flex-column justify-content-center">
+                <i class="bi bi-envelope-at-fill text-success fs-3 mb-2"></i>
+                <h6 class="fw-bold text-dark mb-1">Correo de Propiedad Intelectual</h6>
+                <a href="mailto:monaguacontacto@gmail.com?subject=Reclamacion%20Derechos%20de%20Autor" class="text-success fw-bold small text-decoration-none">
+                  monaguacontacto@gmail.com
+                </a>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="p-3 rounded-3 border border-primary border-opacity-25 bg-primary bg-opacity-10 h-100 d-flex flex-column justify-content-center">
+                <i class="bi bi-chat-left-dots-fill text-primary fs-3 mb-2"></i>
+                <h6 class="fw-bold text-dark mb-1">Módulo Oficial de PQRS</h6>
+                <a href="{% url 'pqrs_publica' %}" class="btn btn-sm btn-primary mt-1 fw-bold">
+                  Radicar Solicitud Formal
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-top text-center text-muted small">
+            <i class="bi bi-stopwatch me-1 text-success"></i> <strong>Tiempo de Respuesta:</strong> Todas las solicitudes legítimas de derechos de autor son procesadas y resueltas en un plazo máximo de <strong>48 horas hábiles</strong>.
+          </div>
+        </article>
+
+      </main>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

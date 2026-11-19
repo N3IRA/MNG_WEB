@@ -125,6 +125,13 @@
               aria-label="Consultar términos y condiciones de servicio"
               >Términos y Condiciones</a
             >
+            <a
+              href="{% url 'derechos_autor' %}"
+              class="menu-hamburguesa-premium__main-link"
+              title="Derechos de autor, licencias y atribuciones"
+              aria-label="Derechos de autor, licencias y atribuciones"
+              >Derechos de Autor</a
+            >
           </nav>
         </div>
 
@@ -297,6 +304,16 @@
                 aria-label="Consultar términos y condiciones"
               >
                 <i class="bi bi-shield-lock me-2"></i>Términos y Condiciones
+              </a>
+            </li>
+            <li>
+              <a
+                class="menu-hamburguesa-premium__secondary-link"
+                href="{% url 'derechos_autor' %}"
+                title="Derechos de autor y créditos legales"
+                aria-label="Derechos de autor y créditos legales"
+              >
+                <i class="bi bi-c-circle me-2"></i>Derechos de Autor
               </a>
             </li>
           </ul>
