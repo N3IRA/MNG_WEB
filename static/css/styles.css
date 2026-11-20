@@ -209,6 +209,16 @@ main nav[aria-label="breadcrumb"].breadcrumb-shell {
     border-radius: 999px;
 }
 
+.breadcrumb-shell,
+main nav[aria-label="breadcrumb"].breadcrumb-shell {
+    margin-left: 0 !important;
+}
+
+main > .container,
+main > .container-fluid {
+    margin-left: 0;
+}
+
 main .breadcrumb {
     display: flex !important;
     flex-wrap: wrap;

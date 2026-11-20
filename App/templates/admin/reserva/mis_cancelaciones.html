@@ -5,19 +5,19 @@
 
 {% block content %}
 {% include "partials/breadcrumbs.html" with current_title="Mis Cancelaciones" current_icon="bi bi-x-circle-fill" %}
-<div class="container-fluid px-4 py-4">
-    <span class="badge bg-danger-subtle text-danger rounded-pill px-3 py-2 fw-semibold text-uppercase mb-2" style="font-size: 0.75rem;">Mis Viajes</span>
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold text-dark mb-1">
-                <i class="bi bi-x-circle-fill text-danger me-2"></i>Mis Cancelaciones
-            </h2>
-            <p class="text-muted mb-0">Consulta el histórico de tus reservas canceladas, penalidades y estado de reembolsos.</p>
+<div class="container py-4 mx-auto">
+    <div class="card border-0 shadow-sm rounded-4 mb-3 bg-white">
+        <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h2 class="fw-bold text-danger mb-1 fs-4">
+                    <i class="bi bi-x-circle-fill text-danger me-2"></i>Mis Cancelaciones
+                </h2>
+                <p class="text-muted small mb-0">Consulta tus reservas canceladas, penalidades y estado de reembolsos.</p>
+            </div>
+            <a href="{% url 'mis_reservas_usuario' %}" class="btn btn-outline-secondary rounded-pill px-3 btn-sm fw-semibold">
+                <i class="bi bi-journal-text me-1"></i> Ver Mis Reservas
+            </a>
         </div>
-        <a href="{% url 'mis_reservas_usuario' %}" class="btn btn-outline-secondary rounded-pill px-4 fw-semibold">
-            <i class="bi bi-journal-text me-1"></i> Ver Mis Reservas
-        </a>
     </div>
 
     {% include "partials/politicas_cancelacion.html" with modo='cancelacion' %}
@@ -28,7 +28,7 @@
         <div class="col-12">
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
                 <div class="row g-0 align-items-stretch">
-                    <div class="col-md-3 position-relative" style="min-height: 210px;">
+                    <div class="col-md-3 position-relative" style="min-height: 180px;">
                         {% if item.paquete.imagen %}
                             <img src="{{ item.paquete.imagen.url }}" class="w-100 h-100 position-absolute start-0 top-0" style="object-fit: cover;" alt="{{ item.paquete.nombre }}">
                         {% else %}
@@ -39,10 +39,10 @@
                     </div>
 
                     <div class="col-md-9">
-                        <div class="card-body p-3 p-md-4">
-                            <div class="d-flex justify-content-between align-items-start gap-2 mb-3 flex-wrap">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-start gap-2 mb-2 flex-wrap">
                                 <div>
-                                    <h5 class="fw-bold text-dark mb-1">{{ item.paquete.nombre|default:"Reserva" }}</h5>
+                                    <h5 class="fw-bold text-dark mb-0">{{ item.paquete.nombre|default:"Reserva" }}</h5>
                                     <p class="text-muted small mb-0"><i class="bi bi-calendar-x me-1"></i>Reserva #{{ item.id }} · Solicitud de cancelación</p>
                                 </div>
                                 {% if item.estado_cancelacion == 'aprobada' %}
@@ -54,7 +54,7 @@
                                 {% endif %}
                             </div>
 
-                            <div class="row g-2 mb-3">
+                            <div class="row g-2 mb-2">
                                 <div class="col-sm-4">
                                     <div class="border rounded-3 p-2 bg-light h-100">
                                         <small class="text-muted d-block">Fecha del viaje</small>
@@ -75,26 +75,23 @@
                                 </div>
                             </div>
 
-                            <div class="border rounded-3 px-3 py-2 mb-3">
-                                <div class="row g-2 small align-items-center">
-                                    <div class="col-md-3"><span class="text-muted">Duración:</span> <strong class="text-dark">{{ item.paquete.dias_duracion }} d / {{ item.paquete.noches_duracion }} n</strong></div>
-                                    <div class="col-md-3"><span class="text-muted">Hora:</span> <strong class="text-dark"><i class="bi bi-clock me-1"></i>{{ item.paquete.hora_encuentro|time:"H:i" }}</strong></div>
-                                    <div class="col-md-6"><span class="text-muted">Encuentro:</span> <strong class="text-dark"><i class="bi bi-geo-alt me-1"></i>{{ item.paquete.punto_encuentro }}</strong></div>
+                            <div class="border rounded-3 px-3 py-2 mb-2">
+                                <div class="d-flex align-items-center gap-3 flex-wrap small">
+                                    <span><span class="text-muted">Duración:</span> <strong class="text-dark">{{ item.paquete.dias_duracion }} d / {{ item.paquete.noches_duracion }} n</strong></span>
+                                    <span><span class="text-muted">Hora:</span> <strong class="text-dark"><i class="bi bi-clock me-1"></i>{{ item.paquete.hora_encuentro|time:"H:i" }}</strong></span>
+                                    <span><span class="text-muted">Encuentro:</span> <strong class="text-dark"><i class="bi bi-geo-alt me-1"></i>{{ item.paquete.punto_encuentro|truncatechars:55 }}</strong></span>
                                 </div>
                                 {% if item.paquete.actividades.all %}
-                                    <div class="d-flex align-items-center gap-2 mt-2 flex-wrap small">
-                                        <span class="text-muted">Actividades:</span>
-                                        {% for actividad in item.paquete.actividades.all %}
-                                            <span class="border rounded-pill bg-white px-2 py-1 text-dark">
-                                                {{ actividad.nombre }}{% if actividad.apto_menores %}<span class="text-success ms-1">· Menores</span>{% else %}<span class="text-secondary ms-1">· Adultos</span>{% endif %}
-                                            </span>
+                                    <div class="d-flex align-items-center gap-1 mt-2 flex-wrap small">
+                                        {% for actividad in item.paquete.actividades.all|slice:":4" %}
+                                            <span class="border rounded-pill bg-light px-2 py-1 text-dark">{{ actividad.nombre }}</span>
                                         {% endfor %}
                                     </div>
                                 {% endif %}
                             </div>
 
-                            <div class="d-flex justify-content-between align-items-center gap-2 border-top pt-3 flex-wrap">
-                                <div class="small"><span class="text-muted fw-bold">Motivo:</span> {{ item.motivo_cancelacion|default:"Sin motivo especificado" }}</div>
+                            <div class="d-flex justify-content-between align-items-center gap-2 border-top pt-2 flex-wrap">
+                                <div class="small"><span class="text-muted fw-bold">Motivo:</span> {{ item.motivo_cancelacion|default:"Sin motivo especificado"|truncatechars:100 }}</div>
                                 <div class="d-flex gap-2 align-items-center flex-wrap">
                                     {% if item.estado_cancelacion == 'pendiente' %}
                                         <span class="badge bg-warning-subtle text-warning border rounded-pill px-3 py-2">En revisión administrativa</span>

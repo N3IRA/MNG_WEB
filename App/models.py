@@ -637,6 +637,17 @@ class Reserva(models.Model):
         )
         return inicio_viaje - timezone.now() >= timedelta(hours=48)
 
+    def puede_cancelar_viaje(self):
+        """Indica si falta al menos 48 horas exactas para el inicio del viaje."""
+        if self.estado_reserva == 'cancelada' or not self.fecha_inicio:
+            return False
+
+        inicio_viaje = timezone.make_aware(
+            datetime.combine(self.fecha_inicio, time.min),
+            timezone.get_current_timezone()
+        )
+        return inicio_viaje - timezone.now() >= timedelta(hours=48)
+
     def recalcular_monto(self):
         """Calcula el monto vigente usando la tarifa y promoción de la fecha de la reserva."""
         if not self.paquete or not self.fecha_inicio:

@@ -1,19 +1,20 @@
 {% if modo == 'reserva' %}
-<div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
-    <div class="card-body p-4">
-        <div class="d-flex align-items-start gap-3">
-            <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center flex-shrink-0" style="width:50px;height:50px">
-                <i class="bi bi-calendar-check-fill text-success fs-4"></i>
+<div class="card border-0 shadow-sm rounded-4 mb-3 overflow-hidden">
+    <div class="card-body px-3 py-3">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center flex-shrink-0" style="width:38px;height:38px">
+                <i class="bi bi-calendar-check-fill text-success"></i>
             </div>
-            <div class="flex-grow-1">
-                <h5 class="fw-bold text-dark mb-2 fs-5">Información importante de tu reserva</h5>
-                <p class="text-muted fs-6 mb-3">Conoce las condiciones para modificar personas y mantener tu reserva correctamente.</p>
-                <div class="row g-3">
-                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100 bg-light"><strong class="d-block text-dark fs-6 mb-2"><i class="bi bi-calendar-x me-1 text-secondary"></i>Fecha fija</strong><span class="text-secondary">La fecha del viaje no se puede cambiar desde esta sección.</span></div></div>
-                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100 bg-light"><strong class="d-block text-dark fs-6 mb-2"><i class="bi bi-people me-1 text-secondary"></i>Personas</strong><span class="text-secondary">Máximo 10 adultos y 10 menores por reserva.</span></div></div>
-                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100 bg-light"><strong class="d-block text-dark fs-6 mb-2"><i class="bi bi-clock-history me-1 text-secondary"></i>Límite de cambio</strong><span class="text-secondary">Solo puedes modificar antes de pagar y hasta 48 horas antes del viaje.</span></div></div>
-                </div>
+            <div>
+                <h6 class="fw-bold text-dark mb-0">Información importante antes de gestionar tu reserva</h6>
+                <span class="text-muted small">Revisa estas condiciones antes de realizar cambios o cancelar.</span>
             </div>
+        </div>
+        <div class="row g-2">
+            <div class="col-sm-6 col-lg-3"><div class="border rounded-3 px-3 py-2 h-100"><strong class="d-block text-dark small"><i class="bi bi-calendar-x me-1 text-secondary"></i>Fecha del viaje</strong><span class="text-secondary small">No puede modificarse. Para cambiarla, cancela y crea una nueva reserva.</span></div></div>
+            <div class="col-sm-6 col-lg-3"><div class="border rounded-3 px-3 py-2 h-100"><strong class="d-block text-dark small"><i class="bi bi-people me-1 text-secondary"></i>Cantidad de personas</strong><span class="text-secondary small">Máximo 10 adultos y 10 menores en una misma reserva.</span></div></div>
+            <div class="col-sm-6 col-lg-3"><div class="border rounded-3 px-3 py-2 h-100"><strong class="d-block text-dark small"><i class="bi bi-clock-history me-1 text-secondary"></i>Modificar personas</strong><span class="text-secondary small">Solo antes de pagar y hasta 48 horas antes de iniciar el viaje.</span></div></div>
+            <div class="col-sm-6 col-lg-3"><div class="border rounded-3 px-3 py-2 h-100 border-danger border-opacity-25 bg-danger bg-opacity-10"><strong class="d-block text-danger small"><i class="bi bi-x-circle me-1"></i>Cancelar el viaje</strong><span class="text-secondary small">Solo es posible hasta 48 horas exactas antes del viaje.</span></div></div>
         </div>
     </div>
 </div>
@@ -26,12 +27,12 @@
             </div>
             <div class="flex-grow-1">
                 <h5 class="fw-bold text-dark mb-2 fs-5">Políticas de cancelación y reembolso</h5>
-                <p class="text-muted fs-6 mb-3">La penalidad se calcula según las horas restantes hasta el inicio del viaje.</p>
+                <p class="text-muted fs-6 mb-3">La cancelación está disponible únicamente hasta 48 horas antes del viaje.</p>
                 <div class="row g-3">
                     <div class="col-sm-6 col-lg-3"><div class="border rounded-3 p-3 h-100"><span class="text-muted d-block mb-1">Más de 15 días</span><strong class="text-success fs-6 d-block">Reembolso 90%</strong><span class="text-muted">Penalidad 10%</span></div></div>
                     <div class="col-sm-6 col-lg-3"><div class="border rounded-3 p-3 h-100"><span class="text-muted d-block mb-1">Entre 5 y 15 días</span><strong class="text-warning fs-6 d-block">Reembolso 50%</strong><span class="text-muted">Penalidad 50%</span></div></div>
                     <div class="col-sm-6 col-lg-3"><div class="border rounded-3 p-3 h-100"><span class="text-muted d-block mb-1">Entre 48 y 96 horas</span><strong class="text-warning fs-6 d-block">Reembolso 50%</strong><span class="text-muted">Penalidad 50%</span></div></div>
-                    <div class="col-sm-6 col-lg-3"><div class="border rounded-3 p-3 h-100"><span class="text-muted d-block mb-1">Menos de 48 horas</span><strong class="text-danger fs-6 d-block">Sin reembolso</strong><span class="text-muted">Cancelación bloqueada</span></div></div>
+                    <div class="col-sm-6 col-lg-3"><div class="border rounded-3 p-3 h-100 border-danger border-opacity-25"><span class="text-muted d-block mb-1">Menos de 48 horas</span><strong class="text-danger fs-6 d-block">Sin reembolso</strong><span class="text-muted">Cancelación bloqueada</span></div></div>
                 </div>
             </div>
         </div>
