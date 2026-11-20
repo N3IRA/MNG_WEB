@@ -76,6 +76,46 @@
                     <span class="fw-bold text-dark fs-5">COP ${{ reserva.monto_total|floatformat:0|intcomma }}</span>
                 </div>
             </div>
+
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                        <i class="bi bi-clock-history fs-5"></i>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-0">Historial de cambios de personas</h6>
+                </div>
+
+                {% if reserva.modificaciones_personas.exists %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for cambio in reserva.modificaciones_personas.all %}
+                            <div class="border rounded-3 p-3">
+                                <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+                                    <strong class="text-dark small">
+                                        {{ cambio.adultos_anteriores }} adulto{{ cambio.adultos_anteriores|pluralize:"s" }} / {{ cambio.menores_anteriores }} menor{{ cambio.menores_anteriores|pluralize:"es" }}
+                                        <i class="bi bi-arrow-right mx-1 text-secondary"></i>
+                                        {{ cambio.adultos_nuevos }} adulto{{ cambio.adultos_nuevos|pluralize:"s" }} / {{ cambio.menores_nuevos }} menor{{ cambio.menores_nuevos|pluralize:"es" }}
+                                    </strong>
+                                    <span class="badge bg-light text-dark border">{{ cambio.fecha_modificacion|date:"d/m/Y H:i" }}</span>
+                                </div>
+                                <div class="small text-secondary mt-2">
+                                    Realizado por: <strong>{% if cambio.realizado_por_admin %}Administrador{% else %}Turista{% endif %}</strong>
+                                    {% if cambio.usuario %} — {{ cambio.usuario.username }}{% endif %}
+                                </div>
+                                <div class="small text-secondary mt-1">
+                                    Monto: COP ${{ cambio.monto_anterior|floatformat:0|intcomma }}
+                                    <i class="bi bi-arrow-right mx-1"></i>
+                                    COP ${{ cambio.monto_nuevo|floatformat:0|intcomma }}
+                                </div>
+                                {% if cambio.motivo %}
+                                    <div class="small mt-2"><span class="text-muted">Motivo:</span> {{ cambio.motivo }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted small mb-0">Esta reserva no tiene cambios registrados de personas.</p>
+                {% endif %}
+            </div>
         </div>
 
         <!-- Columna Formulario de Decisión (Derecha) -->
@@ -95,6 +135,12 @@
                         
                         <div class="mb-4 text-dark">
                             {{ form|crispy }}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="motivo_modificacion" class="form-label fw-bold">Motivo de la corrección de personas</label>
+                            <textarea name="motivo_modificacion" id="motivo_modificacion" class="form-control rounded-3" rows="3" minlength="5" placeholder="Indica por qué se corrige la cantidad de personas."></textarea>
+                            <div class="form-text">Obligatorio únicamente si cambias adultos o menores. La fecha del viaje no se puede modificar.</div>
                         </div>
 
                         <div class="row g-2 pt-2 border-top">

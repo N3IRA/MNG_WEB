@@ -58,6 +58,8 @@
         </div>
     </div>
 
+    {% include "partials/politicas_cancelacion.html" with modo='reserva' %}
+
     <!-- ── 2. Listado de Reservas ── -->
     {% if reservas %}
         <div class="row g-4">
@@ -67,7 +69,7 @@
                         <div class="row g-0 align-items-stretch">
                             
                             <!-- Foto del Paquete -->
-                            <div class="col-md-4 position-relative" style="min-height: 240px;">
+                            <div class="col-md-3 position-relative u-style-47f2ed6c" style="min-height: 180px;">
                                 {% if reserva.paquete.imagen %}
                                     <img src="{{ reserva.paquete.imagen.url }}" class="w-100 h-100 position-absolute start-0 top-0" style="object-fit: cover;" alt="{{ reserva.paquete.nombre }}">
                                 {% else %}
@@ -76,56 +78,59 @@
                             </div>
 
                             <!-- Contenido de la Reserva -->
-                            <div class="col-md-8 d-flex flex-column">
-                                <div class="card-body p-4 d-flex flex-column h-100">
+                            <div class="col-md-9 d-flex flex-column">
+                                <div class="card-body p-3 d-flex flex-column h-100">
                                     
-                                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
                                         <div>
-                                            <h3 class="fw-bold text-dark mb-1">{{ reserva.paquete.nombre }}</h3>
-                                            <p class="text-muted small mb-0"><i class="bi bi-journal-check me-1"></i> Reserva #{{ reserva.id }} · Turística</p>
+                                            <h5 class="fw-bold text-dark mb-0">{{ reserva.paquete.nombre }}</h5>
+                                            <p class="text-muted small mb-0"><i class="bi bi-journal-check me-1"></i>Reserva #{{ reserva.id }}</p>
                                         </div>
-
                                         <div>
                                             {% with estado=reserva.estado_reserva %}
                                                 {% if estado == 'pendiente' %}
-                                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2"><i class="bi bi-clock me-1"></i> Pendiente de Pago</span>
+                                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2"><i class="bi bi-clock me-1"></i>Pendiente de Pago</span>
                                                 {% elif estado == 'confirmada' %}
-                                                    <span class="badge bg-success text-white rounded-pill px-3 py-2"><i class="bi bi-check-circle me-1"></i> Confirmada</span>
+                                                    <span class="badge bg-success text-white rounded-pill px-3 py-2"><i class="bi bi-check-circle me-1"></i>Confirmada</span>
                                                 {% elif estado == 'cancelada' %}
-                                                    <span class="badge bg-danger text-white rounded-pill px-3 py-2"><i class="bi bi-x-circle me-1"></i> Cancelada</span>
+                                                    <span class="badge bg-danger text-white rounded-pill px-3 py-2"><i class="bi bi-x-circle me-1"></i>Cancelada</span>
                                                 {% endif %}
                                             {% endwith %}
                                         </div>
                                     </div>
 
-                                    <!-- Fila de Datos Rápidos -->
-                                    <div class="row g-2 mb-3">
-                                        <div class="col-sm-4">
-                                            <div class="border rounded-4 p-3 bg-light h-100">
-                                                <small class="text-muted d-block mb-1">Fecha de Viaje</small>
-                                                <span class="fw-semibold text-dark small">
-                                                    <i class="bi bi-calendar-event me-1 text-success"></i> 
-                                                    {{ reserva.fecha_inicio|date:"d M Y"|default:"Por definir" }}
-                                                </span>
-                                            </div>
-                                        </div>
+                                    <!-- Datos esenciales -->
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-sm-4"><div class="border rounded-3 px-3 py-2 bg-light h-100"><small class="text-muted d-block">Fecha de Viaje</small><strong class="small"><i class="bi bi-calendar-event me-1 text-success"></i>{{ reserva.fecha_inicio|date:"d M Y"|default:"Por definir" }}</strong></div></div>
+                                        <div class="col-sm-4"><div class="border rounded-3 px-3 py-2 bg-light h-100"><small class="text-muted d-block">Pasajeros</small><strong class="small"><i class="bi bi-people me-1 text-success"></i>{{ reserva.numero_adultos }} Adul. / {{ reserva.numero_menores }} Men.</strong></div></div>
+                                        <div class="col-sm-4"><div class="border-0 rounded-3 px-3 py-2 h-100 bg-success text-white"><small class="d-block text-white-50">Total</small><strong class="small text-white">COP ${{ reserva.monto_total|floatformat:0|intcomma }}</strong></div></div>
+                                    </div>
 
-                                        <div class="col-sm-4">
-                                            <div class="border rounded-4 p-3 bg-light h-100">
-                                                <small class="text-muted d-block mb-1">Pasajeros</small>
-                                                <span class="fw-semibold text-dark small">
-                                                    <i class="bi bi-people me-1 text-success"></i> 
-                                                    {{ reserva.numero_adultos }} Adul. / {{ reserva.numero_menores }} Men.
-                                                </span>
-                                            </div>
+                                    <!-- Información compacta del paquete -->
+                                    <div class="border rounded-3 px-3 py-2 mb-2 bg-white">
+                                        <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap small">
+                                            <span><i class="bi bi-clock me-1 text-success"></i><strong>Encuentro:</strong> {{ reserva.paquete.hora_encuentro|time:"H:i" }}</span>
+                                            <span><i class="bi bi-geo-alt me-1 text-success"></i><strong>Punto:</strong> {{ reserva.paquete.punto_encuentro|truncatechars:48 }}</span>
+                                            <span class="badge bg-light text-dark border">{{ reserva.paquete.dias_duracion }} d / {{ reserva.paquete.noches_duracion }} n</span>
                                         </div>
+                                        {% if reserva.paquete.actividades.all %}
+                                            <div class="d-flex flex-wrap gap-1 mt-2">
+                                                {% for actividad in reserva.paquete.actividades.all|slice:":4" %}
+                                                    <span class="badge bg-light text-dark border fw-normal"><i class="bi bi-check-circle-fill text-success me-1"></i>{{ actividad.nombre }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
 
-                                        <div class="col-sm-4">
-                                            <div class="border rounded-4 p-3 h-100 bg-success bg-opacity-10">
-                                                <small class="text-white d-block mb-1 fw-medium">Total de Reserva</small>
-                                                <h5 class="fw-bold text-white mb-0">COP ${{ reserva.monto_total|floatformat:0|intcomma }}</h5>
-                                            </div>
-                                        </div>
+                                    <!-- Reglas compactas -->
+                                    <div class="border rounded-3 px-3 py-2 mb-2 small text-secondary d-flex flex-wrap gap-3">
+                                        <span><i class="bi bi-calendar-x me-1"></i><strong>Fecha fija</strong></span>
+                                        <span><i class="bi bi-clock-history me-1"></i><strong>Modificar:</strong> hasta 48 h antes</span>
+                                        {% if reserva.puede_cancelar_viaje %}
+                                            <span class="text-success"><i class="bi bi-check-circle me-1"></i>Cancelación disponible hasta 48 h antes</span>
+                                        {% else %}
+                                            <span class="text-danger"><i class="bi bi-lock-fill me-1"></i>Cancelación bloqueada (menos de 48 h)</span>
+                                        {% endif %}
                                     </div>
 
                                     <!-- Sección de Pago y Visualización del Comprobante (Sin recargar) -->
@@ -194,6 +199,39 @@
                                         </div>
                                     {% endif %}
 
+                                    <!-- Modificación de personas (máximo 10) -->
+                                    {% if reserva.puede_modificar_personas %}
+                                        <div class="mb-3">
+                                            <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-2 fw-semibold"
+                                                    onclick="document.getElementById('personas-panel-{{ reserva.id }}').classList.toggle('d-none');">
+                                                <i class="bi bi-people-fill me-1"></i> Modificar personas
+                                            </button>
+                                            <div id="personas-panel-{{ reserva.id }}" class="d-none mt-3 p-3 bg-white rounded-4 border">
+                                                <div class="small text-muted mb-2">
+                                                    Máximo 10 adultos y máximo 10 menores. Debes realizar el cambio como mínimo 48 horas antes del viaje.
+                                                </div>
+                                                <form method="POST" action="{% url 'modificar_personas_reserva' reserva.id %}">
+                                                    {% csrf_token %}
+                                                    <div class="row g-2 align-items-end">
+                                                        <div class="col-5">
+                                                            <label class="form-label small fw-bold">Adultos</label>
+                                                            <input type="number" name="adultos" class="form-control" min="1" max="10" value="{{ reserva.numero_adultos }}" required>
+                                                        </div>
+                                                        <div class="col-5">
+                                                            <label class="form-label small fw-bold">Menores</label>
+                                                            <input type="number" name="menores" class="form-control" min="0" max="10" value="{{ reserva.numero_menores }}" required>
+                                                        </div>
+                                                        <div class="col-2">
+                                                            <button type="submit" class="btn btn-dark w-100 fw-semibold" title="Guardar cantidad de personas">
+                                                                <i class="bi bi-check-circle me-1"></i> Guardar
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
                                     <!-- Panel Inline de Cancelación (HTMX Directo sin Modales) -->
                                     <div id="cancelar-panel-{{ reserva.id }}" class="d-none mt-3 p-3.5 bg-danger bg-opacity-10 rounded-4 border border-danger border-opacity-25">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -219,7 +257,7 @@
                                                     Esta reserva aún no tiene un pago confirmado. <strong>Se cancelará de inmediato sin penalidad ni costo alguno</strong>.
                                                 </div>
                                             {% else %}
-                                                {% include "partials/politicas_cancelacion.html" %}
+                                                {% include "partials/politicas_cancelacion.html" with modo='cancelacion' %}
                                             {% endif %}
 
                                             <div class="mb-3 text-start">
