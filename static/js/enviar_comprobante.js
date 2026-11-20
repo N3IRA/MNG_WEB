@@ -8,8 +8,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 previewContainer.id = 'previewContainer';
                 previewContainer.className = 'mt-3 d-none';
                 previewContainer.innerHTML = `
-                    <p class="small text-muted mb-2">Vista previa de la imagen cargada:</p>
-                    <img id="previewImagen" class="img-fluid img-thumbnail rounded-4 shadow-sm" style="max-height: 300px; object-fit: contain; width: auto;" alt="Vista previa">
+                    <p class="small text-muted mb-2 fw-semibold"><i class="bi bi-eye text-success me-1"></i>Vista previa del comprobante cargado:</p>
+                    <div class="rounded-4 border bg-dark bg-opacity-10 d-flex align-items-center justify-content-center p-2 shadow-sm overflow-hidden position-relative" style="height: 280px; max-width: 360px;">
+                        <img id="previewImagen" class="rounded-3 shadow-sm" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt="Vista previa de comprobante">
+                    </div>
+                    <small class="text-muted d-block mt-1">Verifica que la referencia, fecha y monto sean nítidos antes de enviar.</small>
                 `;
                 event.target.parentNode.appendChild(previewContainer);
             }

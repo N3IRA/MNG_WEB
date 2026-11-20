@@ -466,8 +466,10 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-0 text-center bg-dark">
-                    <img src="{{ c.imagen_comprobante.url }}" alt="Comprobante" class="img-fluid" style="max-height: 75vh; object-fit: contain;">
+                <div class="modal-body p-3 text-center bg-dark bg-opacity-10 d-flex align-items-center justify-content-center">
+                    <div class="w-100 rounded-3 overflow-hidden d-flex align-items-center justify-content-center" style="height: 440px; max-height: 60vh;">
+                        <img src="{{ c.imagen_comprobante.url }}" alt="Comprobante" class="rounded-3 shadow-sm" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                    </div>
                 </div>
                 <div class="modal-footer border-0 bg-light py-2 px-4 d-flex justify-content-between">
                     <span class="text-muted small">Monto declarado: <strong class="text-danger">COP ${{ c.monto|floatformat:0|intcomma }}</strong></span>
