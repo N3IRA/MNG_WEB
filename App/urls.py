@@ -45,9 +45,11 @@ urlpatterns = [
     # Inicio
     path('', views.index, name='index'),
 
-    # Términos y Condiciones & Nosotros
+    # Términos y Condiciones & Nosotros & Derechos de Autor
     path('terminos-y-condiciones/', terminos_views.terminos_view, name='terminos'),
     path('nosotros/', terminos_views.nosotros_view, name='nosotros'),
+    path('derechos-de-autor/', terminos_views.derechos_autor_view, name='derechos_autor'),
+    path('creditos/', terminos_views.derechos_autor_view, name='creditos'),
 
     # Tours / Paquetes públicos
     path('tours/', paquete_views.tours, name='tours'),
