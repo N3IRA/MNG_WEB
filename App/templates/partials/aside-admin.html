@@ -171,6 +171,11 @@
         <span class="small">Calificaciones</span>
       </a>
 
+      <a href="{% url 'backup' %}" class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'backup' %}bg-transparent text-white fw-semibold{% else %}text-white-50 text-white-hover{% endif %}">
+        <i class="bi bi-database fs-6" style="width: 20px;"></i>
+        <span class="small">Respaldo BD</span>
+      </a>
+
       <!-- Sección Gestión -->
       <div class="text-secondary text-uppercase fw-bold px-2 pt-3 pb-1 small" style="font-size: 0.68rem; letter-spacing: 0.8px;">Gestión</div>
 

@@ -26,6 +26,7 @@ from App.views.promocion import views as promocion_views
 from App.views.comprobante_pago import views as comprobante_pago_views
 from App.views.pagos_rechazados import views as pagos_rechazados_views
 from App.views.reserva.views import listar_cancelaciones_admin
+from backup.views import backup, restaurar_datos
 
 
 
@@ -191,5 +192,9 @@ urlpatterns = [
   #cancelaciones
   path('admin/reserva/', listar_cancelaciones_admin, name='listar_cancelaciones'),
   path('admin/cancelaciones/editar/<int:reserva_id>/', reserva_views.editar_cancelacion_admin, name='editar_cancelacion_admin'),
+
+    # Respaldo y restauración de la base de datos
+    path('admin/respaldo/', backup, name='backup'),
+    path('admin/respaldo/restaurar/', restaurar_datos, name='restaurar_datos'),
 ]
 
