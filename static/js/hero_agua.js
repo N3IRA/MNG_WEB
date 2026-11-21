@@ -1,87 +1,140 @@
 /**
- * Inicialización de Ondas de Agua sobre la Imagen del Hero (Monagua)
- * Con animación de entrada cinematográfica premium (GSAP) y WebGL Ripples.
+ * Inicialización de Ondas de Agua sobre el Carrusel del Hero (Monagua)
+ * Optimizado para alto rendimiento (Lazy WebGL Init, Pausa de slides ocultos y GSAP).
  */
 
 $(document).ready(function () {
-  const $hero = $('#hero-agua');
-  if (!$hero.length) return;
+  const $carousel = $('#carouselExampleFade');
+  if (!$carousel.length) return;
 
-  // Respetar preferencias de accesibilidad (reducción de movimiento)
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // 1. Inicializar WebGL Ripples sobre la imagen
-  try {
-    $hero.ripples({
-      resolution: 512,       // Alta resolución para ondas nítidas y cristalinas
-      dropRadius: 16,        // Tamaño de onda bien definido y visible
-      perturbance: 0.02,     // Refracción acuática equilibrada y notoria
-      interactive: true      // Ondas dinámicas al interactuar con el cursor o toque
-    });
-  } catch (err) {
-    console.warn('[Ripples] No fue posible inicializar WebGL Ripples:', err);
+  // Helper para inicializar Ripples en un slide específico de forma perezosa
+  function setupRipples($el) {
+    if (!$el || !$el.length || $el.data('ripples-ready')) return;
+    try {
+      $el.ripples({
+        resolution: 512,       // Alta resolución para nitidez cristalina
+        dropRadius: 16,        // Radio de gota
+        perturbance: 0.02,     // Refracción equilibrada
+        interactive: true      // Interacción táctil y mouse
+      });
+      $el.data('ripples-ready', true);
+    } catch (err) {
+      console.warn('[Ripples] Error inicializando WebGL:', err);
+    }
   }
+
+  // 1. Inicializar de inmediato ÚNICAMENTE la primera diapositiva (carga ultrarrápida, cero lag)
+  const $initialActive = $carousel.find('.carousel-item.active');
+  setupRipples($initialActive);
 
   function triggerDrop(relX, relY, radius, strength) {
     try {
-      const width = $hero.innerWidth();
-      const height = $hero.innerHeight();
+      const $active = $carousel.find('.carousel-item.active');
+      const width = $active.innerWidth();
+      const height = $active.innerHeight();
       if (!width || !height) return;
-      $hero.ripples('drop', width * relX, height * relY, radius, strength);
+      $active.ripples('drop', width * relX, height * relY, radius, strength);
     } catch (e) {}
   }
 
-  // 2. Transición de Entrada Cinematográfica Premium con GSAP
+  // 2. Animación de entrada cinematográfica con GSAP
   if (window.gsap && !prefersReducedMotion) {
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
-    // La imagen entra con escala sutil y elevación flotante de 0 a 1
-    tl.fromTo('#hero-agua',
-      { opacity: 0, scale: 0.95, y: 35 },
-      { opacity: 1, scale: 1, y: 0, duration: 1.25, clearProps: 'transform' }
+    tl.fromTo($carousel[0],
+      { opacity: 0, scale: 0.96, y: 30 },
+      { opacity: 1, scale: 1, y: 0, duration: 1.1, clearProps: 'transform' }
     )
-    // En el clímax del asentamiento (a los ~0.8s), cae una gota de bienvenida en el centro del lago
     .add(function () {
       triggerDrop(0.5, 0.46, 20, 0.024);
-    }, '-=0.45')
-    // Cascada rítmica y suave de textos, botones y badges
+    }, '-=0.4')
     .fromTo('.hero-anim-item',
-      { opacity: 0, y: 24 },
-      { opacity: 1, y: 0, duration: 0.85, stagger: 0.09, clearProps: 'transform' },
-      '-=0.9'
+      { opacity: 0, y: 22 },
+      { opacity: 1, y: 0, duration: 0.8, stagger: 0.08, clearProps: 'transform' },
+      '-=0.8'
     );
   }
 
-  // 3. Gotas periódicas cada 1.5s para mantener el agua viva en reposo
+  // 3. Gotas periódicas suaves cada 2.5s exclusivamente sobre el slide activo
   if (!prefersReducedMotion) {
     setInterval(function () {
-      if (!$hero.is(':visible')) return;
+      if (!$carousel.is(':visible')) return;
 
-      const width = $hero.innerWidth();
-      const height = $hero.innerHeight();
+      const $active = $carousel.find('.carousel-item.active');
+      if (!$active.length) return;
+
+      const width = $active.innerWidth();
+      const height = $active.innerHeight();
       if (!width || !height) return;
 
       const x = Math.random() * width;
       const y = Math.random() * height;
-      const dropRadius = 14 + Math.random() * 8;       // Radio notable (14px a 22px)
-      const strength = 0.014 + Math.random() * 0.012;  // Fuerza notable (0.014 a 0.026)
+      const dropRadius = 14 + Math.random() * 8;
+      const strength = 0.014 + Math.random() * 0.012;
 
-      $hero.ripples('drop', x, y, dropRadius, strength);
-    }, 1500);
+      $active.ripples('drop', x, y, dropRadius, strength);
+    }, 2500);
   }
 
-  // 4. Pausar y reanudar la animación según visibilidad en pantalla (ahorro de GPU)
+  // 4. Lazy-loading de WebGL al cambiar de diapositiva (slide.bs.carousel)
+  $carousel.on('slide.bs.carousel', function (e) {
+    const $next = $(e.relatedTarget);
+
+    // Inicializar WebGL en la diapositiva entrante solo cuando va a mostrarse
+    setupRipples($next);
+    if ($next.data('ripples-ready')) {
+      $next.ripples('play');
+    }
+
+    // Onda acuática expansiva al comenzar el desvanecimiento hacia la nueva imagen
+    setTimeout(function () {
+      try {
+        const w = $next.innerWidth();
+        const h = $next.innerHeight();
+        if (w && h) {
+          $next.ripples('drop', w * 0.5, h * 0.48, 22, 0.022);
+        }
+      } catch (err) {}
+    }, 200);
+  });
+
+  // 5. Al terminar la transición (slid.bs.carousel), pausar las diapositivas ocultas para ahorrar 100% GPU
+  $carousel.on('slid.bs.carousel', function () {
+    $carousel.find('.carousel-item:not(.active)').each(function () {
+      const $inactive = $(this);
+      if ($inactive.data('ripples-ready')) {
+        $inactive.ripples('pause');
+      }
+    });
+  });
+
+  // 6. Pre-calentar el siguiente slide en segundo plano (idle time) para que esté listo antes del giro
+  setTimeout(function () {
+    const $second = $carousel.find('.carousel-item').eq(1);
+    if ($second.length && !$second.data('ripples-ready')) {
+      // Breve cálculo invisible para compilar shader sin tirones
+      $second.css({ display: 'block', visibility: 'hidden', position: 'absolute' });
+      setupRipples($second);
+      $second.ripples('pause');
+      $second.css({ display: '', visibility: '', position: '' });
+    }
+  }, 2000);
+
+  // 7. Pausar cuando el carrusel salga del viewport (ahorro de batería y recursos)
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
+        const $active = $carousel.find('.carousel-item.active');
         if (entry.isIntersecting) {
-          $hero.ripples('play');
+          if ($active.data('ripples-ready')) $active.ripples('play');
         } else {
-          $hero.ripples('pause');
+          if ($active.data('ripples-ready')) $active.ripples('pause');
         }
       });
     }, { threshold: 0.05 });
 
-    observer.observe($hero[0]);
+    observer.observe($carousel[0]);
   }
 });

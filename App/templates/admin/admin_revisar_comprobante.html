@@ -77,14 +77,14 @@
         <!-- Columna Izquierda: Evidencia del Comprobante (Con Zoom Modal) -->
         <div class="col-12 col-lg-6">
             <div class="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden">
-                <div class="card-header bg-light bg-opacity-50 border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+                <div class="card-header bg-light bg-opacity-50 border-bottom py-3 px-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <span class="fw-bold text-dark d-flex align-items-center gap-2 small text-uppercase">
                         <i class="bi bi-image text-primary"></i> Evidencia del Comprobante
                     </span>
                     {% if comprobante.imagen_comprobante %}
                         <div class="d-flex align-items-center gap-2">
-                            <a href="{{ comprobante.imagen_comprobante.url }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm" title="Abrir imagen en alta resolución">
-                                <i class="bi bi-box-arrow-up-right"></i> Ver en Pantalla Completa
+                            <a href="{{ comprobante.imagen_comprobante.url }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm" title="Abrir imagen en pestaña nueva">
+                                <i class="bi bi-box-arrow-up-right"></i> Pantalla Completa
                             </a>
                             <a href="{{ comprobante.imagen_comprobante.url }}" download class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm" title="Descargar comprobante">
                                 <i class="bi bi-download"></i> Descargar
@@ -93,19 +93,38 @@
                     {% endif %}
                 </div>
 
-                <div class="card-body p-4 d-flex flex-column align-items-center justify-content-center text-center">
+                <div class="card-body p-3 p-md-4 d-flex flex-column align-items-center justify-content-center text-center">
                     {% if comprobante.imagen_comprobante %}
-                        <div class="p-2 bg-light rounded-4 border w-100 mb-3 d-flex align-items-center justify-content-center position-relative" style="min-height: 440px; max-height: 580px; overflow: hidden;">
-                            <a href="{{ comprobante.imagen_comprobante.url }}" target="_blank" title="Clic para abrir comprobante en tamaño completo">
-                                <img src="{{ comprobante.imagen_comprobante.url }}" 
+                        <!-- Contenedor Compacto y Responsivo Unificado -->
+                        <div class="position-relative w-100 rounded-4 border bg-dark bg-opacity-10 d-flex align-items-center justify-content-center overflow-hidden mb-3 shadow-inner" style="height: 480px; max-height: 62vh;">
+                            <!-- Barra Flotante de Inspección Rápida -->
+                            <div class="position-absolute top-0 end-0 m-2.5 d-flex gap-1 bg-white bg-opacity-95 p-1 rounded-pill shadow-sm border" style="z-index: 10;">
+                                <button type="button" class="btn btn-sm btn-light rounded-circle p-1" id="btnZoomIn" title="Acercar"><i class="bi bi-zoom-in fs-6"></i></button>
+                                <button type="button" class="btn btn-sm btn-light rounded-circle p-1" id="btnZoomOut" title="Alejar"><i class="bi bi-zoom-out fs-6"></i></button>
+                                <button type="button" class="btn btn-sm btn-light rounded-circle p-1" id="btnRotate" title="Girar 90°"><i class="bi bi-arrow-repeat fs-6"></i></button>
+                                <button type="button" class="btn btn-sm btn-light rounded-circle p-1" id="btnReset" title="Restablecer tamaño"><i class="bi bi-arrows-fullscreen fs-6"></i></button>
+                            </div>
+
+                            <!-- Badge Inferior con Referencia para Cotejo Rápido -->
+                            <div class="position-absolute bottom-0 start-0 m-2.5 bg-dark bg-opacity-75 text-white px-3 py-1 rounded-pill small fw-semibold d-none d-sm-inline-flex align-items-center gap-2" style="z-index: 9;">
+                                <i class="bi bi-receipt"></i>
+                                <span>Ref: {{ comprobante.referencia }}</span>
+                                <span class="opacity-50">|</span>
+                                <span>{{ comprobante.banco_origen|default:"Banco no indicado" }}</span>
+                            </div>
+
+                            <!-- Lienzo de Imagen con Tamaño Adaptable -->
+                            <div class="w-100 h-100 d-flex align-items-center justify-content-center p-2" id="comprobanteViewport" style="cursor: grab;">
+                                <img id="comprobanteImg"
+                                     src="{{ comprobante.imagen_comprobante.url }}" 
                                      alt="Comprobante de Pago #{{ comprobante.pk }}" 
-                                     class="img-fluid rounded-3 shadow-sm" 
-                                     style="max-height: 540px; object-fit: contain;">
-                            </a>
+                                     class="rounded-3 shadow-sm" 
+                                     style="max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; transition: transform 0.2s ease; user-select: none;">
+                            </div>
                         </div>
                         <div class="text-muted small d-flex align-items-center justify-content-center gap-2">
                             <i class="bi bi-info-circle text-primary"></i>
-                            <span>Haz clic en la imagen para abrir el comprobante en alta definición en una nueva pestaña.</span>
+                            <span>Usa los controles de la esquina para acercar, alejar o girar el comprobante si fue capturado de lado.</span>
                         </div>
                     {% else %}
                         <div class="py-5 text-center text-muted">
@@ -498,14 +517,64 @@ function inicializarDecisionListeners() {
 
 document.addEventListener('DOMContentLoaded', function() {
     inicializarDecisionListeners();
+    inicializarVisorComprobante();
 });
 
 // Reactivar listeners tras el swap seguro de HTMX
 document.addEventListener('htmx:afterSwap', function(evt) {
     if (evt.detail && evt.detail.target && evt.detail.target.id === 'revisar-comprobante-content') {
         inicializarDecisionListeners();
+        inicializarVisorComprobante();
     }
 });
+
+// Inspector interactivo de comprobantes (Zoom, Rotar y Reset)
+function inicializarVisorComprobante() {
+    const img = document.getElementById('comprobanteImg');
+    const viewport = document.getElementById('comprobanteViewport');
+    const btnIn = document.getElementById('btnZoomIn');
+    const btnOut = document.getElementById('btnZoomOut');
+    const btnRot = document.getElementById('btnRotate');
+    const btnRes = document.getElementById('btnReset');
+
+    if (!img) return;
+
+    let zoom = 1;
+    let rotation = 0;
+
+    function apply() {
+        img.style.transform = `scale(${zoom}) rotate(${rotation}deg)`;
+        if (viewport) {
+            viewport.style.cursor = zoom > 1 ? 'move' : 'grab';
+        }
+    }
+
+    if (btnIn) {
+        btnIn.onclick = function() {
+            zoom = Math.min(zoom + 0.3, 3.0);
+            apply();
+        };
+    }
+    if (btnOut) {
+        btnOut.onclick = function() {
+            zoom = Math.max(zoom - 0.3, 0.6);
+            apply();
+        };
+    }
+    if (btnRot) {
+        btnRot.onclick = function() {
+            rotation = (rotation + 90) % 360;
+            apply();
+        };
+    }
+    if (btnRes) {
+        btnRes.onclick = function() {
+            zoom = 1;
+            rotation = 0;
+            apply();
+        };
+    }
+}
 
 // Función auxiliar para copiar referencia
 function copiarReferencia(texto) {
