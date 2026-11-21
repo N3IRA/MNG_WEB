@@ -94,11 +94,48 @@ def obtener_resumen_pqrs(user):
 # LLAMADA HÍBRIDA OPCIONAL A GEMINI AI (SI EXISTE CLAVE EN .ENV / SETTINGS)
 # ══════════════════════════════════════════════════════════════════════════════
 
+def sanitizar_respuesta_ia(texto):
+    """
+    Filtro de seguridad anti-alucinación:
+    1. Reemplaza números de contacto inventados por el oficial de Monagua.
+    2. Reemplaza correos externos inventados por el institucional.
+    3. Corrige enlaces ficticios hacia las rutas válidas de Django.
+    """
+    if not texto:
+        return texto
+
+    # Garantizar teléfono de contacto oficial
+    telefonos_inventados = re.findall(r'(?:\+?57)?\s*3\d{2}[- ]?\d{3}[- ]?\d{4}', texto)
+    for tel in telefonos_inventados:
+        tel_limpio = re.sub(r'[\s\-+]', '', tel)
+        if '3223465191' not in tel_limpio:
+            texto = texto.replace(tel, '+57 322 3465191')
+
+    # Garantizar correo oficial
+    correos_inventados = re.findall(r'[\w\.-]+@[\w\.-]+\.\w+', texto)
+    for c in correos_inventados:
+        if 'monagua' not in c.lower():
+            texto = texto.replace(c, 'contacto@monagua.com')
+
+    # Corregir URLs hacia rutas oficiales
+    reemplazos_urls = [
+        (r'/contacto(?:\.html)?\b', '/pqrs/'),
+        (r'/reservar(?:\.html)?\b', '/tours/'),
+        (r'/pago(?:\.html)?\b', '/pagos/enviar-comprobante/'),
+        (r'/comprobante(?:\.html)?\b', '/pagos/enviar-comprobante/'),
+        (r'/ofertas(?:\.html)?\b', '/promociones/'),
+    ]
+    for patron, reemplazo in reemplazos_urls:
+        texto = re.sub(patron, reemplazo, texto, flags=re.IGNORECASE)
+
+    return texto
+
+
 def consultar_gemini(mensaje, request):
     """
     Si existe GEMINI_API_KEY configurada, procesa el mensaje con Google Gemini
-    proporcionándole contexto estricto de Monagua para evitar alucinaciones.
-    Si falla, retorna None para activar el motor local sin interrumpir al usuario.
+    proporcionándole contexto estricto de Monagua con guardrails anti-alucinación.
+    Si falla o no hay clave, retorna None para activar el motor local sin interrumpir al usuario.
     """
     api_key = getattr(settings, 'GEMINI_API_KEY', '') or os.environ.get('GEMINI_API_KEY', '')
     if not api_key:
@@ -108,22 +145,50 @@ def consultar_gemini(mensaje, request):
     tours_context = obtener_tours_destacados()
     promos_context = obtener_promociones_activas()
 
+    user = getattr(request, 'user', None)
+    usuario_info = ""
+    if user and user.is_authenticated:
+        usuario_info = f"\nInformación del usuario autenticado:\n- Nombre: {user.get_full_name() or user.username}\n"
+        res_info = obtener_resumen_reservas(user)
+        if res_info:
+            usuario_info += f"- Sus reservas registradas:\n{res_info}\n"
+        pq_info = obtener_resumen_pqrs(user)
+        if pq_info:
+            usuario_info += f"- Sus solicitudes PQRS:\n{pq_info}\n"
+
     system_instruction = (
-        "Eres Cóndy, el cóndor andino guardián y asistente virtual de 'Monagua Turismo', "
-        "agencia comunitaria de ecoturismo en Mongua, Boyacá, Colombia. "
-        "Directrices estrictas:\n"
-        "1. Habla siempre en español con tono cálido, respetuoso y profesional.\n"
-        "2. Monagua está en Mongua, Boyacá (cerca a Sogamoso, Cordillera Oriental). "
-        "Sus atractivos son el Páramo de Ocetá, Laguna Negra, Morro San Pedro, Peña de Otí y arte rupestre Muisca.\n"
-        "3. Tours reales disponibles:\n" + tours_context + "\n"
-        "4. Promociones reales:\n" + promos_context + "\n"
-        "5. Para radicar quejas, reclamos o solicitudes formales, SIEMPRE indica el apartado oficial /pqrs/.\n"
-        "6. Para pagar: aceptamos transferencias bancarias y Nequi/Daviplata, subiendo el comprobante en /pagos/enviar-comprobante/.\n"
-        "7. Clima: frío de páramo (7 a 16°C), se recomienda vestir por capas e impermeable.\n"
-        "8. Sé conciso (máximo 3 párrafos cortos) y nunca inventes ciudades ficticias ni teléfonos ajenos."
+        "Eres Cóndy, el cóndor andino guardián y asistente virtual oficial de 'Monagua Turismo', "
+        "agencia comunitaria de ecoturismo en el municipio de Mongua, Boyacá, Colombia.\n\n"
+        "REGLAS ESTRICTAS CONTRA ALUCINACIONES (CÚMPLELAS SIN EXCEPCIÓN):\n"
+        "1. UBICACIÓN EXCLUSIVA: Monagua opera ÚNICAMENTE en el municipio de Mongua, Boyacá "
+        "(a 35-40 min de Sogamoso). Sus atractivos son el Páramo de Ocetá, Laguna Negra, Morro San Pedro, "
+        "Peña de Otí y vestigios Muiscas. Si el usuario pregunta por otras ciudades o regiones (ej. Medellín, "
+        "Cartagena, Bogotá, Cali, Santa Marta, Eje Cafetero), responde con amabilidad que Monagua NO opera allí y "
+        "ofrécele los destinos de Mongua.\n"
+        "2. CATÁLOGO REAL: Solo menciona los tours reales activos en nuestra base de datos:\n"
+        f"{tours_context}\n"
+        "NUNCA inventes nombres de tours que no figuren en esa lista.\n"
+        "3. TARIFAS Y PRECIOS: Los precios varían según temporada, días y número de personas. "
+        "NUNCA inventes valores numéricos ni precios exactos al azar; remite siempre al catálogo oficial /tours/.\n"
+        "4. PROMOCIONES REALES:\n"
+        f"{promos_context}\n"
+        "No prometas descuentos ni códigos que no estén en esa lista.\n"
+        "5. MÉTODOS DE PAGO: Solo aceptamos transferencias bancarias (Bancolombia, Davivienda, etc.) y "
+        "billeteras digitales (Nequi, Daviplata). NUNCA digas que aceptamos pagos directos con tarjeta en línea, "
+        "PayPal, PSE automático ni criptomonedas. El cliente debe pagar y luego subir su comprobante en "
+        "/pagos/enviar-comprobante/.\n"
+        "6. CONTACTO OFICIAL ÚNICO: Teléfono/WhatsApp oficial: +57 322 3465191. Correo: contacto@monagua.com. "
+        "NUNCA inventes otros números de teléfono ni correos electrónicos.\n"
+        "7. RADICACIÓN DE QUEJAS Y RECLAMOS: Para cualquier inconformidad, queja, reclamo o petición formal, "
+        "indica SIEMPRE el módulo oficial de la plataforma: /pqrs/.\n"
+        "8. ENLACES PERMITIDOS: Únicamente puedes citar estas rutas: /tours/, /pqrs/, /mis_pqrs/, "
+        "/pagos/enviar-comprobante/, /reservas/mis-reservas/, /promociones/, /nosotros/.\n"
+        "9. CLIMA: Frío de páramo (7°C a 16°C). Ropa recomendada: en capas, impermeable, calzado de trekking.\n"
+        "10. BREVEDAD Y TONO: Sé cordial, conciso (máximo 2 párrafos) y 100% verídico."
+        + usuario_info
     )
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    modelos = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.5-flash"]
     payload = {
         "systemInstruction": {
             "parts": [{"text": system_instruction}]
@@ -132,33 +197,52 @@ def consultar_gemini(mensaje, request):
             {"role": "user", "parts": [{"text": mensaje}]}
         ],
         "generationConfig": {
-            "temperature": 0.3,
+            "temperature": 0.1,  # Temperatura baja para máxima fidelidad y cero alucinaciones
+            "topP": 0.8,
             "maxOutputTokens": 350
         }
     }
 
-    try:
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode('utf-8'),
-            headers={'Content-Type': 'application/json'},
-            method='POST'
-        )
-        with urllib.request.urlopen(req, timeout=4.0) as response:
-            if response.status == 200:
-                res_data = json.loads(response.read().decode('utf-8'))
-                candidates = res_data.get('candidates', [])
-                if candidates:
-                    parts = candidates[0].get('content', {}).get('parts', [])
-                    if parts and 'text' in parts[0]:
-                        texto_ia = parts[0]['text'].strip()
-                        return {
-                            "response": texto_ia,
-                            "options": ["¿Qué tours ofrecen?", "¿Cómo reservar?", "Radicar PQRS"]
-                        }
-    except Exception:
-        # En caso de error de red, cuota o timeout, se delega al motor NLP local
-        return None
+    for modelo in modelos:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent?key={api_key}"
+        try:
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode('utf-8'),
+                headers={'Content-Type': 'application/json'},
+                method='POST'
+            )
+            with urllib.request.urlopen(req, timeout=5.0) as response:
+                if response.status == 200:
+                    res_data = json.loads(response.read().decode('utf-8'))
+                    candidates = res_data.get('candidates', [])
+                    if candidates:
+                        parts = candidates[0].get('content', {}).get('parts', [])
+                        if parts and 'text' in parts[0]:
+                            texto_ia = sanitizar_respuesta_ia(parts[0]['text'].strip())
+                            resultado = {
+                                "response": texto_ia,
+                                "options": ["¿Qué tours ofrecen?", "¿Cómo reservar?", "Radicar PQRS"]
+                            }
+                            # Detección inteligente de botones de navegación
+                            texto_lower = texto_ia.lower()
+                            if 'pqrs' in texto_lower or 'queja' in texto_lower or 'reclamo' in texto_lower:
+                                resultado["link_url"] = "/pqrs/"
+                                resultado["link_text"] = "Radicar PQRS oficial"
+                                resultado["action"] = "pqrs"
+                            elif 'comprobante' in texto_lower or 'pago' in texto_lower:
+                                resultado["link_url"] = "/pagos/enviar-comprobante/"
+                                resultado["link_text"] = "Enviar comprobante de pago"
+                            elif 'tour' in texto_lower or 'paquete' in texto_lower or 'destino' in texto_lower:
+                                resultado["link_url"] = "/tours/"
+                                resultado["link_text"] = "Ver catálogo de tours"
+                            elif 'oferta' in texto_lower or 'promocion' in texto_lower or 'descuento' in texto_lower:
+                                resultado["link_url"] = "/promociones/"
+                                resultado["link_text"] = "Ver promociones vigentes"
+
+                            return resultado
+        except Exception:
+            continue
 
     return None
 
