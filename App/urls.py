@@ -28,6 +28,7 @@ from App.views.reserva.views import listar_cancelaciones_admin
 from App.views.poliza_viaje import views as poliza_views
 from App.views.aseguradora import views as aseguradora_views
 
+from backup.views import backup, restaurar_datos
 
 
 
@@ -100,7 +101,8 @@ urlpatterns = [
     path('reservas/cancelar/<int:reserva_id>/', reserva_views.cancelar_reserva_usuario, name='cancelar_reserva_usuario'),
     path('reservas/comprobante/<int:reserva_id>/', reserva_views.comprobante_reserva_html, name='comprobante_reserva'),
     path('reservas/comprobante-multiple/', reserva_views.comprobante_multiple, name='comprobante_multiple'),
-    
+    path('reservas/<int:reserva_id>/personas/modificar/', reserva_views.modificar_personas_reserva, name='modificar_personas_reserva'),
+
     # Reservas (Administración / Staff)
     path('admin/reservas/', reserva_views.GestionReservasListView.as_view(), name='gestion_reservas'),
     path('admin/reservas/agregar/', reserva_views.CrearReservaAdminView.as_view(), name='agregar_reserva'),
@@ -207,5 +209,9 @@ urlpatterns = [
   #cancelaciones
   path('admin/reserva/', listar_cancelaciones_admin, name='listar_cancelaciones'),
   path('admin/cancelaciones/editar/<int:reserva_id>/', reserva_views.editar_cancelacion_admin, name='editar_cancelacion_admin'),
+
+    # Respaldo y restauración de la base de datos
+    path('admin/respaldo/', backup, name='backup'),
+    path('admin/respaldo/restaurar/', restaurar_datos, name='restaurar_datos'),
 ]
 
