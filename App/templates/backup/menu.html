@@ -46,8 +46,24 @@
     border: 1px solid rgba(25,135,84,.18);
   }
   .toast-backup {
-    min-width: 340px;
+    min-width: 360px;
+    border-radius: 1rem !important;
+    overflow: hidden;
   }
+  .toast-backup .toast-header {
+    min-height: 58px;
+    background: #fff;
+  }
+  .toast-backup .toast-body {
+    background: #fff;
+    padding: 0 1.25rem 1.1rem 3.75rem;
+    color: #495057;
+  }
+  .toast-backup.is-error .toast-header,
+  .toast-backup.is-error .toast-body { background: #fff8f8; }
+  .toast-backup.is-success .toast-header,
+  .toast-backup.is-success .toast-body { background: #f7fffa; }
+
   @media (max-width: 576px) {
     .toast-backup { min-width: calc(100vw - 32px); }
   }
@@ -269,12 +285,15 @@
     document.getElementById('toastMensaje').textContent = mensaje;
     document.getElementById('toastHora').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+    toastElement.classList.remove('is-success', 'is-error');
+    toastElement.classList.add(tipo === 'exito' ? 'is-success' : 'is-error');
+
     icono.className = 'rounded-circle d-inline-flex align-items-center justify-content-center me-2 text-white ' +
       (tipo === 'exito' ? 'bg-success' : 'bg-danger');
     icono.innerHTML = tipo === 'exito' ? '<i class="bi bi-check-lg"></i>' : '<i class="bi bi-x-lg"></i>';
 
     if (window.bootstrap && window.bootstrap.Toast) {
-      new bootstrap.Toast(toastElement, { delay: 5000 }).show();
+      new bootstrap.Toast(toastElement, { delay: 7000 }).show();
     } else {
       window.alert(titulo + ': ' + mensaje);
     }

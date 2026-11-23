@@ -792,9 +792,15 @@ class Notificacion(models.Model):
                 return reverse('admin_comprobantes')
             if 'calificacion' in tipo:
                 return reverse('listar_calificaciones')
-            if 'usuario' in tipo or 'guia' in tipo:
+            if 'guia' in tipo:
+                return reverse('gestion_guias')
+            if 'usuario' in tipo:
                 return reverse('gestion_usuarios')
             return reverse('dashboard_admin')
+
+        es_guia = bool(self.usuario and getattr(self.usuario, 'es_guia', False))
+        if es_guia:
+            return reverse('listar_notificaciones')
 
         if 'categoria' in tipo:
             return reverse('tours')

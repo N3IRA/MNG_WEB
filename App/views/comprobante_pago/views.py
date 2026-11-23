@@ -125,9 +125,11 @@ def admin_revisar_comprobante(request, pk):
                     )
 
                     # Registrar notificación en el sistema
+                    cliente = comprobante.reserva.usuario if comprobante.reserva else None
                     crear_notificacion_sistema(
-                        usuario=request.user,
-                        mensaje=f"El comprobante #{comprobante.pk} ha sido actualizado de '{estado_anterior}' a '{estado_transaccion}'.",
+                        usuario=cliente,
+                        reserva=comprobante.reserva,
+                        mensaje=f"El comprobante #{comprobante.pk} fue actualizado a '{estado_transaccion}'.",
                         tipo="Comprobante de Pago",
                         prioridad="alta"
                     )

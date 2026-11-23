@@ -15,6 +15,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.mail import EmailMultiAlternatives, send_mail
+from django.db.models import Q
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -85,6 +86,17 @@ def crear_notificacion_sistema(usuario, mensaje, tipo="Reserva", prioridad="medi
     if usuario and getattr(usuario, 'is_authenticated', False):
         try:
             from App.models import Notificacion
+
+            existente = Notificacion.objects.filter(
+                usuario=usuario,
+                reserva=reserva,
+                mensaje=mensaje,
+                tipo=tipo,
+                leido=False,
+            ).first()
+            if existente:
+                return existente
+
             return Notificacion.objects.create(
                 usuario=usuario,
                 reserva=reserva,
@@ -495,3 +507,28 @@ def enviar_correo_confirmacion_con_factura(reserva, request=None):
     email.attach(pdf_filename, pdf_bytes, "application/pdf")
 
     email.send(fail_silently=False)
+
+
+def notificar_administradores(mensaje, tipo="Sistema", prioridad="media", reserva=None):
+    """Crea una notificación individual para todos los usuarios administradores activos."""
+    try:
+        from django.contrib.auth import get_user_model
+        Usuario = get_user_model()
+        administradores = Usuario.objects.filter(is_active=True).filter(
+            Q(is_staff=True) | Q(rol=Usuario.Roles.ADMIN)
+        ).distinct()
+        creadas = []
+        for administrador in administradores:
+            creada = crear_notificacion_sistema(
+                administrador,
+                mensaje,
+                tipo=tipo,
+                prioridad=prioridad,
+                reserva=reserva,
+            )
+            if creada:
+                creadas.append(creada)
+        return creadas
+    except Exception as e:
+        logger.error(f"Error al notificar administradores: {e}")
+        return []

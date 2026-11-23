@@ -3,14 +3,17 @@ import shutil
 import sqlite3
 import subprocess
 import tempfile
+import time
 from datetime import datetime
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db import connection
+from django.db import connection, connections
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
+
+from App.utils import crear_notificacion_sistema
 
 
 def es_administrador(user):
@@ -92,11 +95,26 @@ def backup(request):
             return JsonResponse({'error': 'No se puede conectar a la base de datos activa.'}, status=400)
         try:
             if motor == 'postgresql':
-                return descargar_backup_postgresql()
-            if motor == 'sqlite':
-                return descargar_backup_sqlite()
-            return JsonResponse({'error': f'Respaldo automático no soportado para el motor: {motor}'}, status=400)
+                respuesta = descargar_backup_postgresql()
+            elif motor == 'sqlite':
+                respuesta = descargar_backup_sqlite()
+            else:
+                return JsonResponse({'error': f'Respaldo automático no soportado para el motor: {motor}'}, status=400)
+
+            crear_notificacion_sistema(
+                usuario=request.user,
+                mensaje=f"Se generó y descargó correctamente el respaldo de la base de datos ({motor}).",
+                tipo="Respaldo de Base de Datos",
+                prioridad="media",
+            )
+            return respuesta
         except Exception as exc:
+            crear_notificacion_sistema(
+                usuario=request.user,
+                mensaje=f"No fue posible generar el respaldo de la base de datos: {str(exc)}",
+                tipo="Error de Respaldo",
+                prioridad="alta",
+            )
             return JsonResponse({'error': str(exc)}, status=400)
 
     return render(request, 'backup/menu.html', {
@@ -137,9 +155,28 @@ def restaurar_datos(request):
             restaurar_sqlite(contenido_sql)
         else:
             return JsonResponse({'error': f'Restauración no soportada para el motor: {motor}'}, status=400)
+        crear_notificacion_sistema(
+            usuario=request.user,
+            mensaje=f"Base de datos restaurada correctamente ({motor}).",
+            tipo="Restauración de Base de Datos",
+            prioridad="media",
+        )
         return JsonResponse({'exito': True, 'mensaje': 'Base de datos restaurada correctamente.'})
     except Exception as exc:
-        return JsonResponse({'error': f'Error al restaurar: {exc}'}, status=400)
+        detalle = str(exc).strip()
+        if 'locked' in detalle.lower() or 'used by another process' in detalle.lower():
+            detalle = 'La base de datos está siendo utilizada por otro proceso. Cierra las demás pestañas o conexiones y vuelve a intentarlo.'
+        elif 'WinError 32' in detalle or 'Errno 13' in detalle:
+            detalle = 'Windows bloqueó temporalmente el archivo de la base de datos. Espera unos segundos y vuelve a intentarlo.'
+        elif 'cannot start a transaction within a transaction' in detalle.lower():
+            detalle = 'El archivo SQL contiene una transacción no compatible con este respaldo. Descarga nuevamente el respaldo o vuelve a exportarlo y prueba otra vez.'
+        crear_notificacion_sistema(
+            usuario=request.user,
+            mensaje=f"No fue posible restaurar la base de datos: {detalle}",
+            tipo="Error de Restauración",
+            prioridad="alta",
+        )
+        return JsonResponse({'error': f'Error al restaurar: {detalle}'}, status=400)
 
 
 def descargar_backup_postgresql():
@@ -243,30 +280,55 @@ def restaurar_sqlite(contenido_sql):
 
     db = settings.DATABASES['default']
     ruta_original = str(db['NAME'])
-    connection.close()
+    connections.close_all()
 
     directorio = os.path.dirname(ruta_original)
     descriptor, ruta_temporal = tempfile.mkstemp(suffix='.sqlite3', dir=directorio)
     os.close(descriptor)
-    os.unlink(ruta_temporal)
 
     try:
-        con = sqlite3.connect(ruta_temporal)
-        con.executescript(contenido_sql)
-        integridad = con.execute('PRAGMA integrity_check').fetchone()
-        if not integridad or integridad[0] != 'ok':
-            raise Exception(f'La copia restaurada no pasó la integridad: {integridad}')
-        con.commit()
-        con.close()
+        con_temporal = sqlite3.connect(ruta_temporal, isolation_level=None)
+        try:
+            con_temporal.execute('PRAGMA foreign_keys=OFF')
+            con_temporal.execute('PRAGMA busy_timeout=10000')
+            con_temporal.executescript(contenido_sql)
+            integridad = con_temporal.execute('PRAGMA integrity_check').fetchone()
+            if not integridad or integridad[0] != 'ok':
+                raise Exception(f'La copia restaurada no pasó la integridad: {integridad}')
+        finally:
+            con_temporal.close()
 
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         copia_seguridad = f'{ruta_original}.pre_restore_{timestamp}.bak'
-        if os.path.exists(ruta_original):
-            shutil.copy2(ruta_original, copia_seguridad)
+        shutil.copy2(ruta_original, copia_seguridad)
 
-        os.replace(ruta_temporal, ruta_original)
-        connection.close()
+        ultimo_error = None
+        for intento in range(8):
+            try:
+                connections.close_all()
+                os.replace(ruta_temporal, ruta_original)
+                ultimo_error = None
+                break
+            except (sqlite3.OperationalError, PermissionError, OSError) as exc:
+                ultimo_error = exc
+                if intento < 7:
+                    time.sleep(0.20 * (intento + 1))
+
+        if ultimo_error:
+            raise ultimo_error
+
+        connections.close_all()
+
+        con_restaurada = sqlite3.connect(ruta_original, isolation_level=None)
+        try:
+            con_restaurada.execute('PRAGMA busy_timeout=10000')
+            integridad = con_restaurada.execute('PRAGMA integrity_check').fetchone()
+            if not integridad or integridad[0] != 'ok':
+                raise Exception(f'La base restaurada no pasó la integridad: {integridad}')
+        finally:
+            con_restaurada.close()
     except Exception:
+        raise
+    finally:
         if os.path.exists(ruta_temporal):
             os.remove(ruta_temporal)
-        raise
