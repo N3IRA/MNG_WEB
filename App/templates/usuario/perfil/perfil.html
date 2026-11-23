@@ -1,10 +1,7 @@
 {% extends "usuario/base-turista-dashboard.html" %} {% load static %} {% block
-title %}Perfil de {{ user.first_name|default:user.username }} | Monagua{%
-endblock %} {% block content %}
+title %}Perfil de {{ user.first_name|default:user.username }} | Monagua{%endblock %} {% block content %}
 <div class="container-fluid px-0 px-md-3 py-2">
-  <!-- ══════════════════════════════════════════════════════════════ -->
-  <!-- 1. CABECERA ESTILO FACEBOOK: Portada + Avatar Superpuesto + Info -->
-  <!-- ══════════════════════════════════════════════════════════════ -->
+
   <div
     class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden mb-4"
     data-aos="fade-down"
