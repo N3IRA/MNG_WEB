@@ -4,6 +4,7 @@
 {% block title %}Mis Estadísticas | Monagua{% endblock %}
 
 {% block content %}
+{% include "partials/breadcrumbs.html" with current_title="Mis Estadísticas" current_icon="bi bi-bar-chart-line-fill" %}
 {% include "usuario/dashboard/estadisticas_content.html" %}
 {% endblock %}
 

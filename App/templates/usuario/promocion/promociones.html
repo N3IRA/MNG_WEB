@@ -13,7 +13,7 @@
 
   <!-- ── 1. Hero Banner de Ofertas ── -->
   <section class="position-relative overflow-hidden text-white rounded-4 shadow-lg mb-4 mb-lg-5 p-4 p-md-5"
-           style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(20, 83, 45, 0.88) 100%), url('{% static 'img/carousel/paramo.webp' %}') center/cover no-repeat;"
+           style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(20, 83, 45, 0.88) 100%), url('{% static 'img/paramo.webp' %}') center/cover no-repeat;"
            data-aos="fade-down" data-aos-duration="700">
     <div class="row align-items-center justify-content-between g-4 position-relative" style="z-index: 2;">
       <div class="col-12 col-lg-8">
@@ -139,7 +139,7 @@
                 {% if primer_paquete and primer_paquete.imagen %}
                   <img src="{{ primer_paquete.imagen.url }}" class="card-img-top object-fit-cover" alt="{{ promo.nombre }}" loading="lazy">
                 {% else %}
-                  <img src="{% static 'img/carousel/paramo.webp' %}" class="card-img-top object-fit-cover" alt="{{ promo.nombre }}" loading="lazy">
+                  <img src="{% static 'img/paramo.webp' %}" class="card-img-top object-fit-cover" alt="{{ promo.nombre }}" loading="lazy">
                 {% endif %}
               {% endwith %}
 

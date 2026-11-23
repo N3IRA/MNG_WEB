@@ -120,6 +120,11 @@
       </a>
       {% endif %}
 
+      <!-- Notificaciones (al lado izquierdo de Mis Reservas) -->
+      {% if user.is_authenticated %}
+        {% include 'partials/notificacion/notificaciones.html' with en_header=True %}
+      {% endif %}
+
       <!-- Mis Reservas (solo para turistas/clientes) -->
       {% if not user.is_authenticated or user.rol != 'ADMIN' %}
       <a

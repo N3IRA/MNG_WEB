@@ -180,6 +180,7 @@ extra_head %}
   }
 </style>
 {% endblock %} {% block content %}
+{% include "partials/breadcrumbs.html" with current_title="Panel de Control" current_icon="bi bi-compass-fill" %}
 <!-- ── Top Bar ── -->
 <div
   class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4"

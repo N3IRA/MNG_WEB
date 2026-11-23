@@ -1,4 +1,25 @@
 {% load static %}
+{% if en_header %}
+<div class="dropdown">
+    <button class="btn btn-link text-dark p-2 position-relative shadow-none border-0 d-flex align-items-center justify-content-center" 
+            type="button" 
+            id="dropdownPanelNotifHeader" 
+            data-bs-toggle="dropdown" 
+            aria-expanded="false"
+            data-notif-count="{{ contador_notificaciones|default:0 }}"
+            title="Notificaciones">
+        <i class="bi bi-bell fs-5"></i>
+        <div hx-get="{% url 'badge_notificaciones' %}" hx-trigger="every 30s" hx-swap="innerHTML" style="display: contents;">
+            {% if contador_notificaciones > 0 %}
+                <span id="badgeCampanaNotif" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-2 border-white fw-bold shadow-sm d-flex align-items-center justify-content-center animate-pulse" style="font-size: 0.65rem; min-width: 18px; height: 18px;">
+                    {{ contador_notificaciones }}
+                </span>
+            {% else %}
+                <span id="badgeCampanaNotif" class="d-none"></span>
+            {% endif %}
+        </div>
+    </button>
+{% else %}
 <div id="contenedorCampanaNotif" class="dropdown position-fixed"
      style="top: 20px; right: 25px; z-index: 1045;">
     <!-- Botón Flotante de la Campana -->
@@ -23,11 +44,12 @@
             {% endif %}
         </div>
     </button>
+{% endif %}
 
     <!-- Menú Desplegable -->
     <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 overflow-hidden mt-2 p-0" 
         style="width: 360px;"
-        aria-labelledby="dropdownPanelNotif">
+        aria-labelledby="{% if en_header %}dropdownPanelNotifHeader{% else %}dropdownPanelNotif{% endif %}">
     
         <li class="dropdown-header text-white fw-bold py-3 fs-6 bg-success d-flex align-items-center justify-content-between px-3 m-0">
             <span><i class="bi bi-bell me-2"></i>Notificaciones</span>

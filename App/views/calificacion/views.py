@@ -44,6 +44,10 @@ def listar_calificaciones_admin(request):
     else:
         promedio_val = 0
 
+    total_val = estadisticas['total'] or 0
+    total_visibles_val = estadisticas['total_visibles'] or 0
+    total_ocultas_val = total_val - total_visibles_val
+
     # Añadir atributos calculados para la vista de estrellas y enlaces
     for c in calificaciones:
         c.estrellas = range(c.puntaje_estrellas or 0)
@@ -54,8 +58,9 @@ def listar_calificaciones_admin(request):
     return render(request, 'admin/calificacion/calificacion_admin.html', {
         'titulo': 'Gestión de Calificaciones — Administración',
         'calificaciones': calificaciones,
-        'total': estadisticas['total'] or 0,
-        'total_visibles': estadisticas['total_visibles'] or 0,
+        'total': total_val,
+        'total_visibles': total_visibles_val,
+        'total_ocultas': total_ocultas_val,
         'promedio': promedio_val,
         'tipo_filtro': tipo_filtro,
         'valoracion_filtro': valoracion_filtro
