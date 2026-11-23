@@ -2,9 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Sum, Q
-from django.utils import timezone
-from App.models import Pago, Reserva, Usuario
-from App.utils import crear_notificacion_sistema
+from App.models import Pago, Reserva
+from App.utils import crear_notificacion_sistema, notificar_administradores
 
 from App.forms.pago.forms import ComprobantePagoForm
 
@@ -58,6 +57,12 @@ def enviar_comprobante(request):
                 reserva=reserva,
                 mensaje=f"Se ha enviado un nuevo comprobante de pago para {'la penalidad' if es_penalidad else 'la reserva'} #{reserva.id} del paquete '{reserva.paquete.nombre}'.",
                 tipo="Comprobante de Pago",
+                prioridad="alta"
+            )
+            notificar_administradores(
+                reserva=reserva,
+                mensaje=f"El usuario {request.user} ha enviado un nuevo comprobante de pago para la reserva #{reserva.id}.",
+                tipo="Nuevo Comprobante de Pago",
                 prioridad="alta"
             )
 

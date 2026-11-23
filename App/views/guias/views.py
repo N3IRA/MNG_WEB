@@ -218,8 +218,8 @@ def asignar_rol_guia(request, id):
         user_obj.save()
 
         crear_notificacion_sistema(
-            usuario=request.user,
-            mensaje="Alteración de rol de usuario",
+            usuario=user_obj,
+            mensaje=msg,
             tipo="Guía Turístico",
             prioridad="media"
         )

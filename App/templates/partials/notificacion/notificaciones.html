@@ -45,6 +45,23 @@
             </a>
         </li>
 
+        <!-- Acción rápida para marcar todas como leídas -->
+        <li class="border-bottom bg-white">
+            <div class="d-flex align-items-center gap-2 px-3 py-2">
+                {% if contador_notificaciones > 0 %}
+                    <span id="badgeDropdownNotif" class="badge bg-white text-success small rounded-pill px-2">
+                        {{ contador_notificaciones }} sin leer
+                    </span>
+                    <button type="button" class="btn btn-sm btn-outline-light border-0 px-2"
+                            hx-post="{% url 'marcar_todas_leidas' %}"
+                            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                            title="Marcar todas como leídas">
+                        <i class="bi bi-check2-all"></i>
+                    </button>
+                {% endif %}
+            </div>
+        </li>
+
         <!-- Lista de Notificaciones -->
         <div class="overflow-y-auto" style="max-height: 400px;">
             {% if notificaciones_globales %}

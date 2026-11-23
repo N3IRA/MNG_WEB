@@ -63,11 +63,7 @@ title %}Notificaciones y Avisos | Monagua{% endblock %} {% block content %}
             <span>Marcar todas como leídas</span>
           </button>
           {% endif %}
-          <a
-            href="{% url 'configuracion_usuario' %}"
-            class="btn btn-light border rounded-pill px-4 py-2 fw-semibold shadow-sm d-inline-flex align-items-center gap-2"
-            title="Ajustes de alertas"
-          >
+          <a href="{% if user.es_admin %}{% url 'admin_perfil' %}{% elif user.es_guia %}{% url 'perfil_detalles' %}{% else %}{% url 'configuracion_usuario' %}{% endif %}" class="btn btn-light border rounded-pill px-4 py-2 fw-semibold shadow-sm d-inline-flex align-items-center gap-2" title="Ajustes de alertas">
             <i class="bi bi-gear-fill text-muted"></i>
             <span>Preferencias</span>
           </a>
@@ -124,34 +120,83 @@ title %}Notificaciones y Avisos | Monagua{% endblock %} {% block content %}
   <div class="row">
     <div class="col-12">
       {% if notificaciones %}
-      <div class="d-flex flex-column gap-3">
-        {% for noti in notificaciones %}
-        <div
-          class="card border-0 shadow-sm rounded-4 bg-white p-4 transition-hover position-relative overflow-hidden {% if not noti.leido %}border-start border-4 border-success{% else %}border-start border-4 border-light opacity-85{% endif %} notification-item"
-          style="cursor: pointer"
-          data-aos="fade-up"
-          onclick="if (!event.target.closest('a, button')) { window.location.href = '{% url 'marcar_notificacion_leida' noti.id %}?next={{ noti.get_destino_url|urlencode }}'; }"
-        >
-          <div
-            class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"
-          >
-            <!-- Ícono + Contenido -->
-            <div class="d-flex align-items-start gap-3">
-              <!-- Ícono Circular de Estado -->
-              <div class="flex-shrink-0">
-                <div
-                  class="p-3 rounded-circle d-flex align-items-center justify-content-center {% if not noti.leido %}bg-success bg-opacity-10 text-success border border-success border-opacity-25{% else %}bg-light text-muted border{% endif %}"
-                  style="width: 52px; height: 52px"
-                >
-                  {% if noti.prioridad == 'alta' %}
-                  <i
-                    class="bi bi-exclamation-triangle-fill fs-5 text-danger"
-                  ></i>
-                  {% elif noti.reserva %}
-                  <i class="bi bi-calendar-check-fill fs-5 text-success"></i>
-                  {% else %}
-                  <i class="bi bi-bell-fill fs-5"></i>
-                  {% endif %}
+        <div class="d-flex flex-column gap-3">
+          {% for noti in notificaciones %}
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 transition-hover position-relative overflow-hidden {% if not noti.leido %}border-start border-4 border-success{% else %}border-start border-4 border-light opacity-85{% endif %} notification-item"
+                 style="cursor: pointer;"
+                 data-aos="fade-up"
+                 onclick="if (!event.target.closest('a, button')) { window.location.href = '{% url 'marcar_notificacion_leida' noti.id %}?next={{ noti.get_destino_url|urlencode }}'; }">
+              
+              <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                
+                <!-- Ícono + Contenido -->
+                <div class="d-flex align-items-start gap-3">
+                  
+                  <!-- Ícono Circular de Estado -->
+                  <div class="flex-shrink-0">
+                    <div class="p-3 rounded-circle d-flex align-items-center justify-content-center {% if not noti.leido %}bg-success bg-opacity-10 text-success border border-success border-opacity-25{% else %}bg-light text-muted border{% endif %}" style="width: 52px; height: 52px;">
+                      {% if noti.prioridad == 'alta' %}
+                        <i class="bi bi-exclamation-triangle-fill fs-5 text-danger"></i>
+                      {% elif noti.reserva %}
+                        <i class="bi bi-calendar-check-fill fs-5 text-success"></i>
+                      {% else %}
+                        <i class="bi bi-bell-fill fs-5"></i>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <!-- Textos y Metadatos -->
+                  <div>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                      
+                      <!-- Tipo o Título -->
+                      <h6 class="fw-bold text-dark mb-0">
+                        {{ noti.tipo|default:"Aviso de Monagua" }}
+                      </h6>
+
+                      <!-- Insignia No Leído -->
+                      {% if not noti.leido %}
+                        <span class="badge bg-danger text-white rounded-pill px-2.5 py-1 small fw-bold">
+                          <i class="bi bi-record-fill me-1"></i> Nuevo
+                        </span>
+                      {% else %}
+                        <span class="badge bg-light text-muted rounded-pill px-2.5 py-1 small border">
+                          Leído
+                        </span>
+                      {% endif %}
+
+                      <!-- Insignia Prioridad -->
+                      {% if noti.prioridad == 'alta' %}
+                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 small fw-bold">
+                          Prioridad Alta
+                        </span>
+                      {% elif noti.prioridad == 'media' %}
+                        <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-25 rounded-pill px-2.5 py-1 small fw-semibold">
+                          Prioridad Media
+                        </span>
+                      {% endif %}
+
+                    </div>
+
+                    <!-- Mensaje -->
+                    <p class="text-secondary mb-2 mt-1 fs-6">
+                      {{ noti.mensaje }}
+                    </p>
+
+                    <!-- Fecha y Reserva vinculada -->
+                    <div class="d-flex flex-wrap align-items-center gap-3 text-muted small">
+                      <span>
+                        <i class="bi bi-clock me-1 text-success"></i>{{ noti.fecha_creacion|date:"d/m/Y h:i A" }}
+                      </span>
+                      {% if noti.reserva %}
+                        <span>&bull;</span>
+                        <a href="{% if user.es_admin %}{% url 'gestion_reservas' %}{% else %}{% url 'mis_reservas_usuario' %}{% endif %}" class="text-success fw-semibold text-decoration-none d-inline-flex align-items-center gap-1">
+                          <i class="bi bi-compass"></i> Reserva #{{ noti.reserva.id }} ({{ noti.reserva.paquete.nombre }})
+                        </a>
+                      {% endif %}
+                    </div>
+
+                  </div>
                 </div>
               </div>
 
