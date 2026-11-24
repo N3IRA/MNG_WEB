@@ -1,5 +1,7 @@
 from django.urls import reverse_lazy
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib import messages
 from django import forms
@@ -54,7 +56,7 @@ class CategoriaCreateView(StaffRequiredMixin, CreateView):
         form = super().get_form(form_class)
         for name, field in form.fields.items():
             if isinstance(field.widget, forms.CheckboxInput):
-                field.widget.attrs.update({'class': 'form-check-input'})
+                field.widget.attrs.update({'class': 'form-check-input', 'role': 'switch'})
             elif isinstance(field.widget, forms.Select):
                 field.widget.attrs.update({'class': 'form-select'})
             else:
@@ -82,7 +84,7 @@ class CategoriaUpdateView(StaffRequiredMixin, UpdateView):
         form = super().get_form(form_class)
         for name, field in form.fields.items():
             if isinstance(field.widget, forms.CheckboxInput):
-                field.widget.attrs.update({'class': 'form-check-input'})
+                field.widget.attrs.update({'class': 'form-check-input', 'role': 'switch'})
             elif isinstance(field.widget, forms.Select):
                 field.widget.attrs.update({'class': 'form-select'})
             else:
@@ -107,10 +109,39 @@ class CategoriaUpdateView(StaffRequiredMixin, UpdateView):
         return response
 
 
+@login_required(login_url='login')
+@require_POST
+def toggle_estado_categoria(request, pk):
+    """Alterna el estado Activa/Inactiva de una categoría (solo staff)."""
+    if not (request.user.is_active and request.user.is_staff):
+        messages.error(request, "No tienes permisos para cambiar el estado de las categorías.")
+        return redirect('index')
+
+    categoria = get_object_or_404(Categoria, pk=pk)
+    categoria.estado = not categoria.estado
+    categoria.save(update_fields=['estado'])
+
+    estado_texto = "activada" if categoria.estado else "inactivada"
+    crear_notificacion_sistema(
+        usuario=request.user,
+        mensaje=f"Se ha {estado_texto} la categoría: '{categoria.nombre}'.",
+        tipo="Categoría",
+        prioridad="media"
+    )
+    return redirect('listar_categorias')
+
+
 class CategoriaDeleteView(StaffRequiredMixin, DeleteView):
     model = Categoria
     template_name = 'admin/categoria/eliminar_categoria.html'
     success_url = reverse_lazy('listar_categorias')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        total_paquetes = self.object.paquetes.count()
+        context['total_paquetes'] = total_paquetes
+        context['puede_eliminar'] = (total_paquetes == 0)
+        return context
 
     def form_valid(self, form):
         self.object = self.get_object()

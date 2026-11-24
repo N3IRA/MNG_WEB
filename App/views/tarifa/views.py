@@ -1,8 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.db.models import Count, Q
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from App.forms.tarifa.forms import TarifaForm
 from App.utils import crear_notificacion_sistema
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -68,7 +70,7 @@ class TarifaCreateView(StaffRequiredMixin, CreateView):
         form = super().get_form(form_class)
         for name, field in form.fields.items():
             if isinstance(field.widget, forms.CheckboxInput):
-                field.widget.attrs.update({'class': 'form-check-input'})
+                field.widget.attrs.update({'class': 'form-check-input', 'role': 'switch'})
             elif isinstance(field.widget, forms.Select):
                 field.widget.attrs.update({'class': 'form-select'})
             else:
@@ -97,7 +99,7 @@ class TarifaUpdateView(StaffRequiredMixin, UpdateView):
         form = super().get_form(form_class)
         for name, field in form.fields.items():
             if isinstance(field.widget, forms.CheckboxInput):
-                field.widget.attrs.update({'class': 'form-check-input'})
+                field.widget.attrs.update({'class': 'form-check-input', 'role': 'switch'})
             elif isinstance(field.widget, forms.Select):
                 field.widget.attrs.update({'class': 'form-select'})
             else:
@@ -121,10 +123,38 @@ class TarifaUpdateView(StaffRequiredMixin, UpdateView):
         return response
 
 
+@login_required(login_url='login')
+@require_POST
+def toggle_estado_tarifa(request, pk):
+    """Alterna el estado Activa/Inactiva de una tarifa (solo staff)."""
+    if not (request.user.is_active and request.user.is_staff):
+        messages.error(request, "No tienes permisos para cambiar el estado de las tarifas.")
+        return redirect('index')
+
+    tarifa = get_object_or_404(Tarifa, pk=pk)
+    tarifa.estado = not tarifa.estado
+    tarifa.save(update_fields=['estado'])
+
+    estado_texto = "activada" if tarifa.estado else "inactivada"
+    crear_notificacion_sistema(
+        usuario=request.user,
+        mensaje=f"Se ha {estado_texto} la tarifa del paquete '{tarifa.paquete.nombre}' en la temporada '{tarifa.temporada.nombre}'.",
+        tipo="Tarifa",
+        prioridad="media"
+    )
+    return redirect('listar_tarifas')
+
+
 class TarifaDeleteView(StaffRequiredMixin, DeleteView):
     model = Tarifa
     template_name = 'admin/tarifa/eliminar_tarifa.html'
     success_url = reverse_lazy('listar_tarifas')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['puede_eliminar'] = True
+        context['tarifa_activa'] = self.object.estado
+        return context
 
     def form_valid(self, form):
         self.object = self.get_object()

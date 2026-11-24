@@ -31,57 +31,6 @@
         </div>
     </div>
 
-    <!-- 2. Tarjetas de Estadísticas -->
-    <div class="row g-4 mb-4">
-        <!-- Total Categorías -->
-        <div class="col-12 col-sm-6 col-md-4">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <span class="text-secondary small fw-bold text-uppercase">Total Categorías</span>
-                    <div class="p-2 bg-secondary bg-opacity-10 text-secondary rounded-3">
-                        <i class="bi bi-tags-fill fs-4"></i>
-                    </div>
-                </div>
-                <h3 class="fw-bold text-dark mb-1 fs-4 fs-xl-3">{{ total|default:0 }}</h3>
-                <div class="text-muted small">
-                    <i class="bi bi-bookmark me-1 text-secondary"></i>Categorías temáticas registradas
-                </div>
-            </div>
-        </div>
-
-        <!-- Activas -->
-        <div class="col-12 col-sm-6 col-md-4">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <span class="text-success small fw-bold text-uppercase">Activas</span>
-                    <div class="p-2 bg-success text-white rounded-3 shadow-sm">
-                        <i class="bi bi-check-circle-fill fs-4 text-white"></i>
-                    </div>
-                </div>
-                <h3 class="fw-bold text-success mb-1 fs-4 fs-xl-3">{{ activas|default:0 }}</h3>
-                <div class="text-success small">
-                    <i class="bi bi-shield-check text-success me-1"></i>Habilitadas en el catálogo
-                </div>
-            </div>
-        </div>
-
-        <!-- Inactivas -->
-        <div class="col-12 col-sm-6 col-md-4">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <span class="text-danger small fw-bold text-uppercase">Inactivas</span>
-                    <div class="p-2 bg-danger bg-opacity-10 text-danger rounded-3">
-                        <i class="bi bi-x-circle-fill fs-4"></i>
-                    </div>
-                </div>
-                <h3 class="fw-bold text-danger mb-1 fs-4 fs-xl-3">{{ inactivas|default:0 }}</h3>
-                <div class="text-muted small">
-                    <i class="bi bi-slash-circle text-danger me-1"></i>Sin tours vinculados
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- 3. Lista de Categorías -->
     <div class="card admin-list-panel p-3 mb-4">
         <!-- Tabla Desktop -->
@@ -100,22 +49,40 @@
                         <td>
                             <div>
                                 <h6 class="fw-bold text-dark mb-1">{{ cat.nombre }}</h6>
-                                <p class="text-muted small mb-0 text-truncate" title="{{ cat.descripcion }}">{{ cat.descripcion }}</p>
+                                <p class="text-muted small mb-0 text-truncate"
+                                   style="max-width: 320px; cursor: help;"
+                                   data-bs-toggle="tooltip"
+                                   data-bs-placement="top"
+                                   data-bs-title="{{ cat.descripcion|default:'Sin descripción' }}">
+                                    {{ cat.descripcion|default:"Sin descripción" }}
+                                </p>
                             </div>
                         </td>
                         <td class="text-center">
                             {% if cat.estado %}
-                                <span class="badge bg-success bg-opacity-75 px-3 py-2 rounded-pill shadow-sm"><i class="bi bi-check-circle-fill me-1"></i> Activa</span>
+                                <span class="badge px-3 py-2 rounded-pill border border-success-subtle bg-success-subtle text-success-emphasis shadow-sm"><i class="bi bi-check-circle-fill me-1"></i> Activa</span>
                             {% else %}
-                                <span class="badge bg-danger bg-opacity-75 px-3 py-2 rounded-pill shadow-sm"><i class="bi bi-x-circle-fill me-1"></i> Inactiva</span>
+                                <span class="badge px-3 py-2 rounded-pill border border-danger-subtle bg-danger-subtle text-danger-emphasis shadow-sm"><i class="bi bi-x-circle-fill me-1"></i> Inactiva</span>
                             {% endif %}
                         </td>
-                        <td class="text-center">
-                            <div class="btn-group shadow-sm">
-                                <a href="{% url 'editar_categoria' cat.id %}" class="btn btn-sm btn-outline-secondary" title="Editar Categoría">
+                        <td class="text-center text-nowrap">
+                            <div class="d-inline-flex align-items-center gap-1">
+                                <form action="{% url 'toggle_estado_categoria' cat.id %}" method="POST" class="d-inline m-0">
+                                    {% csrf_token %}
+                                    {% if cat.estado %}
+                                        <button type="submit" class="btn btn-sm btn-outline-warning shadow-sm" title="Inactivar Categoría" data-confirm-title="¿Inactivar Categoría?" data-confirm-message="La categoría '{{ cat.nombre }}' pasará a estado inactivo." data-confirm-btn="Sí, inactivar" data-confirm-btn-class="btn-warning">
+                                            <i class="bi bi-pause-circle"></i>
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-sm btn-outline-success shadow-sm" title="Activar Categoría" data-confirm-title="¿Activar Categoría?" data-confirm-message="La categoría '{{ cat.nombre }}' pasará a estado activo." data-confirm-btn="Sí, activar" data-confirm-btn-class="btn-success">
+                                            <i class="bi bi-play-circle"></i>
+                                        </button>
+                                    {% endif %}
+                                </form>
+                                <a href="{% url 'editar_categoria' cat.id %}" class="btn btn-sm btn-outline-secondary shadow-sm" title="Editar Categoría">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <a href="{% url 'eliminar_categoria' cat.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar Categoría">
+                                <a href="{% url 'eliminar_categoria' cat.id %}" class="btn btn-sm btn-outline-danger shadow-sm" title="Eliminar Categoría">
                                     <i class="bi bi-trash"></i>
                                 </a>
                             </div>
@@ -137,18 +104,36 @@
                         <div class="d-flex justify-content-between align-items-start mb-2 border-bottom pb-2">
                             <div>
                                 <h5 class="fw-bold text-dark mb-0">{{ cat.nombre }}</h5>
-                                <small class="text-muted d-block mt-1">{{ cat.descripcion|truncatewords:15 }}</small>
+                                <small class="text-muted d-block mt-1 text-truncate"
+                                       style="cursor: help;"
+                                       data-bs-toggle="tooltip"
+                                       data-bs-placement="top"
+                                       data-bs-title="{{ cat.descripcion|default:'Sin descripción' }}">
+                                    {{ cat.descripcion|default:"Sin descripción" }}
+                                </small>
                             </div>
                             <div>
                                 {% if cat.estado %}
-                                    <span class="badge bg-success bg-opacity-75 rounded-pill shadow-sm">Activa</span>
+                                    <span class="badge rounded-pill border border-success-subtle bg-success-subtle text-success-emphasis shadow-sm">Activa</span>
                                 {% else %}
-                                    <span class="badge bg-danger bg-opacity-75 rounded-pill shadow-sm">Inactiva</span>
+                                    <span class="badge rounded-pill border border-danger-subtle bg-danger-subtle text-danger-emphasis shadow-sm">Inactiva</span>
                                 {% endif %}
                             </div>
                         </div>
 
-                        <div class="d-flex gap-2 pt-2">
+                        <div class="d-flex gap-2 pt-2 flex-wrap">
+                            <form action="{% url 'toggle_estado_categoria' cat.id %}" method="POST" class="flex-fill m-0">
+                                {% csrf_token %}
+                                {% if cat.estado %}
+                                    <button type="submit" class="btn btn-sm btn-outline-warning w-100 fw-bold rounded-pill" data-confirm-title="¿Inactivar Categoría?" data-confirm-message="La categoría '{{ cat.nombre }}' pasará a estado inactivo." data-confirm-btn="Sí, inactivar" data-confirm-btn-class="btn-warning">
+                                        <i class="bi bi-pause-circle me-1"></i> Inactivar
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-sm btn-outline-success w-100 fw-bold rounded-pill" data-confirm-title="¿Activar Categoría?" data-confirm-message="La categoría '{{ cat.nombre }}' pasará a estado activo." data-confirm-btn="Sí, activar" data-confirm-btn-class="btn-success">
+                                        <i class="bi bi-play-circle me-1"></i> Activar
+                                    </button>
+                                {% endif %}
+                            </form>
                             <a href="{% url 'editar_categoria' cat.id %}" class="btn btn-sm btn-outline-secondary flex-fill fw-bold rounded-pill">
                                 <i class="bi bi-pencil me-1"></i> Editar
                             </a>

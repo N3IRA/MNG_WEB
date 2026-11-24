@@ -1,8 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.db.models import Count, Q
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from App.forms.actividades.forms import ActividadesForm
 from App.utils import crear_notificacion_sistema
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -64,7 +66,7 @@ class ActividadesCreateView(StaffRequiredMixin, CreateView):
         form = super().get_form(form_class)
         for name, field in form.fields.items():
             if isinstance(field.widget, forms.CheckboxInput):
-                field.widget.attrs.update({'class': 'form-check-input'})
+                field.widget.attrs.update({'class': 'form-check-input', 'role': 'switch'})
             elif isinstance(field.widget, forms.Select):
                 field.widget.attrs.update({'class': 'form-select'})
             else:
@@ -92,7 +94,7 @@ class ActividadesUpdateView(StaffRequiredMixin, UpdateView):
         form = super().get_form(form_class)
         for name, field in form.fields.items():
             if isinstance(field.widget, forms.CheckboxInput):
-                field.widget.attrs.update({'class': 'form-check-input'})
+                field.widget.attrs.update({'class': 'form-check-input', 'role': 'switch'})
             elif isinstance(field.widget, forms.Select):
                 field.widget.attrs.update({'class': 'form-select'})
             else:
@@ -117,10 +119,39 @@ class ActividadesUpdateView(StaffRequiredMixin, UpdateView):
         return response
 
 
+@login_required(login_url='login')
+@require_POST
+def toggle_estado_actividad(request, pk):
+    """Alterna el estado Activa/Inactiva de una actividad (solo staff)."""
+    if not (request.user.is_active and request.user.is_staff):
+        messages.error(request, "No tienes permisos para cambiar el estado de las actividades.")
+        return redirect('index')
+
+    actividad = get_object_or_404(Actividades, pk=pk)
+    actividad.estado = not actividad.estado
+    actividad.save(update_fields=['estado'])
+
+    estado_texto = "activada" if actividad.estado else "inactivada"
+    crear_notificacion_sistema(
+        usuario=request.user,
+        mensaje=f"Se ha {estado_texto} la actividad: '{actividad.nombre}'.",
+        tipo="Actividad",
+        prioridad="media"
+    )
+    return redirect('listar_actividades')
+
+
 class ActividadesDeleteView(StaffRequiredMixin, DeleteView):
     model = Actividades
     template_name = 'admin/actividades/eliminar_actividad.html'
     success_url = reverse_lazy('listar_actividades')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        total_paquetes = PaqueteActividad.objects.filter(actividad=self.object).count()
+        context['total_paquetes'] = total_paquetes
+        context['puede_eliminar'] = (total_paquetes == 0)
+        return context
 
     def form_valid(self, form):
         self.object = self.get_object()

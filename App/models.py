@@ -246,8 +246,22 @@ class Paquete(models.Model):
     imagen = models.ImageField(upload_to='destinos/', verbose_name='Imagen del Destino')
     nombre = models.CharField(max_length=100, verbose_name='Nombre del Paquete')
     descripcion = models.TextField(verbose_name='Descripción')
-    dias_duracion = models.PositiveIntegerField(verbose_name='Días de Duración', default=1,validators=[MinValueValidator(1, message="Los días de duración deben ser al menos 1.")])
-    noches_duracion = models.PositiveIntegerField(verbose_name='Noches de Duración', default=1,validators=[MinValueValidator(1, message="Las noches de duración deben ser al menos 1.")])
+    dias_duracion = models.PositiveIntegerField(
+        verbose_name='Días de Duración',
+        default=1,
+        validators=[
+            MinValueValidator(1, message="Los días de duración deben ser al menos 1."),
+            MaxValueValidator(15, message="Los días de duración no pueden superar los 15 días."),
+        ],
+    )
+    noches_duracion = models.PositiveIntegerField(
+        verbose_name='Noches de Duración',
+        default=0,
+        validators=[
+            MinValueValidator(0, message="Las noches de duración no pueden ser negativas."),
+            MaxValueValidator(14, message="Las noches de duración no pueden superar las 14 noches."),
+        ],
+    )
     punto_encuentro = models.CharField(max_length=150, validators=[validar_punto_encuentro], verbose_name='Punto de Encuentro')
     hora_encuentro = models.TimeField()
     categoria = models.ForeignKey(Categoria, models.CASCADE, related_name='paquetes')

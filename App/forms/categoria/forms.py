@@ -23,7 +23,7 @@ class CategoriaForm(ModelForm):
                 'title': 'El nombre de la categoría solo debe contener letras, no números.'
             }),
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'estado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'estado': forms.CheckboxInput(attrs={'class': 'form-check-input', 'role': 'switch'}),
         }
 
     def clean_nombre(self):

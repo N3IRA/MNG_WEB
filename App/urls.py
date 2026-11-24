@@ -63,6 +63,7 @@ urlpatterns = [
     path('admin/categorias/agregar/', categoria_views.CategoriaCreateView.as_view(), name='agregar_categoria'),
     path('admin/categorias/crear/', categoria_views.CategoriaCreateView.as_view(), name='crear_categoria'),
     path('admin/categorias/editar/<int:pk>/', categoria_views.CategoriaUpdateView.as_view(), name='editar_categoria'),
+    path('admin/categorias/estado/<int:pk>/', categoria_views.toggle_estado_categoria, name='toggle_estado_categoria'),
     path('admin/categorias/eliminar/<int:pk>/', categoria_views.CategoriaDeleteView.as_view(), name='eliminar_categoria'),
 
     # Temporadas (Administración / Staff)
@@ -70,6 +71,7 @@ urlpatterns = [
     path('admin/temporadas/agregar/', temporada_views.TemporadaCreateView.as_view(), name='agregar_temporada'),
     path('admin/temporadas/crear/', temporada_views.TemporadaCreateView.as_view(), name='crear_temporada'),
     path('admin/temporadas/editar/<int:pk>/', temporada_views.TemporadaUpdateView.as_view(), name='editar_temporada'),
+    path('admin/temporadas/estado/<int:pk>/', temporada_views.toggle_estado_temporada, name='toggle_estado_temporada'),
     path('admin/temporadas/eliminar/<int:pk>/', temporada_views.TemporadaDeleteView.as_view(), name='eliminar_temporada'),
 
     # Actividades (Administración / Staff)
@@ -77,19 +79,23 @@ urlpatterns = [
     path('admin/actividades/agregar/', actividades_views.ActividadesCreateView.as_view(), name='agregar_actividad'),
     path('admin/actividades/crear/', actividades_views.ActividadesCreateView.as_view(), name='crear_actividad'),
     path('admin/actividades/editar/<int:pk>/', actividades_views.ActividadesUpdateView.as_view(), name='editar_actividad'),
+    path('admin/actividades/estado/<int:pk>/', actividades_views.toggle_estado_actividad, name='toggle_estado_actividad'),
     path('admin/actividades/eliminar/<int:pk>/', actividades_views.ActividadesDeleteView.as_view(), name='eliminar_actividad'),
 
     # Tours / Paquetes (Administración / Staff)
     path('admin/paquetes/', paquete_views.PaqueteListView.as_view(), name='listar_paquetes'),
     path('admin/paquetes/agregar/', paquete_views.PaqueteCreateView.as_view(), name='crear_paquete'),
     path('admin/paquetes/editar/<int:pk>/', paquete_views.PaqueteUpdateView.as_view(), name='editar_paquete'),
+    path('admin/paquetes/estado/<int:pk>/', paquete_views.toggle_estado_paquete, name='toggle_estado_paquete'),
     path('admin/paquetes/eliminar/<int:pk>/', paquete_views.PaqueteDeleteView.as_view(), name='eliminar_paquete'),
+    path('admin/paquetes/live-sync/', paquete_views.paquete_live_sync, name='paquete_live_sync'),
 
     # Tarifas (Administración / Staff)
     path('admin/tarifas/', tarifa_views.TarifaListView.as_view(), name='listar_tarifas'),
     path('admin/tarifas/agregar/', tarifa_views.TarifaCreateView.as_view(), name='agregar_tarifa'),
     path('admin/tarifas/crear/', tarifa_views.TarifaCreateView.as_view(), name='crear_tarifa'),
     path('admin/tarifas/editar/<int:pk>/', tarifa_views.TarifaUpdateView.as_view(), name='editar_tarifa'),
+    path('admin/tarifas/estado/<int:pk>/', tarifa_views.toggle_estado_tarifa, name='toggle_estado_tarifa'),
     path('admin/tarifas/eliminar/<int:pk>/', tarifa_views.TarifaDeleteView.as_view(), name='eliminar_tarifa'),
 
     # Reservas (Usuario / Turista)

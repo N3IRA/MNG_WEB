@@ -28,7 +28,7 @@ class TemporadaForm(ModelForm):
                 format='%Y-%m-%d',
                 attrs={'class': 'form-control', 'type': 'date'}
             ),
-            'estado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'estado': forms.CheckboxInput(attrs={'class': 'form-check-input', 'role': 'switch'}),
         }
 
     def clean_nombre(self):

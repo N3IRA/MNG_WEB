@@ -24,37 +24,6 @@
         </div>
     </div>
 
-    <!-- KPI Cards -->
-    <div class="row g-3 mb-4">
-        <div class="col-12 col-sm-4">
-            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="text-secondary small fw-bold text-uppercase">Total Pólizas</span>
-                    <span class="p-2 bg-success bg-opacity-10 text-white rounded-3"><i class="bi bi-shield-shaded fs-5"></i></span>
-                </div>
-                <h4 class="fw-bold text-dark mb-0">{{ total|default:0 }}</h4>
-            </div>
-        </div>
-        <div class="col-12 col-sm-4">
-            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="text-success small fw-bold text-uppercase">Pólizas Activas</span>
-                    <span class="p-2 bg-success text-white rounded-3"><i class="bi bi-check-circle-fill fs-5"></i></span>
-                </div>
-                <h4 class="fw-bold text-success mb-0">{{ activas|default:0 }}</h4>
-            </div>
-        </div>
-        <div class="col-12 col-sm-4">
-            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="text-danger small fw-bold text-uppercase">Pólizas Inactivas</span>
-                    <span class="p-2 bg-danger bg-opacity-10 text-danger rounded-3"><i class="bi bi-x-circle-fill fs-5"></i></span>
-                </div>
-                <h4 class="fw-bold text-danger mb-0">{{ inactivas|default:0 }}</h4>
-            </div>
-        </div>
-    </div>
-
     <!-- Tabla -->
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-white">
         <div class="table-responsive">

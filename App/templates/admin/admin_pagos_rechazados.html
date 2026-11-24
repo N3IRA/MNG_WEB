@@ -46,27 +46,6 @@
         </div>
     </div>
 
-    <!-- ── 2. Mensajes de Retroalimentación del Sistema ── -->
-    {% if messages %}
-        <div class="mb-4">
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show rounded-4 shadow-sm border-0 d-flex align-items-center gap-2 py-3 px-4" role="alert">
-                    {% if message.tags == 'success' %}
-                        <i class="bi bi-check-circle-fill fs-5 text-success"></i>
-                    {% elif message.tags == 'danger' or message.tags == 'error' %}
-                        <i class="bi bi-exclamation-triangle-fill fs-5 text-danger"></i>
-                    {% elif message.tags == 'warning' %}
-                        <i class="bi bi-exclamation-circle-fill fs-5 text-warning"></i>
-                    {% else %}
-                        <i class="bi bi-info-circle-fill fs-5 text-info"></i>
-                    {% endif %}
-                    <div class="fw-semibold small flex-grow-1">{{ message }}</div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
     <!-- ── 3. Tarjetas de Métricas de Auditoría ── -->
     <div class="row g-4 mb-4">
         <!-- Total Pagos Rechazados -->

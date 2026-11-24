@@ -1,4 +1,13 @@
 $(document).ready(function() {
+    function initPaquetesTooltips() {
+        if (typeof bootstrap === 'undefined' || !bootstrap.Tooltip) return;
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(el) {
+            if (!bootstrap.Tooltip.getInstance(el)) {
+                new bootstrap.Tooltip(el);
+            }
+        });
+    }
+
     $('#tablaPaquetes').DataTable({
          order: [],
        // 1. ESTRUCTURA VISUAL: Mantiene botones y buscador alineados en la misma fila
@@ -40,6 +49,11 @@ $(document).ready(function() {
         responsive: false,
         autoWidth: true,
         scrollX: false,
-        scrollCollapse: false
+        scrollCollapse: false,
+        drawCallback: function() {
+            initPaquetesTooltips();
+        }
     });
+
+    initPaquetesTooltips();
 });

@@ -1,8 +1,12 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, HttpResponseForbidden
+from django.utils.html import format_html
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.db.models import Count, Q
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from datetime import date
 from App.forms.paquete.forms import PaqueteForm
 from App.utils import crear_notificacion_sistema
@@ -128,7 +132,9 @@ class PaqueteCreateView(StaffRequiredMixin, CreateView):
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         for name, field in form.fields.items():
-            if isinstance(field.widget, forms.CheckboxInput):
+            if isinstance(field.widget, forms.CheckboxSelectMultiple):
+                field.widget.attrs.update({'class': 'form-check-input'})
+            elif isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs.update({'class': 'form-check-input'})
             elif isinstance(field.widget, (forms.Select, forms.SelectMultiple)):
                 field.widget.attrs.update({'class': 'form-select'})
@@ -144,6 +150,7 @@ class PaqueteCreateView(StaffRequiredMixin, CreateView):
             tipo="Paquete",
             prioridad="media"
         )
+        messages.success(self.request, f"Paquete '{self.object.nombre}' creado exitosamente.")
         return response
 
 
@@ -156,7 +163,9 @@ class PaqueteUpdateView(StaffRequiredMixin, UpdateView):
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         for name, field in form.fields.items():
-            if isinstance(field.widget, forms.CheckboxInput):
+            if isinstance(field.widget, forms.CheckboxSelectMultiple):
+                field.widget.attrs.update({'class': 'form-check-input'})
+            elif isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs.update({'class': 'form-check-input'})
             elif isinstance(field.widget, (forms.Select, forms.SelectMultiple)):
                 field.widget.attrs.update({'class': 'form-select'})
@@ -178,7 +187,158 @@ class PaqueteUpdateView(StaffRequiredMixin, UpdateView):
             tipo="Paquete",
             prioridad="media"
         )
+        messages.success(self.request, f"Cambios guardados en el paquete '{self.object.nombre}'.")
         return response
+
+
+@login_required(login_url='login')
+@require_POST
+def paquete_live_sync(request):
+    """
+    Endpoint HTMX para sincronizar de forma reactiva y segura la duración (días/noches)
+    y la tarjeta de vista previa del paquete turístico.
+    Todas las validaciones, cálculos y renderizado se ejecutan en el servidor para evitar
+    manipulaciones indebidas desde el navegador y prevenir inyecciones de código.
+    """
+    if not (request.user.is_active and request.user.is_staff):
+        return HttpResponseForbidden("Acceso restringido a administradores.")
+
+    origen = request.POST.get('origen', '').strip()
+
+    # 1. Días y Noches (Cálculo bidireccional seguro en el servidor usando los límites de PaqueteForm)
+    max_dias = PaqueteForm.MAX_DIAS
+    max_noches = PaqueteForm.MAX_NOCHES
+    dias_ajustado = False
+    noches_ajustado = False
+
+    try:
+        raw_dias = request.POST.get('dias_duracion')
+        dias_input = int(raw_dias) if raw_dias is not None and str(raw_dias).strip() != '' else 1
+    except (ValueError, TypeError):
+        dias_input = 1
+        dias_ajustado = True
+
+    try:
+        raw_noches = request.POST.get('noches_duracion')
+        noches_input = int(raw_noches) if raw_noches is not None and str(raw_noches).strip() != '' else 0
+    except (ValueError, TypeError):
+        noches_input = 0
+        noches_ajustado = True
+
+    if origen == 'dias':
+        dias = max(1, min(max_dias, dias_input))
+        if dias != dias_input:
+            dias_ajustado = True
+        noches = max(0, min(max_noches, dias - 1))
+    elif origen == 'noches':
+        noches = max(0, min(max_noches, noches_input))
+        if noches != noches_input:
+            noches_ajustado = True
+        dias = max(1, min(max_dias, noches + 1))
+    else:
+        dias = max(1, min(max_dias, dias_input))
+        noches = max(0, min(max_noches, noches_input))
+        if dias != dias_input:
+            dias_ajustado = True
+        if noches != noches_input:
+            noches_ajustado = True
+
+    txt_dias = f"{dias} día" if dias == 1 else f"{dias} días"
+    txt_noches = f"{noches} noche" if noches == 1 else f"{noches} noches"
+    duracion_texto = f"{txt_dias} / {txt_noches}"
+
+    # 2. Nombre del paquete
+    nombre = request.POST.get('nombre', '').strip()
+
+    # 3. Punto de encuentro
+    punto_encuentro = request.POST.get('punto_encuentro', '').strip() or 'Sin definir'
+
+    # 4. Categoría
+    categoria_id = request.POST.get('categoria', '').strip()
+    categoria_nombre = "Sin categoría"
+    if categoria_id:
+        try:
+            cat = Categoria.objects.filter(pk=int(categoria_id), estado=True).first()
+            if cat:
+                categoria_nombre = cat.nombre
+        except (ValueError, TypeError):
+            pass
+
+    # 5. Conteo seguro de actividades seleccionadas
+    actividades_ids = request.POST.getlist('actividades')
+    actividades_count = 0
+    if actividades_ids:
+        try:
+            ids_validos = [int(x) for x in actividades_ids if str(x).isdigit()]
+            actividades_count = Actividades.objects.filter(id__in=ids_validos, estado=True).count()
+        except Exception:
+            actividades_count = 0
+
+    # 6. Estado activo/inactivo
+    estado_val = request.POST.get('estado')
+    estado = estado_val in ['on', 'true', 'True', '1', True]
+
+    # 7. Renderizar inputs desde PaqueteForm y fragmentos OOB sanitizados con format_html (sin archivo parcial)
+    form_sync = PaqueteForm(initial={'dias_duracion': dias, 'noches_duracion': noches})
+    fragmentos = [
+        format_html(
+            '<span id="preview-duracion" class="fw-bold text-dark small" hx-swap-oob="innerHTML">{}</span>',
+            duracion_texto,
+        ),
+        format_html(
+            '<span id="preview-titulo-nombre" hx-swap-oob="innerHTML">{}</span>',
+            nombre or 'Sin nombre',
+        ),
+        format_html(
+            '<span id="preview-punto-encuentro" class="text-dark small text-truncate fw-semibold" style="max-width: 150px;" title="{}" hx-swap-oob="outerHTML">{}</span>',
+            punto_encuentro,
+            punto_encuentro,
+        ),
+        format_html(
+            '<span id="preview-actividades-count" class="badge bg-success bg-opacity-10 text-success fw-bold" hx-swap-oob="outerHTML">{} {}</span>',
+            actividades_count,
+            'actividad' if actividades_count == 1 else 'actividades',
+        ),
+        format_html(
+            '<span id="preview-badge-estado" class="badge {} text-white rounded-pill px-3 py-1 small fw-semibold" hx-swap-oob="outerHTML"><i class="bi {} me-1"></i> {}</span>',
+            'bg-success' if estado else 'bg-danger',
+            'bi-check-circle-fill' if estado else 'bi-x-circle-fill',
+            'Paquete Activo' if estado else 'Inactivo',
+        ),
+    ]
+
+    if origen == 'dias' or noches_ajustado:
+        form_sync.fields['noches_duracion'].widget.attrs['hx-swap-oob'] = 'outerHTML'
+        fragmentos.append(str(form_sync['noches_duracion']))
+
+    if origen == 'noches' or dias_ajustado:
+        form_sync.fields['dias_duracion'].widget.attrs['hx-swap-oob'] = 'outerHTML'
+        fragmentos.append(str(form_sync['dias_duracion']))
+
+    return HttpResponse('\n'.join(fragmentos))
+
+
+@login_required(login_url='login')
+@require_POST
+def toggle_estado_paquete(request, pk):
+    """Alterna el estado Activo/Inactivo de un paquete turístico (solo staff)."""
+    if not (request.user.is_active and request.user.is_staff):
+        messages.error(request, "No tienes permisos para cambiar el estado de los paquetes.")
+        return redirect('index')
+
+    paquete = get_object_or_404(Paquete, pk=pk)
+    paquete.estado = not paquete.estado
+    paquete.save(update_fields=['estado'])
+
+    estado_texto = "activado" if paquete.estado else "inactivado"
+    crear_notificacion_sistema(
+        usuario=request.user,
+        mensaje=f"Se ha {estado_texto} el paquete: '{paquete.nombre}'.",
+        tipo="Paquete",
+        prioridad="media"
+    )
+    messages.success(request, f"El paquete '{paquete.nombre}' ha sido {estado_texto} correctamente.")
+    return redirect('listar_paquetes')
 
 
 class PaqueteDeleteView(StaffRequiredMixin, DeleteView):
@@ -186,16 +346,25 @@ class PaqueteDeleteView(StaffRequiredMixin, DeleteView):
     template_name = 'admin/paquete/eliminar_paquete.html'
     success_url = reverse_lazy('listar_paquetes')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        total_tarifas = self.object.tarifas.count()
+        total_reservas = self.object.reservas.count()
+        context['total_tarifas'] = total_tarifas
+        context['total_reservas'] = total_reservas
+        context['puede_eliminar'] = (total_tarifas == 0 and total_reservas == 0)
+        return context
+
     def form_valid(self, form):
         self.object = self.get_object()
 
         # Validar integridad referencial: Prevenir borrado si el paquete tiene tarifas asociadas
         if self.object.tarifas.exists():
-            messages.error(request=self.request, message=f"No se puede eliminar el paquete '{self.object.nombre}' porque tiene tarifas asociadas. Elimina las tarifas primero.")
+            messages.error(request=self.request, message=f"No se puede eliminar el paquete '{self.object.nombre}' porque tiene tarifas asociadas. Elimina las tarifas primero o inactiva el paquete.")
             return redirect('listar_paquetes')
 
         if self.object.reservas.exists():
-            messages.error(request=self.request, message=f"No se puede eliminar el paquete '{self.object.nombre}' porque tiene reservas vinculadas.")
+            messages.error(request=self.request, message=f"No se puede eliminar el paquete '{self.object.nombre}' porque tiene reservas vinculadas. Puedes inactivarlo en su lugar.")
             return redirect('listar_paquetes')
 
         nombre_paquete = self.object.nombre
@@ -209,6 +378,7 @@ class PaqueteDeleteView(StaffRequiredMixin, DeleteView):
             tipo="Paquete",
             prioridad="media"
         )
+        messages.success(self.request, f"El paquete '{nombre_paquete}' fue eliminado permanentemente.")
         return response
 
 

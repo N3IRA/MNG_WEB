@@ -28,24 +28,58 @@
                     <p class="fs-5 text-dark mb-2">Estás a punto de eliminar el paquete:</p>
                     <h3 class="fw-bold text-dark mb-4">"{{ object.nombre }}"</h3>
 
-                    <div class="alert alert-warning border-0 rounded-3 mb-4">
-                        <div class="d-flex align-items-center justify-content-center gap-2">
-                            <i class="bi bi-exclamation-triangle me-1"></i>
-                            <small class="fw-semibold">Esta acción no se puede deshacer.</small>
+                    {% if not puede_eliminar %}
+                        <div class="alert alert-danger border-0 rounded-4 text-start mb-4 p-3">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="bi bi-shield-exclamation fs-4 flex-shrink-0"></i>
+                                <div>
+                                    <strong class="d-block mb-1">No es posible eliminar este paquete porque tiene registros vinculados:</strong>
+                                    <ul class="mb-2 small ps-3">
+                                        {% if total_tarifas > 0 %}
+                                            <li><strong>{{ total_tarifas }}</strong> tarifa{{ total_tarifas|pluralize }} asociada{{ total_tarifas|pluralize }}.</li>
+                                        {% endif %}
+                                        {% if total_reservas > 0 %}
+                                            <li><strong>{{ total_reservas }}</strong> reserva{{ total_reservas|pluralize }} registrada{{ total_reservas|pluralize }}.</li>
+                                        {% endif %}
+                                    </ul>
+                                    <span class="small">Para ocultarlo del catálogo sin perder historial, puedes <strong>inactivarlo</strong> en su lugar.</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    <form method="POST">
-                        {% csrf_token %}
                         <div class="d-flex justify-content-center gap-2 flex-wrap">
-                            <button type="submit" class="btn btn-danger px-4 rounded-pill fw-bold">
-                                <i class="bi bi-trash me-1"></i> Sí, eliminar permanentemente
-                            </button>
+                            {% if object.estado %}
+                                <form method="POST" action="{% url 'toggle_estado_paquete' object.id %}" class="m-0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-warning px-4 rounded-pill fw-bold shadow-sm">
+                                        <i class="bi bi-pause-circle me-1"></i> Inactivar paquete en su lugar
+                                    </button>
+                                </form>
+                            {% endif %}
                             <a href="{% url 'listar_paquetes' %}" class="btn btn-outline-secondary px-4 rounded-pill fw-semibold">
-                                <i class="bi bi-x-circle me-1"></i> Cancelar
+                                <i class="bi bi-arrow-left me-1"></i> Volver a Paquetes
                             </a>
                         </div>
-                    </form>
+                    {% else %}
+                        <div class="alert alert-warning border-0 rounded-3 mb-4">
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                <small class="fw-semibold">Esta acción no se puede deshacer.</small>
+                            </div>
+                        </div>
+
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                <button type="submit" class="btn btn-danger px-4 rounded-pill fw-bold">
+                                    <i class="bi bi-trash me-1"></i> Sí, eliminar permanentemente
+                                </button>
+                                <a href="{% url 'listar_paquetes' %}" class="btn btn-outline-secondary px-4 rounded-pill fw-semibold">
+                                    <i class="bi bi-x-circle me-1"></i> Cancelar
+                                </a>
+                            </div>
+                        </form>
+                    {% endif %}
                 </div>
             </div>
         </div>

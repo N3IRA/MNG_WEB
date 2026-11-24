@@ -15,7 +15,7 @@ class TarifaForm(ModelForm):
             'temporada': forms.Select(attrs={'class': 'form-select'}),
             'precio_adulto': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'placeholder': 'Ej. 50000'}),
             'precio_menor': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'placeholder': 'Ej. 35000'}),
-            'estado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'estado': forms.CheckboxInput(attrs={'class': 'form-check-input', 'role': 'switch'}),
         }
 
     def __init__(self, *args, **kwargs):

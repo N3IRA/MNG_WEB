@@ -1,87 +1,378 @@
-<!-- ── Widget de Accesibilidad: Sienna (Open Source) ── -->
-<script
-  src="https://cdn.jsdelivr.net/npm/sienna-accessibility/dist/sienna-accessibility.umd.js"
-  data-primary-color="#005215"
-  data-position="bottom-left"
-  data-asw-lang="es"
-  defer
-></script>
+{% load static %}
+<!-- ── Accesibilidad: Interfaz Bootstrap 5 + Motor ranbuch/accessibility (Local) ── -->
+<script src="{% static 'js/librerias/accesibilidad.min.js' %}" defer></script>
 
-<!-- Estilos personalizados para integración de Sienna en Monagua -->
+<!-- Botón Flotante de Accesibilidad -->
+<button
+  type="button"
+  id="btnAccesibilidadMonagua"
+  class="btn btn-success rounded-circle shadow-lg d-flex align-items-center justify-content-center position-fixed _access"
+  data-bs-toggle="offcanvas"
+  data-bs-target="#offcanvasAccesibilidad"
+  aria-controls="offcanvasAccesibilidad"
+  aria-label="Abrir menú de accesibilidad"
+  title="Opciones de accesibilidad"
+>
+  <i class="bi bi-universal-access fs-4" aria-hidden="true"></i>
+  <span
+    id="badgeAccesibilidadActivos"
+    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-2 border-white d-none"
+    style="font-size: 0.65rem;"
+  >0</span>
+</button>
+
+<!-- Panel Offcanvas Bootstrap 5 de Accesibilidad -->
+<div
+  class="offcanvas offcanvas-start border-0 shadow-lg _access _access-menu"
+  tabindex="-1"
+  id="offcanvasAccesibilidad"
+  aria-labelledby="offcanvasAccesibilidadLabel"
+  style="width: 370px; max-width: 92vw;"
+>
+  <!-- Cabecera -->
+  <div class="offcanvas-header bg-success text-white py-3 px-4">
+    <div class="d-flex align-items-center gap-2">
+      <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+        <i class="bi bi-universal-access fs-5 text-white" aria-hidden="true"></i>
+      </div>
+      <div>
+        <h5 class="offcanvas-title fw-bold mb-0 fs-6" id="offcanvasAccesibilidadLabel">Accesibilidad</h5>
+        <small class="text-white-50 d-block" style="font-size: 0.75rem;">Personaliza tu experiencia en Monagua</small>
+      </div>
+    </div>
+    <button
+      type="button"
+      class="btn-close btn-close-white shadow-none"
+      data-bs-dismiss="offcanvas"
+      aria-label="Cerrar menú de accesibilidad"
+    ></button>
+  </div>
+
+  <!-- Cuerpo con tarjetas Bootstrap -->
+  <div class="offcanvas-body bg-light p-3 d-flex flex-column gap-3">
+
+    <!-- 1. Texto y Lectura -->
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-body p-3">
+        <h6 class="text-uppercase text-muted fw-bold mb-3 d-flex align-items-center gap-2" style="font-size: 0.72rem; letter-spacing: 0.05em;">
+          <i class="bi bi-fonts text-success fs-6"></i> Texto y lectura
+        </h6>
+
+        <!-- Tamaño de texto -->
+        <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-zoom-in text-success"></i>
+            <span class="small fw-semibold text-dark">Tamaño de texto</span>
+          </div>
+          <div class="d-flex align-items-center gap-1">
+            <button type="button" class="btn btn-sm btn-outline-success rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;" data-a11y-step="decreaseText" aria-label="Reducir tamaño de texto" title="Reducir texto">
+              <i class="bi bi-dash-lg"></i>
+            </button>
+            <span id="a11yValTextSize" class="badge bg-light text-dark border rounded-pill px-2 py-1" style="min-width: 34px;">0</span>
+            <button type="button" class="btn btn-sm btn-outline-success rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;" data-a11y-step="increaseText" aria-label="Aumentar tamaño de texto" title="Aumentar texto">
+              <i class="bi bi-plus-lg"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Espaciado de texto -->
+        <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-distribute-horizontal text-success"></i>
+            <span class="small fw-semibold text-dark">Espaciado</span>
+          </div>
+          <div class="d-flex align-items-center gap-1">
+            <button type="button" class="btn btn-sm btn-outline-success rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;" data-a11y-step="decreaseTextSpacing" aria-label="Reducir espaciado de texto" title="Reducir espaciado">
+              <i class="bi bi-dash-lg"></i>
+            </button>
+            <span id="a11yValTextSpace" class="badge bg-light text-dark border rounded-pill px-2 py-1" style="min-width: 34px;">0</span>
+            <button type="button" class="btn btn-sm btn-outline-success rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;" data-a11y-step="increaseTextSpacing" aria-label="Aumentar espaciado de texto" title="Aumentar espaciado">
+              <i class="bi bi-plus-lg"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Interlineado -->
+        <div class="d-flex align-items-center justify-content-between pt-2">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-arrows-expand text-success"></i>
+            <span class="small fw-semibold text-dark">Interlineado</span>
+          </div>
+          <div class="d-flex align-items-center gap-1">
+            <button type="button" class="btn btn-sm btn-outline-success rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;" data-a11y-step="decreaseLineHeight" aria-label="Reducir interlineado" title="Reducir interlineado">
+              <i class="bi bi-dash-lg"></i>
+            </button>
+            <span id="a11yValLineHeight" class="badge bg-light text-dark border rounded-pill px-2 py-1" style="min-width: 34px;">0</span>
+            <button type="button" class="btn btn-sm btn-outline-success rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;" data-a11y-step="increaseLineHeight" aria-label="Aumentar interlineado" title="Aumentar interlineado">
+              <i class="bi bi-plus-lg"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Visualización y Contraste -->
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-body p-3">
+        <h6 class="text-uppercase text-muted fw-bold mb-3 d-flex align-items-center gap-2" style="font-size: 0.72rem; letter-spacing: 0.05em;">
+          <i class="bi bi-eye-fill text-success fs-6"></i> Visualización y contraste
+        </h6>
+
+        <div class="row g-2">
+          <div class="col-6">
+            <button type="button" class="btn btn-light border w-100 h-100 rounded-3 p-2.5 d-flex flex-column align-items-center justify-content-center gap-1 a11y-tile" data-a11y-toggle="invertColors" aria-pressed="false">
+              <i class="bi bi-circle-half fs-4 text-success"></i>
+              <span class="small fw-semibold lh-sm">Invertir colores</span>
+            </button>
+          </div>
+          <div class="col-6">
+            <button type="button" class="btn btn-light border w-100 h-100 rounded-3 p-2.5 d-flex flex-column align-items-center justify-content-center gap-1 a11y-tile" data-a11y-toggle="grayHues" aria-pressed="false">
+              <i class="bi bi-droplet-half fs-4 text-success"></i>
+              <span class="small fw-semibold lh-sm">Escala de grises</span>
+            </button>
+          </div>
+          <div class="col-6">
+            <button type="button" class="btn btn-light border w-100 h-100 rounded-3 p-2.5 d-flex flex-column align-items-center justify-content-center gap-1 a11y-tile" data-a11y-toggle="underlineLinks" aria-pressed="false">
+              <i class="bi bi-link-45deg fs-4 text-success"></i>
+              <span class="small fw-semibold lh-sm">Subrayar enlaces</span>
+            </button>
+          </div>
+          <div class="col-6">
+            <button type="button" class="btn btn-light border w-100 h-100 rounded-3 p-2.5 d-flex flex-column align-items-center justify-content-center gap-1 a11y-tile" data-a11y-toggle="bigCursor" aria-pressed="false">
+              <i class="bi bi-cursor-fill fs-4 text-success"></i>
+              <span class="small fw-semibold lh-sm">Cursor grande</span>
+            </button>
+          </div>
+          <div class="col-6">
+            <button type="button" class="btn btn-light border w-100 h-100 rounded-3 p-2.5 d-flex flex-column align-items-center justify-content-center gap-1 a11y-tile" data-a11y-toggle="readingGuide" aria-pressed="false">
+              <i class="bi bi-eyeglasses fs-4 text-success"></i>
+              <span class="small fw-semibold lh-sm">Guía de lectura</span>
+            </button>
+          </div>
+          <div class="col-6">
+            <button type="button" class="btn btn-light border w-100 h-100 rounded-3 p-2.5 d-flex flex-column align-items-center justify-content-center gap-1 a11y-tile" data-a11y-toggle="disableAnimations" aria-pressed="false">
+              <i class="bi bi-pause-circle fs-4 text-success"></i>
+              <span class="small fw-semibold lh-sm">Pausar animaciones</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Asistencia por Voz -->
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-body p-3">
+        <h6 class="text-uppercase text-muted fw-bold mb-3 d-flex align-items-center gap-2" style="font-size: 0.72rem; letter-spacing: 0.05em;">
+          <i class="bi bi-volume-up-fill text-success fs-6"></i> Asistencia por voz
+        </h6>
+
+        <button
+          type="button"
+          class="btn btn-light border w-100 rounded-3 p-3 d-flex align-items-center justify-content-between a11y-tile"
+          data-access-action="textToSpeech"
+          data-a11y-voice="textToSpeech"
+          aria-pressed="false"
+          title="Activa la lectura en voz alta y haz clic en cualquier texto"
+        >
+          <span class="d-flex align-items-center gap-2">
+            <i class="bi bi-volume-up-fill fs-4 text-success"></i>
+            <span class="small fw-semibold">Lectura en voz alta</span>
+          </span>
+          <span class="d-inline-flex gap-1" aria-hidden="true">
+            <span class="a11y-rate-dot screen-reader-wrapper-step-1"></span>
+            <span class="a11y-rate-dot screen-reader-wrapper-step-2"></span>
+            <span class="a11y-rate-dot screen-reader-wrapper-step-3"></span>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Pie: Restablecer -->
+    <div class="mt-auto pt-1">
+      <button
+        type="button"
+        id="btnResetAccesibilidad"
+        class="btn btn-outline-danger rounded-pill w-100 py-2 fw-semibold shadow-sm d-flex align-items-center justify-content-center gap-2"
+      >
+        <i class="bi bi-arrow-counterclockwise"></i>
+        <span>Restablecer configuración</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <style>
-  :root {
-    --asw-primary: #005215 !important;
-    --asw-primary-dark: #003e10 !important;
+  #btnAccesibilidadMonagua {
+    bottom: 24px;
+    left: 24px;
+    width: 52px;
+    height: 52px;
+    z-index: 1045;
+    background: linear-gradient(135deg, #005215 0%, #157347 100%);
+    border: 1px solid rgba(76, 175, 112, 0.45);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
-  /* Botón flotante principal de Sienna en Verde Oscuro */
-  .asw-menu-btn {
-    background: linear-gradient(135deg, #005215 0%, #157347 100%) !important;
-    background-color: #005215 !important;
-    border: 1px solid rgba(76, 175, 112, 0.45) !important;
-    box-shadow: 0 8px 24px rgba(0, 82, 21, 0.45) !important;
+  #btnAccesibilidadMonagua:hover {
+    transform: scale(1.08);
+  }
+
+  .a11y-tile {
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  }
+
+  .a11y-tile:hover {
+    background-color: #e9f5ee;
+    border-color: #198754 !important;
+  }
+
+  .a11y-tile.active,
+  .a11y-tile.a11y-active {
+    background-color: #198754 !important;
+    border-color: #198754 !important;
     color: #ffffff !important;
-    border-radius: 50% !important;
-    z-index: 999990 !important;
-    transition: transform 0.25s ease, box-shadow 0.25s ease !important;
   }
 
-  .asw-menu-btn:hover {
-    transform: scale(1.08) !important;
-    background: linear-gradient(135deg, #00681b 0%, #198754 100%) !important;
-    box-shadow: 0 12px 28px rgba(0, 82, 21, 0.6) !important;
-  }
-
-  .asw-menu-btn svg,
-  .asw-menu-btn i {
-    fill: #ffffff !important;
+  .a11y-tile.active i,
+  .a11y-tile.a11y-active i {
     color: #ffffff !important;
   }
 
-  /* Encabezado y acentos del panel desplegable */
-  .asw-menu-header {
-    background: linear-gradient(135deg, #005215 0%, #157347 100%) !important;
-    color: #ffffff !important;
-    border-bottom: 1px solid rgba(76, 175, 112, 0.3) !important;
+  .a11y-rate-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: rgba(25, 135, 84, 0.25);
+    display: inline-block;
   }
 
-  .asw-btn.asw-selected,
-  .asw-btn:hover {
-    border-color: #005215 !important;
+  .a11y-tile.active .a11y-rate-dot.active {
+    background-color: #ffffff;
   }
 
-  /* En dashboards con barra lateral fija izquierda (≥992px), desplazar */
+  /* Desplazar el botón flotante en dashboards con barra lateral fija (>=992px) */
   @media (min-width: 992px) {
-    body:has(#mainSidebar) .asw-menu-btn,
-    body:has(#mainSidebar) .asw-menu {
-      left: 280px !important;
+    body:has(#mainSidebar) #btnAccesibilidadMonagua {
+      left: 280px;
     }
   }
 </style>
 
 <script>
-  (function () {
-    // Asegurar compatibilidad y color verde oscuro tras la carga
-    function aplicarVerdeSienna() {
-      var btn = document.querySelector(".asw-menu-btn");
-      if (btn) {
-        btn.style.setProperty(
-          "background",
-          "linear-gradient(135deg, #005215 0%, #157347 100%)",
-          "important"
-        );
-        btn.style.setProperty("color", "#ffffff", "important");
+  window.addEventListener("load", function () {
+    if (typeof window.Accessibility === "undefined") return;
+
+    var acc = new window.Accessibility({
+      suppressDomInjection: true,
+      suppressCssInjection: false,
+      session: { persistent: true },
+      modules: {
+        speechToText: false,
+      },
+      language: {
+        textToSpeechLang: "es-CO",
+      },
+      guide: {
+        cBorder: "#157347",
+        cBackground: "rgba(0, 82, 21, 0.14)",
+        height: "14px",
+      },
+      icon: {
+        fontFaceSrc: ["{% static 'css/librerias/iconos_bootstrap.min.css' %}"],
+        useEmojis: false,
+      },
+    });
+
+    var panel = document.getElementById("offcanvasAccesibilidad");
+    var badgeActivos = document.getElementById("badgeAccesibilidadActivos");
+    var elTextSize = document.getElementById("a11yValTextSize");
+    var elTextSpace = document.getElementById("a11yValTextSpace");
+    var elLineHeight = document.getElementById("a11yValLineHeight");
+
+    function formatearNivel(n) {
+      n = Number(n) || 0;
+      return n > 0 ? "+" + n : String(n);
+    }
+
+    function sincronizarUI() {
+      var st = acc.stateValues || {};
+      var ss = acc.sessionState || {};
+      var activos = 0;
+
+      elTextSize.textContent = formatearNivel(ss.textSize);
+      elTextSpace.textContent = formatearNivel(ss.textSpace);
+      elLineHeight.textContent = formatearNivel(ss.lineHeight);
+
+      if (ss.textSize) activos++;
+      if (ss.textSpace) activos++;
+      if (ss.lineHeight) activos++;
+
+      panel.querySelectorAll("[data-a11y-toggle]").forEach(function (btn) {
+        var key = btn.getAttribute("data-a11y-toggle");
+        var isOn = Boolean(st[key]);
+        btn.classList.toggle("a11y-active", isOn);
+        btn.setAttribute("aria-pressed", String(isOn));
+        if (isOn) activos++;
+      });
+
+      panel.querySelectorAll("[data-a11y-voice]").forEach(function (btn) {
+        var key = btn.getAttribute("data-a11y-voice");
+        var isOn = Boolean(st[key]);
+        btn.classList.toggle("a11y-active", isOn);
+        btn.setAttribute("aria-pressed", String(isOn));
+        if (isOn) activos++;
+      });
+
+      if (activos > 0) {
+        badgeActivos.textContent = activos;
+        badgeActivos.classList.remove("d-none");
+      } else {
+        badgeActivos.classList.add("d-none");
       }
     }
 
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function () {
-        setTimeout(aplicarVerdeSienna, 400);
-        setTimeout(aplicarVerdeSienna, 1200);
+    // Botones de incremento / decremento
+    panel.querySelectorAll("[data-a11y-step]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var fn = btn.getAttribute("data-a11y-step");
+        if (acc.menuInterface && typeof acc.menuInterface[fn] === "function") {
+          acc.menuInterface[fn]();
+          sincronizarUI();
+        }
       });
-    } else {
-      setTimeout(aplicarVerdeSienna, 400);
-      setTimeout(aplicarVerdeSienna, 1200);
-    }
-  })();
+    });
+
+    // Botones toggle (contraste, grises, enlaces, cursor, guía, animaciones)
+    panel.querySelectorAll("[data-a11y-toggle]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var fn = btn.getAttribute("data-a11y-toggle");
+        if (acc.menuInterface && typeof acc.menuInterface[fn] === "function") {
+          acc.menuInterface[fn]();
+          sincronizarUI();
+        }
+      });
+    });
+
+    // Botones de asistencia por voz
+    panel.querySelectorAll("[data-a11y-voice]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var fn = btn.getAttribute("data-a11y-voice");
+        if (acc.menuInterface && typeof acc.menuInterface[fn] === "function") {
+          acc.menuInterface[fn]();
+          setTimeout(sincronizarUI, 100);
+        }
+      });
+    });
+
+    // Botón restablecer todo
+    document.getElementById("btnResetAccesibilidad").addEventListener("click", function () {
+      if (typeof acc.resetAll === "function") {
+        acc.resetAll();
+        setTimeout(sincronizarUI, 100);
+      }
+    });
+
+    // Sincronizar estado inicial (por si había preferencias guardadas en localStorage)
+    setTimeout(sincronizarUI, 250);
+  });
 </script>

@@ -1,7 +1,9 @@
 from App.forms.temporada.forms import TemporadaForm
 from django.db.models import Count, Q
 from django.contrib import messages
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from App.models import Temporada, Tarifa
 from App.utils import crear_notificacion_sistema
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -123,10 +125,39 @@ class TemporadaUpdateView(StaffRequiredMixin, UpdateView):
         return response
 
 
+@login_required(login_url='login')
+@require_POST
+def toggle_estado_temporada(request, pk):
+    """Alterna el estado Activa/Inactiva de una temporada (solo staff)."""
+    if not (request.user.is_active and request.user.is_staff):
+        messages.error(request, "No tienes permisos para cambiar el estado de las temporadas.")
+        return redirect('index')
+
+    temporada = get_object_or_404(Temporada, pk=pk)
+    temporada.estado = not temporada.estado
+    temporada.save(update_fields=['estado'])
+
+    estado_texto = "activada" if temporada.estado else "inactivada"
+    crear_notificacion_sistema(
+        usuario=request.user,
+        mensaje=f"Se ha {estado_texto} la temporada: '{temporada.nombre}'.",
+        tipo="Temporada",
+        prioridad="media"
+    )
+    return redirect('listar_temporadas')
+
+
 class TemporadaDeleteView(StaffRequiredMixin, DeleteView):
     model = Temporada
     template_name = 'admin/temporada/eliminar_temporada.html'
     success_url = reverse_lazy('listar_temporadas')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        total_tarifas = self.object.tarifas.count()
+        context['total_tarifas'] = total_tarifas
+        context['puede_eliminar'] = (total_tarifas == 0)
+        return context
 
     def form_valid(self, form):
         self.object = self.get_object()
