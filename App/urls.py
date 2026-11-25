@@ -108,6 +108,8 @@ urlpatterns = [
     path('reservas/comprobante/<int:reserva_id>/', reserva_views.comprobante_reserva_html, name='comprobante_reserva'),
     path('reservas/comprobante-multiple/', reserva_views.comprobante_multiple, name='comprobante_multiple'),
     path('reservas/<int:reserva_id>/personas/modificar/', reserva_views.modificar_personas_reserva, name='modificar_personas_reserva'),
+    path('reservas/<int:reserva_id>/personas/reducir/', reserva_views.reducir_personas_reserva_pagada, name='reducir_personas_reserva_pagada'),
+    path('reservas/nota-credito/<int:nota_id>/', reserva_views.ver_nota_credito, name='ver_nota_credito'),
 
     # Reservas (Administración / Staff)
     path('admin/reservas/', reserva_views.GestionReservasListView.as_view(), name='gestion_reservas'),

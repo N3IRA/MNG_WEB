@@ -49,6 +49,15 @@ class ReservaForm(forms.ModelForm):
                     self.fields.pop(field_name)
             self.fields['numero_adultos'].required = False
             self.fields['numero_menores'].required = False
+            self.fields['numero_adultos'].widget.attrs.update({'min': '1', 'max': '10'})
+            self.fields['numero_menores'].widget.attrs.update({'min': '0', 'max': '10'})
+
+            # Si la reserva no permite modificar personas, deshabilitar campos informativamente
+            if hasattr(self.instance, 'puede_modificar_personas') and not self.instance.puede_modificar_personas():
+                self.fields['numero_adultos'].widget.attrs['readonly'] = 'readonly'
+                self.fields['numero_menores'].widget.attrs['readonly'] = 'readonly'
+                self.fields['numero_adultos'].help_text = 'La cantidad de personas no puede modificarse: la reserva tiene un pago registrado, está cancelada o faltan menos de 48 horas.'
+                self.fields['numero_menores'].help_text = 'La cantidad de personas no puede modificarse: la reserva tiene un pago registrado, está cancelada o faltan menos de 48 horas.'
 
         # Se exigen al menos 5 días de anticipación para reservas nuevas
         if not self.instance.pk:

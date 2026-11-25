@@ -116,6 +116,42 @@
                     <p class="text-muted small mb-0">Esta reserva no tiene cambios registrados de personas.</p>
                 {% endif %}
             </div>
+
+            {% if reserva.notas_credito.exists %}
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mt-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                        <i class="bi bi-receipt-cutoff fs-5"></i>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-0">Notas de Crédito / Reembolsos Parciales</h6>
+                </div>
+                <div class="d-flex flex-column gap-3">
+                    {% for nc in reserva.notas_credito.all %}
+                        <div class="border rounded-3 p-3">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <strong class="text-dark small">{{ nc.codigo }}</strong>
+                                <span class="badge rounded-pill {% if nc.estado == 'procesada' %}bg-success text-white{% elif nc.estado == 'pendiente_reembolso' %}bg-warning text-dark{% else %}bg-secondary text-white{% endif %}">
+                                    {{ nc.get_estado_display }}
+                                </span>
+                            </div>
+                            <div class="small text-secondary mt-2">
+                                Modalidad: <strong>{{ nc.get_modalidad_display }}</strong> · Cupos liberados: <strong>{{ nc.cupos_liberados }}</strong>
+                            </div>
+                            <div class="small text-secondary mt-1">
+                                Pago original: <strong>Ref. {{ nc.pago_original.referencia }}</strong> (COP ${{ nc.pago_original.monto|floatformat:0|intcomma }}) ·
+                                Devolución: <strong class="text-success">COP ${{ nc.monto_devuelto|floatformat:0|intcomma }}</strong>
+                                {% if nc.porcentaje_penalidad > 0 %}(Penalidad {{ nc.porcentaje_penalidad|floatformat:0 }}%){% endif %}
+                            </div>
+                            <div class="mt-2">
+                                <a href="{% url 'ver_nota_credito' nc.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    <i class="bi bi-file-earmark-text me-1"></i> Ver Nota de Crédito
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
 
         <!-- Columna Formulario de Decisión (Derecha) -->
@@ -130,6 +166,23 @@
                 </div>
 
                 <div class="card-body p-4">
+                    {% if not reserva.puede_modificar_personas %}
+                        <div class="alert alert-warning rounded-3 mb-4 p-3 d-flex align-items-start gap-2 border-0 shadow-sm" role="alert">
+                            <i class="bi bi-shield-exclamation text-warning fs-5 flex-shrink-0 mt-0.5"></i>
+                            <div class="small">
+                                <strong>Modificación de pasajeros bloqueada:</strong>
+                                {% if reserva.pago %}
+                                    Esta reserva ya tiene un comprobante o pago registrado.
+                                {% elif reserva.estado_reserva == 'cancelada' %}
+                                    Esta reserva se encuentra cancelada.
+                                {% else %}
+                                    Faltan menos de 48 horas para el inicio del viaje programado.
+                                {% endif %}
+                                <div class="text-muted mt-1">Solo puedes modificar el estado de la reserva. Los campos de adultos y menores están protegidos.</div>
+                            </div>
+                        </div>
+                    {% endif %}
+
                     <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         
@@ -137,9 +190,9 @@
                             {{ form|crispy }}
                         </div>
 
-                        <div class="mb-4">
+                        <div class="mb-4" id="seccion-motivo-modificacion">
                             <label for="motivo_modificacion" class="form-label fw-bold">Motivo de la corrección de personas</label>
-                            <textarea name="motivo_modificacion" id="motivo_modificacion" class="form-control rounded-3" rows="3" minlength="5" placeholder="Indica por qué se corrige la cantidad de personas."></textarea>
+                            <textarea name="motivo_modificacion" id="motivo_modificacion" class="form-control rounded-3" rows="3" minlength="5" placeholder="Indica por qué se corrige la cantidad de personas." {% if not reserva.puede_modificar_personas %}disabled{% endif %}></textarea>
                             <div class="form-text">Obligatorio únicamente si cambias adultos o menores. La fecha del viaje no se puede modificar.</div>
                         </div>
 

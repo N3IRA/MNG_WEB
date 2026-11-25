@@ -63,6 +63,12 @@ class Usuario(AbstractUser):
     experiencia_fecha = models.DateField(null=True, blank=True, verbose_name='Fecha de Inicio de Experiencia')
     descripcion_experiencia = models.TextField(blank=True, null=True, verbose_name='Descripción de la Experiencia')
     entidad_salud = models.CharField(max_length=100, blank=True, null=True, verbose_name='Entidad de Salud')
+    saldo_favor = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='Saldo a Favor'
+    )
 
     REQUIRED_FIELDS = ['email', 'tipo_documento', 'numero_documento', 'telefono']
 
@@ -271,6 +277,21 @@ class Paquete(models.Model):
 
     def __str__(self):
         return self.nombre
+
+    def cupos_ocupados_fecha(self, fecha):
+        """Retorna el total de cupos (adultos + menores) ocupados en reservas activas para una fecha dada."""
+        if not fecha:
+            return 0
+        from django.db.models import Sum
+        agg = self.reservas.filter(
+            fecha_inicio=fecha
+        ).exclude(
+            estado_reserva='cancelada'
+        ).aggregate(
+            adultos=Sum('numero_adultos'),
+            menores=Sum('numero_menores'),
+        )
+        return (agg.get('adultos') or 0) + (agg.get('menores') or 0)
 
     @property
     def precio_minimo(self):
@@ -698,6 +719,111 @@ class Reserva(models.Model):
             timezone.get_current_timezone()
         )
         return inicio_viaje - timezone.now() >= timedelta(hours=48)
+
+    def puede_reducir_personas_pagada(self):
+        """Indica si la reserva ya fue pagada (aprobada) y admite reducción parcial de cupos."""
+        if self.estado_reserva == 'cancelada' or not self.fecha_inicio:
+            return False
+
+        pago = getattr(self, 'pago', None)
+        if not pago or pago.estado_transaccion != 'aprobado':
+            return False
+
+        total_personas = (self.numero_adultos or 0) + (self.numero_menores or 0)
+        if total_personas <= 1:
+            return False
+
+        inicio_viaje = timezone.make_aware(
+            datetime.combine(self.fecha_inicio, time.min),
+            timezone.get_current_timezone()
+        )
+        return inicio_viaje > timezone.now()
+
+    def evaluar_politica_reduccion(self, ahora=None):
+        """
+        Evalúa la política escalonada de anticipación para cancelación parcial:
+        - >= 48h antes del viaje: 100% devolución (0% penalidad)
+        - >= 24h y < 48h antes del viaje: 50% devolución (50% penalidad)
+        - < 24h antes del viaje: 0% devolución (100% penalidad por costos comprometidos)
+        """
+        ahora = ahora or timezone.now()
+        inicio_viaje = timezone.make_aware(
+            datetime.combine(self.fecha_inicio, time.min),
+            timezone.get_current_timezone()
+        )
+        horas_restantes = (inicio_viaje - ahora).total_seconds() / 3600.0
+
+        if horas_restantes >= 48:
+            return {
+                'tramo': 'gratuito',
+                'porcentaje_reembolso': Decimal('100'),
+                'porcentaje_penalidad': Decimal('0'),
+                'horas_restantes': round(horas_restantes, 1),
+                'descripcion': 'Plazo gratuito (+48h antes del tour): devolución del 100% correspondiente a las personas retiradas.',
+            }
+        if horas_restantes >= 24:
+            return {
+                'tramo': 'penalidad_parcial',
+                'porcentaje_reembolso': Decimal('50'),
+                'porcentaje_penalidad': Decimal('50'),
+                'horas_restantes': round(horas_restantes, 1),
+                'descripcion': 'Fuera del plazo gratuito (entre 24h y 48h antes): se aplica una penalidad del 50% y se devuelve el 50% correspondiente.',
+            }
+        return {
+            'tramo': 'ultimo_momento',
+            'porcentaje_reembolso': Decimal('0'),
+            'porcentaje_penalidad': Decimal('100'),
+            'horas_restantes': max(round(horas_restantes, 1), 0.0),
+            'descripcion': 'Último momento (menos de 24h antes del tour): no aplica reembolso debido a costos operativos ya comprometidos.',
+        }
+
+    def calcular_monto_para_personas(self, adultos, menores):
+        """Calcula el monto total para una combinación dada de adultos y menores."""
+        if not self.paquete or not self.fecha_inicio:
+            return Decimal('0.00')
+
+        temporadas = Temporada.objects.filter(
+            estado=True,
+            fecha_inicio__lte=self.fecha_inicio,
+            fecha_fin__gte=self.fecha_inicio
+        ).order_by('-fecha_inicio')
+
+        tarifa = None
+        for temporada in temporadas:
+            tarifa = Tarifa.objects.filter(
+                paquete=self.paquete,
+                temporada=temporada,
+                estado=True
+            ).first()
+            if tarifa:
+                break
+
+        if not tarifa:
+            # Fallback proporcional si no hay tarifa activa para la fecha
+            total_actual = (self.numero_adultos or 0) + (self.numero_menores or 0)
+            if total_actual > 0 and self.monto_total:
+                precio_unitario = Decimal(self.monto_total) / Decimal(total_actual)
+                return (precio_unitario * Decimal((adultos or 0) + (menores or 0))).quantize(Decimal('0.01'))
+            return Decimal('0.00')
+
+        adultos = adultos or 0
+        menores = menores or 0
+        base_monto = (tarifa.precio_adulto * adultos) + (tarifa.precio_menor * menores)
+
+        pp = PaquetePromocion.objects.filter(
+            paquete=self.paquete,
+            promocion__activa=True,
+            promocion__fecha_inicio__lte=self.fecha_inicio,
+            promocion__fecha_fin__gte=self.fecha_inicio
+        ).select_related('promocion').first()
+
+        if pp:
+            if pp.valor_adulto_condescuento and pp.valor_adulto_condescuento > 0 and pp.valor_menor_condescuento and pp.valor_menor_condescuento > 0:
+                return ((pp.valor_adulto_condescuento * adultos) + (pp.valor_menor_condescuento * menores)).quantize(Decimal('0.01'))
+            elif pp.promocion and pp.promocion.porcentaje_descuento:
+                descuento = Decimal(pp.promocion.porcentaje_descuento) / Decimal(100)
+                return round(base_monto * (Decimal(1) - descuento), 2)
+        return base_monto.quantize(Decimal('0.01'))
 
     def puede_cancelar_viaje(self):
         """Indica si falta al menos 48 horas exactas para el inicio del viaje."""
@@ -1225,4 +1351,55 @@ class ModificacionReserva(models.Model):
 
     def __str__(self):
         return f'Modificación de reserva #{self.reserva_id} — {self.fecha_modificacion}'
+
+
+# ==============================================================================
+# NOTA DE CRÉDITO / REEMBOLSO PARCIAL
+# ==============================================================================
+
+class NotaCredito(models.Model):
+    """
+    Registro contable de reembolso parcial o saldo a favor generado al reducir
+    personas en una reserva ya pagada, manteniendo intacto el pago original.
+    """
+    MODALIDAD_CHOICES = [
+        ('reembolso', 'Reembolso parcial al método original'),
+        ('credito', 'Saldo a favor en la cuenta'),
+    ]
+    ESTADO_CHOICES = [
+        ('procesada', 'Procesada (Acreditada)'),
+        ('pendiente_reembolso', 'Pendiente de desembolso'),
+        ('sin_reembolso', 'Sin reembolso aplicable'),
+    ]
+
+    codigo = models.CharField(max_length=32, unique=True, blank=True, verbose_name='Código de Nota de Crédito')
+    reserva = models.ForeignKey('Reserva', on_delete=models.CASCADE, related_name='notas_credito', verbose_name='Reserva')
+    pago_original = models.ForeignKey('Pago', on_delete=models.PROTECT, related_name='notas_credito', verbose_name='Pago Original')
+    modificacion = models.OneToOneField('ModificacionReserva', on_delete=models.SET_NULL, null=True, blank=True, related_name='nota_credito', verbose_name='Modificación Asociada')
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notas_credito', verbose_name='Usuario')
+    modalidad = models.CharField(max_length=20, choices=MODALIDAD_CHOICES, verbose_name='Modalidad de Devolución')
+    estado = models.CharField(max_length=25, choices=ESTADO_CHOICES, default='procesada', verbose_name='Estado')
+    cupos_liberados = models.PositiveSmallIntegerField(default=0, verbose_name='Cupos Liberados')
+    monto_bruto_diferencia = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name='Diferencia Bruta')
+    porcentaje_penalidad = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'), verbose_name='Porcentaje de Penalidad')
+    monto_penalidad = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name='Monto de Penalidad')
+    monto_devuelto = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name='Monto Devuelto / Acreditado')
+    politica_aplicada = models.CharField(max_length=255, blank=True, verbose_name='Política Aplicada')
+    motivo = models.TextField(blank=True, verbose_name='Motivo')
+    fecha_emision = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Emisión')
+
+    class Meta:
+        db_table = 'nota_credito'
+        verbose_name = 'Nota de Crédito'
+        verbose_name_plural = 'Notas de Crédito'
+        ordering = ['-fecha_emision']
+
+    def save(self, *args, **kwargs):
+        if not self.codigo:
+            import uuid
+            self.codigo = f"NC-{timezone.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.codigo} — Reserva #{self.reserva_id} (COP ${self.monto_devuelto:,.0f})'
 

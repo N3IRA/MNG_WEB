@@ -1,8 +1,10 @@
+import hashlib
 import json
 import re
 from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 import logging
+from django.http import HttpResponse
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -14,7 +16,7 @@ from django.db.models import Count, Q
 from django.db import transaction
 from django.utils import timezone
 
-from App.models import Reserva, Paquete, Tarifa, Pago, ModificacionReserva
+from App.models import Reserva, Paquete, Tarifa, Pago, ModificacionReserva, NotaCredito, Usuario
 
 logger = logging.getLogger(__name__)
 from App.forms.reserva.forms import ReservaForm
@@ -64,11 +66,41 @@ class GestionReservasListView(ListView):
         else:
             queryset = Reserva.objects.exclude(estado_reserva='cancelada')
             
-        return queryset.select_related('usuario', 'paquete').order_by('-id')
+        return queryset.select_related('usuario', 'paquete', 'pago').order_by('-id')
+
+    def _calcular_hash_estado(self, queryset, stats):
+        filas = list(
+            queryset.values_list(
+                'id',
+                'estado_reserva',
+                'numero_adultos',
+                'numero_menores',
+                'monto_total',
+                'estado_cancelacion',
+            )
+        )
+        payload = f"{stats}|{filas}"
+        return hashlib.md5(payload.encode('utf-8')).hexdigest()
+
+    def get(self, request, *args, **kwargs):
+        last_hash = request.GET.get('last_hash')
+        if request.headers.get('HX-Request') == 'true' and last_hash:
+            queryset = self.get_queryset()
+            stats = Reserva.objects.aggregate(
+                total=Count('id'),
+                pendientes=Count('id', filter=Q(estado_reserva='pendiente')),
+                confirmadas=Count('id', filter=Q(estado_reserva='confirmada')),
+                canceladas=Count('id', filter=Q(estado_reserva='cancelada'))
+            )
+            current_hash = self._calcular_hash_estado(queryset, stats)
+            if current_hash == last_hash:
+                return HttpResponse(status=204)
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['titulo'] = 'Gestión de Reservas'
+        context['ultima_actualizacion'] = timezone.localtime(timezone.now())
         
         stats = Reserva.objects.aggregate(
             total=Count('id'),
@@ -77,6 +109,7 @@ class GestionReservasListView(ListView):
             canceladas=Count('id', filter=Q(estado_reserva='cancelada'))
         )
         context.update(stats)
+        context['reservas_hash'] = self._calcular_hash_estado(self.object_list, stats)
 
         context['stats_list'] = [
             ('Total', stats['total'], 'text-dark'),
@@ -222,6 +255,14 @@ class EditarReservaAdminView(UpdateView):
                 motivo=motivo_modificacion,
                 realizado_por_admin=True
             )
+            if reserva.usuario:
+                crear_notificacion_sistema(
+                    usuario=reserva.usuario,
+                    reserva=reserva,
+                    mensaje=f"Un administrador actualizó los pasajeros de tu reserva #{reserva.id}: {reserva.numero_adultos} adulto(s) y {reserva.numero_menores} menor(es). Nuevo total: COP ${reserva.monto_total:,.0f}.",
+                    tipo="Reserva",
+                    prioridad="alta"
+                )
 
         if reserva.estado_reserva in ['confirmada', 'cancelada']:
             if reserva.usuario:
@@ -352,7 +393,7 @@ def obtener_contexto_mis_reservas(usuario, estado_filtro=''):
     if estado_filtro in ['pendiente', 'confirmada']:
         reservas = reservas.filter(estado_reserva=estado_filtro)
 
-    reservas = reservas.select_related('paquete').prefetch_related('paquete__actividades').order_by('-fecha_registro')
+    reservas = reservas.select_related('paquete', 'paquete__categoria', 'pago').prefetch_related('paquete__actividades', 'notas_credito').order_by('-fecha_registro')
 
     return {
         'reservas': reservas,
@@ -1076,3 +1117,169 @@ def modificar_personas_reserva(request, reserva_id):
 
     messages.success(request, 'La cantidad de personas fue modificada correctamente.')
     return redirect('mis_reservas_usuario')
+
+
+@login_required(login_url='login')
+@solo_turistas_requerido
+def reducir_personas_reserva_pagada(request, reserva_id):
+    """
+    Permite al usuario reducir personas en una reserva ya pagada (cancelación parcial)
+    sin cancelar toda la reserva, aplicando la política escalonada de anticipación,
+    liberando cupos, procesando reembolso parcial o saldo a favor y emitiendo NotaCredito
+    vinculada al pago original (manteniendo intacto el comprobante original).
+    """
+    if request.method != 'POST':
+        return redirect('mis_reservas_usuario')
+
+    with transaction.atomic():
+        reserva = Reserva.objects.select_for_update().select_related('paquete', 'pago', 'usuario').filter(
+            id=reserva_id,
+            usuario=request.user
+        ).first()
+
+        if not reserva:
+            messages.error(request, 'No se encontró la reserva solicitada.')
+            return redirect('mis_reservas_usuario')
+
+        if not reserva.puede_reducir_personas_pagada():
+            messages.error(
+                request,
+                'Esta reserva no cumple las condiciones para reducción parcial (debe estar pagada y aprobada, activa, con más de 1 persona y anterior a la fecha del viaje).'
+            )
+            return redirect('mis_reservas_usuario')
+
+        try:
+            adultos = int(request.POST.get('adultos', 0))
+            menores = int(request.POST.get('menores', 0))
+        except (TypeError, ValueError):
+            messages.error(request, 'Los números de adultos y menores no son válidos.')
+            return redirect('mis_reservas_usuario')
+
+        modalidad = (request.POST.get('modalidad') or '').strip().lower()
+        if modalidad not in ('reembolso', 'credito'):
+            messages.error(request, 'Debes elegir entre reembolso parcial al método original o saldo a favor.')
+            return redirect('mis_reservas_usuario')
+
+        if adultos < 1:
+            messages.error(request, 'Debe permanecer al menos 1 adulto en la reserva. Si nadie asistirá, usa la opción de cancelación total.')
+            return redirect('mis_reservas_usuario')
+        if menores < 0:
+            messages.error(request, 'El número de menores no puede ser negativo.')
+            return redirect('mis_reservas_usuario')
+        if adultos > reserva.numero_adultos or menores > reserva.numero_menores:
+            messages.error(request, 'En una reserva ya pagada solo puedes reducir la cantidad de adultos o menores, no aumentarla.')
+            return redirect('mis_reservas_usuario')
+
+        adultos_anteriores = reserva.numero_adultos
+        menores_anteriores = reserva.numero_menores
+        cupos_liberados = (adultos_anteriores + menores_anteriores) - (adultos + menores)
+
+        if cupos_liberados <= 0:
+            messages.warning(request, 'Debes reducir al menos 1 persona para aplicar una cancelación parcial.')
+            return redirect('mis_reservas_usuario')
+
+        politica = reserva.evaluar_politica_reduccion()
+        monto_anterior = Decimal(reserva.monto_total or Decimal('0.00'))
+        monto_nuevo = reserva.calcular_monto_para_personas(adultos, menores)
+        diferencia_bruta = max((monto_anterior - monto_nuevo).quantize(Decimal('0.01')), Decimal('0.00'))
+
+        porcentaje_penalidad = politica['porcentaje_penalidad']
+        monto_penalidad = (diferencia_bruta * porcentaje_penalidad / Decimal('100')).quantize(Decimal('0.01'))
+        monto_devuelto = (diferencia_bruta - monto_penalidad).quantize(Decimal('0.01'))
+
+        motivo_usuario = (request.POST.get('motivo') or '').strip()
+        motivo_final = motivo_usuario or f"Reducción parcial de {adultos_anteriores + menores_anteriores} a {adultos + menores} persona(s) ({politica['tramo']})."
+
+        # Actualizar la reserva liberando los cupos automáticamente (sin tocar el Pago original)
+        reserva.numero_adultos = adultos
+        reserva.numero_menores = menores
+        reserva.monto_total = monto_nuevo
+        reserva.save(update_fields=['numero_adultos', 'numero_menores', 'monto_total'])
+
+        modificacion = ModificacionReserva.objects.create(
+            reserva=reserva,
+            usuario=request.user,
+            adultos_anteriores=adultos_anteriores,
+            adultos_nuevos=adultos,
+            menores_anteriores=menores_anteriores,
+            menores_nuevos=menores,
+            monto_anterior=monto_anterior,
+            monto_nuevo=monto_nuevo,
+            motivo=motivo_final,
+            realizado_por_admin=False
+        )
+
+        if monto_devuelto <= Decimal('0.00'):
+            estado_nota = 'sin_reembolso'
+        elif modalidad == 'credito':
+            estado_nota = 'procesada'
+            usuario_locked = Usuario.objects.select_for_update().get(pk=request.user.pk)
+            usuario_locked.saldo_favor = (usuario_locked.saldo_favor or Decimal('0.00')) + monto_devuelto
+            usuario_locked.save(update_fields=['saldo_favor'])
+        else:
+            estado_nota = 'pendiente_reembolso'
+
+        nota_credito = NotaCredito.objects.create(
+            reserva=reserva,
+            pago_original=reserva.pago,
+            modificacion=modificacion,
+            usuario=request.user,
+            modalidad=modalidad,
+            estado=estado_nota,
+            cupos_liberados=cupos_liberados,
+            monto_bruto_diferencia=diferencia_bruta,
+            porcentaje_penalidad=porcentaje_penalidad,
+            monto_penalidad=monto_penalidad,
+            monto_devuelto=monto_devuelto,
+            politica_aplicada=politica['descripcion'],
+            motivo=motivo_final,
+        )
+
+        # Notificar al turista
+        if estado_nota == 'procesada':
+            detalle_dinero = f"Se acreditaron COP ${monto_devuelto:,.0f} a tu saldo a favor."
+        elif estado_nota == 'pendiente_reembolso':
+            detalle_dinero = f"Se solicitó reembolso parcial por COP ${monto_devuelto:,.0f} a tu método de pago original."
+        else:
+            detalle_dinero = "No aplica reembolso según la política de anticipación (<24h)."
+
+        crear_notificacion_sistema(
+            usuario=request.user,
+            reserva=reserva,
+            mensaje=f"Cancelación parcial aplicada en reserva #{reserva.id} (Nota de Crédito {nota_credito.codigo}): se liberaron {cupos_liberados} cupo(s). {detalle_dinero}",
+            tipo="Reserva",
+            prioridad="alta"
+        )
+
+        # Notificar a administradores
+        for admin_user in Usuario.objects.filter(Q(is_staff=True) | Q(rol=Usuario.Roles.ADMIN), is_active=True):
+            crear_notificacion_sistema(
+                usuario=admin_user,
+                reserva=reserva,
+                mensaje=f"El usuario {request.user.username} redujo la reserva #{reserva.id} en {cupos_liberados} cupo(s) ({nota_credito.codigo} — {nota_credito.get_modalidad_display()}: COP ${monto_devuelto:,.0f}).",
+                tipo="Reserva",
+                prioridad="media"
+            )
+
+    messages.success(
+        request,
+        f"Reserva actualizada a {adultos} adulto(s) y {menores} menor(es). Se liberaron {cupos_liberados} cupo(s) y se generó la Nota de Crédito {nota_credito.codigo}. {detalle_dinero}"
+    )
+    return redirect('mis_reservas_usuario')
+
+
+@login_required(login_url='login')
+def ver_nota_credito(request, nota_id):
+    """Muestra el comprobante de Nota de Crédito vinculado al pago original."""
+    nota = get_object_or_404(
+        NotaCredito.objects.select_related('reserva', 'reserva__paquete', 'pago_original', 'usuario', 'modificacion'),
+        id=nota_id
+    )
+    es_admin = request.user.is_staff or getattr(request.user, 'es_admin', False)
+    if nota.usuario_id != request.user.id and not es_admin:
+        messages.error(request, 'No tienes permisos para ver esta nota de crédito.')
+        return redirect('mis_reservas_usuario')
+
+    return render(request, 'usuario/reserva/nota_credito.html', {
+        'nota': nota,
+    })

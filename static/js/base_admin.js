@@ -47,12 +47,10 @@
     if (typeof bootstrap === "undefined") return;
     var tooltipTriggerList = [].slice.call(
       document.querySelectorAll(
-        '[data-bs-toggle="tooltip"], [title]:not([title=""])',
+        '[data-bs-toggle="tooltip"]',
       ),
     );
     tooltipTriggerList.forEach(function (el) {
-      var toggle = el.getAttribute("data-bs-toggle");
-      if (toggle && toggle !== "tooltip") return;
       try {
         if (!bootstrap.Tooltip.getInstance(el)) {
           new bootstrap.Tooltip(el, {

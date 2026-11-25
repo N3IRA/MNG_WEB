@@ -1,6 +1,8 @@
-{% extends "usuario/base-turista-dashboard.html" %} {% load static %} {% load
-humanize %} {% block title %}Panel de Control | Monagua{% endblock %} {% block
-extra_head %}
+{% extends "usuario/base-turista-dashboard.html" %}
+{% load static %}
+{% load humanize %}
+{% block title %}Panel de Control | Monagua{% endblock %}
+{% block extra_head %}
 <style>
   /* ══════════════════════════════════════════════════════════════
      SISTEMA DE DISEÑO DE ALTO CONTRASTE - DASHBOARD TURISTA
@@ -559,9 +561,7 @@ extra_head %}
               <span
                 class="badge rounded-pill {% if proxima_reserva.estado_reserva == 'confirmada' %}bg-success text-white{% elif proxima_reserva.estado_reserva == 'pendiente' %}bg-warning text-dark{% else %}bg-danger text-white{% endif %} px-2.5 py-1 small fw-bold"
               >
-                {{
-                proxima_reserva.get_estado_reserva_display|default:proxima_reserva.estado_reserva
-                }}
+                {{ proxima_reserva.get_estado_reserva_display|default:proxima_reserva.estado_reserva }}
               </span>
               <span class="fw-bold small text-secondary"
                 >Reserva #{{ proxima_reserva.id }}</span
@@ -573,22 +573,9 @@ extra_head %}
             <div
               class="small fw-semibold text-secondary d-flex flex-wrap align-items-center gap-3 mt-2"
             >
-              <span
-                ><i class="bi bi-calendar-event text-success me-1"></i> {{
-                proxima_reserva.fecha_inicio|date:"d M, Y"|default:"Por
-                programar" }}</span
-              >
-              <span
-                ><i class="bi bi-people text-primary me-1"></i> {{
-                proxima_reserva.numero_adultos }} Adultos{% if
-                proxima_reserva.numero_menores %}, {{
-                proxima_reserva.numero_menores }} Menores{% endif %}</span
-              >
-              <span class="fw-bold text-success"
-                >COP ${{
-                proxima_reserva.monto_total|floatformat:0|intcomma|default:"0"
-                }}</span
-              >
+              <span><i class="bi bi-calendar-event text-success me-1"></i> {{ proxima_reserva.fecha_inicio|date:"d M, Y"|default:"Por programar" }}</span>
+              <span><i class="bi bi-people text-primary me-1"></i> {{ proxima_reserva.numero_adultos }} Adultos{% if proxima_reserva.numero_menores %}, {{ proxima_reserva.numero_menores }} Menores{% endif %}</span>
+              <span class="fw-bold text-success">COP ${{ proxima_reserva.monto_total|floatformat:0|intcomma|default:"0" }}</span>
             </div>
           </div>
         </div>
@@ -685,8 +672,7 @@ extra_head %}
                   >
                 </td>
                 <td class="small fw-semibold text-secondary">
-                  {{ r.fecha_inicio|date:"d M,
-                  Y"|default:r.fecha_registro|date:"d M, Y" }}
+                  {{ r.fecha_inicio|date:"d M, Y"|default:r.fecha_registro|date:"d M, Y" }}
                 </td>
                 <td class="small fw-bold text-success">
                   COP ${{ r.monto_total|floatformat:0|intcomma|default:"0" }}

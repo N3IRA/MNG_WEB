@@ -16,7 +16,7 @@
   <div class="card border-0 shadow-sm rounded-4 mb-5">
     <div class="card-body p-4">
       <div class="row align-items-center g-4">
-        <div class="col-12 col-md-3 text-center border-end">
+        <div class="col-12 col-md-3 text-center border-end" title="Calificación promedio general de la comunidad Monagua">
           <div class="display-4 fw-bold text-success">{{ stats.promedio|floatformat:1 }}</div>
           <div class="text-warning fs-5 my-1">
             <i class="bi bi-star-fill"></i>
@@ -29,7 +29,7 @@
         </div>
         <div class="col-12 col-md-9">
           {% for i in "54321" %}
-          <div class="d-flex align-items-center gap-2 mb-1">
+          <div class="d-flex align-items-center gap-2 mb-1" title="Calificaciones con {{ i }} estrella{% if i != '1' %}s{% endif %}">
             <span class="text-muted small">{{ i }}</span>
             <i class="bi bi-star-fill text-warning"></i>
             <div class="flex-grow-1 bg-light rounded-pill overflow-hidden">
@@ -57,7 +57,7 @@
 
             <div class="mb-3">
               <label class="form-label fw-medium small" for="id_tipo">Categoría o Paquete Turístico</label>
-              <select name="tipo" id="id_tipo" class="form-select rounded-3">
+              <select name="tipo" id="id_tipo" class="form-select rounded-3" title="Selecciona si tu opinión es sobre una experiencia general, sugerencia, o sobre un paquete turístico reservado">
                 <optgroup label="Categorías Generales">
                   <option value="experiencia">Experiencia de viaje</option>
                   <option value="sugerencia">Sugerencia</option>
@@ -85,14 +85,16 @@
             <div class="mb-3">
               <label class="form-label fw-medium small" for="id_titulo">Título</label>
               <input type="text" name="titulo" id="id_titulo" class="form-control rounded-3"
-                placeholder="Resumen de tu experiencia (ej: ¡Excelente viaje!)" required maxlength="150">
+                placeholder="Resumen de tu experiencia (ej: ¡Excelente viaje!)" required maxlength="150"
+                title="Escribe un título corto y representativo de tu opinión">
             </div>
 
             <div class="mb-3">
               <label class="form-label fw-medium small" for="id_comentario">Comentario de tu experiencia</label>
               <!-- LÍMITE: max 500 caracteres con contador -->
               <textarea name="comentario" id="id_comentario" class="form-control rounded-3" rows="4"
-                placeholder="Cuéntanos los detalles de tu experiencia con Monagua…" required maxlength="500"></textarea>
+                placeholder="Cuéntanos los detalles de tu experiencia con Monagua…" required maxlength="500"
+                title="Comparte tu opinión detallada (máximo 500 caracteres)"></textarea>
               <div class="d-flex justify-content-end mt-1">
                 <small class="text-muted" id="char-count">0 / 500</small>
               </div>
@@ -101,19 +103,26 @@
             <div class="mb-4">
               <label class="form-label fw-medium small d-block">Puntaje / Valoración</label>
               <div class="d-flex gap-2 fs-3" id="starGeneral">
-                <i class="bi bi-star-fill text-warning star-btn" data-val="1"></i>
-                <i class="bi bi-star-fill text-warning star-btn" data-val="2"></i>
-                <i class="bi bi-star-fill text-warning star-btn" data-val="3"></i>
-                <i class="bi bi-star-fill text-warning star-btn" data-val="4"></i>
-                <i class="bi bi-star-fill text-warning star-btn" data-val="5"></i>
+                <i class="bi bi-star-fill text-warning star-btn" data-val="1" title="1 estrella - Muy malo"></i>
+                <i class="bi bi-star-fill text-warning star-btn" data-val="2" title="2 estrellas - Regular"></i>
+                <i class="bi bi-star-fill text-warning star-btn" data-val="3" title="3 estrellas - Bueno"></i>
+                <i class="bi bi-star-fill text-warning star-btn" data-val="4" title="4 estrellas - Muy bueno"></i>
+                <i class="bi bi-star-fill text-warning star-btn" data-val="5" title="5 estrellas - Excelente"></i>
               </div>
               <input type="hidden" name="puntaje_estrellas" id="id_puntaje_estrellas" value="5">
             </div>
 
-            <button type="submit" class="btn btn-success w-100 rounded-3 py-2 fw-bold" {% if not paquetes_reservados %}disabled title="Para enviar una calificación debes tener al menos una reserva confirmada"{% endif %}>
-              <i class="bi bi-send-fill me-2"></i>
-              {% if paquetes_reservados %}Enviar Calificación{% else %}No puedes calificar aún{% endif %}
+            {% if not paquetes_reservados %}
+            <span class="d-block" title="Para enviar una calificación debes tener al menos una reserva confirmada">
+              <button type="submit" class="btn btn-success w-100 rounded-3 py-2 fw-bold" disabled>
+                <i class="bi bi-send-fill me-2"></i>No puedes calificar aún
+              </button>
+            </span>
+            {% else %}
+            <button type="submit" class="btn btn-success w-100 rounded-3 py-2 fw-bold" title="Publicar tu calificación en Monagua">
+              <i class="bi bi-send-fill me-2"></i>Enviar Calificación
             </button>
+            {% endif %}
           </form>
         </div>
       </div>
@@ -129,14 +138,15 @@
           {% for c in mis_calificaciones %}
           <div class="border-bottom pb-3 mb-3">
             <div class="d-flex justify-content-between align-items-start mb-1 gap-2">
-              <span class="fw-semibold small text-truncate">{{ c.titulo }}</span>
+              <span class="fw-semibold small text-truncate" title="{{ c.titulo }}">{{ c.titulo }}</span>
               <span
-                class="badge rounded-pill flex-shrink-0 {% if c.visible %}bg-success bg-opacity-25 text-success{% else %}bg-warning bg-opacity-25 text-warning{% endif %}">
+                class="badge rounded-pill flex-shrink-0 {% if c.visible %}bg-success bg-opacity-25 text-success{% else %}bg-warning bg-opacity-25 text-warning{% endif %}"
+                title="{% if c.visible %}Esta calificación es visible para toda la comunidad{% else %}Tu calificación está en revisión por el equipo de Monagua{% endif %}">
                 {% if c.visible %}Publicada{% else %}En revisión{% endif %}
               </span>
             </div>
             {% if c.paquete %}
-              <div class="small text-success mb-1">
+              <div class="small text-success mb-1" title="Paquete reservado: {{ c.paquete.nombre }}">
                 <i class="bi bi-compass-fill me-1"></i>{{ c.paquete.nombre }}
               </div>
             {% endif %}
@@ -151,10 +161,10 @@
             </div>
             {% endif %}
             <div class="d-flex justify-content-between align-items-center">
-              <span class="text-warning small">
+              <span class="text-warning small" title="Valoración otorgada: {{ c.puntaje_estrellas }} de 5 estrellas">
                 {% for s in c.estrellas %}<i class="bi bi-star-fill"></i>{% endfor %}{% for s in c.estrellas_vacias %}<i class="bi bi-star text-muted opacity-50"></i>{% endfor %}
               </span>
-              <span class="text-muted">{{ c.fecha_calificacion|date:"d M Y" }}</span>
+              <span class="text-muted" title="Fecha de envío">{{ c.fecha_calificacion|date:"d M Y" }}</span>
             </div>
           </div>
           {% endfor %}
@@ -188,7 +198,7 @@
             <h6 class="mb-0 fw-bold text-truncate">{{ c.usuario.get_full_name|default:c.usuario.username|default:"Turista" }}</h6>
             <small class="text-muted">{{ c.fecha_calificacion|date:"d M, Y" }}</small>
           </div>
-          <div class="d-flex align-items-center gap-2 ms-auto flex-shrink-0">
+          <div class="d-flex align-items-center gap-2 ms-auto flex-shrink-0" title="{{ c.puntaje_estrellas }} de 5 estrellas">
             <span class="text-warning small">
               {% for s in c.estrellas %}★{% endfor %}{% for s in c.estrellas_vacias %}<span
                 class="text-muted">★</span>{% endfor %}
@@ -206,7 +216,7 @@
           <p class="small text-secondary mb-0">{{ c.admin_respuesta }}</p>
         </div>
         {% endif %}
-        <span class="badge rounded-pill bg-primary bg-opacity-25 text-primary">
+        <span class="badge rounded-pill bg-primary bg-opacity-25 text-primary" title="{% if c.paquete %}Experiencia sobre el paquete {{ c.paquete.nombre }}{% else %}Categoría: {{ c.get_tipo_display|default:c.tipo|title }}{% endif %}">
           {% if c.paquete %}{{ c.paquete.nombre }}{% else %}{{ c.get_tipo_display|default:c.tipo|title }}{% endif %}
         </span>
       </div>

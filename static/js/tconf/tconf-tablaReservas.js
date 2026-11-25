@@ -1,5 +1,17 @@
-$(document).ready(function() {
-    $('#tablaReservas').DataTable({
+var _reservasDtState = {
+    search: '',
+    page: 0
+};
+
+function initTablaReservas(savedState) {
+    var $tabla = $('#tablaReservas');
+    if (!$tabla.length) return;
+
+    if ($.fn.DataTable.isDataTable($tabla)) {
+        $tabla.DataTable().destroy();
+    }
+
+    var dt = $tabla.DataTable({
         order: [],
         autoWidth: false,
         columnDefs: [
@@ -45,6 +57,45 @@ $(document).ready(function() {
         scrollX: false,
         scrollCollapse: false
     });
+
+    // Restaurar búsqueda y página si venimos de una actualización HTMX
+    if (savedState) {
+        if (savedState.search) {
+            dt.search(savedState.search);
+        }
+        if (savedState.page && savedState.page > 0) {
+            var info = dt.page.info();
+            var targetPage = Math.min(savedState.page, Math.max(info.pages - 1, 0));
+            dt.page(targetPage);
+        }
+        dt.draw(false);
+    }
+}
+
+$(document).ready(function() {
+    initTablaReservas(null);
+});
+
+// Preservar estado de DataTables SOLO si HTMX realmente va a reemplazar el DOM (ignorar 204 No Content)
+document.body.addEventListener('htmx:beforeSwap', function(evt) {
+    if (!evt.detail || !evt.detail.shouldSwap) return;
+    if (evt.detail.xhr && evt.detail.xhr.status === 204) return;
+    if (evt.detail.target && evt.detail.target.id === 'gestion-reservas-live') {
+        var $tabla = $('#tablaReservas');
+        if ($tabla.length && $.fn.DataTable.isDataTable($tabla)) {
+            var dt = $tabla.DataTable();
+            _reservasDtState.search = dt.search() || '';
+            _reservasDtState.page = dt.page() || 0;
+            dt.destroy();
+        }
+    }
+});
+
+document.body.addEventListener('htmx:afterSettle', function(evt) {
+    if (evt.detail && evt.detail.xhr && evt.detail.xhr.status === 204) return;
+    if (document.getElementById('tablaReservas') && !$.fn.DataTable.isDataTable('#tablaReservas')) {
+        initTablaReservas(_reservasDtState);
+    }
 });
 
 // Vincular botones del Dropdown nativo Bootstrap 5 con las acciones de exportación de DataTables
