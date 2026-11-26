@@ -113,3 +113,10 @@ $(document).on('click', '.btn-export-print-trigger, #btn-export-print', function
     e.preventDefault();
     $('.btn-export-print-hidden').trigger('click');
 });
+
+// Ajuste automático de columnas en caso de redimensión de pantalla o cambio de orientación
+$(window).on('resize orientationchange', function() {
+    if ($.fn.DataTable.isDataTable('#tablaReservas')) {
+        $('#tablaReservas').DataTable().columns.adjust();
+    }
+});

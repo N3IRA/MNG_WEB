@@ -131,10 +131,48 @@ class CrearReservaAdminView(SuccessMessageMixin, CreateView):
     success_url = reverse_lazy('gestion_reservas')
     success_message = "¡La reserva ha sido creada con éxito!"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tarifas_activas = Tarifa.objects.filter(
+            estado=True,
+            paquete__estado=True,
+            temporada__estado=True
+        ).select_related('temporada')
+
+        tarifas_por_paquete = {}
+        for t in tarifas_activas:
+            if t.temporada and t.temporada.fecha_inicio and t.temporada.fecha_fin:
+                pid = str(t.paquete_id)
+                if pid not in tarifas_por_paquete:
+                    tarifas_por_paquete[pid] = []
+                tarifas_por_paquete[pid].append({
+                    'from': t.temporada.fecha_inicio.strftime('%Y-%m-%d'),
+                    'to': t.temporada.fecha_fin.strftime('%Y-%m-%d'),
+                })
+        context['tarifas_por_paquete'] = tarifas_por_paquete
+
+        clientes_qs = Usuario.objects.filter(
+            rol=Usuario.Roles.CLIENTE,
+            is_active=True
+        ).order_by('first_name', 'last_name', 'username')
+
+        context['clientes_registrados'] = [
+            {
+                'id': c.id,
+                'nombre': c.nombre_completo,
+                'email': c.email,
+                'documento': c.numero_documento,
+                'tipo_documento': c.tipo_documento or 'CC',
+                'telefono': c.telefono or '',
+            }
+            for c in clientes_qs
+        ]
+        return context
+
     def form_valid(self, form):
+        from django.core.exceptions import ValidationError as DjangoValidationError
         adultos = form.cleaned_data.get('numero_adultos', 0)
         menores = form.cleaned_data.get('numero_menores', 0)
-        nuevo_estado = form.cleaned_data.get('estado_reserva')
         fecha = form.cleaned_data.get('fecha_inicio')
 
         if adultos < 1:
@@ -149,28 +187,31 @@ class CrearReservaAdminView(SuccessMessageMixin, CreateView):
             form.add_error('fecha_inicio', 'No puedes crear reservas en fechas pasadas.')
             return self.form_invalid(form)
 
-        # Validar que exista una tarifa activa vigente para la fecha seleccionada
         paquete = form.cleaned_data.get('paquete')
         if paquete and fecha:
-            from App.models import Temporada as _Temporada
-            tiene_tarifa = False
-            for temporada in _Temporada.objects.filter(
+            tiene_tarifa = Tarifa.objects.filter(
+                paquete=paquete,
                 estado=True,
-                fecha_inicio__lte=fecha,
-                fecha_fin__gte=fecha
-            ):
-                if Tarifa.objects.filter(
-                    paquete=paquete,
-                    temporada=temporada,
-                    estado=True
-                ).exists():
-                    tiene_tarifa = True
-                    break
+                temporada__estado=True,
+                temporada__fecha_inicio__lte=fecha,
+                temporada__fecha_fin__gte=fecha,
+            ).exists()
             if not tiene_tarifa:
                 form.add_error('fecha_inicio', 'No hay una tarifa activa vigente para este paquete en la fecha seleccionada. Crea o ajusta la tarifa primero.')
                 return self.form_invalid(form)
 
-        response = super().form_valid(form)
+        try:
+            response = super().form_valid(form)
+        except DjangoValidationError as exc:
+            if hasattr(exc, 'message_dict'):
+                for field_name, errors in exc.message_dict.items():
+                    target_field = field_name if field_name in form.fields else None
+                    for err in errors:
+                        form.add_error(target_field, err)
+            else:
+                for err in exc.messages:
+                    form.add_error(None, err)
+            return self.form_invalid(form)
 
         if self.object.usuario:
             crear_notificacion_sistema(
@@ -180,6 +221,40 @@ class CrearReservaAdminView(SuccessMessageMixin, CreateView):
                 tipo="Reserva",
                 prioridad="media"
             )
+
+        # Enviar correo de confirmación de reserva (tanto para cliente registrado como presencial)
+        email_destino = self.object.email_cliente
+        if email_destino:
+            try:
+                url_pago = self.request.build_absolute_uri(f"{reverse('enviar_comprobante')}?reserva_id={self.object.id}&tipo=reserva") if self.request else None
+                asunto = f"¡Tu Reserva #{self.object.id} ha sido registrada con éxito! - Monagua"
+                mensaje_texto = (
+                    f"Hola {self.object.nombre_cliente},\n\n"
+                    f"Tu reserva para el tour '{self.object.paquete.nombre}' ha sido registrada con éxito "
+                    f"{'en modalidad presencial' if self.object.es_presencial else ''}.\n"
+                    f"Fecha de inicio: {self.object.fecha_inicio.strftime('%d/%m/%Y') if self.object.fecha_inicio else ''}\n"
+                    f"Adultos: {self.object.numero_adultos} | Menores: {self.object.numero_menores}\n"
+                    f"Monto total: COP ${self.object.monto_total:,.0f}\n\n"
+                )
+                if url_pago:
+                    mensaje_texto += f"Recuerda realizar tu pago y adjuntar tu comprobante de pago a tiempo:\n{url_pago}"
+
+                html_contenido = plantilla_reserva_html(
+                    nombre_cliente=self.object.nombre_cliente,
+                    paquete=self.object.paquete.nombre,
+                    fecha=self.object.fecha_inicio.strftime('%d/%m/%Y') if self.object.fecha_inicio else None,
+                    adultos=self.object.numero_adultos,
+                    menores=self.object.numero_menores,
+                    punto_encuentro=self.object.paquete.punto_encuentro or None,
+                    hora_encuentro=self.object.paquete.hora_encuentro.strftime('%H:%M') if self.object.paquete.hora_encuentro else None,
+                    estado=self.object.estado_reserva,
+                    reserva_id=self.object.id,
+                    monto_total=f"{self.object.monto_total:,.0f}",
+                    url_pago=url_pago,
+                )
+                enviar_correo_html_monagua(asunto, mensaje_texto, email_destino, html_contenido)
+            except Exception as e:
+                logger.error(f"Error enviando correo de reserva creada (admin): {e}")
 
         return response
 
@@ -237,7 +312,7 @@ class EditarReservaAdminView(UpdateView):
 
         response = super().form_valid(form)
         reserva = self.object
-        nombre_cliente = (reserva.usuario.first_name or reserva.usuario.username) if reserva.usuario else 'Cliente'
+        nombre_cliente = reserva.nombre_cliente
         
         valor_nuevo = f"Estado: {reserva.estado_reserva}, Fecha: {reserva.fecha_inicio}, Adultos: {reserva.numero_adultos}, Menores: {reserva.numero_menores}"
 
@@ -303,10 +378,11 @@ class EditarReservaAdminView(UpdateView):
                     url_pago=url_pago,
                     url_mis_reservas=url_mis_reservas
                 )
-                try:
-                    enviar_correo_html_monagua(asunto, mensaje_texto, reserva.usuario.email, html_contenido)
-                except Exception as e:
-                    print(f"Error enviando correo de actualización de reserva: {e}")
+                if reserva.email_cliente:
+                    try:
+                        enviar_correo_html_monagua(asunto, mensaje_texto, reserva.email_cliente, html_contenido)
+                    except Exception as e:
+                        print(f"Error enviando correo de actualización de reserva: {e}")
                 
         return response
 
@@ -929,7 +1005,7 @@ def ver_factura(request, reserva_id):
     reserva = get_object_or_404(Reserva.objects.select_related('usuario', 'paquete'), id=reserva_id)
     
     is_admin = bool(request.user.is_staff or getattr(request.user, 'es_admin', False) or getattr(request.user, 'rol', None) in [1, 'ADMIN'])
-    if not is_admin and reserva.usuario != request.user:
+    if not is_admin and (not reserva.usuario or reserva.usuario != request.user):
         messages.error(request, "No tienes permiso para acceder a esta factura.")
         return redirect('mis_reservas_usuario')
     
@@ -949,15 +1025,14 @@ def ver_factura(request, reserva_id):
     
     logo_base64 = get_image_base64('static/img/logo_monagua.webp')
     
-    cliente_nombre = getattr(reserva.usuario, 'nombre_completo', None) if reserva.usuario else None
-    if not cliente_nombre and reserva.usuario:
-        cliente_nombre = reserva.usuario.get_full_name() or reserva.usuario.username
+    cliente_nombre = reserva.nombre_cliente
+    cliente_email = reserva.email_cliente
     
     context = {
         'reserva_id': reserva.id,
         'nro_factura': f"FAC-1000{reserva.id}",
         'cliente_nombre': cliente_nombre or 'Cliente',
-        'cliente_email': reserva.usuario.email if reserva.usuario else '',
+        'cliente_email': cliente_email or '',
         'fecha_emision': reserva.fecha_registro.strftime('%d/%m/%Y') if hasattr(reserva, 'fecha_registro') and reserva.fecha_registro else (reserva.fecha_inicio.strftime('%d/%m/%Y') if reserva.fecha_inicio else ''),
         'metodo_pago': metodo_pago,
         'paquete_nombre': reserva.paquete.nombre if reserva.paquete else 'Aventura Mongua',
@@ -974,7 +1049,7 @@ def descargar_factura(request, reserva_id):
     reserva = get_object_or_404(Reserva.objects.select_related('usuario', 'paquete'), id=reserva_id)
     
     is_admin = bool(request.user.is_staff or getattr(request.user, 'es_admin', False) or getattr(request.user, 'rol', None) in [1, 'ADMIN'])
-    if not is_admin and reserva.usuario != request.user:
+    if not is_admin and (not reserva.usuario or reserva.usuario != request.user):
         messages.error(request, "No tienes permiso para descargar esta factura.")
         return redirect('mis_reservas_usuario')
     
@@ -987,7 +1062,7 @@ def descargar_factura(request, reserva_id):
         messages.error(request, "La factura solo se puede descargar para reservas confirmadas.")
         return redirect('admin_comprobantes' if is_admin else 'mis_reservas_usuario')
         
-    password = None if is_admin else getattr(reserva.usuario, 'numero_documento', None)
+    password = None if is_admin else (getattr(reserva.usuario, 'numero_documento', None) if reserva.usuario else getattr(reserva, 'cliente_documento', None))
     if password:
         password = str(password).strip()
         
@@ -998,6 +1073,7 @@ def descargar_factura(request, reserva_id):
         return response
     except Exception as e:
         logger.error(f"Error al descargar la factura PDF para la reserva {reserva.id}: {e}", exc_info=True)
+        messages.error(request, "Hubo un inconveniente al generar la factura en PDF. Por favor intenta nuevamente.")
         messages.error(request, "Hubo un inconveniente al generar la factura en PDF. Por favor intenta nuevamente.")
         return redirect('ver_factura', reserva_id=reserva.id)
 

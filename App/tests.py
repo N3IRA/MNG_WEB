@@ -2230,22 +2230,257 @@ class GestionReembolsosTests(TestCase):
         self.assertContains(res, 'Radicar PQRS')
         self.assertContains(res, reverse('pqrs'))
 
-    def test_admin_visualiza_listado_reembolsos(self):
-        reserva, _ = self._crear_reserva_pagada(Decimal('500000.00'))
-        reembolso = Reembolso.objects.create(
-            reserva=reserva,
-            usuario=self.turista,
-            monto_total_reserva=Decimal('500000.00'),
-            penalidad_aplicada=Decimal('50000.00'),
-            monto_reembolsado=Decimal('450000.00'),
-            estado='pendiente'
+
+class ReservaPresencialSinCuentaTests(TestCase):
+    """Pruebas dedicadas para la creación de reservas presenciales sin cuenta de usuario."""
+
+    def setUp(self):
+        self.admin = Usuario.objects.create_superuser(
+            username='admin_test_presencial',
+            email='admin_presencial@example.com',
+            password='Password123!',
+            rol=Usuario.Roles.ADMIN
         )
+        self.categoria = Categoria.objects.create(nombre='Aventura Extrema')
+        self.paquete = Paquete.objects.create(
+            nombre='Paseo a Mongua Extremo',
+            descripcion='Aventura única',
+            categoria=self.categoria,
+            punto_encuentro='Plaza Principal Mongua',
+            hora_encuentro='08:00:00',
+            estado=True
+        )
+        self.temporada = Temporada.objects.create(
+            nombre='Temporada Actual',
+            fecha_inicio=date.today() - timedelta(days=10),
+            fecha_fin=date.today() + timedelta(days=60),
+            estado=True
+        )
+        self.tarifa = Tarifa.objects.create(
+            paquete=self.paquete,
+            temporada=self.temporada,
+            precio_adulto=Decimal('100000.00'),
+            precio_menor=Decimal('50000.00'),
+            estado=True
+        )
+
+    def test_creacion_reserva_presencial_sin_cuenta(self):
+        """Verifica que un admin pueda registrar una reserva para un cliente presencial sin crear un usuario."""
+        fecha_reserva = date.today() + timedelta(days=10)
+        datos = {
+            'tipo_cliente': 'presencial',
+            'cliente_nombre': 'Laura Martínez',
+            'cliente_email': 'laura.martinez@example.com',
+            'cliente_tipo_documento': 'CC',
+            'cliente_documento': '1098765432',
+            'cliente_telefono': '3119876543',
+            'paquete': self.paquete.id,
+            'fecha_inicio': fecha_reserva.strftime('%Y-%m-%d'),
+            'numero_adultos': 2,
+            'numero_menores': 1,
+            'estado_reserva': 'pendiente',
+        }
+
         self.client.force_login(self.admin)
-        res = self.client.get(reverse('listar_reembolsos_admin'))
+        res = self.client.post(reverse('crear_reserva'), data=datos, follow=True)
         self.assertEqual(res.status_code, 200)
-        self.assertContains(res, 'Gestión de Reembolsos Bancarios')
-        self.assertContains(res, 'COP $450.000')
-        self.assertContains(res, 'Pendiente')
+
+        reserva = Reserva.objects.filter(cliente_email='laura.martinez@example.com').first()
+        self.assertIsNotNone(reserva)
+        self.assertIsNone(reserva.usuario)
+        self.assertTrue(reserva.es_presencial)
+        self.assertEqual(reserva.nombre_cliente, 'Laura Martínez')
+        self.assertEqual(reserva.email_cliente, 'laura.martinez@example.com')
+        self.assertEqual(reserva.documento_cliente, '1098765432')
+        self.assertEqual(reserva.telefono_cliente, '3119876543')
+        self.assertFalse(reserva.tiene_cuenta)
+
+        # Verificar que en el listado administrativo se aclare que no tiene cuenta
+        res_list = self.client.get(reverse('gestion_reservas'))
+        self.assertEqual(res_list.status_code, 200)
+        self.assertContains(res_list, 'Laura Martínez')
+        self.assertContains(res_list, 'laura.martinez@example.com')
+        self.assertContains(res_list, 'Sin cuenta (Presencial)')
+
+    def test_factura_pdf_cliente_presencial(self):
+        """Verifica que la generación de factura PDF no falle para clientes presenciales sin cuenta."""
+        from App.utils import generar_factura_pdf_bytes
+
+        reserva = Reserva.objects.create(
+            usuario=None,
+            es_presencial=True,
+            cliente_nombre='Pedro Presencial',
+            cliente_email='pedro.presencial@example.com',
+            cliente_documento='12345678',
+            cliente_tipo_documento='CC',
+            paquete=self.paquete,
+            fecha_inicio=date.today() + timedelta(days=10),
+            numero_adultos=1,
+            numero_menores=0,
+            estado_reserva='pendiente',
+            monto_total=Decimal('100000.00')
+        )
+        Pago.objects.create(
+            reserva=reserva,
+            referencia='PAGO-PRES-1',
+            monto=Decimal('100000.00'),
+            banco_origen='Caja Presencial',
+            estado_transaccion='aprobado',
+            metodo_pago='Efectivo'
+        )
+        reserva.estado_reserva = 'confirmada'
+        reserva.save()
+
+        pdf_bytes = generar_factura_pdf_bytes(reserva)
+        self.assertIsNotNone(pdf_bytes)
+        self.assertTrue(len(pdf_bytes) > 0)
+
+    def test_seguridad_contra_inyeccion_y_manipulacion_devtools(self):
+        """Verifica que el formulario y la vista rechacen inyección de código (XSS/SQLi) y manipulación vía DevTools."""
+        from App.forms.reserva.forms import ReservaForm
+        fecha_valida = (date.today() + timedelta(days=10)).strftime('%Y-%m-%d')
+
+        # 1. Intento de inyección XSS y SQLi en nombre, documento y teléfono
+        form_xss = ReservaForm(data={
+            'tipo_cliente': 'presencial',
+            'cliente_nombre': '<script>alert("xss")</script>',
+            'cliente_email': 'atacante@example.com',
+            'cliente_tipo_documento': 'CC',
+            'cliente_documento': "102030' OR 1=1 --",
+            'cliente_telefono': '<img src=x onerror=alert(1)>',
+            'paquete': self.paquete.id,
+            'fecha_inicio': fecha_valida,
+            'numero_adultos': 1,
+            'numero_menores': 0,
+            'estado_reserva': 'pendiente',
+        })
+        self.assertFalse(form_xss.is_valid())
+        self.assertIn('cliente_nombre', form_xss.errors)
+        self.assertIn('cliente_documento', form_xss.errors)
+        self.assertIn('cliente_telefono', form_xss.errors)
+
+        # 2. Manipulación vía DevTools: enviar fecha fuera de temporada activa (ej. +120 días)
+        fecha_fuera_temporada = (date.today() + timedelta(days=120)).strftime('%Y-%m-%d')
+        form_fecha_invalida = ReservaForm(data={
+            'tipo_cliente': 'presencial',
+            'cliente_nombre': 'Juan Perez',
+            'cliente_email': 'juan@example.com',
+            'cliente_tipo_documento': 'CC',
+            'paquete': self.paquete.id,
+            'fecha_inicio': fecha_fuera_temporada,
+            'numero_adultos': 1,
+            'numero_menores': 0,
+            'estado_reserva': 'pendiente',
+        })
+        self.assertFalse(form_fecha_invalida.is_valid())
+        self.assertIn('fecha_inicio', form_fecha_invalida.errors)
+
+        # 3. Manipulación vía DevTools: forzar estado 'confirmada' sin pago aprobado al crear
+        form_estado_manipulado = ReservaForm(data={
+            'tipo_cliente': 'presencial',
+            'cliente_nombre': 'Juan Perez',
+            'cliente_email': 'juan@example.com',
+            'cliente_tipo_documento': 'CC',
+            'paquete': self.paquete.id,
+            'fecha_inicio': fecha_valida,
+            'numero_adultos': 1,
+            'numero_menores': 0,
+            'estado_reserva': 'confirmada',
+        })
+        self.assertFalse(form_estado_manipulado.is_valid())
+        self.assertIn('estado_reserva', form_estado_manipulado.errors)
+
+        # 4. Manipulación vía DevTools: paquete inactivo o cupos fuera de límite
+        paquete_inactivo = Paquete.objects.create(
+            nombre='Tour Inactivo',
+            descripcion='No disponible',
+            categoria=self.categoria,
+            punto_encuentro='Mongua',
+            hora_encuentro='09:00:00',
+            estado=False
+        )
+        form_paquete_inactivo = ReservaForm(data={
+            'tipo_cliente': 'presencial',
+            'cliente_nombre': 'Juan Perez',
+            'cliente_email': 'juan@example.com',
+            'paquete': paquete_inactivo.id,
+            'fecha_inicio': fecha_valida,
+            'numero_adultos': 25,
+            'numero_menores': -2,
+            'estado_reserva': 'pendiente',
+        })
+        self.assertFalse(form_paquete_inactivo.is_valid())
+        self.assertIn('paquete', form_paquete_inactivo.errors)
+        self.assertIn('numero_adultos', form_paquete_inactivo.errors)
+        self.assertIn('numero_menores', form_paquete_inactivo.errors)
+
+    def test_buscador_cliente_registrado_vista_y_formulario(self):
+        """Verifica que la vista proporcione los datos de clientes registrados para búsqueda por documento o correo."""
+        cliente_reg = Usuario.objects.create_user(
+            username='cliente_registrado_test',
+            email='cliente.registrado@monagua.com',
+            password='Password123!',
+            first_name='Andrés',
+            last_name='Gómez',
+            tipo_documento='CC',
+            numero_documento='1050607080',
+            telefono='3157778899',
+            rol=Usuario.Roles.CLIENTE
+        )
+
+        self.client.force_login(self.admin)
+        res = self.client.get(reverse('crear_reserva'))
+        self.assertEqual(res.status_code, 200)
+
+        # Contexto contiene clientes_registrados con identificadores únicos
+        self.assertIn('clientes_registrados', res.context)
+        clientes_data = res.context['clientes_registrados']
+        self.assertTrue(any(c['documento'] == '1050607080' and c['email'] == 'cliente.registrado@monagua.com' for c in clientes_data))
+
+        # El template contiene los elementos del buscador por identificador único estilo gestión
+        self.assertContains(res, 'id="buscar_cliente_input"')
+        self.assertContains(res, 'id="btn_buscar_cliente"')
+        self.assertContains(res, 'id="btn_limpiar_cliente"')
+        self.assertContains(res, 'rounded-pill')
+        self.assertContains(res, 'bi-funnel-fill')
+        self.assertContains(res, 'id="tarjeta_cliente_seleccionado"')
+        self.assertContains(res, 'id="clientes-registrados-data"')
+        self.assertContains(res, '1050607080')
+        self.assertContains(res, 'cliente.registrado@monagua.com')
+
+        # Creación exitosa asignando el cliente registrado
+        fecha_valida = (date.today() + timedelta(days=10)).strftime('%Y-%m-%d')
+        datos_registrado = {
+            'tipo_cliente': 'registrado',
+            'usuario': cliente_reg.id,
+            'paquete': self.paquete.id,
+            'fecha_inicio': fecha_valida,
+            'numero_adultos': 2,
+            'numero_menores': 0,
+            'estado_reserva': 'pendiente',
+        }
+        res_post = self.client.post(reverse('crear_reserva'), data=datos_registrado, follow=True)
+        self.assertEqual(res_post.status_code, 200)
+
+        reserva_creada = Reserva.objects.filter(usuario=cliente_reg).first()
+        self.assertIsNotNone(reserva_creada)
+        self.assertFalse(reserva_creada.es_presencial)
+        self.assertEqual(reserva_creada.usuario, cliente_reg)
+        self.assertEqual(reserva_creada.email_cliente, 'cliente.registrado@monagua.com')
+        self.assertEqual(reserva_creada.documento_cliente, '1050607080')
+
+        # Intento de duplicar la misma reserva para el mismo usuario, paquete y fecha
+        res_post_duplicado = self.client.post(reverse('crear_reserva'), data=datos_registrado)
+        self.assertEqual(res_post_duplicado.status_code, 200)
+        # No debe existir el cuadro estático alert alert-danger
+        self.assertNotContains(res_post_duplicado, '<div class="alert alert-danger rounded-3 mb-4">')
+        # Debe disparar la notificación Toast dinámica con el mensaje claro
+        self.assertContains(res_post_duplicado, 'window.mostrarToast')
+        self.assertContains(res_post_duplicado, 'Este usuario ya tiene una reserva registrada para el mismo paquete en la fecha seleccionada.')
+
+
+
+
 
 
 

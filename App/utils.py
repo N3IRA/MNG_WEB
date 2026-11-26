@@ -524,8 +524,8 @@ def generar_factura_pdf_bytes(reserva, request=None, password=None):
     comprobante = pago if (pago and getattr(pago, 'estado_transaccion', None) == 'aprobado') else None
     metodo_pago = (comprobante.banco_origen or comprobante.metodo_pago) if comprobante else "Transferencia Bancaria"
 
-    documento_tipo = getattr(reserva.usuario, 'tipo_documento', 'Documento') or "Documento"
-    documento_num = getattr(reserva.usuario, 'numero_documento', '—') or "—"
+    documento_tipo = (reserva.usuario.tipo_documento if (reserva.usuario and hasattr(reserva.usuario, 'tipo_documento')) else getattr(reserva, 'cliente_tipo_documento', 'Documento')) or "Documento"
+    documento_num = (reserva.usuario.numero_documento if (reserva.usuario and hasattr(reserva.usuario, 'numero_documento')) else getattr(reserva, 'cliente_documento', '—')) or "—"
 
     if request:
         abs_url = request.build_absolute_uri(reverse('ver_factura', args=[reserva.id]))
@@ -542,15 +542,18 @@ def generar_factura_pdf_bytes(reserva, request=None, password=None):
     else:
         fecha_emision = reserva.fecha_inicio.strftime('%d/%m/%Y') if getattr(reserva, 'fecha_inicio', None) else ""
 
-    cliente_nombre = getattr(reserva.usuario, 'nombre_completo', None) if reserva.usuario else None
-    if not cliente_nombre and reserva.usuario:
-        cliente_nombre = reserva.usuario.get_full_name() or reserva.usuario.username
+    cliente_nombre = reserva.nombre_cliente if hasattr(reserva, 'nombre_cliente') else (
+        (reserva.usuario.get_full_name() or reserva.usuario.username) if reserva.usuario else 'Cliente'
+    )
+    cliente_email = reserva.email_cliente if hasattr(reserva, 'email_cliente') else (
+        reserva.usuario.email if reserva.usuario else ''
+    )
 
     context = {
         'reserva_id': reserva.id,
         'nro_factura': f"FAC-1000{reserva.id}",
         'cliente_nombre': cliente_nombre or 'Cliente',
-        'cliente_email': reserva.usuario.email if reserva.usuario else '',
+        'cliente_email': cliente_email or '',
         'cliente_documento_tipo': documento_tipo,
         'cliente_documento': documento_num,
         'fecha_emision': fecha_emision,
@@ -587,13 +590,19 @@ def generar_factura_pdf_bytes(reserva, request=None, password=None):
 
 def enviar_correo_confirmacion_con_factura(reserva, request=None):
     """Genera la factura PDF encriptada con el número de documento y envía el correo."""
-    password = getattr(reserva.usuario, 'numero_documento', None)
+    password = getattr(reserva.usuario, 'numero_documento', None) if reserva.usuario else getattr(reserva, 'cliente_documento', None)
     if password:
         password = str(password).strip()
 
     pdf_bytes = generar_factura_pdf_bytes(reserva, request=request, password=password)
 
-    nombre_cliente = reserva.usuario.get_full_name() or reserva.usuario.username
+    nombre_cliente = reserva.nombre_cliente if hasattr(reserva, 'nombre_cliente') else (
+        (reserva.usuario.get_full_name() or reserva.usuario.username) if reserva.usuario else 'Cliente'
+    )
+    email_destinatario = reserva.email_cliente if hasattr(reserva, 'email_cliente') else (
+        reserva.usuario.email if reserva.usuario else ''
+    )
+
     asunto = f"¡Tu Pago fue Aprobado y tu Reserva #{reserva.id} está Confirmada! - Monagua"
     mensaje_texto = (
         f"Hola {nombre_cliente}, ¡excelentes noticias! Tu comprobante de pago ha sido aprobado con éxito "
@@ -614,18 +623,19 @@ def enviar_correo_confirmacion_con_factura(reserva, request=None):
 
     html_contenido = render_to_string('email/factura_email.html', context)
 
-    email = EmailMultiAlternatives(
-        subject=asunto,
-        body=mensaje_texto,
-        from_email=settings.EMAIL_HOST_USER,
-        to=[reserva.usuario.email],
-    )
-    email.attach_alternative(html_contenido, "text/html")
+    if email_destinatario:
+        email = EmailMultiAlternatives(
+            subject=asunto,
+            body=mensaje_texto,
+            from_email=settings.EMAIL_HOST_USER,
+            to=[email_destinatario],
+        )
+        email.attach_alternative(html_contenido, "text/html")
 
-    pdf_filename = f"factura_FAC-1000{reserva.id}.pdf"
-    email.attach(pdf_filename, pdf_bytes, "application/pdf")
+        pdf_filename = f"factura_FAC-1000{reserva.id}.pdf"
+        email.attach(pdf_filename, pdf_bytes, "application/pdf")
 
-    email.send(fail_silently=False)
+        email.send(fail_silently=False)
 
 
 def notificar_administradores(mensaje, tipo="Sistema", prioridad="media", reserva=None):

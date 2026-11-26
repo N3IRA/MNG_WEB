@@ -126,10 +126,17 @@ def admin_revisar_comprobante(request, pk):
 
                     # Registrar notificación en el sistema
                     cliente = comprobante.reserva.usuario if comprobante.reserva else None
+                    if estado_transaccion == 'aprobado':
+                        msg_notif = f"Tu comprobante de pago #{comprobante.pk} fue aprobado y tu reserva #{comprobante.reserva.id if comprobante.reserva else ''} ha sido confirmada exitosamente."
+                    elif estado_transaccion == 'rechazado':
+                        msg_notif = f"Tu comprobante #{comprobante.pk} fue rechazado. Motivo: {nota_admin}"
+                    else:
+                        msg_notif = f"El comprobante #{comprobante.pk} fue actualizado a '{estado_transaccion}'."
+
                     crear_notificacion_sistema(
                         usuario=cliente,
                         reserva=comprobante.reserva,
-                        mensaje=f"El comprobante #{comprobante.pk} fue actualizado a '{estado_transaccion}'.",
+                        mensaje=msg_notif,
                         tipo="Comprobante de Pago",
                         prioridad="alta"
                     )

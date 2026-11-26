@@ -572,6 +572,52 @@ class Reserva(models.Model):
 
     paquete = models.ForeignKey('Paquete', on_delete=models.PROTECT, related_name='reservas', verbose_name='Paquete Reservado')
     usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE, related_name='reservas', verbose_name='Usuario', null=True, blank=True)
+
+    # Campos para clientes presenciales (sin cuenta registrada en el sistema)
+    es_presencial = models.BooleanField(
+        default=False,
+        verbose_name='Es Reserva Presencial (Sin Cuenta)',
+        help_text='Indica si la reserva fue creada de manera presencial para un cliente sin cuenta.'
+    )
+    cliente_nombre = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True,
+        verbose_name='Nombre Completo del Cliente'
+    )
+    cliente_email = models.EmailField(
+        max_length=254,
+        blank=True,
+        null=True,
+        verbose_name='Correo Electrónico del Cliente'
+    )
+    cliente_telefono = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        verbose_name='Teléfono de Contacto'
+    )
+    cliente_tipo_documento = models.CharField(
+        max_length=20,
+        choices=[
+            ('CC', 'Cédula de Ciudadanía'),
+            ('CE', 'Cédula de Extranjería'),
+            ('PASAPORTE', 'Pasaporte'),
+            ('TI', 'Tarjeta de Identidad'),
+            ('OTRO', 'Otro Documento')
+        ],
+        default='CC',
+        blank=True,
+        null=True,
+        verbose_name='Tipo de Documento'
+    )
+    cliente_documento = models.CharField(
+        max_length=30,
+        blank=True,
+        null=True,
+        verbose_name='Número de Documento'
+    )
+
     fecha_inicio = models.DateField(null=True, blank=True, verbose_name='Fecha de inicio')
     numero_adultos = models.PositiveSmallIntegerField(
         verbose_name='Número de Adultos',
@@ -608,6 +654,57 @@ class Reserva(models.Model):
             raise ValidationError({'numero_adultos': 'El cupo de adultos no puede superar las 10 personas.'})
         if menores > 10:
             raise ValidationError({'numero_menores': 'El cupo de menores no puede superar las 10 personas.'})
+
+        if not self.usuario:
+            self.es_presencial = True
+            nombre_limpio = (str(self.cliente_nombre or '')).strip()
+            email_limpio = (str(self.cliente_email or '')).strip().lower()
+            doc_limpio = (str(self.cliente_documento or '')).strip()
+            tel_limpio = (str(self.cliente_telefono or '')).strip()
+            tipo_doc = (str(self.cliente_tipo_documento or 'CC')).strip().upper()
+
+            if not nombre_limpio:
+                raise ValidationError({'cliente_nombre': 'El nombre del cliente es obligatorio para reservas presenciales.'})
+            if not email_limpio:
+                raise ValidationError({'cliente_email': 'El correo electrónico es obligatorio para reservas presenciales.'})
+
+            # Prevención estricta de XSS, HTML Injection y SQL Injection en campos presenciales
+            patron_peligroso = re.compile(r'(<|>|script|javascript:|onerror|onload|--|;|/\*|\*/|\x00|\r|\n)', re.IGNORECASE)
+            for campo, valor, etiqueta in [
+                ('cliente_nombre', nombre_limpio, 'nombre del cliente'),
+                ('cliente_email', email_limpio, 'correo electrónico'),
+                ('cliente_documento', doc_limpio, 'número de documento'),
+                ('cliente_telefono', tel_limpio, 'teléfono'),
+            ]:
+                if valor and patron_peligroso.search(valor):
+                    raise ValidationError({campo: f'El campo {etiqueta} contiene caracteres o secuencias no permitidas por seguridad.'})
+
+            if len(nombre_limpio) < 3 or len(nombre_limpio) > 150 or not re.match(r'^[A-Za-záéíóúÁÉÍÓÚñÑüÜ\s]+$', nombre_limpio):
+                raise ValidationError({'cliente_nombre': 'El nombre solo debe contener letras y espacios (entre 3 y 150 caracteres).'})
+
+            if not re.match(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$', email_limpio):
+                raise ValidationError({'cliente_email': 'Ingresa una dirección de correo electrónico válida y segura.'})
+
+            tipos_permitidos = {'CC', 'CE', 'PASAPORTE', 'TI', 'OTRO'}
+            if tipo_doc not in tipos_permitidos:
+                raise ValidationError({'cliente_tipo_documento': 'El tipo de documento seleccionado no es válido.'})
+
+            if doc_limpio:
+                if tipo_doc in {'CC', 'TI', 'CE'} and not re.match(r'^[0-9]{5,20}$', doc_limpio):
+                    raise ValidationError({'cliente_documento': 'El número de documento debe contener únicamente dígitos (entre 5 y 20 números).'})
+                elif not re.match(r'^[A-Za-z0-9\-]{5,30}$', doc_limpio):
+                    raise ValidationError({'cliente_documento': 'El número de documento solo admite letras, números y guiones (5 a 30 caracteres).'})
+
+            if tel_limpio and not re.match(r'^\+?[0-9\s\-]{7,20}$', tel_limpio):
+                raise ValidationError({'cliente_telefono': 'El teléfono solo puede contener dígitos, espacios, guiones o prefijo + (7 a 20 caracteres).'})
+
+            self.cliente_nombre = re.sub(r'\s+', ' ', nombre_limpio)
+            self.cliente_email = email_limpio
+            self.cliente_documento = doc_limpio or None
+            self.cliente_telefono = tel_limpio or None
+            self.cliente_tipo_documento = tipo_doc
+        else:
+            self.es_presencial = False
 
     def save(self, *args, **kwargs):
         # Regla de negocio crítica: una reserva no puede quedar confirmada sin un pago aprobado.
@@ -698,12 +795,53 @@ class Reserva(models.Model):
             return self.fecha_inicio + timedelta(days=max(self.dias_duracion - 1, 0))
         return None
 
+    @property
+    def nombre_cliente(self):
+        """Retorna el nombre del cliente titular, ya sea con cuenta registrada o cliente presencial."""
+        if self.usuario:
+            return self.usuario.get_full_name() or self.usuario.username
+        return self.cliente_nombre or "Cliente Presencial"
+
+    @property
+    def email_cliente(self):
+        """Retorna el correo electrónico del titular registrado o presencial."""
+        if self.usuario:
+            return self.usuario.email
+        return self.cliente_email or ""
+
+    @property
+    def documento_cliente(self):
+        """Retorna el número de documento del cliente."""
+        if self.usuario:
+            return self.usuario.numero_documento
+        return self.cliente_documento or "—"
+
+    @property
+    def tipo_documento_cliente(self):
+        """Retorna el tipo de documento del cliente (CC, CE, Pasaporte, etc.)."""
+        if self.usuario:
+            return self.usuario.tipo_documento
+        return self.cliente_tipo_documento or "CC"
+
+    @property
+    def telefono_cliente(self):
+        """Retorna el teléfono del cliente."""
+        if self.usuario:
+            return self.usuario.telefono
+        return self.cliente_telefono or ""
+
+    @property
+    def tiene_cuenta(self):
+        """Indica si el titular de la reserva tiene una cuenta creada en el sistema."""
+        return self.usuario is not None
+
     def __str__(self):
         nombre_paquete = self.paquete.nombre if self.paquete and hasattr(self.paquete, 'nombre') else str(self.paquete)
+        cliente = self.nombre_cliente
         if self.fecha_inicio:
             fecha_str = self.fecha_inicio.strftime('%d/%m/%Y')
-            return f"Reserva #{self.id} - {nombre_paquete} ({fecha_str})"
-        return f"Reserva #{self.id} - {nombre_paquete}"
+            return f"Reserva #{self.id} - {cliente} - {nombre_paquete} ({fecha_str})"
+        return f"Reserva #{self.id} - {cliente} - {nombre_paquete}"
 
     def puede_modificar_personas(self):
         """Indica si todavía se pueden modificar pasajeros antes de iniciar el pago."""
