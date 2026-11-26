@@ -275,7 +275,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // 14. Cómo Reservar
     {
       id: "como_reservar",
-      keywords: ["como reservar", "reservar", "reserva", "reservas", "agendar", "apartar", "separar", "cupos", "booking", "pasos para reservar"],
+      keywords: ["como reservar", "reservar", "reserva", "reservas", "agendar", "apartar", "separar", "cupos", "booking", "pasos para reservar", "hacer reserva", "hacer una reserva", "quiero hacer una reserva", "reserva para", "reservar para"],
       answer: "📝 **Pasos para Reservar tu Tour:**\n\n1. Ingresa a **Destinos** (/tours/) y selecciona el paquete deseado.\n2. Escoge la fecha y define la cantidad de adultos y menores (mínimo 1 adulto).\n3. Añade al carrito y confirma los detalles.\n4. Realiza la transferencia bancaria y carga el comprobante en **Enviar Comprobante** para confirmar tus cupos.",
       options: ["¿Cómo realizar el pago?", "Políticas de cancelación", "¿Qué ropa llevar?"]
     },
@@ -379,19 +379,60 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   ];
 
+  const MAPA_CORRECCIONES_JS = {
+    reserba: "reserva", reserbas: "reservas", reserbar: "reservar",
+    prezio: "precio", presio: "precio", prezios: "precios", presios: "precios",
+    frailehones: "frailejones", frailehon: "frailejon", fraylejon: "frailejon", fraylejones: "frailejones",
+    dabiplata: "daviplata", dabyplata: "daviplata", nekwi: "nequi", neki: "nequi",
+    bancolombia: "bancolombia", canzelar: "cancelar", canzelacion: "cancelacion",
+    conprobante: "comprobante", comprovante: "comprobante", tur: "tour", turs: "tours",
+    oceta: "oceta", oseta: "oceta", monga: "mongua", alusinacion: "alucinacion", alusinaciones: "alucinaciones"
+  };
+
   function normalizarTextoLocal(str) {
     if (!str) return '';
-    return str
+    let limpio = str
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
       .replace(/[^\w\s]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
+
+    return limpio.split(' ').map(p => MAPA_CORRECCIONES_JS[p] || p).join(' ');
   }
 
   function responderOffline(userText) {
     const textoNorm = normalizarTextoLocal(userText);
+
+    // 1. Detección fuera de ámbito / Anti-alucinación geográfica (Otras ciudades o destinos)
+    const ciudadesExternas = ["cartagena", "medellin", "santa marta", "san andres", "cali", "barranquilla", "eje cafetero", "leticia", "cancun", "guatape", "salento", "marte", "luna", "jupiter", "saturno"];
+    for (const c of ciudadesExternas) {
+      if (textoNorm.includes(c)) {
+        addMessage(`📶 *[Modo Fuera de Línea - Ubicación Exclusiva]*\n\n📍 Monagua Turismo opera **única y exclusivamente en Mongua, Boyacá** (Páramo de Ocetá, Laguna Negra y Ciudad de Piedra).\n\nNo disponemos de operaciones en '${c.charAt(0).toUpperCase() + c.slice(1)}'. ¡Te invitamos a visitar nuestras maravillas en Boyacá!`, "bot");
+        showOptions(["¿Qué tours ofrecen?", "¿Dónde están ubicados?", "Regulaciones ambientales"]);
+        return;
+      }
+    }
+
+    // 2. Detección de pagos no soportados (Anti-alucinación de métodos de pago)
+    const pagosInvalidos = ["paypal", "tarjeta de credito", "tarjeta directa", "bitcoin", "cripto", "usdt", "contraentrega", "western union"];
+    for (const p of pagosInvalidos) {
+      if (textoNorm.includes(p)) {
+        addMessage(`📶 *[Modo Fuera de Línea - Medios de Pago]*\n\n💳 En Monagua Turismo **no recibimos pagos con ${p}** ni intermediarios no autorizados.\n\nNuestros medios aprobados son **transferencias bancarias (Bancolombia/Davivienda)** y **billeteras digitales (Nequi y Daviplata)** con soporte de comprobante.`, "bot");
+        showOptions(["¿Cómo realizar un pago?", "¿Cómo funciona la página?", "¿Qué tours ofrecen?"]);
+        return;
+      }
+    }
+
+    // 3. Detección de temas off-topic (Programación, recetas, tareas generales)
+    const regexOfftopic = /\b(python|javascript|java|c\+\+|codigo|programar|programacion|script|tarea|receta|pizza|chiste|poema)\b/i;
+    if (regexOfftopic.test(textoNorm)) {
+      addMessage(`📶 *[Modo Fuera de Línea - Cóndy]*\n\n🦅 Soy Cóndy, asistente ecoturístico de Monagua Turismo en Mongua, Boyacá. Mi objetivo es guiarte sobre tours andinos, reservas, pagos y protección del páramo. No tengo funciones para tareas o código de programación.`, "bot");
+      showOptions(["¿Qué tours ofrecen?", "Regulaciones ambientales", "¿Cómo funciona la página?"]);
+      return;
+    }
+
     let mejorMatch = null;
     let mejorPuntaje = 0;
 
@@ -425,7 +466,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     } else {
       addMessage(
-        "📶 **[Cóndy en Modo Local Autónomo - Sin Internet]**\n\nNo fue posible consultar el servidor web (sin conexión a internet detectada o simulación activa), pero tengo cargada en tu navegador la base completa de conocimientos de Monagua Turismo.\n\nPuedes consultarme sobre:\n• 🌲 **Regulaciones del Páramo (Ley 1930)**\n• 💻 **¿Cómo funciona la página? y Roles**\n• ⛰️ **Primeros auxilios / Mal de altura (Soroche)**\n• 🧥 **Ropa y clima frío de montaña**\n• 🗺️ **Tours, atractivos y precios**\n• 💳 **Proceso de pago y reservas**\n• 🚨 **Teléfonos de emergencia y rescate**",
+        "📶 **[Cóndy en Modo Local Autónomo - Sin Internet]**\n\nNo identifiqué esa consulta dentro de la base ecoturística de Monagua Turismo en Mongua, Boyacá.\n\nPuedes consultarme sobre:\n• 🌲 **Regulaciones del Páramo (Ley 1930)**\n• 💻 **¿Cómo funciona la página? y Roles**\n• ⛰️ **Primeros auxilios / Mal de altura (Soroche)**\n• 🧥 **Ropa y clima frío de montaña**\n• 🗺️ **Tours, atractivos y precios**\n• 💳 **Proceso de pago y reservas**\n• 🚨 **Teléfonos de emergencia y rescate**",
         "bot"
       );
       showOptions([
