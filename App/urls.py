@@ -62,6 +62,8 @@ urlpatterns = [
     # Centro de Ayuda, Soporte y Manual de Usuario
     path('soporte/', soporte_views.soporte_ayuda_view, name='soporte_ayuda'),
     path('ayuda/', soporte_views.soporte_ayuda_view, name='ayuda'),
+    path('manual/', soporte_views.manual_usuario_view, name='manual_usuario'),
+    path('manual-usuario/', soporte_views.manual_usuario_view, name='manual_usuario_alt'),
     path('soporte/manual-pdf/', soporte_views.manual_usuario_pdf_view, name='manual_usuario_pdf'),
 
     # Categorías (Administración / Staff)

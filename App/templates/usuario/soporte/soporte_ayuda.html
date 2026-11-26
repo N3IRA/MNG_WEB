@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Centro de Ayuda y Soporte — Monagua{% endblock %}
+{% block titulo %}Centro de Ayuda y Soporte — Monagua{% endblock %}
 
 {% block content %}
 <!-- Migas de Pan -->
@@ -58,19 +58,25 @@
           </p>
         </div>
         <div class="col-12 col-md-auto text-center text-md-end">
-          <div class="d-flex flex-column flex-sm-row gap-2 justify-content-md-end">
+          <div class="d-flex flex-column flex-sm-row gap-2 justify-content-md-end flex-wrap">
+            <a href="{% url 'manual_usuario' %}"
+               class="btn btn-success rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2"
+               title="Leer manual interactivo completo en la plataforma">
+              <i class="bi bi-book-half"></i>
+              <span>Manual en Línea</span>
+            </a>
             <a href="{% url 'manual_usuario_pdf' %}?ver=1"
                target="_blank"
-               class="btn btn-outline-success rounded-pill px-4 py-2.5 fw-semibold shadow-sm d-inline-flex align-items-center justify-content-center gap-2"
-               title="Ver manual de usuario en una nueva pestaña">
+               class="btn btn-outline-success rounded-pill px-3 py-2.5 fw-semibold shadow-sm d-inline-flex align-items-center justify-content-center gap-2"
+               title="Ver manual de usuario en formato PDF">
               <i class="bi bi-eye-fill"></i>
-              <span>Ver Guía PDF</span>
+              <span>Ver PDF</span>
             </a>
             <a href="{% url 'manual_usuario_pdf' %}"
-               class="btn btn-success rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2"
+               class="btn btn-outline-secondary rounded-pill px-3 py-2.5 fw-semibold shadow-sm d-inline-flex align-items-center justify-content-center gap-2"
                title="Descargar documento PDF del manual de usuario">
               <i class="bi bi-download"></i>
-              <span>Descargar PDF</span>
+              <span>Descargar</span>
             </a>
           </div>
         </div>
@@ -356,6 +362,22 @@
   .filtro-categoria.active span,
   .filtro-categoria.active i {
     color: #ffffff !important;
+  }
+  /* ── Responsive Centro de Ayuda ── */
+  #acordeonAyuda .accordion-button { font-size: .95rem; align-items: flex-start; }
+  #acordeonAyuda .accordion-body { overflow-wrap: anywhere; }
+  @media (max-width: 767.98px) {
+    #acordeonAyuda .accordion-button { padding: .85rem 1rem !important; font-size: .88rem; }
+    #acordeonAyuda .accordion-button i { margin-right: .6rem !important; font-size: 1rem !important; }
+    #acordeonAyuda .accordion-body { padding: .25rem 1rem 1rem !important; }
+    .filtro-categoria { padding: .75rem !important; }
+    .filtro-categoria i { font-size: 1.5rem !important; }
+    .card-body.p-4 { padding: 1.25rem !important; }
+    section.rounded-4 h1.display-5 { font-size: 1.6rem; }
+  }
+  @media (max-width: 575.98px) {
+    .card-body .btn { width: 100%; }
+    .card-hover:hover { transform: none !important; }
   }
 </style>
 
