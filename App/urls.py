@@ -26,8 +26,6 @@ from App.views.soporte import views as soporte_views
 from App.views.comprobante_pago import views as comprobante_pago_views
 from App.views.pagos_rechazados import views as pagos_rechazados_views
 from App.views.reserva.views import listar_cancelaciones_admin
-from App.views.poliza_viaje import views as poliza_views
-from App.views.aseguradora import views as aseguradora_views
 
 from backup.views import backup, restaurar_datos
 
@@ -204,18 +202,6 @@ urlpatterns = [
     path('pqrs/', pqrs, name='pqrs'),
     path('contactanos/', pqrs_publica, name='pqrs_publica'),
     path('api/pqrs/', api_guardar_pqrs, name='api_guardar_pqrs'),
-
-    # Pólizas de Viaje (Administración / Staff)
-    path('admin/polizas/', poliza_views.PolizaViajeListView.as_view(), name='poliza_listar'),
-    path('admin/polizas/crear/', poliza_views.PolizaViajeCreateView.as_view(), name='poliza_crear'),
-    path('admin/polizas/editar/<int:pk>/', poliza_views.PolizaViajeUpdateView.as_view(), name='poliza_editar'),
-    path('admin/polizas/eliminar/<int:pk>/', poliza_views.PolizaViajeDeleteView.as_view(), name='poliza_eliminar'),
-
-    # Aseguradoras / Seguros Emitidos (Administración / Staff)
-    path('admin/aseguradoras/', aseguradora_views.AseguradoraListView.as_view(), name='aseguradora_listar'),
-    path('admin/aseguradoras/crear/', aseguradora_views.AseguradoraCreateView.as_view(), name='aseguradora_crear'),
-    path('admin/aseguradoras/editar/<int:pk>/', aseguradora_views.AseguradoraUpdateView.as_view(), name='aseguradora_editar'),
-    path('admin/aseguradoras/eliminar/<int:pk>/', aseguradora_views.AseguradoraDeleteView.as_view(), name='aseguradora_eliminar'),
 
     #cancelaciones
     path('mis_cancelaciones/', reserva_views.mis_cancelaciones, name='mis_cancelaciones'),

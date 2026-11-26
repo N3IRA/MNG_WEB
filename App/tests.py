@@ -1171,8 +1171,8 @@ class PruebasSeguridadYFuncionalidadCompletas(TestCase):
     Pruebas integrales de seguridad y funcionalidad:
     - Bloqueo contra fuerza bruta en Login
     - Límite de 5 intentos en OTP de recuperación
-    - Cálculo de variables de días en Reserva y Aseguradora (Seguros)
-    - Control de acceso estricto a vistas administrativas de Pólizas y Calificaciones
+    - Cálculo de variables de días en Reserva
+    - Control de acceso estricto a vistas administrativas y Calificaciones
     - Asistente Condy y radicación de PQRS
     """
 
@@ -1224,31 +1224,6 @@ class PruebasSeguridadYFuncionalidadCompletas(TestCase):
         self.assertEqual(self.reserva.dias_duracion, 3)
         self.assertEqual(self.reserva.fecha_fin, self.reserva.fecha_inicio + timedelta(days=2))
 
-    def test_calculo_dias_y_costo_aseguradora(self):
-        """Verifica que Aseguradora calcule automáticamente días, costo del seguro y folio único."""
-        from App.models import PolizaViaje, Aseguradora
-
-        poliza = PolizaViaje.objects.create(
-            nombre_poliza='Póliza Paramuna Total',
-            descripcion='Cobertura médica y rescate',
-            cobertura_medica_max=Decimal('25000000.00'),
-            precio_diario=Decimal('12000.00'),
-            estado=True
-        )
-
-        seguro = Aseguradora.objects.create(
-            reserva=self.reserva,
-            poliza_viaje=poliza,
-            nombre_empresa='Seguros del Estado'
-        )
-
-        self.assertIsNotNone(seguro.numero_poliza)
-        self.assertTrue(seguro.numero_poliza.startswith('POL-'))
-        self.assertEqual(seguro.fecha_inicio_cobertura, self.reserva.fecha_inicio)
-        self.assertEqual(seguro.fecha_fin_cobertura, self.reserva.fecha_fin)
-        # Costo = 3 días * $12,000/día = $36,000
-        self.assertEqual(seguro.costo_seguro, Decimal('36000.00'))
-
     def test_login_brute_force_lockout(self):
         """Verifica que 5 intentos fallidos consecutivos de login activen el bloqueo temporal."""
         for i in range(5):
@@ -1287,22 +1262,6 @@ class PruebasSeguridadYFuncionalidadCompletas(TestCase):
 
         # Sesión limpia
         self.assertNotIn('reset_otp', self.client.session)
-
-    def test_acceso_no_autorizado_a_polizas_bloqueado(self):
-        """Verifica que usuarios comunes y anónimos no puedan acceder a la administración de seguros."""
-        # Anónimo
-        res_anon = self.client.get(reverse('poliza_listar'))
-        self.assertEqual(res_anon.status_code, 302)
-
-        # Turista no staff
-        self.client.force_login(self.turista)
-        res_turista = self.client.get(reverse('poliza_listar'))
-        self.assertEqual(res_turista.status_code, 403)
-
-        # Administrador permitido
-        self.client.force_login(self.admin)
-        res_admin = self.client.get(reverse('poliza_listar'))
-        self.assertEqual(res_admin.status_code, 200)
 
     def test_condy_chat_api_funcional(self):
         """Verifica que el endpoint de Condy responda correctamente en formato JSON con sesión activa."""

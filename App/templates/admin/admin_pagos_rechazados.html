@@ -113,22 +113,75 @@
         </div>
     </div>
 
-    <!-- ── 4. Guía Rápida de Acciones de Procedimiento ── -->
-    <div class="alert alert-danger bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-4 p-3 mb-4 shadow-sm d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-        <div class="d-flex align-items-center gap-3">
-            <span class="d-inline-flex align-items-center justify-content-center bg-danger text-white rounded-circle flex-shrink-0" style="width: 42px; height: 42px;">
-                <i class="bi bi-info-circle-fill fs-5"></i>
-            </span>
-            <div>
-                <strong class="text-danger d-block">Guía de Procedimiento para Pagos Rechazados</strong>
-                <small class="text-secondary">
-                    Como administrador puedes <strong>Reconsiderar y Aprobar</strong> si el dinero fue acreditado, <strong>Reabrir</strong> a pendiente para re-evaluación, <strong>Actualizar el Motivo</strong> para orientar al cliente o <strong>Cancelar la Reserva</strong> definitivamente.
-                </small>
-            </div>
-        </div>
-        <a href="{% url 'admin_comprobantes' %}" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1.5 fw-semibold text-nowrap align-self-start align-self-md-center">
+    <!-- ── 4. Guía Rápida de Acciones de Procedimiento (Botón Compacto Desplegable) ── -->
+    <div class="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
+        <button type="button" 
+                class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-2 shadow-sm" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#guiaProcedimientoCollapse" 
+                aria-expanded="false" 
+                aria-controls="guiaProcedimientoCollapse"
+                title="Presiona para desplegar la guía de procedimiento">
+            <span class="d-inline-flex align-items-center justify-content-center bg-danger text-white rounded-circle fw-bold shadow-sm" style="width: 20px; height: 20px; font-size: 11px; line-height: 1;">!</span>
+            <span>Guía de Procedimiento</span>
+            <i class="bi bi-chevron-down small" id="iconoChevronGuia"></i>
+        </button>
+
+        <a href="{% url 'admin_comprobantes' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1.5 fw-semibold text-nowrap d-inline-flex align-items-center gap-1 shadow-sm">
             <i class="bi bi-arrow-left me-1"></i> Ir a Comprobantes
         </a>
+    </div>
+
+    <!-- Contenido Desplegable al presionar el botón -->
+    <div class="collapse mb-4" id="guiaProcedimientoCollapse">
+        <div class="card border border-danger border-opacity-25 bg-danger bg-opacity-10 rounded-4 p-3 shadow-sm">
+            <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom border-danger border-opacity-25">
+                <span class="d-inline-flex align-items-center justify-content-center bg-danger text-white rounded-circle fw-bold" style="width: 24px; height: 24px; font-size: 13px;">!</span>
+                <strong class="text-danger mb-0">Guía de Procedimiento para Pagos Rechazados</strong>
+            </div>
+            <div class="row g-3">
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="p-3 bg-white rounded-3 border border-danger border-opacity-10 h-100 shadow-sm">
+                        <div class="d-flex align-items-center gap-2 mb-1.5 text-success fw-bold small">
+                            <i class="bi bi-check-circle-fill fs-6"></i> 1. Reconsiderar y Aprobar
+                        </div>
+                        <p class="small text-secondary mb-0" style="line-height: 1.4;">
+                            Si confirmas que el dinero fue acreditado en la cuenta bancaria o caja, cambia el estado a <strong>Aprobado</strong> para confirmar la reserva inmediatamente.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="p-3 bg-white rounded-3 border border-danger border-opacity-10 h-100 shadow-sm">
+                        <div class="d-flex align-items-center gap-2 mb-1.5 text-warning fw-bold small">
+                            <i class="bi bi-arrow-repeat fs-6"></i> 2. Reabrir a Pendiente
+                        </div>
+                        <p class="small text-secondary mb-0" style="line-height: 1.4;">
+                            Pasa el pago a <strong>Pendiente</strong> para re-evaluarlo o permitir que el cliente adjunte un nuevo comprobante legible.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="p-3 bg-white rounded-3 border border-danger border-opacity-10 h-100 shadow-sm">
+                        <div class="d-flex align-items-center gap-2 mb-1.5 text-primary fw-bold small">
+                            <i class="bi bi-pencil-square fs-6"></i> 3. Actualizar Motivo
+                        </div>
+                        <p class="small text-secondary mb-0" style="line-height: 1.4;">
+                            Modifica el motivo de rechazo para orientar al usuario con claridad sobre qué corregir o verificar en su transacción.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="p-3 bg-white rounded-3 border border-danger border-opacity-10 h-100 shadow-sm">
+                        <div class="d-flex align-items-center gap-2 mb-1.5 text-danger fw-bold small">
+                            <i class="bi bi-x-circle-fill fs-6"></i> 4. Cancelar Reserva
+                        </div>
+                        <p class="small text-secondary mb-0" style="line-height: 1.4;">
+                            Cancela definitivamente la reserva vinculada para liberar los cupos turísticos cuando no haya intención de pago.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- ── 5. Contenedor Principal de la Tabla ── -->
@@ -612,4 +665,20 @@
 
 {% block scripts %}
 <script src="{% static 'js/tconf/tconf-tablaPagosRechazados.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var guiaCollapse = document.getElementById('guiaProcedimientoCollapse');
+    var chevronIcon = document.getElementById('iconoChevronGuia');
+    if (guiaCollapse && chevronIcon) {
+        guiaCollapse.addEventListener('show.bs.collapse', function() {
+            chevronIcon.classList.remove('bi-chevron-down');
+            chevronIcon.classList.add('bi-chevron-up');
+        });
+        guiaCollapse.addEventListener('hide.bs.collapse', function() {
+            chevronIcon.classList.remove('bi-chevron-up');
+            chevronIcon.classList.add('bi-chevron-down');
+        });
+    }
+});
+</script>
 {% endblock %}

@@ -17,7 +17,6 @@ django.setup()
 
 from App.models import (
     Actividades,
-    Aseguradora,
     Bitacora,
     Blog,
     Calificacion,
@@ -28,7 +27,6 @@ from App.models import (
     PaqueteActividad,
     PaquetePromocion,
     PlanGuia,
-    PolizaViaje,
     PQRS,
     Promocion,
     Reserva,
@@ -129,8 +127,6 @@ def poblar_base_datos():
     Pago.objects.all().delete()
     Notificacion.objects.all().delete()
     PlanGuia.objects.all().delete()
-    Aseguradora.objects.all().delete()
-    PolizaViaje.objects.all().delete()
     PaquetePromocion.objects.all().delete()
     Promocion.objects.all().delete()
     Seguimiento.objects.all().delete()
