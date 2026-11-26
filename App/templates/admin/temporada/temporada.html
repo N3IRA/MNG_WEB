@@ -90,7 +90,16 @@
                     {% for t in temporadas %}
                     <tr>
                         <td>
-                            <div class="fw-bold text-dark">{{ t.nombre }}</div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">{{ t.nombre }}</h6>
+                                <p class="text-muted small mb-0 text-truncate"
+                                   style="max-width: 320px; cursor: help;"
+                                   data-bs-toggle="tooltip"
+                                   data-bs-placement="top"
+                                   data-bs-title="{{ t.descripcion|default:'Sin descripción' }}">
+                                    {{ t.descripcion|default:"Sin descripción" }}
+                                </p>
+                            </div>
                         </td>
                         <td class="text-center">
                             <span class="text-secondary fw-semibold">{{ t.fecha_inicio|date:"d \d\e M, Y" }}</span>
@@ -144,6 +153,13 @@
                         <div class="d-flex justify-content-between align-items-start mb-2 border-bottom pb-2">
                             <div>
                                 <h5 class="fw-bold text-dark mb-0">{{ t.nombre }}</h5>
+                                <small class="text-muted d-block mt-1 text-truncate"
+                                       style="cursor: help;"
+                                       data-bs-toggle="tooltip"
+                                       data-bs-placement="top"
+                                       data-bs-title="{{ t.descripcion|default:'Sin descripción' }}">
+                                    {{ t.descripcion|default:"Sin descripción" }}
+                                </small>
                             </div>
                             <div>
                                 {% if t.estado %}

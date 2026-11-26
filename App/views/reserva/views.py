@@ -17,6 +17,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from App.models import Reserva, Paquete, Tarifa, Pago, ModificacionReserva, NotaCredito, Usuario, Reembolso
+from App.validators import validar_archivo_subido, validar_comprobante_pago
 
 logger = logging.getLogger(__name__)
 from App.forms.reserva.forms import ReservaForm
@@ -1051,6 +1052,10 @@ def editar_cancelacion_admin(request, reserva_id):
 
                 # Si el administrador adjuntó la captura de transferencia bancaria
                 if 'imagen_comprobante' in request.FILES:
+                    valido, err = validar_archivo_subido(request.FILES['imagen_comprobante'], validar_comprobante_pago)
+                    if not valido:
+                        messages.error(request, err)
+                        return redirect('gestionar_cancelacion_admin', reserva_id=reserva.id)
                     reembolso.imagen_comprobante = request.FILES['imagen_comprobante']
                     reembolso.banco_emisor = request.POST.get('banco_emisor', '').strip() or reembolso.banco_emisor
                     reembolso.banco_destino = request.POST.get('banco_destino', '').strip() or reembolso.banco_destino
@@ -1208,6 +1213,10 @@ def registrar_reembolso_admin(request, reembolso_id):
 
     if request.method == 'POST':
         if 'imagen_comprobante' in request.FILES:
+            valido, err = validar_archivo_subido(request.FILES['imagen_comprobante'], validar_comprobante_pago)
+            if not valido:
+                messages.error(request, err)
+                return redirect('listar_reembolsos_admin')
             reembolso.imagen_comprobante = request.FILES['imagen_comprobante']
 
         reembolso.banco_emisor = request.POST.get('banco_emisor', '').strip() or reembolso.banco_emisor

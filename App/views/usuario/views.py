@@ -8,6 +8,7 @@ from django.utils import timezone
 from App.models import Usuario, Paquete, Reserva, PQRS, Calificacion
 from App.utils import crear_notificacion_sistema
 from App.forms.usuario.forms import PerfilTuristaForm, PerfilGuiaForm, CambiarClaveSeguraForm
+from App.validators import validar_archivo_subido, validar_foto_perfil
 
 
 def es_administrador(user):
@@ -329,6 +330,12 @@ def usuarios_guardar(request):
         residencia = request.POST.get('residencia', '').strip()
         password = request.POST.get('password', '').strip()
         imagen_perfil = request.FILES.get('imagen_perfil')
+
+        if imagen_perfil:
+            valido, err = validar_archivo_subido(imagen_perfil, validar_foto_perfil)
+            if not valido:
+                messages.error(request, err)
+                return redirect('gestion_usuarios')
 
         if user_id:
             user_obj = get_object_or_404(Usuario, pk=user_id)

@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from django.contrib.auth.password_validation import validate_password
 from App.models import Usuario
+from App.validators import validar_foto_perfil
 
 
 class PerfilTuristaForm(forms.ModelForm):
@@ -15,7 +16,7 @@ class PerfilTuristaForm(forms.ModelForm):
     """
     imagen_perfil = forms.ImageField(
         required=False,
-        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp'])],
+        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp']), validar_foto_perfil],
         widget=forms.FileInput(attrs={
             'class': 'form-control',
             'id': 'id_imagen_perfil',
@@ -84,10 +85,8 @@ class PerfilTuristaForm(forms.ModelForm):
 
     def clean_imagen_perfil(self):
         foto = self.cleaned_data.get('imagen_perfil')
-        if foto and hasattr(foto, 'size'):
-            max_mb = 4
-            if foto.size > max_mb * 1024 * 1024:
-                raise ValidationError(f"La foto de perfil no puede pesar más de {max_mb} MB.")
+        if foto:
+            validar_foto_perfil(foto)
         return foto
 
 

@@ -2190,7 +2190,8 @@ class GestionReembolsosTests(TestCase):
         )
         self.client.force_login(self.admin)
 
-        comprobante_fake = SimpleUploadedFile('reembolso_nequi.jpg', b'captura_transferencia', content_type='image/jpeg')
+        gif_bytes = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+        comprobante_fake = SimpleUploadedFile('reembolso_nequi.gif', gif_bytes, content_type='image/gif')
         res = self.client.post(
             reverse('registrar_reembolso_admin', args=[reembolso.id]),
             {

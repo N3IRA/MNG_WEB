@@ -3,6 +3,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
 from django.urls import reverse_lazy
+from App.validators import validar_imagen_paquete
 import re
 
 
@@ -30,7 +31,7 @@ class PaqueteForm(ModelForm):
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del paquete turístico'}),
             'imagen': forms.ClearableFileInput(attrs={
                 'class': 'form-control',
-                'accept': 'image/*',
+                'accept': 'image/png, image/jpeg, image/webp',
             }),
             'descripcion': forms.Textarea(attrs={
                 'class': 'form-control',
@@ -112,6 +113,12 @@ class PaqueteForm(ModelForm):
             'hx-vals': '{"origen": "actividades"}',
             'hx-swap': 'none',
         })
+
+    def clean_imagen(self):
+        imagen = self.cleaned_data.get('imagen')
+        if imagen:
+            validar_imagen_paquete(imagen)
+        return imagen
 
     def clean_nombre(self):
         nombre = str(self.cleaned_data.get('nombre', '')).strip()

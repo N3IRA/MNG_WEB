@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from App.models import Usuario
 from App.utils import crear_notificacion_sistema
+from App.validators import validar_archivo_subido, validar_foto_perfil
 
 
 from django.db.models import Q
@@ -76,6 +77,12 @@ def guias_guardar(request):
         entidad_salud = request.POST.get('entidad_salud', '').strip()
         password = request.POST.get('password', '').strip()
         imagen_perfil = request.FILES.get('imagen_perfil')
+
+        if imagen_perfil:
+            valido, err = validar_archivo_subido(imagen_perfil, validar_foto_perfil)
+            if not valido:
+                messages.error(request, err)
+                return redirect('gestion_guias')
 
         try:
             experiencia_anos = int(experiencia_anos_raw) if experiencia_anos_raw else 0
