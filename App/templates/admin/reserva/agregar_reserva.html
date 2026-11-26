@@ -5,6 +5,7 @@
 {% block title %}Admin | Nueva Reserva - Monagua{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/librerias/flatpickr.min.css' %}" />
 {% include "partials/breadcrumbs.html" with current_title="Nueva Reserva" current_icon="bi bi-calendar-plus" %}
 
 <div class="container py-4">
@@ -19,31 +20,313 @@
             </span>
         </div>
         <h1 class="display-6 fw-bold text-dark mb-1">Registrar Nueva Reserva</h1>
-        <p class="text-muted mb-0">Ingresa manualmente una reserva en el sistema administrativo para un cliente.</p>
+        <p class="text-muted mb-0">Genera una reserva para un cliente presencial (sin cuenta requerida) o asóciala a un usuario registrado.</p>
     </div>
 
     <div class="row g-4 justify-content-center">
         <!-- Columna Principal: Formulario -->
-        <div class="col-12 col-lg-8">
+        <div class="col-12 col-lg-9">
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
                 <div class="card-header bg-success text-white p-4 border-0">
                     <div class="d-flex align-items-center gap-3">
                         <div class="bg-white bg-opacity-25 rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-calendar-plus fs-4"></i>
+                            <i class="bi bi-calendar-plus fs-4 text-white"></i>
                         </div>
                         <div>
                             <h5 class="fw-bold mb-0 text-white">Datos de la Reserva</h5>
-                            <p class="mb-0 text-white-50 small">Completa los datos del cliente, paquete y fechas</p>
+                            <p class="mb-0 text-white-50 small">Selecciona la modalidad del cliente y los detalles del viaje</p>
                         </div>
                     </div>
                 </div>
                 
                 <div class="card-body p-4 p-md-5">
-                    <form method="POST" novalidate>
+                    <form method="POST" novalidate id="formNuevaReserva">
                         {% csrf_token %}
-                        
-                        <div class="mb-4 text-dark">
-                            {{ form|crispy }}
+
+                        {% if form.non_field_errors %}
+                            <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                function notificarErroresReserva() {
+                                    if (typeof window.mostrarToast === 'function') {
+                                        {% for error in form.non_field_errors %}
+                                            window.mostrarToast('error', 'Reserva no permitida', '{{ error|escapejs }}', 6000);
+                                        {% endfor %}
+                                    } else {
+                                        setTimeout(notificarErroresReserva, 150);
+                                    }
+                                }
+                                notificarErroresReserva();
+                            });
+                            </script>
+                        {% endif %}
+
+                        <!-- Selector de Modalidad de Cliente -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark small text-uppercase mb-2">
+                                <i class="bi bi-person-lines-fill me-1 text-success"></i> Tipo de Cliente
+                            </label>
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label class="card h-100 p-3 border rounded-3 cursor-pointer transition-all shadow-none mode-card" id="card-presencial" style="cursor: pointer;">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <input type="radio" name="tipo_cliente" value="presencial" id="tipo_presencial" class="form-check-input mt-1" checked>
+                                            <div>
+                                                <div class="fw-bold text-dark d-flex align-items-center gap-1.5">
+                                                    <i class="bi bi-person-badge text-warning fs-5"></i> Cliente Presencial (Sin cuenta)
+                                                </div>
+                                                <small class="text-muted d-block mt-1">
+                                                    Para personas en el punto de atención. Se registra con sus datos y correo sin necesidad de crear usuario en el sistema.
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="card h-100 p-3 border rounded-3 cursor-pointer transition-all shadow-none mode-card" id="card-registrado" style="cursor: pointer;">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <input type="radio" name="tipo_cliente" value="registrado" id="tipo_registrado" class="form-check-input mt-1" {% if form.tipo_cliente.value == 'registrado' %}checked{% endif %}>
+                                            <div>
+                                                <div class="fw-bold text-dark d-flex align-items-center gap-1.5">
+                                                    <i class="bi bi-person-check text-success fs-5"></i> Cliente Registrado (Con cuenta)
+                                                </div>
+                                                <small class="text-muted d-block mt-1">
+                                                    Para clientes que ya disponen de una cuenta de usuario activa en la plataforma.
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 1: CLIENTE PRESENCIAL (SIN CUENTA) -->
+                        <div id="seccion-presencial" class="p-4 bg-light rounded-4 mb-4 border">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                                    <i class="bi bi-person-vcard text-warning fs-5"></i> Datos Personales del Cliente Presencial
+                                </h6>
+                                <span class="badge bg-warning bg-opacity-15 text-dark border border-warning border-opacity-50 rounded-pill px-2.5 py-1 small fw-semibold">
+                                    <i class="bi bi-person-x-fill text-warning me-1"></i>Sin cuenta registrada
+                                </span>
+                            </div>
+                            
+                            <div class="alert alert-warning bg-warning bg-opacity-10 border-warning border-opacity-25 rounded-3 d-flex align-items-start gap-2 small mb-3">
+                                <i class="bi bi-info-circle-fill text-warning fs-5 mt-0.5"></i>
+                                <div>
+                                    El cliente no requiere registrarse ni tener contraseña. La reserva se asociará a sus datos personales y se le enviará un correo con el resumen y comprobante de su viaje.
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label for="{{ form.cliente_nombre.id_for_label }}" class="form-label small fw-bold text-secondary">
+                                        Nombre Completo <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.cliente_nombre }}
+                                    {% if form.cliente_nombre.errors %}
+                                        <div class="text-danger small mt-1">{{ form.cliente_nombre.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label for="{{ form.cliente_email.id_for_label }}" class="form-label small fw-bold text-secondary">
+                                        Correo Electrónico <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.cliente_email }}
+                                    {% if form.cliente_email.errors %}
+                                        <div class="text-danger small mt-1">{{ form.cliente_email.errors.0 }}</div>
+                                    {% else %}
+                                        <div class="form-text small text-muted">A este correo se remitirán los detalles y confirmación de la reserva.</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-12 col-md-4">
+                                    <label for="{{ form.cliente_tipo_documento.id_for_label }}" class="form-label small fw-bold text-secondary">
+                                        Tipo de Documento <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.cliente_tipo_documento }}
+                                    {% if form.cliente_tipo_documento.errors %}
+                                        <div class="text-danger small mt-1">{{ form.cliente_tipo_documento.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-12 col-md-4">
+                                    <label for="{{ form.cliente_documento.id_for_label }}" class="form-label small fw-bold text-secondary">
+                                        Número de Documento <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.cliente_documento }}
+                                    {% if form.cliente_documento.errors %}
+                                        <div class="text-danger small mt-1">{{ form.cliente_documento.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-12 col-md-4">
+                                    <label for="{{ form.cliente_telefono.id_for_label }}" class="form-label small fw-bold text-secondary">
+                                        Teléfono de Contacto <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.cliente_telefono }}
+                                    {% if form.cliente_telefono.errors %}
+                                        <div class="text-danger small mt-1">{{ form.cliente_telefono.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 2: CLIENTE REGISTRADO (CON CUENTA) -->
+                        <div id="seccion-registrado" class="p-4 bg-light rounded-4 mb-4 border d-none">
+                            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                                <h6 class="fw-bold text-dark m-0 d-flex align-items-center gap-2">
+                                    <i class="bi bi-person-check-fill text-success fs-5"></i> Búsqueda y Selección de Cliente Registrado
+                                </h6>
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 small">
+                                    <i class="bi bi-shield-check me-1"></i> Cuenta en el Sistema
+                                </span>
+                            </div>
+
+                            <!-- Filtro Buscador (Estilo Gestión / Reservas) -->
+                            <div class="card border-0 shadow-sm rounded-4 mb-3 bg-white">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-center align-items-center m-0">
+                                        <div class="input-group bg-light border rounded-pill p-1 shadow-sm flex-nowrap align-items-center" style="max-width: 540px; width: 100%;">
+                                            <span class="input-group-text border-0 bg-transparent text-success ps-3 pe-2">
+                                                <i class="bi bi-funnel-fill fs-5"></i>
+                                            </span>
+                                            <input
+                                                type="text"
+                                                id="buscar_cliente_input"
+                                                class="form-control border-0 bg-transparent text-dark fw-semibold shadow-none py-1"
+                                                placeholder="Buscar por documento o correo..."
+                                                style="cursor: text; font-size: 0.9rem;"
+                                                autocomplete="off"
+                                            >
+                                            <div class="d-flex align-items-center gap-1 ps-2 pe-1">
+                                                <button type="button" id="btn_buscar_cliente" class="btn btn-success rounded-circle d-flex align-items-center justify-content-center p-0 shadow-sm" style="width: 34px; height: 34px;" title="Buscar Cliente">
+                                                    <i class="bi bi-search fs-6"></i>
+                                                </button>
+                                                <button type="button" id="btn_limpiar_cliente" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0" style="width: 34px; height: 34px;" title="Restaurar / Limpiar Búsqueda">
+                                                    <i class="bi bi-arrow-clockwise fs-6"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Selector desplegable de cliente -->
+                            <div class="mb-3">
+                                <label for="{{ form.usuario.id_for_label }}" class="form-label small fw-bold text-secondary">
+                                    Cliente / Titular de la Cuenta <span class="text-danger">*</span>
+                                </label>
+                                {{ form.usuario }}
+                                {% if form.usuario.errors %}
+                                    <div class="text-danger small mt-1">{{ form.usuario.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text small text-muted">También puedes desplegar la lista para elegir manualmente.</div>
+                            </div>
+
+                            <!-- Tarjeta de confirmación del cliente seleccionado -->
+                            <div id="tarjeta_cliente_seleccionado" class="card border border-success border-opacity-25 bg-white shadow-sm rounded-3 p-3 d-none">
+                                <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
+                                    <span class="d-inline-flex align-items-center gap-1 text-success fw-bold small">
+                                        <i class="bi bi-check-circle-fill"></i> Cliente Seleccionado y Verificado
+                                    </span>
+                                    <span class="badge bg-light text-secondary border px-2 py-1" id="badge_tipo_doc">CC</span>
+                                </div>
+                                <div class="row g-2 small">
+                                    <div class="col-12 col-md-6">
+                                        <span class="text-muted d-block" style="font-size: 0.78rem;">Nombre Completo:</span>
+                                        <span id="info_cliente_nombre" class="fw-bold text-dark">-</span>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <span class="text-muted d-block" style="font-size: 0.78rem;">Número de Documento:</span>
+                                        <span id="info_cliente_doc" class="fw-bold text-dark">-</span>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <span class="text-muted d-block" style="font-size: 0.78rem;">Correo Electrónico:</span>
+                                        <span id="info_cliente_email" class="fw-semibold text-primary">-</span>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <span class="text-muted d-block" style="font-size: 0.78rem;">Teléfono de Contacto:</span>
+                                        <span id="info_cliente_tel" class="fw-semibold text-dark">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 3: DETALLES DE LA AVENTURA / RESERVA -->
+                        <div class="p-4 bg-white rounded-4 mb-4 border">
+                            <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2 border-bottom pb-2">
+                                <i class="bi bi-geo-alt-fill text-success fs-5"></i> Parámetros de la Aventura y Cupos
+                            </h6>
+
+                            <div class="row g-3 align-items-start">
+                                <div class="col-12 col-md-6">
+                                    <label for="{{ form.paquete.id_for_label }}" class="form-label fw-bold text-dark mb-2">
+                                        <i class="bi bi-compass text-success me-2"></i>Paquete / Tour Turístico <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.paquete }}
+                                    {% if form.paquete.errors %}
+                                        <div class="text-danger small mt-1">{{ form.paquete.errors.0 }}</div>
+                                    {% else %}
+                                        <div class="form-text small text-muted mt-2">Selecciona el paquete para habilitar las fechas disponibles en el calendario.</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label for="id_fecha_inicio" class="form-label fw-bold text-dark mb-2">
+                                        <i class="bi bi-calendar-event text-success me-2"></i>Fecha de tu Aventura <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                                        <span class="input-group-text bg-light text-secondary border-0"><i class="bi bi-calendar-date"></i></span>
+                                        <input
+                                            type="text"
+                                            name="fecha_inicio"
+                                            id="id_fecha_inicio"
+                                            value="{{ form.fecha_inicio.value|date:'Y-m-d'|default:form.fecha_inicio.value|default:'' }}"
+                                            class="form-control form-control-lg bg-light border-0 px-3"
+                                            placeholder="Primero selecciona un paquete..."
+                                            required
+                                            readonly="readonly"
+                                            disabled
+                                            style="cursor: not-allowed;"
+                                        >
+                                    </div>
+                                    {% if form.fecha_inicio.errors %}
+                                        <div class="text-danger small mt-1">{{ form.fecha_inicio.errors.0 }}</div>
+                                    {% endif %}
+                                    <div class="d-flex align-items-center gap-3 mt-2 px-1 flex-wrap" style="font-size: 0.78rem;">
+                                        <span class="d-inline-flex align-items-center gap-1 text-muted">
+                                            <span class="rounded-circle d-inline-block bg-success bg-opacity-75" style="width: 8px; height: 8px;"></span>
+                                            Días con temporada vigente (disponibles)
+                                        </span>
+                                        <span class="d-inline-flex align-items-center gap-1 text-muted">
+                                            <span class="rounded-circle d-inline-block bg-secondary bg-opacity-25" style="width: 8px; height: 8px;"></span>
+                                            Días no vigentes o sin tarifa
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-6 mt-3">
+                                    <label for="{{ form.numero_adultos.id_for_label }}" class="form-label small fw-bold text-secondary">
+                                        Adultos <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.numero_adultos }}
+                                    {% if form.numero_adultos.errors %}
+                                        <div class="text-danger small mt-1">{{ form.numero_adultos.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-12 col-md-6 mt-3">
+                                    <label for="{{ form.numero_menores.id_for_label }}" class="form-label small fw-bold text-secondary">
+                                        Menores
+                                    </label>
+                                    {{ form.numero_menores }}
+                                    {% if form.numero_menores.errors %}
+                                        <div class="text-danger small mt-1">{{ form.numero_menores.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <input type="hidden" name="estado_reserva" id="id_estado_reserva" value="pendiente">
+                            </div>
                         </div>
                         
                         <div class="d-flex justify-content-end align-items-center gap-2 pt-3 border-top">
@@ -51,7 +334,7 @@
                                 <i class="bi bi-x-circle me-1"></i> Cancelar
                             </a>
                             <button type="submit" class="btn btn-success px-4 rounded-pill shadow-sm fw-bold">
-                                <i class="bi bi-check-circle me-1"></i> Confirmar Reserva
+                                <i class="bi bi-check-circle me-1"></i> Confirmar y Crear Reserva
                             </button>
                         </div>
                     </form>
@@ -60,4 +343,422 @@
         </div>
     </div>
 </div>
+
+{{ tarifas_por_paquete|json_script:"tarifas-paquete-data" }}
+{{ clientes_registrados|json_script:"clientes-registrados-data" }}
+<script src="{% static 'js/librerias/flatpickr.min.js' %}"></script>
+<script src="{% static 'js/librerias/flatpickr_es.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Toggle de Modalidad de Cliente (Presencial vs Registrado)
+    const formNuevaReserva = document.getElementById('formNuevaReserva');
+    const radioPresencial = document.getElementById('tipo_presencial');
+    const radioRegistrado = document.getElementById('tipo_registrado');
+    const cardPresencial = document.getElementById('card-presencial');
+    const cardRegistrado = document.getElementById('card-registrado');
+    const seccionPresencial = document.getElementById('seccion-presencial');
+    const seccionRegistrado = document.getElementById('seccion-registrado');
+
+    const inputNombre = document.getElementById('id_cliente_nombre');
+    const inputEmail = document.getElementById('id_cliente_email');
+    const selectTipoDoc = document.getElementById('id_cliente_tipo_documento');
+    const inputDocumento = document.getElementById('id_cliente_documento');
+    const inputTelefono = document.getElementById('id_cliente_telefono');
+    const selectUsuario = document.getElementById('id_usuario');
+
+    function actualizarModalidad() {
+        if (radioPresencial.checked) {
+            seccionPresencial.classList.remove('d-none');
+            seccionRegistrado.classList.add('d-none');
+            cardPresencial.classList.add('border-warning', 'bg-warning', 'bg-opacity-10');
+            cardRegistrado.classList.remove('border-success', 'bg-success', 'bg-opacity-10');
+            if (inputNombre) inputNombre.setAttribute('required', 'required');
+            if (inputEmail) inputEmail.setAttribute('required', 'required');
+            if (selectTipoDoc) selectTipoDoc.setAttribute('required', 'required');
+            if (inputDocumento) inputDocumento.setAttribute('required', 'required');
+            if (inputTelefono) inputTelefono.setAttribute('required', 'required');
+            if (selectUsuario) selectUsuario.removeAttribute('required');
+        } else {
+            seccionPresencial.classList.add('d-none');
+            seccionRegistrado.classList.remove('d-none');
+            cardRegistrado.classList.add('border-success', 'bg-success', 'bg-opacity-10');
+            cardPresencial.classList.remove('border-warning', 'bg-warning', 'bg-opacity-10');
+            if (inputNombre) inputNombre.removeAttribute('required');
+            if (inputEmail) inputEmail.removeAttribute('required');
+            if (selectTipoDoc) selectTipoDoc.removeAttribute('required');
+            if (inputDocumento) inputDocumento.removeAttribute('required');
+            if (inputTelefono) inputTelefono.removeAttribute('required');
+            if (selectUsuario) selectUsuario.setAttribute('required', 'required');
+        }
+    }
+
+    radioPresencial.addEventListener('change', actualizarModalidad);
+    radioRegistrado.addEventListener('change', actualizarModalidad);
+    cardPresencial.addEventListener('click', function() {
+        radioPresencial.checked = true;
+        actualizarModalidad();
+    });
+    cardRegistrado.addEventListener('click', function() {
+        radioRegistrado.checked = true;
+        actualizarModalidad();
+    });
+
+    actualizarModalidad();
+
+    // 2. Restricción estricta de caracteres en tiempo real
+    // Nombre completo: SOLO LETRAS Y ESPACIOS (sin números ni símbolos)
+    if (inputNombre) {
+        inputNombre.addEventListener('keydown', function(e) {
+            // Permitir teclas de control: Backspace, Tab, Enter, Delete, flechas, Home, End
+            const teclasPermitidas = ['Backspace', 'Tab', 'Enter', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+            if (teclasPermitidas.includes(e.key) || e.ctrlKey || e.metaKey) return;
+            // Bloquear dígitos y cualquier caracter que no sea letra o espacio
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]$/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+        inputNombre.addEventListener('input', function() {
+            this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+        });
+    }
+
+    // Número de documento: SOLO NÚMEROS
+    if (inputDocumento) {
+        inputDocumento.addEventListener('keydown', function(e) {
+            const teclasPermitidas = ['Backspace', 'Tab', 'Enter', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+            if (teclasPermitidas.includes(e.key) || e.ctrlKey || e.metaKey) return;
+            if (!/^[0-9]$/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+        inputDocumento.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    }
+
+    // Teléfono de contacto: SOLO NÚMEROS (y opcional + al inicio)
+    if (inputTelefono) {
+        inputTelefono.addEventListener('keydown', function(e) {
+            const teclasPermitidas = ['Backspace', 'Tab', 'Enter', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+            if (teclasPermitidas.includes(e.key) || e.ctrlKey || e.metaKey) return;
+            if (e.key === '+' && this.selectionStart === 0 && !this.value.includes('+')) {
+                return;
+            }
+            if (!/^[0-9]$/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+        inputTelefono.addEventListener('input', function() {
+            const tienePlus = this.value.startsWith('+');
+            const digitos = this.value.replace(/[^0-9]/g, '');
+            this.value = (tienePlus ? '+' : '') + digitos;
+        });
+    }
+
+    if (inputEmail) {
+        inputEmail.addEventListener('input', function() {
+            this.value = this.value.replace(/[<>;"'`\s]/g, '');
+        });
+    }
+
+    // 2.5 Búsqueda de Cliente Registrado por Identificador Único (Documento o Correo)
+    const clientesDataScript = document.getElementById('clientes-registrados-data');
+    let clientesRegistrados = [];
+    try {
+        clientesRegistrados = clientesDataScript ? JSON.parse(clientesDataScript.textContent) : [];
+    } catch (e) {
+        clientesRegistrados = [];
+    }
+
+    const clientesMap = {};
+    clientesRegistrados.forEach(function(c) {
+        clientesMap[String(c.id)] = c;
+    });
+
+    const buscarClienteInput = document.getElementById('buscar_cliente_input');
+    const btnBuscarCliente = document.getElementById('btn_buscar_cliente');
+    const btnLimpiarCliente = document.getElementById('btn_limpiar_cliente');
+    const tarjetaClienteSeleccionado = document.getElementById('tarjeta_cliente_seleccionado');
+    const infoClienteNombre = document.getElementById('info_cliente_nombre');
+    const infoClienteDoc = document.getElementById('info_cliente_doc');
+    const infoClienteEmail = document.getElementById('info_cliente_email');
+    const infoClienteTel = document.getElementById('info_cliente_tel');
+    const badgeTipoDoc = document.getElementById('badge_tipo_doc');
+
+    function mostrarDetallesCliente(cliente) {
+        if (!tarjetaClienteSeleccionado) return;
+        if (cliente) {
+            if (infoClienteNombre) infoClienteNombre.textContent = cliente.nombre || '-';
+            if (infoClienteDoc) infoClienteDoc.textContent = (cliente.tipo_documento ? cliente.tipo_documento + ': ' : '') + (cliente.documento || '-');
+            if (infoClienteEmail) infoClienteEmail.textContent = cliente.email || '-';
+            if (infoClienteTel) infoClienteTel.textContent = cliente.telefono || 'Sin teléfono registrado';
+            if (badgeTipoDoc) badgeTipoDoc.textContent = cliente.tipo_documento || 'CC';
+            tarjetaClienteSeleccionado.classList.remove('d-none');
+        } else {
+            tarjetaClienteSeleccionado.classList.add('d-none');
+        }
+    }
+
+    function filtrarClientes(dispararNotif) {
+        if (!selectUsuario) return;
+        const query = (buscarClienteInput ? buscarClienteInput.value : '').trim().toLowerCase();
+        const queryNumeros = query.replace(/\D/g, '');
+
+        const options = Array.from(selectUsuario.options);
+        let coincidencias = [];
+
+        options.forEach(function(opt, index) {
+            if (index === 0) {
+                opt.hidden = false;
+                opt.style.display = '';
+                return;
+            }
+            const cliente = clientesMap[String(opt.value)];
+            if (!cliente) return;
+
+            let coincide = false;
+            if (!query) {
+                coincide = true;
+            } else {
+                const email = (cliente.email || '').toLowerCase();
+                const doc = (cliente.documento || '').toLowerCase();
+                const nombre = (cliente.nombre || '').toLowerCase();
+
+                if (email.includes(query) || doc.includes(query) || (queryNumeros && doc.replace(/\D/g, '').includes(queryNumeros)) || nombre.includes(query)) {
+                    coincide = true;
+                }
+            }
+
+            if (coincide) {
+                opt.hidden = false;
+                opt.style.display = '';
+                coincidencias.push(cliente);
+            } else {
+                opt.hidden = true;
+                opt.style.display = 'none';
+            }
+        });
+
+        if (query && coincidencias.length === 0) {
+            selectUsuario.value = '';
+            mostrarDetallesCliente(null);
+            if (dispararNotif && typeof window.mostrarToast === 'function') {
+                window.mostrarToast('warning', 'Cliente no encontrado', 'No se encontró ningún cliente registrado con ese número de documento o correo.', 5000);
+            }
+        } else {
+            if (query && coincidencias.length === 1) {
+                const unico = coincidencias[0];
+                selectUsuario.value = String(unico.id);
+                mostrarDetallesCliente(unico);
+                if (dispararNotif && typeof window.mostrarToast === 'function') {
+                    window.mostrarToast('success', 'Cliente Identificado', `${unico.nombre} ha sido seleccionado correctamente.`, 3500);
+                }
+            } else {
+                const clienteActual = clientesMap[String(selectUsuario.value)];
+                if (clienteActual && coincidencias.some(function(c) { return String(c.id) === String(clienteActual.id); })) {
+                    mostrarDetallesCliente(clienteActual);
+                } else if (!query) {
+                    mostrarDetallesCliente(clienteActual || null);
+                } else {
+                    mostrarDetallesCliente(null);
+                }
+            }
+        }
+    }
+
+    if (buscarClienteInput) {
+        buscarClienteInput.addEventListener('input', function() {
+            filtrarClientes(false);
+        });
+        buscarClienteInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                filtrarClientes(true);
+            }
+        });
+    }
+
+    if (btnBuscarCliente) {
+        btnBuscarCliente.addEventListener('click', function(e) {
+            e.preventDefault();
+            const q = (buscarClienteInput ? buscarClienteInput.value : '').trim();
+            if (!q) {
+                if (typeof window.mostrarToast === 'function') {
+                    window.mostrarToast('info', 'Buscar Cliente', 'Ingresa un número de documento o correo para filtrar.', 3500);
+                }
+                return;
+            }
+            filtrarClientes(true);
+        });
+    }
+
+    if (btnLimpiarCliente) {
+        btnLimpiarCliente.addEventListener('click', function() {
+            if (buscarClienteInput) {
+                buscarClienteInput.value = '';
+                buscarClienteInput.focus();
+            }
+            if (selectUsuario) selectUsuario.value = '';
+            filtrarClientes(false);
+            mostrarDetallesCliente(null);
+        });
+    }
+
+    if (selectUsuario) {
+        selectUsuario.addEventListener('change', function() {
+            const cliente = clientesMap[String(this.value)];
+            mostrarDetallesCliente(cliente || null);
+        });
+    }
+
+    if (selectUsuario && selectUsuario.value) {
+        const clienteInicial = clientesMap[String(selectUsuario.value)];
+        if (clienteInicial) {
+            mostrarDetallesCliente(clienteInicial);
+        }
+    }
+
+    // 3. Calendario Flatpickr condicionado a la selección de paquete (sin uso de |safe)
+    const tarifasScriptEl = document.getElementById('tarifas-paquete-data');
+    let tarifasPorPaquete = {};
+    try {
+        tarifasPorPaquete = tarifasScriptEl ? JSON.parse(tarifasScriptEl.textContent) : {};
+    } catch (e) {
+        tarifasPorPaquete = {};
+    }
+
+    const selectPaquete = document.getElementById('id_paquete');
+    const dateInput = document.getElementById('id_fecha_inicio');
+    let fpInstance = null;
+
+    const hoy = new Date();
+    const fechaMinima = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 5);
+    const yyyy = fechaMinima.getFullYear();
+    const mm = String(fechaMinima.getMonth() + 1).padStart(2, '0');
+    const dd = String(fechaMinima.getDate()).padStart(2, '0');
+    const fechaMinimaTexto = `${yyyy}-${mm}-${dd}`;
+
+    function esFechaValidaParaPaquete(paqueteId, fechaStr) {
+        if (!paqueteId || !fechaStr || !/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
+            return false;
+        }
+        if (fechaStr < fechaMinimaTexto) {
+            return false;
+        }
+        const rangos = tarifasPorPaquete[String(paqueteId)] || [];
+        return rangos.some(function(rango) {
+            return fechaStr >= rango.from && fechaStr <= rango.to;
+        });
+    }
+
+    function configurarCalendarioPaquete(limpiarFecha) {
+        const paqueteId = selectPaquete ? selectPaquete.value : '';
+
+        if (fpInstance) {
+            fpInstance.destroy();
+            fpInstance = null;
+        }
+
+        if (!paqueteId) {
+            dateInput.value = '';
+            dateInput.disabled = true;
+            dateInput.setAttribute('disabled', 'disabled');
+            dateInput.setAttribute('readonly', 'readonly');
+            dateInput.placeholder = 'Primero selecciona un paquete...';
+            dateInput.style.cursor = 'not-allowed';
+            return;
+        }
+
+        // Habilitar el campo de calendario una vez seleccionado el paquete
+        dateInput.disabled = false;
+        dateInput.removeAttribute('disabled');
+        dateInput.setAttribute('readonly', 'readonly');
+        dateInput.style.cursor = 'pointer';
+
+        if (limpiarFecha || (dateInput.value && !esFechaValidaParaPaquete(paqueteId, dateInput.value))) {
+            dateInput.value = '';
+        }
+
+        const rangosHabilitados = tarifasPorPaquete[String(paqueteId)] || [];
+        if (rangosHabilitados.length === 0) {
+            dateInput.placeholder = 'Sin temporadas o tarifas activas para este paquete';
+        } else {
+            dateInput.placeholder = 'Selecciona la fecha de tu aventura...';
+        }
+
+        const opcionesFlatpickr = {
+            locale: 'es',
+            dateFormat: 'Y-m-d',
+            minDate: fechaMinimaTexto,
+            disableMobile: true,
+            allowInput: false,
+            clickOpens: rangosHabilitados.length > 0,
+            enable: rangosHabilitados,
+            onDayCreate: function (dObj, dStr, fp, dayElem) {
+                const dateObj = dayElem.dateObj;
+                const dYYYY = dateObj.getFullYear();
+                const dMM = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const dDD = String(dateObj.getDate()).padStart(2, '0');
+                const fechaStr = `${dYYYY}-${dMM}-${dDD}`;
+
+                const enRango = rangosHabilitados.some(function (rango) {
+                    return fechaStr >= rango.from && fechaStr <= rango.to;
+                });
+
+                if (enRango && fechaStr >= fechaMinimaTexto) {
+                    dayElem.classList.add('fecha-disponible-tour');
+                    dayElem.title = 'Fecha con tarifa disponible para reservar';
+                } else if (fechaStr >= fechaMinimaTexto) {
+                    dayElem.title = 'Sin temporada o tarifa disponible';
+                }
+            }
+        };
+
+        fpInstance = flatpickr(dateInput, opcionesFlatpickr);
+    }
+
+    if (selectPaquete && dateInput) {
+        // Bloquear escritura manual, pegado o arrastre en el input de fecha
+        ['keydown', 'paste', 'drop'].forEach(function(evt) {
+            dateInput.addEventListener(evt, function(e) {
+                e.preventDefault();
+                return false;
+            });
+        });
+
+        // Protección anti-DevTools: si se intenta quitar 'disabled' o 'readonly' desde el inspector sin paquete
+        const observer = new MutationObserver(function() {
+            const paqueteId = selectPaquete.value;
+            if (!paqueteId && !dateInput.disabled) {
+                dateInput.value = '';
+                dateInput.disabled = true;
+                dateInput.setAttribute('disabled', 'disabled');
+            }
+            if (!dateInput.hasAttribute('readonly')) {
+                dateInput.setAttribute('readonly', 'readonly');
+            }
+        });
+        observer.observe(dateInput, { attributes: true, attributeFilter: ['disabled', 'readonly'] });
+
+        selectPaquete.addEventListener('change', function () {
+            configurarCalendarioPaquete(true);
+        });
+        configurarCalendarioPaquete(false);
+    }
+
+    // 4. Validación de integridad antes de enviar el formulario
+    if (formNuevaReserva) {
+        formNuevaReserva.addEventListener('submit', function(e) {
+            const paqueteId = selectPaquete ? selectPaquete.value : '';
+            const fechaVal = dateInput ? dateInput.value : '';
+            if (paqueteId && fechaVal && !esFechaValidaParaPaquete(paqueteId, fechaVal)) {
+                e.preventDefault();
+                dateInput.value = '';
+                alert('La fecha seleccionada no es válida o no cuenta con tarifa activa para el paquete elegido.');
+                return false;
+            }
+        });
+    }
+});
+</script>
 {% endblock content %}

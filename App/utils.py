@@ -186,9 +186,11 @@ def plantilla_reserva_html(
     hora_encuentro=None,
     estado='pendiente',
     reserva_id='',
-    monto_total='0.00'
+    monto_total='0.00',
+    url_pago=None,
+    url_mis_reservas=None,
 ):
-    """Genera el HTML de un correo electrónico para notificaciones de reservas."""
+    """Genera el HTML de un correo electrónico para notificaciones de reservas con diseño mejorado, recordatorio de pago y enlace directo."""
     if isinstance(hora_encuentro, str):
         try:
             hora_encuentro = datetime.strptime(hora_encuentro, '%H:%M').time()
@@ -204,93 +206,210 @@ def plantilla_reserva_html(
     hora_formateada = hora_encuentro.strftime('%H:%M')
     logo_html = _logo_monagua_html()
 
+    # Formateo amigable de moneda para Colombia (COP)
+    try:
+        monto_float = float(monto_total)
+        monto_formateado = f"${monto_float:,.0f} COP".replace(",", ".")
+    except (ValueError, TypeError):
+        monto_formateado = f"${monto_total} COP"
+
+    # Fallbacks seguros para enlaces de pago y gestión
+    if not url_pago:
+        try:
+            from django.urls import reverse
+            if reserva_id:
+                url_pago = f"/pagos/enviar-comprobante/?reserva_id={reserva_id}&tipo=reserva"
+            else:
+                url_pago = reverse('mis_reservas_usuario')
+        except Exception:
+            url_pago = "/reservas/mis-reservas/"
+
+    if not url_mis_reservas:
+        try:
+            from django.urls import reverse
+            url_mis_reservas = reverse('mis_reservas_usuario')
+        except Exception:
+            url_mis_reservas = "/reservas/mis-reservas/"
+
+    # Configuración de estados y contenidos
     if estado == 'confirmada':
         color_tag = MONAGUA_VERDE
         bg_caja_estado = '#f4f8f5'
         texto_estado = 'Reserva Confirmada'
-        bloque_mensaje_estado = '¡Felicidades! Tu pago ha sido verificado con éxito. Tu lugar está completamente asegurado para vivir esta aventura.'
+        titulo_principal = f'¡Reserva Confirmada, {nombre_cliente}!'
+        subtitulo_principal = 'Tu pago ha sido verificado con éxito. Tu cupo está completamente asegurado para vivir esta gran aventura.'
+        bloque_alerta_pago = ''
+        bloque_boton_accion = f"""
+        <div style="text-align: center; margin: 28px 0 15px 0;">
+            <a href="{url_mis_reservas}" target="_blank" style="background-color: {MONAGUA_VERDE}; color: #ffffff; text-decoration: none; padding: 14px 34px; border-radius: 30px; font-weight: 700; font-size: 14.5px; display: inline-block; box-shadow: 0 4px 14px rgba(44, 110, 60, 0.25);">
+                Ver Mis Reservas →
+            </a>
+        </div>
+        """
+        bloque_nota_pie = '¡Gracias por viajar con Monagua! Te esperamos con la mejor energía para descubrir los paisajes de Mongua.'
+
     elif estado == 'cancelada':
         color_tag = '#dc3545'
         bg_caja_estado = '#fff5f5'
         texto_estado = 'Reserva Cancelada'
-        bloque_mensaje_estado = 'Te confirmamos que la reserva ha sido dada de baja en nuestro sistema según lo solicitado.'
-    else:
-        color_tag = MONAGUA_VERDE
-        bg_caja_estado = '#fafdfb'
-        texto_estado = 'Reserva Pendiente'
-        bloque_mensaje_estado = 'Nuestro equipo verificará el comprobante de pago y se pondrá en contacto contigo en breve para confirmar tu reserva. ¡Gracias por elegirnos!'
+        titulo_principal = f'Reserva Cancelada, {nombre_cliente}'
+        subtitulo_principal = 'Te confirmamos que la reserva ha sido dada de baja en nuestro sistema según lo solicitado.'
+        bloque_alerta_pago = ''
+        bloque_boton_accion = ''
+        bloque_nota_pie = 'Si consideras que esto es un error o necesitas comunicarte con nuestro equipo, por favor responde directamente a este correo.'
 
-    bloque_detalles = ""
-    if fecha:
-        bloque_detalles = f"""
-        <tr style="border-bottom: 1px solid #edf2f0;">
-            <td style="padding: 12px 0; color: #718096;">Fecha de Salida</td>
-            <td style="padding: 12px 0; text-align: right; color: #1a202c;">{fecha}</td>
-        </tr>
-        """
-        if punto_encuentro:
-            bloque_detalles += f"""
-            <tr style="border-bottom: 1px solid #edf2f0;">
-                <td style="padding: 12px 0; color: #718096;">Punto de encuentro</td>
-                <td style="padding: 12px 0; text-align: right; color: #1a202c;">{punto_encuentro}</td>
-            </tr>
-            <tr style="border-bottom: 1px solid #edf2f0;">
-                <td style="padding: 12px 0; color: #718096;">Hora de encuentro</td>
-                <td style="padding: 12px 0; text-align: right; color: #1a202c;">{hora_formateada}</td>
-            </tr>
-            """
-        bloque_detalles += f"""
-        <tr>
-            <td style="padding: 12px 0; color: #718096;">Acompañantes</td>
-            <td style="padding: 12px 0; text-align: right; color: #1a202c; font-weight: 500;">
-                {adultos} Adultos {f'• {menores} Menores' if int(menores) > 0 else ''}
-            </td>
-        </tr>
-        """
     else:
-        bloque_detalles = f"""
-        <tr>
-            <td style="padding: 12px 0; color: #718096;">Monto Total</td>
-            <td style="padding: 12px 0; text-align: right; font-weight: 600; color: #1a202c; font-size: 16px;">${monto_total}</td>
+        # Pendiente de pago
+        color_tag = '#ea580c'
+        bg_caja_estado = '#fffaf5'
+        texto_estado = 'Pendiente de Pago'
+        id_texto = f" #{reserva_id}" if reserva_id else ""
+        titulo_principal = f'¡Solicitud de Reserva Registrada, {nombre_cliente}!'
+        subtitulo_principal = f'Hemos recibido tu solicitud de reserva{id_texto}. Para asegurar tus cupos, completa el pago y adjunta tu comprobante en la plataforma.'
+        
+        bloque_alerta_pago = f"""
+        <div style="background-color: #fff7ed; border: 1px solid #fed7aa; border-left: 5px solid #ea580c; border-radius: 10px; padding: 18px 20px; margin: 24px 0; text-align: left;">
+            <div style="margin-bottom: 8px;">
+                <span style="font-size: 16px; margin-right: 6px;">⚠️</span>
+                <strong style="color: #9a3412; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Recordatorio Importante de Pago</strong>
+            </div>
+            <p style="margin: 0; font-size: 13.5px; color: #7c2d12; line-height: 1.6;">
+                Tu reserva se encuentra en estado <strong>Pendiente de Pago</strong>. Para garantizar tus cupos debes realizar el pago correspondiente y registrar tu comprobante en la plataforma.
+            </p>
+            <p style="margin: 8px 0 0 0; font-size: 13.5px; color: #9a3412; font-weight: 600; line-height: 1.6;">
+                🔔 <strong>Atención:</strong> Si no realizas el pago oportunamente, el sistema <u>cancelará y eliminará automáticamente</u> tu reserva para liberar los cupos disponibles a otros viajeros.
+            </p>
+        </div>
+        """
+
+        bloque_boton_accion = f"""
+        <div style="text-align: center; margin: 28px 0 15px 0;">
+            <a href="{url_pago}" target="_blank" style="background-color: {MONAGUA_VERDE}; color: #ffffff; text-decoration: none; padding: 15px 36px; border-radius: 30px; font-weight: 700; font-size: 15px; display: inline-block; box-shadow: 0 6px 18px rgba(44, 110, 60, 0.3); letter-spacing: 0.3px;">
+                💳 Pagar y Subir Comprobante →
+            </a>
+        </div>
+        <div style="text-align: center; font-size: 12px; color: #718096; margin-bottom: 25px; line-height: 1.6;">
+            ¿El botón no responde? Puedes ingresar directamente copiando y pegando este enlace:<br>
+            <a href="{url_pago}" style="color: {MONAGUA_VERDE}; font-weight: 600; word-break: break-all;">{url_pago}</a>
+            <br><br>
+            O gestiona todas tus solicitudes directamente en <a href="{url_mis_reservas}" style="color: {MONAGUA_VERDE}; font-weight: 600; text-decoration: underline;">Mis Reservas</a>.
+        </div>
+
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; margin-top: 20px; text-align: left;">
+            <div style="font-size: 12.5px; font-weight: 700; color: #334155; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">
+                ¿Cómo confirmar tu reserva en 3 pasos?
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #475569;">
+                <tr>
+                    <td style="padding: 4px 10px 4px 0; vertical-align: top; width: 22px; font-weight: 700; color: {MONAGUA_VERDE}; font-size: 14px;">1.</td>
+                    <td style="padding: 4px 0;">Realiza tu pago vía transferencia o consignación por el valor exacto de la reserva.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 4px 10px 4px 0; vertical-align: top; width: 22px; font-weight: 700; color: {MONAGUA_VERDE}; font-size: 14px;">2.</td>
+                    <td style="padding: 4px 0;">Haz clic en el botón <strong>Pagar y Subir Comprobante</strong> y adjunta la imagen o soporte de pago.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 4px 10px 4px 0; vertical-align: top; width: 22px; font-weight: 700; color: {MONAGUA_VERDE}; font-size: 14px;">3.</td>
+                    <td style="padding: 4px 0;">Nuestro equipo verificará la transacción y recibirás tu factura con código QR de confirmación.</td>
+                </tr>
+            </table>
+        </div>
+        """
+        bloque_nota_pie = 'Una vez recibido tu comprobante, nuestro equipo lo verificará en el menor tiempo posible para confirmar tu cupo definitivamente.'
+
+    # Construcción de la tabla de detalles
+    bloque_detalles = ""
+    if reserva_id:
+        bloque_detalles += f"""
+        <tr style="border-bottom: 1px solid #edf2f0;">
+            <td style="padding: 11px 0; color: #718096;">Número de Reserva</td>
+            <td style="padding: 11px 0; text-align: right; font-weight: 700; color: #1a202c;">#{reserva_id}</td>
         </tr>
         """
+    bloque_detalles += f"""
+    <tr style="border-bottom: 1px solid #edf2f0;">
+        <td style="padding: 11px 0; color: #718096;">Destino / Paquete</td>
+        <td style="padding: 11px 0; text-align: right; font-weight: 600; color: #1a202c;">{paquete}</td>
+    </tr>
+    """
+    if fecha:
+        bloque_detalles += f"""
+        <tr style="border-bottom: 1px solid #edf2f0;">
+            <td style="padding: 11px 0; color: #718096;">Fecha de Salida</td>
+            <td style="padding: 11px 0; text-align: right; color: #1a202c; font-weight: 500;">{fecha}</td>
+        </tr>
+        """
+    if punto_encuentro:
+        bloque_detalles += f"""
+        <tr style="border-bottom: 1px solid #edf2f0;">
+            <td style="padding: 11px 0; color: #718096;">Punto de encuentro</td>
+            <td style="padding: 11px 0; text-align: right; color: #1a202c;">{punto_encuentro}</td>
+        </tr>
+        """
+    if hora_formateada and hora_formateada != "00:00":
+        bloque_detalles += f"""
+        <tr style="border-bottom: 1px solid #edf2f0;">
+            <td style="padding: 11px 0; color: #718096;">Hora de encuentro</td>
+            <td style="padding: 11px 0; text-align: right; color: #1a202c;">{hora_formateada}</td>
+        </tr>
+        """
+    bloque_detalles += f"""
+    <tr style="border-bottom: 1px solid #edf2f0;">
+        <td style="padding: 11px 0; color: #718096;">Acompañantes</td>
+        <td style="padding: 11px 0; text-align: right; color: #1a202c; font-weight: 500;">
+            {adultos} Adulto{'s' if int(adultos) != 1 else ''}{f' • {menores} Menor' + ('es' if int(menores) != 1 else '') if int(menores) > 0 else ''}
+        </td>
+    </tr>
+    <tr style="border-top: 2px solid #edf2f0;">
+        <td style="padding: 14px 0 6px 0; color: #2d3748; font-weight: 700; font-size: 15px;">Monto Total a Pagar</td>
+        <td style="padding: 14px 0 6px 0; text-align: right; font-weight: 800; color: {MONAGUA_VERDE}; font-size: 18px;">{monto_formateado}</td>
+    </tr>
+    """
 
     return f"""
     <html>
     <body style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; background-color: #f4f7f5; margin: 0; padding: 40px 15px;">
-        <div style="max-width: 560px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(44, 110, 60, 0.08);">
+        <div style="max-width: 580px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(44, 110, 60, 0.08); border: 1px solid #e2e8f0;">
             <div style="background-color: {MONAGUA_VERDE}; text-align: center; padding: 36px 20px 28px 20px;">
                 {logo_html}
-                <div style="font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: 2px; margin-bottom: 6px;">MONAGUA</div>
-                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.8); font-weight: bold;">Actualización de Reserva</div>
+                <div style="font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: 2px; margin-bottom: 4px;">MONAGUA</div>
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.85); font-weight: bold;">Experiencias Ecoturísticas</div>
             </div>
-            <div style="padding: 40px; color: #2d3748; line-height: 1.7;">
-                <h2 style="font-size: 24px; color: {MONAGUA_VERDE}; margin-top: 0; font-weight: 600; text-align: center;">¡Notificación de tu Reserva, {nombre_cliente}!</h2>
-                <p style="font-size: 15px; color: #4a5568; text-align: center; margin-bottom: 30px;">Se ha registrado una actualización en el estado de tu experiencia.</p>
-                <div style="background-color: {bg_caja_estado}; border: 1px solid {color_tag}40; border-radius: 12px; padding: 25px; margin-bottom: 30px;">
-                    <div style="text-align: center; margin-bottom: 20px;">
+            <div style="padding: 35px 30px; color: #2d3748; line-height: 1.6;">
+                <h2 style="font-size: 22px; color: {MONAGUA_VERDE}; margin-top: 0; margin-bottom: 8px; font-weight: 700; text-align: center;">{titulo_principal}</h2>
+                <p style="font-size: 14.5px; color: #4a5568; text-align: center; margin-bottom: 25px; line-height: 1.5;">{subtitulo_principal}</p>
+
+                <!-- Resumen de la Reserva -->
+                <div style="background-color: {bg_caja_estado}; border: 1px solid {color_tag}40; border-radius: 12px; padding: 22px; margin-bottom: 20px;">
+                    <div style="text-align: center; margin-bottom: 18px;">
                         <span style="font-size: 12px; font-weight: bold; color: #ffffff; background-color: {color_tag}; padding: 4px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;">{texto_estado}</span>
                     </div>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 15px;">
-                        <tr style="border-bottom: 1px solid #edf2f0;">
-                            <td style="padding: 12px 0; color: #718096;">Destino / Paquete</td>
-                            <td style="padding: 12px 0; text-align: right; font-weight: 600; color: #1a202c;">{paquete}</td>
-                        </tr>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14.5px;">
                         {bloque_detalles}
                     </table>
                 </div>
-                <table style="width: 100%; background-color: {bg_caja_estado}; border-radius: 8px; border: 1px dashed {color_tag}30;">
+
+                <!-- Recordatorio importante de pago si aplica -->
+                {bloque_alerta_pago}
+
+                <!-- Botón de acción para pagar -->
+                {bloque_boton_accion}
+
+                <!-- Nota informativa -->
+                <table style="width: 100%; background-color: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1; margin-top: 20px;">
                     <tr>
-                        <td style="padding: 15px; font-size: 13px; color: #2d3748; text-align: center; font-weight: 500;">
-                            <strong>Nota:</strong> {bloque_mensaje_estado}
+                        <td style="padding: 14px; font-size: 12.5px; color: #475569; text-align: center; font-weight: 500; line-height: 1.5;">
+                            <strong>Nota:</strong> {bloque_nota_pie}
                         </td>
                     </tr>
                 </table>
             </div>
-            <div style="background-color: #fafdfb; text-align: center; padding: 30px 20px; border-top: 1px solid #edf2f0;">
-                <p style="margin: 0; font-size: 13px; color: #718096; font-weight: 600;">Monagua Experiencias</p>
-                <p style="margin: 5px 0 0 0; font-size: 11px; color: #a0aec0;">Estás recibiendo este correo porque realizaste una solicitud en nuestro sitio web.</p>
-                <p style="margin: 15px 0 0 0; font-size: 12px; color: {MONAGUA_VERDE}; font-weight: bold;">© 2026</p>
+
+            <!-- Footer -->
+            <div style="background-color: #fafdfb; text-align: center; padding: 25px 20px; border-top: 1px solid #edf2f0;">
+                <p style="margin: 0; font-size: 13px; color: #718096; font-weight: 600;">Monagua Experiencias Ecoturísticas</p>
+                <p style="margin: 5px 0 0 0; font-size: 11.5px; color: #a0aec0;">Mongua, Boyacá, Colombia · Naturaleza, Cultura y Aventura</p>
+                <p style="margin: 12px 0 0 0; font-size: 12px; color: {MONAGUA_VERDE}; font-weight: bold;">© 2026 Monagua</p>
             </div>
         </div>
     </body>
@@ -405,8 +524,8 @@ def generar_factura_pdf_bytes(reserva, request=None, password=None):
     comprobante = pago if (pago and getattr(pago, 'estado_transaccion', None) == 'aprobado') else None
     metodo_pago = (comprobante.banco_origen or comprobante.metodo_pago) if comprobante else "Transferencia Bancaria"
 
-    documento_tipo = getattr(reserva.usuario, 'tipo_documento', 'Documento') or "Documento"
-    documento_num = getattr(reserva.usuario, 'numero_documento', '—') or "—"
+    documento_tipo = (reserva.usuario.tipo_documento if (reserva.usuario and hasattr(reserva.usuario, 'tipo_documento')) else getattr(reserva, 'cliente_tipo_documento', 'Documento')) or "Documento"
+    documento_num = (reserva.usuario.numero_documento if (reserva.usuario and hasattr(reserva.usuario, 'numero_documento')) else getattr(reserva, 'cliente_documento', '—')) or "—"
 
     if request:
         abs_url = request.build_absolute_uri(reverse('ver_factura', args=[reserva.id]))
@@ -423,15 +542,18 @@ def generar_factura_pdf_bytes(reserva, request=None, password=None):
     else:
         fecha_emision = reserva.fecha_inicio.strftime('%d/%m/%Y') if getattr(reserva, 'fecha_inicio', None) else ""
 
-    cliente_nombre = getattr(reserva.usuario, 'nombre_completo', None) if reserva.usuario else None
-    if not cliente_nombre and reserva.usuario:
-        cliente_nombre = reserva.usuario.get_full_name() or reserva.usuario.username
+    cliente_nombre = reserva.nombre_cliente if hasattr(reserva, 'nombre_cliente') else (
+        (reserva.usuario.get_full_name() or reserva.usuario.username) if reserva.usuario else 'Cliente'
+    )
+    cliente_email = reserva.email_cliente if hasattr(reserva, 'email_cliente') else (
+        reserva.usuario.email if reserva.usuario else ''
+    )
 
     context = {
         'reserva_id': reserva.id,
         'nro_factura': f"FAC-1000{reserva.id}",
         'cliente_nombre': cliente_nombre or 'Cliente',
-        'cliente_email': reserva.usuario.email if reserva.usuario else '',
+        'cliente_email': cliente_email or '',
         'cliente_documento_tipo': documento_tipo,
         'cliente_documento': documento_num,
         'fecha_emision': fecha_emision,
@@ -468,13 +590,19 @@ def generar_factura_pdf_bytes(reserva, request=None, password=None):
 
 def enviar_correo_confirmacion_con_factura(reserva, request=None):
     """Genera la factura PDF encriptada con el número de documento y envía el correo."""
-    password = getattr(reserva.usuario, 'numero_documento', None)
+    password = getattr(reserva.usuario, 'numero_documento', None) if reserva.usuario else getattr(reserva, 'cliente_documento', None)
     if password:
         password = str(password).strip()
 
     pdf_bytes = generar_factura_pdf_bytes(reserva, request=request, password=password)
 
-    nombre_cliente = reserva.usuario.get_full_name() or reserva.usuario.username
+    nombre_cliente = reserva.nombre_cliente if hasattr(reserva, 'nombre_cliente') else (
+        (reserva.usuario.get_full_name() or reserva.usuario.username) if reserva.usuario else 'Cliente'
+    )
+    email_destinatario = reserva.email_cliente if hasattr(reserva, 'email_cliente') else (
+        reserva.usuario.email if reserva.usuario else ''
+    )
+
     asunto = f"¡Tu Pago fue Aprobado y tu Reserva #{reserva.id} está Confirmada! - Monagua"
     mensaje_texto = (
         f"Hola {nombre_cliente}, ¡excelentes noticias! Tu comprobante de pago ha sido aprobado con éxito "
@@ -495,18 +623,19 @@ def enviar_correo_confirmacion_con_factura(reserva, request=None):
 
     html_contenido = render_to_string('email/factura_email.html', context)
 
-    email = EmailMultiAlternatives(
-        subject=asunto,
-        body=mensaje_texto,
-        from_email=settings.EMAIL_HOST_USER,
-        to=[reserva.usuario.email],
-    )
-    email.attach_alternative(html_contenido, "text/html")
+    if email_destinatario:
+        email = EmailMultiAlternatives(
+            subject=asunto,
+            body=mensaje_texto,
+            from_email=settings.EMAIL_HOST_USER,
+            to=[email_destinatario],
+        )
+        email.attach_alternative(html_contenido, "text/html")
 
-    pdf_filename = f"factura_FAC-1000{reserva.id}.pdf"
-    email.attach(pdf_filename, pdf_bytes, "application/pdf")
+        pdf_filename = f"factura_FAC-1000{reserva.id}.pdf"
+        email.attach(pdf_filename, pdf_bytes, "application/pdf")
 
-    email.send(fail_silently=False)
+        email.send(fail_silently=False)
 
 
 def notificar_administradores(mensaje, tipo="Sistema", prioridad="media", reserva=None):

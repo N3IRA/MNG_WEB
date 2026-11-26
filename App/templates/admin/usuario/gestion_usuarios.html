@@ -36,7 +36,7 @@
     <div class="row g-4 mb-4">
         <!-- Total Usuarios -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="{% url 'gestion_usuarios' %}" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Ver todos los usuarios registrados">
+            <a href="{% url 'gestion_usuarios' %}" class="text-decoration-none d-block h-100" title="Ver todos los usuarios registrados">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if not filtro_actual %}border-primary border-opacity-75 shadow-sm ring-1{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-secondary small fw-bold text-uppercase">Total Usuarios</span>
@@ -54,7 +54,7 @@
 
         <!-- Administradores -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="?filtro=ADMIN" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar administradores">
+            <a href="?filtro=ADMIN" class="text-decoration-none d-block h-100" title="Filtrar administradores">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if filtro_actual == 'ADMIN' %}border-primary shadow-sm border-2{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-primary small fw-bold text-uppercase">Administradores</span>
@@ -72,7 +72,7 @@
 
         <!-- Guías Turísticos -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="?filtro=GUIA" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar guías turísticos">
+            <a href="?filtro=GUIA" class="text-decoration-none d-block h-100" title="Filtrar guías turísticos">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if filtro_actual == 'GUIA' %}border-warning shadow-sm border-2{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-warning small fw-bold text-uppercase">Guías Turísticos</span>
@@ -90,7 +90,7 @@
 
         <!-- Clientes / Turistas -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="?filtro=CLIENTE" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar clientes / turistas">
+            <a href="?filtro=CLIENTE" class="text-decoration-none d-block h-100" title="Filtrar clientes / turistas">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if filtro_actual == 'CLIENTE' %}border-info shadow-sm border-2{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-info small fw-bold text-uppercase">Clientes</span>
@@ -262,7 +262,7 @@
                         <!-- Estado -->
                         <td class="text-center py-3 text-nowrap">
                             {% if u.is_active %}
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2 fw-semibold">
+                                <span class="badge bg-success text-white rounded-pill px-3 py-2 fw-semibold shadow-sm" style="background-color: #198754;">
                                     <i class="bi bi-check-circle-fill me-1"></i>Activo
                                 </span>
                             {% else %}
@@ -319,7 +319,7 @@
                             <span class="badge bg-info bg-opacity-10 text-dark border border-info border-opacity-25 rounded-pill px-2 py-1 small fw-bold">CLIENTE</span>
                         {% endif %}
                         {% if u.is_active %}
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-0" style="font-size: 0.7rem;">Activo</span>
+                            <span class="badge bg-success text-white rounded-pill px-2 py-0 shadow-sm" style="font-size: 0.7rem; background-color: #198754;">Activo</span>
                         {% else %}
                             <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2 py-0" style="font-size: 0.7rem;">Inactivo</span>
                         {% endif %}
@@ -356,21 +356,21 @@
                     </div>
 
                     <div class="border-top pt-3 d-flex flex-wrap gap-2">
-                        <button type="button" class="btn btn-sm btn-outline-secondary flex-fill rounded-pill fw-semibold shadow-sm py-1.5" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetallesUsuario{{ u.id }}">
+                        <button type="button" class="btn btn-sm btn-outline-secondary flex-fill rounded-pill fw-semibold shadow-sm py-1.5" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetallesUsuario{{ u.id }}" title="Ver detalles del usuario">
                             <i class="bi bi-eye me-1"></i> Detalles
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary flex-fill rounded-pill fw-semibold shadow-sm py-1.5" data-bs-toggle="offcanvas" data-bs-target="#offcanvasEditarUsuario{{ u.id }}">
+                        <button type="button" class="btn btn-sm btn-outline-primary flex-fill rounded-pill fw-semibold shadow-sm py-1.5" data-bs-toggle="offcanvas" data-bs-target="#offcanvasEditarUsuario{{ u.id }}" title="Editar usuario">
                             <i class="bi bi-pencil-square me-1"></i> Editar
                         </button>
                         {% if u.id != request.user.id %}
                         <form action="{% url 'usuarios_toggle_estado' u.id %}" method="POST" class="m-0 flex-fill">
                             {% csrf_token %}
                             {% if u.is_active %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger w-100 rounded-pill fw-semibold shadow-sm py-1.5" data-confirm-title="¿Inactivar Usuario?" data-confirm-message="¿Confirmas inactivar la cuenta de {{ u.username }}? No podrá acceder al sistema." data-confirm-btn="Sí, inactivar" data-confirm-btn-class="btn-danger">
+                                <button type="submit" class="btn btn-sm btn-outline-danger w-100 rounded-pill fw-semibold shadow-sm py-1.5" title="Inactivar cuenta" data-confirm-title="¿Inactivar Usuario?" data-confirm-message="¿Confirmas inactivar la cuenta de {{ u.username }}? No podrá acceder al sistema." data-confirm-btn="Sí, inactivar" data-confirm-btn-class="btn-danger">
                                     <i class="bi bi-slash-circle me-1"></i> Inactivar
                                 </button>
                             {% else %}
-                                <button type="submit" class="btn btn-sm btn-outline-success w-100 rounded-pill fw-semibold shadow-sm py-1.5" data-confirm-title="¿Activar Usuario?" data-confirm-message="¿Confirmas activar la cuenta de {{ u.username }}? Podrá volver a acceder al sistema." data-confirm-btn="Sí, activar" data-confirm-btn-class="btn-success">
+                                <button type="submit" class="btn btn-sm btn-outline-success w-100 rounded-pill fw-semibold shadow-sm py-1.5" title="Activar cuenta" data-confirm-title="¿Activar Usuario?" data-confirm-message="¿Confirmas activar la cuenta de {{ u.username }}? Podrá volver a acceder al sistema." data-confirm-btn="Sí, activar" data-confirm-btn-class="btn-success">
                                     <i class="bi bi-check-circle me-1"></i> Activar
                                 </button>
                             {% endif %}
@@ -467,7 +467,7 @@
                 </div>
                 <div class="col-12">
                     <label class="form-label text-muted small fw-bold mb-1">Foto de Perfil</label>
-                    <input class="form-control form-control-sm" type="file" name="imagen_perfil" accept="image/*">
+                    <input class="form-control form-control-sm" type="file" name="imagen_perfil" accept="image/png, image/jpeg, image/webp">
                 </div>
             </div>
 
@@ -766,7 +766,7 @@
                     </div>
                     <div class="col-12">
                         <label class="form-label text-muted small fw-bold mb-1">Actualizar Foto de Perfil</label>
-                        <input class="form-control form-control-sm" type="file" name="imagen_perfil" accept="image/*">
+                        <input class="form-control form-control-sm" type="file" name="imagen_perfil" accept="image/png, image/jpeg, image/webp">
                     </div>
                 </div>
 

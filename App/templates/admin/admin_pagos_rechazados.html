@@ -304,74 +304,66 @@
                             <small class="text-muted" style="font-size: 0.75rem;">{{ c.fecha_envio|date:"h:i A" }}</small>
                         </td>
 
-                        <!-- Acciones: Proceder con Menú Dropdown -->
-                        <td class="pe-4 py-3 text-center text-nowrap">
-                            <div class="dropdown">
-                                <button class="btn btn-danger btn-sm rounded-pill px-3 py-1.5 fw-semibold shadow-sm dropdown-toggle d-inline-flex align-items-center gap-1"
-                                        type="button" 
-                                        data-bs-toggle="dropdown" 
-                                        aria-expanded="false">
-                                    <i class="bi bi-gear-fill"></i>
-                                    <span>Proceder</span>
+                        <!-- Acciones -->
+                        <td class="text-center text-nowrap">
+                            <div class="d-inline-flex align-items-center gap-1">
+                                <!-- 1. Reabrir a Pendiente -->
+                                <form action="{% url 'admin_reabrir_pago' c.pk %}" method="post" class="d-inline m-0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-warning shadow-sm" title="Reabrir a Pendiente">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                    </button>
+                                </form>
+
+                                <!-- 2. Revisión / Editar Nota -->
+                                <a href="{% url 'admin_revisar_comprobante' c.pk %}" class="btn btn-sm btn-outline-secondary shadow-sm" title="Revisión Detallada">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+
+                                <!-- 3. Eliminar Comprobante -->
+                                <button type="button" class="btn btn-sm btn-outline-danger shadow-sm" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ c.id }}" title="Eliminar Comprobante">
+                                    <i class="bi bi-trash"></i>
                                 </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 py-2 mt-1" style="min-width: 240px; z-index: 1050;">
-                                    <li><h6 class="dropdown-header text-uppercase small text-muted px-3 pb-1" style="font-size: 0.7rem;">Acciones de Resolución</h6></li>
-                                    
-                                    <!-- 1. Reconsiderar y Aprobar -->
-                                    <li>
-                                        <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-success fw-semibold" data-bs-toggle="modal" data-bs-target="#modalReconsiderar{{ c.id }}">
-                                            <i class="bi bi-check-circle-fill text-success fs-6"></i>
-                                            <span>Reconsiderar y Aprobar</span>
-                                        </button>
-                                    </li>
 
-                                    <!-- 2. Reabrir a Pendiente -->
-                                    <li>
-                                        <form action="{% url 'admin_reabrir_pago' c.pk %}" method="post" class="m-0">
-                                            {% csrf_token %}
-                                            <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-warning-emphasis fw-semibold">
-                                                <i class="bi bi-arrow-repeat text-warning fs-6"></i>
-                                                <span>Reabrir a Pendiente</span>
+                                <!-- 4. Menú Más Opciones (Reconsiderar / Cancelar) -->
+                                <div class="dropdown d-inline">
+                                    <button class="btn btn-sm btn-outline-secondary shadow-sm dropdown-toggle dropdown-toggle-split"
+                                            type="button" 
+                                            data-bs-toggle="dropdown" 
+                                            aria-expanded="false"
+                                            title="Más opciones de resolución">
+                                        <span class="visually-hidden">Más opciones</span>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 py-2 mt-1" style="min-width: 240px; z-index: 1050;">
+                                        <li><h6 class="dropdown-header text-uppercase small text-muted px-3 pb-1" style="font-size: 0.7rem;">Resolución Especial</h6></li>
+                                        
+                                        <!-- Reconsiderar y Aprobar -->
+                                        <li>
+                                            <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-success fw-semibold" data-bs-toggle="modal" data-bs-target="#modalReconsiderar{{ c.id }}">
+                                                <i class="bi bi-check-circle-fill text-success fs-6"></i>
+                                                <span>Reconsiderar y Aprobar</span>
                                             </button>
-                                        </form>
-                                    </li>
+                                        </li>
 
-                                    <!-- 3. Modificar Motivo de Rechazo -->
-                                    <li>
-                                        <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-secondary" data-bs-toggle="modal" data-bs-target="#modalNota{{ c.id }}">
-                                            <i class="bi bi-pencil-square text-secondary fs-6"></i>
-                                            <span>Modificar Nota de Rechazo</span>
-                                        </button>
-                                    </li>
+                                        <!-- Modificar Motivo de Rechazo -->
+                                        <li>
+                                            <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-secondary" data-bs-toggle="modal" data-bs-target="#modalNota{{ c.id }}">
+                                                <i class="bi bi-pencil-square text-secondary fs-6"></i>
+                                                <span>Modificar Nota de Rechazo</span>
+                                            </button>
+                                        </li>
 
-                                    {% if c.reserva and c.reserva.estado_reserva != 'cancelada' %}
-                                    <!-- 4. Cancelar Reserva Vinculada -->
-                                    <li>
-                                        <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-danger" data-bs-toggle="modal" data-bs-target="#modalCancelarReserva{{ c.id }}">
-                                            <i class="bi bi-slash-circle-fill text-danger fs-6"></i>
-                                            <span>Cancelar Reserva Vinculada</span>
-                                        </button>
-                                    </li>
-                                    {% endif %}
-
-                                    <li><hr class="dropdown-divider my-1"></li>
-
-                                    <!-- 5. Revisión Detallada -->
-                                    <li>
-                                        <a href="{% url 'admin_revisar_comprobante' c.pk %}" class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-dark">
-                                            <i class="bi bi-eye text-primary fs-6"></i>
-                                            <span>Revisión Detallada</span>
-                                        </a>
-                                    </li>
-
-                                    <!-- 6. Eliminar Comprobante -->
-                                    <li>
-                                        <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ c.id }}">
-                                            <i class="bi bi-trash-fill text-danger fs-6"></i>
-                                            <span>Eliminar Comprobante</span>
-                                        </button>
-                                    </li>
-                                </ul>
+                                        {% if c.reserva and c.reserva.estado_reserva != 'cancelada' %}
+                                        <!-- Cancelar Reserva Vinculada -->
+                                        <li>
+                                            <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-danger" data-bs-toggle="modal" data-bs-target="#modalCancelarReserva{{ c.id }}">
+                                                <i class="bi bi-slash-circle-fill text-danger fs-6"></i>
+                                                <span>Cancelar Reserva Vinculada</span>
+                                            </button>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
                             </div>
                         </td>
                     </tr>

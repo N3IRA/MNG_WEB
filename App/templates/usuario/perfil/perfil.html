@@ -1,5 +1,7 @@
-{% extends "usuario/base-turista-dashboard.html" %} {% load static %} {% block
-title %}Perfil de {{ user.first_name|default:user.username }} | Monagua{%endblock %} {% block content %}
+{% extends "usuario/base-turista-dashboard.html" %}
+{% load static %}
+{% block title %}Perfil de {{ user.first_name|default:user.username }} | Monagua{% endblock %}
+{% block content %}
 <div class="container-fluid px-0 px-md-3 py-2">
 
   <div
@@ -65,7 +67,7 @@ title %}Perfil de {{ user.first_name|default:user.username }} | Monagua{%endbloc
               name="imagen_perfil"
               id="id_imagen_perfil"
               class="d-none"
-              accept="image/*"
+              accept="image/png, image/jpeg, image/webp"
               form="form_perfil_principal"
               onchange="previewAvatar(this)"
             />
@@ -265,10 +267,7 @@ title %}Perfil de {{ user.first_name|default:user.username }} | Monagua{%endbloc
             <i class="bi bi-patch-check-fill text-primary fs-5"></i>
             <div>
               Licencia:
-              <strong class="text-dark"
-                >{{ user.numero_tarjeta_profesional|default:"En trámite"
-                }}</strong
-              >
+              <strong class="text-dark">{{ user.numero_tarjeta_profesional|default:"En trámite" }}</strong>
             </div>
           </div>
           {% endif %}

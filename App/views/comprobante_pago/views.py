@@ -136,20 +136,17 @@ def admin_revisar_comprobante(request, pk):
 
                     # Registrar notificación en el sistema
                     cliente = comprobante.reserva.usuario if comprobante.reserva else None
-                    if estado_transaccion == 'rechazado':
-                        mensaje_notificacion = f"El comprobante #{comprobante.pk} fue rechazado. Motivo: {nota_admin}"
-                    elif estado_transaccion == 'aprobado':
-                        es_penalidad = comprobante.reserva.estado_cancelacion == 'aprobada' and comprobante.reserva.penalidad and comprobante.reserva.penalidad > 0
-                        if es_penalidad:
-                            mensaje_notificacion = f"El comprobante #{comprobante.pk} fue aprobado y la penalidad fue pagada correctamente."
-                        else:
-                            mensaje_notificacion = f"El comprobante #{comprobante.pk} fue aprobado y la reserva fue confirmada exitosamente."
+                    if estado_transaccion == 'aprobado':
+                        msg_notif = f"Tu comprobante de pago #{comprobante.pk} fue aprobado y tu reserva #{comprobante.reserva.id if comprobante.reserva else ''} ha sido confirmada exitosamente."
+                    elif estado_transaccion == 'rechazado':
+                        msg_notif = f"Tu comprobante #{comprobante.pk} fue rechazado. Motivo: {nota_admin}"
                     else:
-                        mensaje_notificacion = f"El comprobante #{comprobante.pk} fue actualizado a '{estado_transaccion}'."
+                        msg_notif = f"El comprobante #{comprobante.pk} fue actualizado a '{estado_transaccion}'."
+
                     crear_notificacion_sistema(
                         usuario=cliente,
                         reserva=comprobante.reserva,
-                        mensaje=mensaje_notificacion,
+                        mensaje=msg_notif,
                         tipo="Comprobante de Pago",
                         prioridad="alta"
                     )

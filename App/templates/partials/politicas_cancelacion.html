@@ -1,20 +1,28 @@
 {% if modo == 'reserva' %}
-<div class="card border-0 shadow-sm rounded-4 mb-3 overflow-hidden">
-    <div class="card-body px-3 py-3">
-        <div class="d-flex align-items-center gap-2 mb-2">
-            <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center flex-shrink-0" style="width:38px;height:38px">
-                <i class="bi bi-calendar-check-fill text-success"></i>
+<div class="accordion mb-3 shadow-sm rounded-4 overflow-hidden" id="accordionInfoReserva">
+    <div class="accordion-item border-0">
+        <h2 class="accordion-header" id="infoReserva-headingOne">
+            <button class="accordion-button collapsed bg-white px-3 py-3" type="button" data-bs-toggle="collapse" data-bs-target="#infoReserva-collapseOne" aria-expanded="false" aria-controls="infoReserva-collapseOne">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center flex-shrink-0" style="width:38px;height:38px">
+                        <i class="bi bi-calendar-check-fill text-success"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0">Información importante antes de gestionar tu reserva</h6>
+                        <span class="text-muted small fw-normal">Revisa estas condiciones antes de realizar cambios o cancelar.</span>
+                    </div>
+                </div>
+            </button>
+        </h2>
+        <div id="infoReserva-collapseOne" class="accordion-collapse collapse" aria-labelledby="infoReserva-headingOne">
+            <div class="accordion-body bg-white px-3 pt-0 pb-3">
+                <div class="row g-2">
+                    <div class="col-sm-6 col-lg-3"><div class="border rounded-3 px-3 py-2 h-100"><strong class="d-block text-dark small"><i class="bi bi-calendar-x me-1 text-secondary"></i>Fecha del viaje</strong><span class="text-secondary small">No puede modificarse. Para cambiarla, cancela y crea una nueva reserva.</span></div></div>
+                    <div class="col-sm-6 col-lg-3"><div class="border rounded-3 px-3 py-2 h-100"><strong class="d-block text-dark small"><i class="bi bi-people me-1 text-secondary"></i>Cantidad de personas</strong><span class="text-secondary small">Máximo 10 adultos y 10 menores en una misma reserva.</span></div></div>
+                    <div class="col-sm-6 col-lg-3"><div class="border rounded-3 px-3 py-2 h-100"><strong class="d-block text-dark small"><i class="bi bi-clock-history me-1 text-secondary"></i>Modificar / reducir personas</strong><span class="text-secondary small">Antes de pagar: hasta 48 h antes. Si ya pagaste, puedes reducir personas con reembolso parcial o saldo a favor según anticipación.</span></div></div>
+                    <div class="col-sm-6 col-lg-3"><div class="border rounded-3 px-3 py-2 h-100 border-danger border-opacity-25 bg-danger bg-opacity-10"><strong class="d-block text-danger small"><i class="bi bi-x-circle me-1"></i>Cancelar el viaje</strong><span class="text-secondary small">Solo es posible hasta 48 horas exactas antes del viaje.</span></div></div>
+                </div>
             </div>
-            <div>
-                <h6 class="fw-bold text-dark mb-0">Información importante antes de gestionar tu reserva</h6>
-                <span class="text-muted small">Revisa estas condiciones antes de realizar cambios o cancelar.</span>
-            </div>
-        </div>
-        <div class="row g-2">
-            <div class="col-sm-6 col-lg-3"><div class="border rounded-3 px-3 py-2 h-100"><strong class="d-block text-dark small"><i class="bi bi-calendar-x me-1 text-secondary"></i>Fecha del viaje</strong><span class="text-secondary small">No puede modificarse. Para cambiarla, cancela y crea una nueva reserva.</span></div></div>
-            <div class="col-sm-6 col-lg-3"><div class="border rounded-3 px-3 py-2 h-100"><strong class="d-block text-dark small"><i class="bi bi-people me-1 text-secondary"></i>Cantidad de personas</strong><span class="text-secondary small">Máximo 10 adultos y 10 menores en una misma reserva.</span></div></div>
-            <div class="col-sm-6 col-lg-3"><div class="border rounded-3 px-3 py-2 h-100"><strong class="d-block text-dark small"><i class="bi bi-clock-history me-1 text-secondary"></i>Modificar personas</strong><span class="text-secondary small">Solo antes de pagar y hasta 48 horas antes de iniciar el viaje.</span></div></div>
-            <div class="col-sm-6 col-lg-3"><div class="border rounded-3 px-3 py-2 h-100 border-danger border-opacity-25 bg-danger bg-opacity-10"><strong class="d-block text-danger small"><i class="bi bi-x-circle me-1"></i>Cancelar el viaje</strong><span class="text-secondary small">Solo es posible hasta 48 horas exactas antes del viaje.</span></div></div>
         </div>
     </div>
 </div>

@@ -27,6 +27,8 @@
   tabindex="-1"
   id="offcanvasAccesibilidad"
   aria-labelledby="offcanvasAccesibilidadLabel"
+  data-bs-backdrop="false"
+  data-bs-scroll="true"
   style="width: 370px; max-width: 92vw;"
 >
   <!-- Cabecera -->
@@ -202,6 +204,11 @@
 </div>
 
 <style>
+  #offcanvasAccesibilidad {
+    z-index: 1085 !important;
+    box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.25) !important;
+  }
+
   #btnAccesibilidadMonagua {
     bottom: 24px;
     left: 24px;
@@ -210,7 +217,7 @@
     z-index: 1045;
     background: linear-gradient(135deg, #005215 0%, #157347 100%);
     border: 1px solid rgba(76, 175, 112, 0.45);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.25s ease, visibility 0.25s ease;
   }
 
   #btnAccesibilidadMonagua:hover {
@@ -370,6 +377,26 @@
         acc.resetAll();
         setTimeout(sincronizarUI, 100);
       }
+    });
+
+    // Cerrar offcanvas al hacer clic fuera del panel o botón
+    document.addEventListener("click", function (event) {
+      if (!panel.classList.contains("show")) return;
+      var btn = document.getElementById("btnAccesibilidadMonagua");
+      if (panel.contains(event.target) || (btn && btn.contains(event.target))) {
+        return;
+      }
+      var bsOffcanvas = bootstrap.Offcanvas.getInstance(panel);
+      if (bsOffcanvas) {
+        bsOffcanvas.hide();
+      }
+    });
+
+    // Evitar que backdrops residuales oscurezcan o bloqueen la pantalla
+    panel.addEventListener("show.bs.offcanvas", function () {
+      document.querySelectorAll(".offcanvas-backdrop").forEach(function (bd) {
+        bd.remove();
+      });
     });
 
     // Sincronizar estado inicial (por si había preferencias guardadas en localStorage)

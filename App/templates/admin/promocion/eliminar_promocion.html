@@ -28,7 +28,7 @@
                         </p>
                         <ul class="mb-0 ps-3">
                             <li>Se desvinculará automáticamente de todos los paquetes turísticos asociados ({{ object.paquetepromocion_set.count }} paquete{{ object.paquetepromocion_set.count|pluralize }}).</li>
-                            <li>Los cupones o códigos asociados dejarán de ser válidos para nuevas reservas.</li>
+                            <li>La promoción y su código dejarán de estar disponibles para nuevas reservas.</li>
                             <li>Esta acción quedará registrada en la bitácora del sistema y no se puede deshacer.</li>
                         </ul>
                     </div>
@@ -36,10 +36,10 @@
                     <form method="POST">
                         {% csrf_token %}
                         <div class="d-grid gap-2 d-md-block">
-                            <button type="submit" class="btn btn-danger px-4 rounded-pill fw-bold shadow-sm">
+                            <button type="submit" class="btn btn-danger px-4 rounded-pill fw-bold shadow-sm" title="Confirmar eliminación permanente de la promoción">
                                 <i class="bi bi-trash me-1"></i> Sí, eliminar permanentemente
                             </button>
-                            <a href="{% url 'gestion_promociones' %}" class="btn btn-secondary px-4 rounded-pill fw-semibold">
+                            <a href="{% url 'gestion_promociones' %}" class="btn btn-secondary px-4 rounded-pill fw-semibold" title="Cancelar y volver a Gestión de Promociones">
                                 Cancelar
                             </a>            
                         </div>

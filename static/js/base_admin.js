@@ -43,30 +43,46 @@
 })();
 
 (function () {
-  function initTooltips() {
+  function initPopovers() {
     if (typeof bootstrap === "undefined") return;
-    var tooltipTriggerList = [].slice.call(
-      document.querySelectorAll(
-        '[data-bs-toggle="tooltip"], [title]:not([title=""])',
-      ),
+    var popoverTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="popover"]')
     );
-    tooltipTriggerList.forEach(function (el) {
-      var toggle = el.getAttribute("data-bs-toggle");
-      if (toggle && toggle !== "tooltip") return;
+    popoverTriggerList.forEach(function (el) {
       try {
-        if (!bootstrap.Tooltip.getInstance(el)) {
-          new bootstrap.Tooltip(el, {
+        if (!bootstrap.Popover.getInstance(el)) {
+          new bootstrap.Popover(el, {
             boundary: document.body,
-            trigger: "hover",
+            trigger: el.getAttribute('data-bs-trigger') || 'focus',
+            html: true
           });
         }
       } catch (e) {}
     });
   }
 
+  // Delegación para soportar DataTables dinámicos (búsqueda, paginación, ordenamiento)
+  document.addEventListener('click', function(e) {
+    if (typeof bootstrap === "undefined") return;
+    var btn = e.target.closest('[data-bs-toggle="popover"]');
+    if (btn) {
+      var instance = bootstrap.Popover.getInstance(btn);
+      if (!instance) {
+        instance = new bootstrap.Popover(btn, {
+          boundary: document.body,
+          trigger: btn.getAttribute('data-bs-trigger') || 'focus',
+          html: true
+        });
+        instance.show();
+      }
+    }
+  });
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initTooltips);
+    document.addEventListener("DOMContentLoaded", function() {
+      initPopovers();
+    });
   } else {
-    initTooltips();
+    initPopovers();
   }
 })();

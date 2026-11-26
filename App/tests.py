@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.exceptions import ValidationError
-from App.models import Usuario, Paquete, Reserva, Categoria, Pago, Temporada, Tarifa, Notificacion, Bitacora
+from App.models import Usuario, Paquete, Reserva, Categoria, Pago, Temporada, Tarifa, Notificacion, Bitacora, NotaCredito, Reembolso
 from App.forms.usuario.forms import PerfilTuristaForm
 from App.forms.pago.forms import ComprobantePagoForm
 from autenticacion.forms import IniciarSesionForm
@@ -896,6 +896,95 @@ class ConfirmacionReservaTests(TestCase):
         self.assertEqual(response.status_code, 302)
         reserva.refresh_from_db()
         self.assertEqual(reserva.estado_reserva, 'confirmada')
+
+    def test_admin_modificar_personas_exitoso_y_notificacion(self):
+        temporada = Temporada.objects.create(
+            nombre='Temporada Test',
+            descripcion='Temporada de prueba',
+            fecha_inicio=date.today() - timedelta(days=5),
+            fecha_fin=date.today() + timedelta(days=60),
+            estado=True
+        )
+        tarifa = Tarifa.objects.create(
+            paquete=self.paquete,
+            temporada=temporada,
+            precio_adulto=Decimal('100000.00'),
+            precio_menor=Decimal('50000.00')
+        )
+        reserva = Reserva.objects.create(
+            usuario=self.turista,
+            paquete=self.paquete,
+            monto_total=Decimal('200000.00'),
+            numero_adultos=2,
+            numero_menores=0,
+            estado_reserva='pendiente',
+            fecha_inicio=date.today() + timedelta(days=10),
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('editar_reserva', args=[reserva.id]),
+            {
+                'estado_reserva': 'pendiente',
+                'numero_adultos': 3,
+                'numero_menores': 1,
+                'motivo_modificacion': 'Se añade un adulto y un menor a la reserva.'
+            }
+        )
+        self.assertEqual(response.status_code, 302)
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.numero_adultos, 3)
+        self.assertEqual(reserva.numero_menores, 1)
+        self.assertEqual(reserva.monto_total, Decimal('350000.00'))
+
+        # Validar historial ModificacionReserva
+        mod = reserva.modificaciones_personas.first()
+        self.assertIsNotNone(mod)
+        self.assertTrue(mod.realizado_por_admin)
+        self.assertEqual(mod.adultos_nuevos, 3)
+        self.assertEqual(mod.menores_nuevos, 1)
+
+        # Validar notificación al turista
+        notif = Notificacion.objects.filter(usuario=self.turista, reserva=reserva).latest('id')
+        self.assertIn('actualizó los pasajeros', notif.mensaje)
+        self.assertIn('3 adulto(s) y 1 menor(es)', notif.mensaje)
+
+    def test_admin_modificar_personas_bloqueado_si_existe_pago(self):
+        reserva = Reserva.objects.create(
+            usuario=self.turista,
+            paquete=self.paquete,
+            monto_total=Decimal('200000.00'),
+            numero_adultos=2,
+            numero_menores=0,
+            estado_reserva='pendiente',
+            fecha_inicio=date.today() + timedelta(days=10),
+        )
+        Pago.objects.create(
+            reserva=reserva,
+            referencia='PAGO-BLOQ-01',
+            banco_origen='Bancolombia',
+            metodo_pago='Transferencia Bancaria',
+            monto=Decimal('200000.00'),
+            imagen_comprobante=SimpleUploadedFile('pago.gif', b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;', content_type='image/gif'),
+            descripcion='Pago registrado',
+            estado_transaccion='pendiente'
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('editar_reserva', args=[reserva.id]),
+            {
+                'estado_reserva': 'pendiente',
+                'numero_adultos': 3,
+                'numero_menores': 0,
+                'motivo_modificacion': 'Intento de cambio con pago existente'
+            }
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'No se pueden cambiar personas porque ya existe un comprobante o pago registrado.')
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.numero_adultos, 2)
+
 
 
 class EmailReservaYCancelacionTests(TestCase):
@@ -1787,5 +1876,612 @@ class FlujoReservaPagoFacturaRigurosoTests(TestCase):
         self.client.force_login(self.otro_turista)
         res = self.client.get(reverse('descargar_factura', args=[reserva_conf.id]))
         self.assertRedirects(res, reverse('mis_reservas_usuario'))
+
+
+class CancelacionParcialReservaPagadaTests(TestCase):
+    """
+    Pruebas para reducción de personas (cancelación parcial) en reservas ya pagadas:
+    - Política escalonada de anticipación (+48h 100%, 24h-48h 50%, <24h 0%)
+    - Modalidad crédito a favor vs reembolso parcial al método original
+    - Liberación automática de cupos en el paquete
+    - Pago original intacto y emisión de NotaCredito vinculada
+    """
+
+    def setUp(self):
+        self.client = Client()
+        self.turista = Usuario.objects.create_user(
+            username='turista_parcial',
+            email='turista_parcial@monagua.com',
+            password='Password123#',
+            first_name='Carlos',
+            last_name='Gomez',
+            numero_documento='2000000001',
+            tipo_documento='CC',
+            rol=Usuario.Roles.CLIENTE,
+        )
+        self.admin = Usuario.objects.create_user(
+            username='admin_parcial',
+            email='admin_parcial@monagua.com',
+            password='Password123#',
+            first_name='Admin',
+            last_name='Parcial',
+            numero_documento='2000000002',
+            tipo_documento='CC',
+            rol=Usuario.Roles.ADMIN,
+            is_staff=True,
+        )
+        self.categoria = Categoria.objects.create(nombre='Naturaleza')
+        self.paquete = Paquete.objects.create(
+            nombre='Expedición Páramo',
+            descripcion='Tour grupal de prueba',
+            categoria=self.categoria,
+            punto_encuentro='Parque principal',
+            hora_encuentro='07:00:00',
+            dias_duracion=1,
+            noches_duracion=0,
+            imagen=SimpleUploadedFile('tour.jpg', b'contenido_imagen', content_type='image/jpeg'),
+        )
+        self.temporada = Temporada.objects.create(
+            nombre='Temporada Parcial',
+            descripcion='Temporada de prueba',
+            fecha_inicio=date.today() - timedelta(days=2),
+            fecha_fin=date.today() + timedelta(days=90),
+            estado=True,
+        )
+        self.tarifa = Tarifa.objects.create(
+            paquete=self.paquete,
+            temporada=self.temporada,
+            precio_adulto=Decimal('100000.00'),
+            precio_menor=Decimal('50000.00'),
+        )
+
+    def _crear_reserva_pagada_6_personas(self, dias_adelante=10, referencia='PAG-600'):
+        reserva = Reserva.objects.create(
+            usuario=self.turista,
+            paquete=self.paquete,
+            monto_total=Decimal('600000.00'),
+            numero_adultos=6,
+            numero_menores=0,
+            estado_reserva='pendiente',
+            fecha_inicio=date.today() + timedelta(days=dias_adelante),
+        )
+        pago = Pago.objects.create(
+            reserva=reserva,
+            referencia=referencia,
+            banco_origen='Bancolombia',
+            metodo_pago='Transferencia Bancaria',
+            monto=Decimal('600000.00'),
+            imagen_comprobante=SimpleUploadedFile(
+                'pago.gif',
+                b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;',
+                content_type='image/gif',
+            ),
+            descripcion='Pago completo 6 personas',
+            estado_transaccion='aprobado',
+        )
+        return reserva, pago
+
+    def test_reducir_6_a_4_plazo_gratuito_con_credito_a_favor(self):
+        reserva, pago = self._crear_reserva_pagada_6_personas(dias_adelante=10, referencia='PAG-CRED-01')
+        self.assertEqual(self.paquete.cupos_ocupados_fecha(reserva.fecha_inicio), 6)
+
+        self.client.force_login(self.turista)
+        res = self.client.post(
+            reverse('reducir_personas_reserva_pagada', args=[reserva.id]),
+            {
+                'adultos': 4,
+                'menores': 0,
+                'modalidad': 'credito',
+                'motivo': 'Dos acompañantes no pueden viajar',
+            },
+        )
+        self.assertRedirects(res, reverse('mis_reservas_usuario'))
+
+        reserva.refresh_from_db()
+        pago.refresh_from_db()
+        self.turista.refresh_from_db()
+
+        # Reserva actualizada y 2 cupos liberados
+        self.assertEqual(reserva.numero_adultos, 4)
+        self.assertEqual(reserva.monto_total, Decimal('400000.00'))
+        self.assertEqual(self.paquete.cupos_ocupados_fecha(reserva.fecha_inicio), 4)
+
+        # Pago original intacto
+        self.assertEqual(pago.monto, Decimal('600000.00'))
+
+        # Saldo a favor acreditado 100% (200.000)
+        self.assertEqual(self.turista.saldo_favor, Decimal('200000.00'))
+
+        # Nota de crédito vinculada al comprobante original
+        nota = NotaCredito.objects.get(reserva=reserva)
+        self.assertEqual(nota.pago_original_id, pago.id)
+        self.assertEqual(nota.cupos_liberados, 2)
+        self.assertEqual(nota.porcentaje_penalidad, Decimal('0.00'))
+        self.assertEqual(nota.monto_devuelto, Decimal('200000.00'))
+        self.assertEqual(nota.modalidad, 'credito')
+        self.assertEqual(nota.estado, 'procesada')
+
+        # Vista de nota de crédito accesible por el titular
+        res_nc = self.client.get(reverse('ver_nota_credito', args=[nota.id]))
+        self.assertEqual(res_nc.status_code, 200)
+        self.assertContains(res_nc, nota.codigo)
+        self.assertContains(res_nc, pago.referencia)
+
+    def test_reducir_6_a_4_plazo_gratuito_con_reembolso_parcial(self):
+        reserva, pago = self._crear_reserva_pagada_6_personas(dias_adelante=12, referencia='PAG-REEM-01')
+
+        self.client.force_login(self.turista)
+        res = self.client.post(
+            reverse('reducir_personas_reserva_pagada', args=[reserva.id]),
+            {
+                'adultos': 4,
+                'menores': 0,
+                'modalidad': 'reembolso',
+            },
+        )
+        self.assertRedirects(res, reverse('mis_reservas_usuario'))
+
+        self.turista.refresh_from_db()
+        pago.refresh_from_db()
+        nota = NotaCredito.objects.get(reserva=reserva)
+
+        self.assertEqual(pago.monto, Decimal('600000.00'))
+        self.assertEqual(self.turista.saldo_favor, Decimal('0.00'))
+        self.assertEqual(nota.modalidad, 'reembolso')
+        self.assertEqual(nota.estado, 'pendiente_reembolso')
+        self.assertEqual(nota.monto_devuelto, Decimal('200000.00'))
+
+    def test_reducir_fuera_plazo_gratuito_aplica_penalidad_50(self):
+        # 2 días adelante (fecha_inicio a las 00:00 está entre 24h y 48h desde hoy si hoy > 00:00)
+        reserva, _ = self._crear_reserva_pagada_6_personas(dias_adelante=2, referencia='PAG-PEN-50')
+
+        self.client.force_login(self.turista)
+        res = self.client.post(
+            reverse('reducir_personas_reserva_pagada', args=[reserva.id]),
+            {
+                'adultos': 4,
+                'menores': 0,
+                'modalidad': 'credito',
+            },
+        )
+        self.assertRedirects(res, reverse('mis_reservas_usuario'))
+
+        self.turista.refresh_from_db()
+        nota = NotaCredito.objects.get(reserva=reserva)
+
+        self.assertEqual(nota.porcentaje_penalidad, Decimal('50.00'))
+        self.assertEqual(nota.monto_penalidad, Decimal('100000.00'))
+        self.assertEqual(nota.monto_devuelto, Decimal('100000.00'))
+        self.assertEqual(self.turista.saldo_favor, Decimal('100000.00'))
+
+    def test_reducir_bloquea_aumentar_personas_en_reserva_pagada(self):
+        reserva, _ = self._crear_reserva_pagada_6_personas(dias_adelante=15, referencia='PAG-BLK-01')
+
+        self.client.force_login(self.turista)
+        res = self.client.post(
+            reverse('reducir_personas_reserva_pagada', args=[reserva.id]),
+            {
+                'adultos': 8,
+                'menores': 0,
+                'modalidad': 'credito',
+            },
+        )
+        self.assertRedirects(res, reverse('mis_reservas_usuario'))
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.numero_adultos, 6)
+        self.assertEqual(NotaCredito.objects.filter(reserva=reserva).count(), 0)
+
+
+class GestionReembolsosTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.admin = Usuario.objects.create_user(
+            username='admin_reembolsos',
+            email='admin@monagua.com',
+            password='Password123#',
+            first_name='Admin',
+            last_name='Monagua',
+            numero_documento='9998887771',
+            rol=Usuario.Roles.ADMIN,
+            is_staff=True,
+            is_superuser=True
+        )
+        self.turista = Usuario.objects.create_user(
+            username='turista_reembolso',
+            email='turista_reembolso@monagua.com',
+            password='Password123#',
+            first_name='Carlos',
+            last_name='Perez',
+            numero_documento='9998887772',
+            rol=Usuario.Roles.CLIENTE,
+            is_staff=False,
+            is_superuser=False
+        )
+        self.categoria = Categoria.objects.create(nombre='Aventura')
+        self.paquete = Paquete.objects.create(
+            nombre='Cascadas del Silencio',
+            descripcion='Aventura acuática',
+            categoria=self.categoria,
+            punto_encuentro='Muelle Monagua',
+            hora_encuentro='07:30:00',
+            dias_duracion=1,
+            noches_duracion=1,
+            imagen=SimpleUploadedFile('cascada.jpg', b'img_bytes', content_type='image/jpeg')
+        )
+
+    def _crear_reserva_pagada(self, monto=Decimal('500000.00')):
+        reserva = Reserva.objects.create(
+            usuario=self.turista,
+            paquete=self.paquete,
+            monto_total=monto,
+            numero_adultos=2,
+            numero_menores=0,
+            estado_reserva='pendiente',
+            fecha_inicio=date.today() + timedelta(days=20),
+            estado_cancelacion='pendiente',
+            motivo_cancelacion='Problemas familiares urgentes'
+        )
+        pago = Pago.objects.create(
+            reserva=reserva,
+            referencia='PAG-REF-1001',
+            banco_origen='Bancolombia',
+            metodo_pago='Transferencia',
+            monto=monto,
+            estado_transaccion='aprobado',
+            imagen_comprobante=SimpleUploadedFile('pago.jpg', b'comprobante_original', content_type='image/jpeg')
+        )
+        reserva.estado_reserva = 'confirmada'
+        reserva.save(update_fields=['estado_reserva'])
+        return reserva, pago
+
+    def test_aprobar_cancelacion_crea_reembolso_pendiente(self):
+        reserva, _ = self._crear_reserva_pagada(Decimal('600000.00'))
+        self.client.force_login(self.admin)
+
+        # Cálculo 100% automático por política (>15 días = 10% penalidad / 90% reembolso)
+        res = self.client.post(
+            reverse('editar_cancelacion_admin', args=[reserva.id]),
+            {
+                'estado_cancelacion': 'aprobada',
+                'nota_admin': 'Se aprueba cancelación con cálculo automático según políticas de Monagua.'
+            }
+        )
+        self.assertRedirects(res, reverse('listar_cancelaciones'))
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.estado_reserva, 'cancelada')
+        self.assertEqual(reserva.estado_cancelacion, 'aprobada')
+        self.assertEqual(reserva.penalidad, Decimal('60000.00'))
+
+        reembolso = Reembolso.objects.get(reserva=reserva)
+        self.assertEqual(reembolso.estado, 'pendiente')
+        self.assertEqual(reembolso.monto_reembolsado, Decimal('540000.00'))
+        self.assertEqual(reembolso.penalidad_aplicada, Decimal('60000.00'))
+
+    def test_aprobar_cancelacion_automatica_tramo_parcial(self):
+        # 5 días antes del tour: tramo parcial automático (50% penalidad / 50% reembolso)
+        reserva, _ = self._crear_reserva_pagada(Decimal('400000.00'))
+        reserva.fecha_inicio = date.today() + timedelta(days=5)
+        reserva.penalidad = Decimal('0.00')
+        reserva.save(update_fields=['fecha_inicio', 'penalidad'])
+
+        self.client.force_login(self.admin)
+
+        res = self.client.post(
+            reverse('editar_cancelacion_admin', args=[reserva.id]),
+            {
+                'estado_cancelacion': 'aprobada',
+                'nota_admin': 'Aprobada con política automática de 5 a 15 días (50%).'
+            }
+        )
+        self.assertRedirects(res, reverse('listar_cancelaciones'))
+        reembolso = Reembolso.objects.get(reserva=reserva)
+        self.assertEqual(reembolso.monto_reembolsado, Decimal('200000.00'))
+        self.assertEqual(reembolso.penalidad_aplicada, Decimal('200000.00'))
+
+    def test_registrar_comprobante_de_reembolso_completa_desembolso(self):
+        reserva, _ = self._crear_reserva_pagada(Decimal('300000.00'))
+        reembolso = Reembolso.objects.create(
+            reserva=reserva,
+            usuario=self.turista,
+            monto_total_reserva=Decimal('300000.00'),
+            penalidad_aplicada=Decimal('30000.00'),
+            monto_reembolsado=Decimal('270000.00'),
+            estado='pendiente'
+        )
+        self.client.force_login(self.admin)
+
+        gif_bytes = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+        comprobante_fake = SimpleUploadedFile('reembolso_nequi.gif', gif_bytes, content_type='image/gif')
+        res = self.client.post(
+            reverse('registrar_reembolso_admin', args=[reembolso.id]),
+            {
+                'imagen_comprobante': comprobante_fake,
+                'banco_emisor': 'Bancolombia Monagua',
+                'banco_destino': 'Nequi',
+                'cuenta_o_telefono': '3101234567',
+                'referencia_transferencia': 'TR-998877',
+                'notas_admin': 'Transferido a Nequi exitosamente.'
+            }
+        )
+        self.assertRedirects(res, reverse('listar_reembolsos_admin'))
+        reembolso.refresh_from_db()
+        self.assertEqual(reembolso.estado, 'completado')
+        self.assertTrue(bool(reembolso.imagen_comprobante))
+        self.assertEqual(reembolso.referencia_transferencia, 'TR-998877')
+
+    def test_turista_visualiza_mis_reembolsos_y_boton_pqrs(self):
+        reserva, _ = self._crear_reserva_pagada(Decimal('500000.00'))
+        reembolso = Reembolso.objects.create(
+            reserva=reserva,
+            usuario=self.turista,
+            monto_total_reserva=Decimal('500000.00'),
+            penalidad_aplicada=Decimal('50000.00'),
+            monto_reembolsado=Decimal('450000.00'),
+            estado='completado',
+            imagen_comprobante=SimpleUploadedFile('reembolso_vista.jpg', b'bytes_img', content_type='image/jpeg'),
+            banco_emisor='Bancolombia',
+            referencia_transferencia='REF-VISTA-01'
+        )
+        self.client.force_login(self.turista)
+        res = self.client.get(reverse('mis_reembolsos_usuario'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'Mis Reembolsos')
+        self.assertContains(res, 'COP $450.000')
+        self.assertContains(res, 'Radicar PQRS')
+        self.assertContains(res, reverse('pqrs'))
+
+
+class ReservaPresencialSinCuentaTests(TestCase):
+    """Pruebas dedicadas para la creación de reservas presenciales sin cuenta de usuario."""
+
+    def setUp(self):
+        self.admin = Usuario.objects.create_superuser(
+            username='admin_test_presencial',
+            email='admin_presencial@example.com',
+            password='Password123!',
+            rol=Usuario.Roles.ADMIN
+        )
+        self.categoria = Categoria.objects.create(nombre='Aventura Extrema')
+        self.paquete = Paquete.objects.create(
+            nombre='Paseo a Mongua Extremo',
+            descripcion='Aventura única',
+            categoria=self.categoria,
+            punto_encuentro='Plaza Principal Mongua',
+            hora_encuentro='08:00:00',
+            estado=True
+        )
+        self.temporada = Temporada.objects.create(
+            nombre='Temporada Actual',
+            fecha_inicio=date.today() - timedelta(days=10),
+            fecha_fin=date.today() + timedelta(days=60),
+            estado=True
+        )
+        self.tarifa = Tarifa.objects.create(
+            paquete=self.paquete,
+            temporada=self.temporada,
+            precio_adulto=Decimal('100000.00'),
+            precio_menor=Decimal('50000.00'),
+            estado=True
+        )
+
+    def test_creacion_reserva_presencial_sin_cuenta(self):
+        """Verifica que un admin pueda registrar una reserva para un cliente presencial sin crear un usuario."""
+        fecha_reserva = date.today() + timedelta(days=10)
+        datos = {
+            'tipo_cliente': 'presencial',
+            'cliente_nombre': 'Laura Martínez',
+            'cliente_email': 'laura.martinez@example.com',
+            'cliente_tipo_documento': 'CC',
+            'cliente_documento': '1098765432',
+            'cliente_telefono': '3119876543',
+            'paquete': self.paquete.id,
+            'fecha_inicio': fecha_reserva.strftime('%Y-%m-%d'),
+            'numero_adultos': 2,
+            'numero_menores': 1,
+            'estado_reserva': 'pendiente',
+        }
+
+        self.client.force_login(self.admin)
+        res = self.client.post(reverse('crear_reserva'), data=datos, follow=True)
+        self.assertEqual(res.status_code, 200)
+
+        reserva = Reserva.objects.filter(cliente_email='laura.martinez@example.com').first()
+        self.assertIsNotNone(reserva)
+        self.assertIsNone(reserva.usuario)
+        self.assertTrue(reserva.es_presencial)
+        self.assertEqual(reserva.nombre_cliente, 'Laura Martínez')
+        self.assertEqual(reserva.email_cliente, 'laura.martinez@example.com')
+        self.assertEqual(reserva.documento_cliente, '1098765432')
+        self.assertEqual(reserva.telefono_cliente, '3119876543')
+        self.assertFalse(reserva.tiene_cuenta)
+
+        # Verificar que en el listado administrativo se aclare que no tiene cuenta
+        res_list = self.client.get(reverse('gestion_reservas'))
+        self.assertEqual(res_list.status_code, 200)
+        self.assertContains(res_list, 'Laura Martínez')
+        self.assertContains(res_list, 'laura.martinez@example.com')
+        self.assertContains(res_list, 'Sin cuenta (Presencial)')
+
+    def test_factura_pdf_cliente_presencial(self):
+        """Verifica que la generación de factura PDF no falle para clientes presenciales sin cuenta."""
+        from App.utils import generar_factura_pdf_bytes
+
+        reserva = Reserva.objects.create(
+            usuario=None,
+            es_presencial=True,
+            cliente_nombre='Pedro Presencial',
+            cliente_email='pedro.presencial@example.com',
+            cliente_documento='12345678',
+            cliente_tipo_documento='CC',
+            paquete=self.paquete,
+            fecha_inicio=date.today() + timedelta(days=10),
+            numero_adultos=1,
+            numero_menores=0,
+            estado_reserva='pendiente',
+            monto_total=Decimal('100000.00')
+        )
+        Pago.objects.create(
+            reserva=reserva,
+            referencia='PAGO-PRES-1',
+            monto=Decimal('100000.00'),
+            banco_origen='Caja Presencial',
+            estado_transaccion='aprobado',
+            metodo_pago='Efectivo'
+        )
+        reserva.estado_reserva = 'confirmada'
+        reserva.save()
+
+        pdf_bytes = generar_factura_pdf_bytes(reserva)
+        self.assertIsNotNone(pdf_bytes)
+        self.assertTrue(len(pdf_bytes) > 0)
+
+    def test_seguridad_contra_inyeccion_y_manipulacion_devtools(self):
+        """Verifica que el formulario y la vista rechacen inyección de código (XSS/SQLi) y manipulación vía DevTools."""
+        from App.forms.reserva.forms import ReservaForm
+        fecha_valida = (date.today() + timedelta(days=10)).strftime('%Y-%m-%d')
+
+        # 1. Intento de inyección XSS y SQLi en nombre, documento y teléfono
+        form_xss = ReservaForm(data={
+            'tipo_cliente': 'presencial',
+            'cliente_nombre': '<script>alert("xss")</script>',
+            'cliente_email': 'atacante@example.com',
+            'cliente_tipo_documento': 'CC',
+            'cliente_documento': "102030' OR 1=1 --",
+            'cliente_telefono': '<img src=x onerror=alert(1)>',
+            'paquete': self.paquete.id,
+            'fecha_inicio': fecha_valida,
+            'numero_adultos': 1,
+            'numero_menores': 0,
+            'estado_reserva': 'pendiente',
+        })
+        self.assertFalse(form_xss.is_valid())
+        self.assertIn('cliente_nombre', form_xss.errors)
+        self.assertIn('cliente_documento', form_xss.errors)
+        self.assertIn('cliente_telefono', form_xss.errors)
+
+        # 2. Manipulación vía DevTools: enviar fecha fuera de temporada activa (ej. +120 días)
+        fecha_fuera_temporada = (date.today() + timedelta(days=120)).strftime('%Y-%m-%d')
+        form_fecha_invalida = ReservaForm(data={
+            'tipo_cliente': 'presencial',
+            'cliente_nombre': 'Juan Perez',
+            'cliente_email': 'juan@example.com',
+            'cliente_tipo_documento': 'CC',
+            'paquete': self.paquete.id,
+            'fecha_inicio': fecha_fuera_temporada,
+            'numero_adultos': 1,
+            'numero_menores': 0,
+            'estado_reserva': 'pendiente',
+        })
+        self.assertFalse(form_fecha_invalida.is_valid())
+        self.assertIn('fecha_inicio', form_fecha_invalida.errors)
+
+        # 3. Manipulación vía DevTools: forzar estado 'confirmada' sin pago aprobado al crear
+        form_estado_manipulado = ReservaForm(data={
+            'tipo_cliente': 'presencial',
+            'cliente_nombre': 'Juan Perez',
+            'cliente_email': 'juan@example.com',
+            'cliente_tipo_documento': 'CC',
+            'paquete': self.paquete.id,
+            'fecha_inicio': fecha_valida,
+            'numero_adultos': 1,
+            'numero_menores': 0,
+            'estado_reserva': 'confirmada',
+        })
+        self.assertFalse(form_estado_manipulado.is_valid())
+        self.assertIn('estado_reserva', form_estado_manipulado.errors)
+
+        # 4. Manipulación vía DevTools: paquete inactivo o cupos fuera de límite
+        paquete_inactivo = Paquete.objects.create(
+            nombre='Tour Inactivo',
+            descripcion='No disponible',
+            categoria=self.categoria,
+            punto_encuentro='Mongua',
+            hora_encuentro='09:00:00',
+            estado=False
+        )
+        form_paquete_inactivo = ReservaForm(data={
+            'tipo_cliente': 'presencial',
+            'cliente_nombre': 'Juan Perez',
+            'cliente_email': 'juan@example.com',
+            'paquete': paquete_inactivo.id,
+            'fecha_inicio': fecha_valida,
+            'numero_adultos': 25,
+            'numero_menores': -2,
+            'estado_reserva': 'pendiente',
+        })
+        self.assertFalse(form_paquete_inactivo.is_valid())
+        self.assertIn('paquete', form_paquete_inactivo.errors)
+        self.assertIn('numero_adultos', form_paquete_inactivo.errors)
+        self.assertIn('numero_menores', form_paquete_inactivo.errors)
+
+    def test_buscador_cliente_registrado_vista_y_formulario(self):
+        """Verifica que la vista proporcione los datos de clientes registrados para búsqueda por documento o correo."""
+        cliente_reg = Usuario.objects.create_user(
+            username='cliente_registrado_test',
+            email='cliente.registrado@monagua.com',
+            password='Password123!',
+            first_name='Andrés',
+            last_name='Gómez',
+            tipo_documento='CC',
+            numero_documento='1050607080',
+            telefono='3157778899',
+            rol=Usuario.Roles.CLIENTE
+        )
+
+        self.client.force_login(self.admin)
+        res = self.client.get(reverse('crear_reserva'))
+        self.assertEqual(res.status_code, 200)
+
+        # Contexto contiene clientes_registrados con identificadores únicos
+        self.assertIn('clientes_registrados', res.context)
+        clientes_data = res.context['clientes_registrados']
+        self.assertTrue(any(c['documento'] == '1050607080' and c['email'] == 'cliente.registrado@monagua.com' for c in clientes_data))
+
+        # El template contiene los elementos del buscador por identificador único estilo gestión
+        self.assertContains(res, 'id="buscar_cliente_input"')
+        self.assertContains(res, 'id="btn_buscar_cliente"')
+        self.assertContains(res, 'id="btn_limpiar_cliente"')
+        self.assertContains(res, 'rounded-pill')
+        self.assertContains(res, 'bi-funnel-fill')
+        self.assertContains(res, 'id="tarjeta_cliente_seleccionado"')
+        self.assertContains(res, 'id="clientes-registrados-data"')
+        self.assertContains(res, '1050607080')
+        self.assertContains(res, 'cliente.registrado@monagua.com')
+
+        # Creación exitosa asignando el cliente registrado
+        fecha_valida = (date.today() + timedelta(days=10)).strftime('%Y-%m-%d')
+        datos_registrado = {
+            'tipo_cliente': 'registrado',
+            'usuario': cliente_reg.id,
+            'paquete': self.paquete.id,
+            'fecha_inicio': fecha_valida,
+            'numero_adultos': 2,
+            'numero_menores': 0,
+            'estado_reserva': 'pendiente',
+        }
+        res_post = self.client.post(reverse('crear_reserva'), data=datos_registrado, follow=True)
+        self.assertEqual(res_post.status_code, 200)
+
+        reserva_creada = Reserva.objects.filter(usuario=cliente_reg).first()
+        self.assertIsNotNone(reserva_creada)
+        self.assertFalse(reserva_creada.es_presencial)
+        self.assertEqual(reserva_creada.usuario, cliente_reg)
+        self.assertEqual(reserva_creada.email_cliente, 'cliente.registrado@monagua.com')
+        self.assertEqual(reserva_creada.documento_cliente, '1050607080')
+
+        # Intento de duplicar la misma reserva para el mismo usuario, paquete y fecha
+        res_post_duplicado = self.client.post(reverse('crear_reserva'), data=datos_registrado)
+        self.assertEqual(res_post_duplicado.status_code, 200)
+        # No debe existir el cuadro estático alert alert-danger
+        self.assertNotContains(res_post_duplicado, '<div class="alert alert-danger rounded-3 mb-4">')
+        # Debe disparar la notificación Toast dinámica con el mensaje claro
+        self.assertContains(res_post_duplicado, 'window.mostrarToast')
+        self.assertContains(res_post_duplicado, 'Este usuario ya tiene una reserva registrada para el mismo paquete en la fecha seleccionada.')
+
+
+
+
+
+
 
 

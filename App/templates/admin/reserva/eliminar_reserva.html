@@ -9,8 +9,17 @@
                     <h4><i class="bi bi-exclamation-triangle"></i> Confirmar Eliminación</h4>
                 </div>
                 <div class="card-body text-center p-4">
-                    <p class="fs-5">Estás a punto de eliminar una reserva del usuario :</p>
-                    <h3 class="text-secondary mb-4">"{{ reserva.usuario }}"</h3>
+                    <p class="fs-5">Estás a punto de eliminar una reserva del cliente:</p>
+                    <h3 class="text-secondary mb-2">"{{ reserva.nombre_cliente }}"</h3>
+                    {% if not reserva.usuario %}
+                        <div class="mb-4">
+                            <span class="badge bg-warning bg-opacity-15 text-dark border border-warning border-opacity-50 rounded-pill px-3 py-1 small fw-semibold">
+                                <i class="bi bi-person-x-fill text-warning me-1"></i>Cliente Presencial (Sin cuenta registrada)
+                            </span>
+                        </div>
+                    {% else %}
+                        <div class="mb-4"></div>
+                    {% endif %}
                     
                     <div class="alert alert-warning">
                         <small>Esta acción no se puede deshacer.</small>

@@ -1,5 +1,7 @@
-{% extends "usuario/base-turista-dashboard.html" %} {% load static %} {% block
-title %}Notificaciones y Avisos | Monagua{% endblock %} {% block content %}
+{% extends "usuario/base-turista-dashboard.html" %}
+{% load static %}
+{% block title %}Notificaciones y Avisos | Monagua{% endblock %}
+{% block content %}
 <div class="container-fluid px-0 px-md-3 py-2">
   <!-- Mensajes del Sistema -->
   {% if messages %} {% for message in messages %}
@@ -122,19 +124,19 @@ title %}Notificaciones y Avisos | Monagua{% endblock %} {% block content %}
       {% if notificaciones %}
         <div class="d-flex flex-column gap-3">
           {% for noti in notificaciones %}
-            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 transition-hover position-relative overflow-hidden {% if not noti.leido %}border-start border-4 border-success{% else %}border-start border-4 border-light opacity-85{% endif %} notification-item"
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-3 p-md-4 transition-hover position-relative overflow-hidden {% if not noti.leido %}border-start border-4 border-success{% else %}border-start border-4 border-light opacity-85{% endif %} notification-item"
                  style="cursor: pointer;"
                  data-aos="fade-up"
                  onclick="if (!event.target.closest('a, button')) { window.location.href = '{% url 'marcar_notificacion_leida' noti.id %}?next={{ noti.get_destino_url|urlencode }}'; }">
               
-              <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+              <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
                 
                 <!-- Ícono + Contenido -->
-                <div class="d-flex align-items-start gap-3">
+                <div class="d-flex align-items-start gap-3 w-100 flex-grow-1">
                   
                   <!-- Ícono Circular de Estado -->
                   <div class="flex-shrink-0">
-                    <div class="p-3 rounded-circle d-flex align-items-center justify-content-center {% if not noti.leido %}bg-success bg-opacity-10 text-success border border-success border-opacity-25{% else %}bg-light text-muted border{% endif %}" style="width: 52px; height: 52px;">
+                    <div class="p-3 rounded-circle d-flex align-items-center justify-content-center {% if not noti.leido %}bg-success bg-opacity-10 text-success border border-success border-opacity-25{% else %}bg-light text-muted border{% endif %}" style="width: 48px; height: 48px;">
                       {% if noti.prioridad == 'alta' %}
                         <i class="bi bi-exclamation-triangle-fill fs-5 text-danger"></i>
                       {% elif noti.reserva %}
@@ -146,7 +148,7 @@ title %}Notificaciones y Avisos | Monagua{% endblock %} {% block content %}
                   </div>
 
                   <!-- Textos y Metadatos -->
-                  <div>
+                  <div class="flex-grow-1 min-w-0">
                     <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                       
                       <!-- Tipo o Título -->
@@ -178,13 +180,13 @@ title %}Notificaciones y Avisos | Monagua{% endblock %} {% block content %}
 
                     </div>
 
-                    <!-- Mensaje -->
-                    <p class="text-secondary mb-2 mt-1 fs-6">
+                    <!-- Mensaje en color negro -->
+                    <p class="text-dark mb-2 mt-1 fs-6 lh-base fw-normal" style="color: #000000 !important;">
                       {{ noti.mensaje }}
                     </p>
 
                     <!-- Fecha y Reserva vinculada -->
-                    <div class="d-flex flex-wrap align-items-center gap-3 text-muted small">
+                    <div class="d-flex flex-wrap align-items-center gap-2 text-muted small">
                       <span>
                         <i class="bi bi-clock me-1 text-success"></i>{{ noti.fecha_creacion|date:"d/m/Y h:i A" }}
                       </span>
@@ -198,93 +200,27 @@ title %}Notificaciones y Avisos | Monagua{% endblock %} {% block content %}
 
                   </div>
                 </div>
-              </div>
 
-              <!-- Textos y Metadatos -->
-              <div>
-                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                  <!-- Tipo o Título -->
-                  <h6 class="fw-bold text-dark mb-0">
-                    {{ noti.tipo|default:"Aviso de Monagua" }}
-                  </h6>
-
-                  <!-- Insignia No Leído -->
-                  {% if not noti.leido %}
-                  <span
-                    class="badge bg-danger text-white rounded-pill px-2.5 py-1 small fw-bold"
+                <!-- Botones de Acción -->
+                <div class="d-flex align-items-center gap-2 align-self-end align-self-md-center flex-shrink-0">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger border-0 rounded-circle p-2"
+                    title="Eliminar notificación"
+                    hx-delete="{% url 'eliminar_notificacion' noti.id %}"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                    hx-target="closest .notification-item"
+                    hx-swap="outerHTML swap:0.3s"
+                    hx-confirm="¿Deseas eliminar esta notificación?"
+                    onclick="event.stopPropagation()"
                   >
-                    <i class="bi bi-record-fill me-1"></i> Nuevo
-                  </span>
-                  {% else %}
-                  <span
-                    class="badge bg-light text-muted rounded-pill px-2.5 py-1 small border"
-                  >
-                    Leído
-                  </span>
-                  {% endif %}
-
-                  <!-- Insignia Prioridad -->
-                  {% if noti.prioridad == 'alta' %}
-                  <span
-                    class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 small fw-bold"
-                  >
-                    Prioridad Alta
-                  </span>
-                  {% elif noti.prioridad == 'media' %}
-                  <span
-                    class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-25 rounded-pill px-2.5 py-1 small fw-semibold"
-                  >
-                    Prioridad Media
-                  </span>
-                  {% endif %}
+                    <i class="bi bi-trash-fill fs-6"></i>
+                  </button>
                 </div>
 
-                <!-- Mensaje -->
-                <p class="text-secondary mb-2 mt-1 fs-6">{{ noti.mensaje }}</p>
-
-                <!-- Fecha y Reserva vinculada -->
-                <div
-                  class="d-flex flex-wrap align-items-center gap-3 text-muted small"
-                >
-                  <span>
-                    <i class="bi bi-clock me-1 text-success"></i>{{
-                    noti.fecha_creacion|date:"d/m/Y h:i A" }}
-                  </span>
-                  {% if noti.reserva %}
-                  <span>&bull;</span>
-                  <a
-                    href="{% url 'mis_reservas_usuario' %}"
-                    class="text-success fw-semibold text-decoration-none d-inline-flex align-items-center gap-1"
-                  >
-                    <i class="bi bi-compass"></i> Reserva #{{ noti.reserva.id }}
-                    ({{ noti.reserva.paquete.nombre }})
-                  </a>
-                  {% endif %}
-                </div>
               </div>
             </div>
-
-            <!-- Botones de Acción -->
-            <div
-              class="d-flex align-items-center gap-2 align-self-end align-self-md-center flex-shrink-0"
-            >
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-danger border-0 rounded-circle p-2"
-                title="Eliminar notificación"
-                hx-delete="{% url 'eliminar_notificacion' noti.id %}"
-                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                hx-target="closest .notification-item"
-                hx-swap="outerHTML swap:0.3s"
-                hx-confirm="¿Deseas eliminar esta notificación?"
-                onclick="event.stopPropagation()"
-              >
-                <i class="bi bi-trash-fill fs-6"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-        {% endfor %}
+          {% endfor %}
       </div>
       {% else %}
       <!-- Estado Vacío -->
@@ -301,12 +237,11 @@ title %}Notificaciones y Avisos | Monagua{% endblock %} {% block content %}
           </div>
           <h4 class="fw-bold text-dark mb-2">No tienes notificaciones</h4>
           <p class="text-muted mx-auto mb-4" style="max-width: 480px">
-            {% if filtro_actual != 'todas' and filtro_actual %} No hay
-            notificaciones que coincidan con el filtro seleccionado (<strong
-              >{{ filtro_actual }}</strong
-            >). {% else %} Tu bandeja de notificaciones está completamente al
-            día. Te avisaremos aquí sobre tus próximas aventuras y pagos. {%
-            endif %}
+            {% if filtro_actual != 'todas' and filtro_actual %}
+              No hay notificaciones que coincidan con el filtro seleccionado (<strong>{{ filtro_actual }}</strong>).
+            {% else %}
+              Tu bandeja de notificaciones está completamente al día. Te avisaremos aquí sobre tus próximas aventuras y pagos.
+            {% endif %}
           </p>
           <div class="d-flex justify-content-center gap-2">
             <a

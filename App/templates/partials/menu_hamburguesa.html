@@ -63,7 +63,17 @@
         aria-label="Iniciar sesión en su cuenta"
         >Iniciar Sesión</a
       >
-      {% endif %} {% if not user.is_authenticated or user.rol != 1 %}
+      {% endif %}
+      {% if user.is_authenticated and user.es_admin %}
+      <a
+        class="nav-link text-white"
+        href="{% url 'gestion_reservas' %}"
+        title="Gestión de Reservas (Administración)"
+        aria-label="Gestión de reservas de clientes"
+      >
+        <i class="bi bi-calendar-check fs-5"></i>
+      </a>
+      {% else %}
       <a
         class="nav-link text-white"
         href="{% url 'mis_reservas_usuario' %}"
@@ -131,6 +141,20 @@
               title="Derechos de autor, licencias y atribuciones"
               aria-label="Derechos de autor, licencias y atribuciones"
               >Derechos de Autor</a
+            >
+            <a
+              href="{% url 'soporte_ayuda' %}"
+              class="menu-hamburguesa-premium__main-link"
+              title="Centro de ayuda, soporte y preguntas frecuentes"
+              aria-label="Centro de ayuda, soporte y preguntas frecuentes"
+              ><i class="bi bi-question-circle me-2 text-success"></i>Ayuda y Soporte</a
+            >
+            <a
+              href="{% url 'manual_usuario' %}"
+              class="menu-hamburguesa-premium__main-link"
+              title="Manual oficial de usuario del sistema"
+              aria-label="Manual oficial de usuario del sistema"
+              ><i class="bi bi-book-half me-2 text-warning"></i>Manual de Usuario</a
             >
           </nav>
         </div>

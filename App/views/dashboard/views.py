@@ -9,6 +9,7 @@ from App.models import (
     Usuario, Reserva, Paquete, Pago, Promocion, 
     Calificacion, Bitacora, PQRS
 )
+from App.validators import validar_archivo_subido, validar_foto_perfil
 
 def _es_admin(user):
     return user.is_authenticated and (user.is_staff or user.rol == Usuario.Roles.ADMIN)
@@ -386,6 +387,10 @@ def perfil_admin(request):
         if residencia:
             user.residencia = residencia
         if imagen_perfil:
+            valido, err = validar_archivo_subido(imagen_perfil, validar_foto_perfil)
+            if not valido:
+                messages.error(request, err)
+                return redirect('admin_perfil')
             user.imagen_perfil = imagen_perfil
 
         user.save()

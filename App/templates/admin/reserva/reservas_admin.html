@@ -32,11 +32,25 @@
         </div>
     </div>
 
+    <!-- Contenedor dinámico HTMX: solo actualiza el DOM si realmente hubo cambios en BD (204 No Content si no cambió nada) -->
+    <div id="gestion-reservas-live"
+         hx-get="{% url 'gestion_reservas' %}?{% if estado_seleccionado %}estado={{ estado_seleccionado }}&{% endif %}last_hash={{ reservas_hash }}"
+         hx-trigger="every 5s[document.visibilityState === 'visible' && !document.querySelector('.dropdown-menu.show') && !(document.activeElement && document.activeElement.closest('#tablaReservas_filter'))]"
+         hx-target="#gestion-reservas-live"
+         hx-select="#gestion-reservas-live"
+         hx-swap="outerHTML">
+
     <!-- Panel de Estadísticas (Estilo Comprobante de Pago) -->
     <div class="row g-4 mb-4">
         <!-- Total Reservas -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="?estado=todas" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Ver todas las reservas registradas">
+            <a href="?estado=todas"
+               hx-get="{% url 'gestion_reservas' %}?estado=todas"
+               hx-target="#gestion-reservas-live"
+               hx-select="#gestion-reservas-live"
+               hx-swap="outerHTML"
+               hx-push-url="true"
+               class="text-decoration-none d-block h-100" title="Ver todas las reservas registradas">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'todas' %}border-primary border-opacity-75 shadow-sm ring-1{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-secondary small fw-bold text-uppercase">Total Reservas</span>
@@ -54,7 +68,13 @@
 
         <!-- Pendientes -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="?estado=pendiente" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar reservas pendientes">
+            <a href="?estado=pendiente"
+               hx-get="{% url 'gestion_reservas' %}?estado=pendiente"
+               hx-target="#gestion-reservas-live"
+               hx-select="#gestion-reservas-live"
+               hx-swap="outerHTML"
+               hx-push-url="true"
+               class="text-decoration-none d-block h-100" title="Filtrar reservas pendientes">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'pendiente' %}border-warning shadow-sm border-2{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-warning small fw-bold text-uppercase">Pendientes</span>
@@ -72,7 +92,13 @@
 
         <!-- Confirmadas -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="?estado=confirmada" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar reservas confirmadas">
+            <a href="?estado=confirmada"
+               hx-get="{% url 'gestion_reservas' %}?estado=confirmada"
+               hx-target="#gestion-reservas-live"
+               hx-select="#gestion-reservas-live"
+               hx-swap="outerHTML"
+               hx-push-url="true"
+               class="text-decoration-none d-block h-100" title="Filtrar reservas confirmadas">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'confirmada' %}border-success shadow-sm border-2{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-success small fw-bold text-uppercase">Confirmadas</span>
@@ -90,7 +116,13 @@
 
         <!-- Canceladas -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="?estado=cancelada" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar reservas canceladas">
+            <a href="?estado=cancelada"
+               hx-get="{% url 'gestion_reservas' %}?estado=cancelada"
+               hx-target="#gestion-reservas-live"
+               hx-select="#gestion-reservas-live"
+               hx-swap="outerHTML"
+               hx-push-url="true"
+               class="text-decoration-none d-block h-100" title="Filtrar reservas canceladas">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'cancelada' %}border-danger shadow-sm border-2{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-danger small fw-bold text-uppercase">Canceladas</span>
@@ -115,7 +147,14 @@
     <!-- Filtros -->
     <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
         <div class="card-body p-3">
-            <form method="GET" class="d-flex justify-content-center align-items-center m-0">
+            <form method="GET"
+                  action="{% url 'gestion_reservas' %}"
+                  hx-get="{% url 'gestion_reservas' %}"
+                  hx-target="#gestion-reservas-live"
+                  hx-select="#gestion-reservas-live"
+                  hx-swap="outerHTML"
+                  hx-push-url="true"
+                  class="d-flex justify-content-center align-items-center m-0">
                 <div class="input-group bg-light border rounded-pill p-1 shadow-sm flex-nowrap align-items-center" style="max-width: 420px; width: 100%;">
                     <span class="input-group-text border-0 bg-transparent text-success ps-3 pe-2">
                         <i class="bi bi-funnel-fill fs-5"></i>
@@ -131,7 +170,13 @@
                         <button type="submit" class="btn btn-success rounded-circle d-flex align-items-center justify-content-center p-0 shadow-sm" style="width: 34px; height: 34px;" title="Filtrar">
                             <i class="bi bi-search fs-6"></i>
                         </button>
-                        <a href="{% url 'gestion_reservas' %}" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0" style="width: 34px; height: 34px;" title="Restaurar Vista Base">
+                        <a href="{% url 'gestion_reservas' %}"
+                           hx-get="{% url 'gestion_reservas' %}"
+                           hx-target="#gestion-reservas-live"
+                           hx-select="#gestion-reservas-live"
+                           hx-swap="outerHTML"
+                           hx-push-url="true"
+                           class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0" style="width: 34px; height: 34px;" title="Restaurar Vista Base">
                             <i class="bi bi-arrow-clockwise fs-6"></i>
                         </a>
                     </div>
@@ -141,7 +186,7 @@
     </div>
 
     <!-- Tabla y Contenido -->
-    <div class="card admin-list-panel overflow-hidden p-4">
+    <div class="card admin-list-panel overflow-hidden p-3 p-md-4 mb-4">
         <!-- Barra de herramientas superior: Título y Dropdown Nativo Bootstrap 5 -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom">
             <div>
@@ -151,7 +196,7 @@
                 <small class="text-muted">Gestiona y consulta el historial completo de reservas</small>
             </div>
 
-            <!-- Dropdown nativo Bootstrap 5 -->
+            <!-- Dropdown nativo Bootstrap 5 para Exportación -->
             <div class="dropdown">
                 <button class="btn btn-outline-success btn-sm rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-2 shadow-sm dropdown-toggle" 
                         type="button" 
@@ -187,28 +232,38 @@
         </div>
         
         <!-- Tabla para Escritorio -->
-        <div class="table-responsive d-none d-md-block">
-            <table id="tablaReservas" class="table table-hover align-middle mb-0 admin-data-table">
+        <div class="table-responsive d-none d-lg-block">
+            <table id="tablaReservas" class="table table-hover align-middle mb-0 admin-data-table w-100">
                 <thead>
                     <tr class="text-secondary small fw-bold text-uppercase">
-                        <th class="ps-4 py-3">Cliente</th>
-                        <th class="py-3">Aventura / Paquete</th>
-                        <th class="py-3">Fecha de Viaje</th>
-                        <th class="py-3">Monto Total</th>
-                        <th class="text-center py-3">Estado</th>
-                        <th class="text-end pe-4 py-3">Acciones</th>
+                        <th class="ps-3 ps-md-4 py-3 text-nowrap">Cliente</th>
+                        <th class="py-3 text-nowrap">Aventura / Paquete</th>
+                        <th class="py-3 text-nowrap text-center">Fecha de Viaje</th>
+                        <th class="py-3 text-nowrap text-center">Monto Total</th>
+                        <th class="text-center py-3 text-nowrap">Estado</th>
+                        <th class="text-center py-3 text-nowrap">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for reserva in reservas %}
                     <tr>
                         <td class="ps-4 py-3 fw-bold text-dark">
-                            {{ reserva.usuario.get_full_name|default:reserva.usuario.username }}
-                            <small class="text-muted d-block fw-normal">{{ reserva.usuario.email }}</small>
+                            {% if reserva.usuario %}
+                                <div>{{ reserva.usuario.get_full_name|default:reserva.usuario.username }}</div>
+                                <small class="text-muted d-block fw-normal"><i class="bi bi-envelope me-1"></i>{{ reserva.usuario.email }}</small>
+                            {% else %}
+                                <div>{{ reserva.cliente_nombre|default:"Cliente Presencial" }}</div>
+                                <small class="text-muted d-block fw-normal"><i class="bi bi-envelope me-1"></i>{{ reserva.cliente_email|default:"Sin correo" }}</small>
+                                <span class="badge bg-warning bg-opacity-15 text-dark border border-warning border-opacity-50 rounded-pill px-2 py-0.5 mt-1 small fw-semibold d-inline-flex align-items-center gap-1" title="Esta reserva fue registrada presencialmente. El cliente no cuenta con usuario registrado en el sistema.">
+                                    <i class="bi bi-person-x-fill text-warning"></i> Sin cuenta (Presencial)
+                                </span>
+                            {% endif %}
                         </td>
                         <td class="py-3 fw-semibold text-secondary">
                             {{ reserva.paquete.nombre }}
-                            <small class="text-muted d-block fw-normal">Reserva #{{ reserva.id }}</small>
+                            <small class="text-muted d-block fw-normal">
+                                Reserva #{{ reserva.id }} · <i class="bi bi-people me-1"></i>{{ reserva.numero_adultos }} Adul. / {{ reserva.numero_menores }} Men.
+                            </small>
                         </td>
                         
                         <td class="py-3 text-dark">
@@ -235,14 +290,20 @@
                             {% endif %}
                         </td>
                         
-                        <td class="text-end pe-4 py-3">
-                            <div class="d-inline-flex gap-2">
-                                <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-sm btn-outline-primary px-3 rounded-pill fw-semibold shadow-sm">
-                                    <i class="bi bi-pencil-square me-1"></i> Editar
-                                </a>
-                                <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger px-3 rounded-pill fw-semibold shadow-sm">
-                                    <i class="bi bi-trash me-1"></i> Eliminar
-                                </a>
+                        <td class="text-center text-nowrap">
+                            <div class="d-inline-flex align-items-center gap-1">
+                                {% if reserva.estado_reserva == 'cancelada' %}
+                                    <a href="{% url 'listar_cancelaciones' %}" class="btn btn-sm btn-outline-danger shadow-sm" title="Ver en Cancelaciones">
+                                        <i class="bi bi-x-circle"></i>
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-sm btn-outline-secondary shadow-sm" title="Editar Reserva">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger shadow-sm" title="Eliminar Reserva">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -252,8 +313,8 @@
             </table>
         </div>
 
-        <!-- Tarjetas para Móviles -->
-        <div class="d-md-none p-3">
+        <!-- Tarjetas para Móviles y Tablets -->
+        <div class="d-lg-none p-1 p-sm-2">
             {% for reserva in reservas %}
             <div class="card border border-light shadow-sm rounded-4 mb-3 bg-white overflow-hidden">
                 <div class="card-header bg-light border-0 py-2 px-3 d-flex justify-content-between align-items-center">
@@ -268,7 +329,16 @@
                 </div>
                 <div class="card-body p-3">
                     <div class="mb-3">
-                        <h6 class="fw-bold text-dark mb-1">{{ reserva.usuario.get_full_name|default:reserva.usuario.username }}</h6>
+                        {% if reserva.usuario %}
+                            <h6 class="fw-bold text-dark mb-1">{{ reserva.usuario.get_full_name|default:reserva.usuario.username }}</h6>
+                            <small class="text-muted d-block mb-1"><i class="bi bi-envelope me-1"></i>{{ reserva.usuario.email }}</small>
+                        {% else %}
+                            <h6 class="fw-bold text-dark mb-1">{{ reserva.cliente_nombre|default:"Cliente Presencial" }}</h6>
+                            <small class="text-muted d-block mb-1"><i class="bi bi-envelope me-1"></i>{{ reserva.cliente_email|default:"Sin correo" }}</small>
+                            <span class="badge bg-warning bg-opacity-15 text-dark border border-warning border-opacity-50 rounded-pill px-2 py-0.5 mb-1 small fw-semibold d-inline-flex align-items-center gap-1">
+                                <i class="bi bi-person-x-fill text-warning"></i> Sin cuenta (Presencial)
+                            </span>
+                        {% endif %}
                         <small class="text-secondary fw-semibold d-block">{{ reserva.paquete.nombre }}</small>
                         <small class="text-muted d-block">Fecha: {{ reserva.fecha_inicio|date:"d/m/Y" }}</small>
                     </div>
@@ -279,20 +349,24 @@
                     </div>
 
                     <div class="border-top pt-2">
-                        {% if reserva.estado_reserva == 'confirmada' or reserva.estado_reserva == 'cancelada' %}
+                        {% if reserva.estado_reserva == 'cancelada' %}
+                            <a href="{% url 'listar_cancelaciones' %}" class="btn btn-sm btn-outline-danger w-100 py-2 rounded-pill fw-semibold d-inline-flex align-items-center justify-content-center gap-1" title="Ir a Gestión de Cancelaciones">
+                                <i class="bi bi-x-circle"></i> Ver en Cancelaciones
+                            </a>
+                        {% elif reserva.estado_reserva == 'confirmada' %}
                             <div class="text-center text-muted small py-1 fw-semibold mb-2">
                                 <i class="bi bi-lock-fill me-1"></i> Reserva bloqueada para edición
                             </div>
-                            <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger w-100 py-2 rounded-pill fw-semibold">
+                            <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger w-100 py-2 rounded-pill fw-semibold" title="Eliminar Reserva">
                                 <i class="bi bi-trash"></i> Eliminar
                             </a>
                         {% else %}
                             <div class="d-flex gap-2">
-                                <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-sm btn-outline-primary w-100 py-2 rounded-pill fw-semibold">
-                                    <i class="bi bi-pencil-square"></i> Editar
+                                <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-sm btn-outline-secondary flex-fill py-2 rounded-pill fw-semibold shadow-sm" title="Editar Reserva">
+                                    <i class="bi bi-pencil me-1"></i> Editar
                                 </a>
-                                <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger w-100 py-2 rounded-pill fw-semibold">
-                                    <i class="bi bi-trash"></i> Eliminar
+                                <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger flex-fill py-2 rounded-pill fw-semibold shadow-sm" title="Eliminar Reserva">
+                                    <i class="bi bi-trash me-1"></i> Eliminar
                                 </a>
                             </div>
                         {% endif %}
@@ -307,9 +381,10 @@
         </div>
 
     </div>
+    </div> <!-- /#gestion-reservas-live -->
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static 'js/tconf/tconf-tablaReservas.js' %}"></script>
+<script src="{% static 'js/tconf/tconf-tablaReservas.js' %}?v=2"></script>
 {% endblock %}

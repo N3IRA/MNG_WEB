@@ -14,7 +14,7 @@
 <div class="container py-4">
     <!-- Encabezado con Botón Volver y Badges -->
     <div class="mb-4">
-        <a href="{% url 'gestion_promociones' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 mb-3 fw-semibold shadow-sm">
+        <a href="{% url 'gestion_promociones' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 mb-3 fw-semibold shadow-sm" title="Volver a Gestión de Promociones">
             <i class="bi bi-arrow-left me-1"></i> Volver a Promociones
         </a>
         <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
@@ -43,7 +43,7 @@
                     </li>
                     <li class="d-flex align-items-start gap-2">
                         <i class="bi bi-check-lg text-success mt-1"></i>
-                        <span>Puedes crear un código de cupón para que los clientes lo canjeen en la pasarela de reserva.</span>
+                        <span>Las promociones se aplican directamente a los paquetes seleccionados de forma automática.</span>
                     </li>
                     <li class="d-flex align-items-start gap-2">
                         <i class="bi bi-check-lg text-success mt-1"></i>
@@ -90,13 +90,10 @@
                             </div>
                         </div>
 
-                        <!-- Descuento y Cupón -->
+                        <!-- Descuento -->
                         <div class="row g-3 mb-3">
                             <div class="col-12 col-md-6">
                                 {{ form.porcentaje_descuento|as_crispy_field }}
-                            </div>
-                            <div class="col-12 col-md-6">
-                                {{ form.codigo_cupon|as_crispy_field }}
                             </div>
                         </div>
 
@@ -162,10 +159,10 @@
 
                         <!-- Botones de Acción -->
                         <div class="d-flex justify-content-end align-items-center gap-2 pt-3 border-top">
-                            <a href="{% url 'gestion_promociones' %}" class="btn btn-outline-secondary px-4 rounded-pill fw-semibold">
+                            <a href="{% url 'gestion_promociones' %}" class="btn btn-outline-secondary px-4 rounded-pill fw-semibold" title="Cancelar creación y regresar">
                                 <i class="bi bi-x-circle me-1"></i> Cancelar
                             </a>
-                            <button type="submit" class="btn btn-success px-4 rounded-pill shadow-sm fw-bold">
+                            <button type="submit" class="btn btn-success px-4 rounded-pill shadow-sm fw-bold" title="Guardar nueva promoción">
                                 <i class="bi bi-plus-circle me-1"></i> Guardar Promoción
                             </button>
                         </div>
@@ -182,17 +179,48 @@
 <script src="{% static 'js/librerias/flatpickr_es.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const config = {
-        locale: 'es',
-        dateFormat: 'Y-m-d',
-        allowInput: true
-    };
-    
     const inicioInput = document.getElementById('id_fecha_inicio');
     const finInput = document.getElementById('id_fecha_fin');
     
-    if (inicioInput) flatpickr(inicioInput, config);
-    if (finInput) flatpickr(finInput, config);
+    const hoy = new Date();
+    const hoyStr = hoy.getFullYear() + '-' + 
+                   String(hoy.getMonth() + 1).padStart(2, '0') + '-' + 
+                   String(hoy.getDate()).padStart(2, '0');
+
+    let fpInicio, fpFin;
+
+    function calcularMinFin(inicioStr) {
+        if (!inicioStr) return hoyStr;
+        return inicioStr > hoyStr ? inicioStr : hoyStr;
+    }
+
+    if (finInput) {
+        const minInicialFin = calcularMinFin(inicioInput ? inicioInput.value : null);
+        fpFin = flatpickr(finInput, {
+            locale: 'es',
+            dateFormat: 'Y-m-d',
+            allowInput: true,
+            minDate: minInicialFin
+        });
+    }
+
+    if (inicioInput) {
+        fpInicio = flatpickr(inicioInput, {
+            locale: 'es',
+            dateFormat: 'Y-m-d',
+            allowInput: true,
+            minDate: hoyStr,
+            onChange: function(selectedDates, dateStr) {
+                if (fpFin && dateStr) {
+                    const dynamicMinFin = calcularMinFin(dateStr);
+                    fpFin.set('minDate', dynamicMinFin);
+                    if (finInput && finInput.value && finInput.value < dynamicMinFin) {
+                        fpFin.setDate(dynamicMinFin);
+                    }
+                }
+            }
+        });
+    }
 });
 </script>
 {% endblock scripts %}

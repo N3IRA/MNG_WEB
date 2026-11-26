@@ -1,0 +1,431 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}Centro de Ayuda y Soporte — Monagua{% endblock %}
+
+{% block content %}
+<!-- Migas de Pan -->
+{% include "partials/breadcrumbs.html" with current_title="Centro de Ayuda y Soporte" current_icon="bi bi-question-circle-fill" %}
+
+<div class="container py-4 mb-5">
+
+  <!-- ── 1. Hero del Centro de Ayuda ── -->
+  <section class="position-relative overflow-hidden text-white rounded-4 shadow-lg mb-5 p-4 p-md-5"
+           style="background: linear-gradient(135deg, #0f172a 0%, #157347 100%);"
+           data-aos="fade-down" data-aos-duration="700">
+    <div class="row align-items-center justify-content-between g-4 position-relative" style="z-index: 2;">
+      <div class="col-12 col-lg-8">
+        <h1 class="display-5 fw-bold text-white mb-2 lh-sm">
+          ¿En qué podemos ayudarte hoy?
+        </h1>
+        <p class="lead text-white text-opacity-90 fs-6 fs-md-5 mb-0 col-xl-10">
+          Encuentra respuestas rápidas a tus dudas sobre reservas, pagos, itinerarios y promociones, o consulta y descarga el manual oficial para el usuario.
+        </p>
+      </div>
+
+      <!-- Ilustración / Icono Hero -->
+      <div class="col-12 col-lg-4 text-center d-none d-lg-block">
+        <div class="bg-white bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center p-4 border border-white border-opacity-25 shadow" style="width: 130px; height: 130px;">
+          <i class="bi bi-question-diamond-fill text-warning display-4"></i>
+        </div>
+        <h5 class="fw-bold text-white mt-3 mb-1">Guías & Respuestas</h5>
+        <p class="small text-white-50 mb-0">Todo sobre tu experiencia Monagua</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 2. Tarjeta Destacada: Manual de Usuario en PDF ── -->
+  <section class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5 bg-white" data-aos="fade-up" data-aos-duration="600">
+    <div class="card-body p-4 p-md-5">
+      <div class="row align-items-center g-4">
+        <div class="col-12 col-md-auto text-center">
+          <div class="bg-danger bg-opacity-10 text-danger rounded-4 p-3 d-inline-flex align-items-center justify-content-center border border-danger border-opacity-25 shadow-sm" style="width: 82px; height: 82px;">
+            <i class="bi bi-file-earmark-pdf-fill fs-1"></i>
+          </div>
+        </div>
+        <div class="col-12 col-md">
+          <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2.5 py-1 rounded-pill fw-bold small">
+              DOCUMENTACIÓN OFICIAL
+            </span>
+            <span class="badge bg-light text-dark border px-2.5 py-1 rounded-pill fw-semibold small">
+              Formato PDF
+            </span>
+          </div>
+          <h4 class="fw-bold text-dark mb-1">Manual de Usuario & Guía de Ayuda de Monagua</h4>
+          <p class="text-secondary small mb-0 lh-base">
+            Consulta el paso a paso detallado para navegar la plataforma, reservar destinos, gestionar pagos con comprobante, aplicar descuentos y utilizar el asistente virtual Condy. Puedes visualizarlo en el navegador o descargarlo para tenerlo siempre a mano.
+          </p>
+        </div>
+        <div class="col-12 col-md-auto text-center text-md-end">
+          <div class="d-flex flex-column flex-sm-row gap-2 justify-content-md-end flex-wrap">
+            <a href="{% url 'manual_usuario' %}"
+               class="btn btn-success rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2"
+               title="Leer manual interactivo completo en la plataforma">
+              <i class="bi bi-book-half"></i>
+              <span>Manual en Línea</span>
+            </a>
+            <a href="{% url 'manual_usuario_pdf' %}?ver=1"
+               target="_blank"
+               class="btn btn-outline-success rounded-pill px-3 py-2.5 fw-semibold shadow-sm d-inline-flex align-items-center justify-content-center gap-2"
+               title="Ver manual de usuario en formato PDF">
+              <i class="bi bi-eye-fill"></i>
+              <span>Ver PDF</span>
+            </a>
+            <a href="{% url 'manual_usuario_pdf' %}"
+               class="btn btn-outline-secondary rounded-pill px-3 py-2.5 fw-semibold shadow-sm d-inline-flex align-items-center justify-content-center gap-2"
+               title="Descargar documento PDF del manual de usuario">
+              <i class="bi bi-download"></i>
+              <span>Descargar</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 3. Categorías Rápidas ── -->
+  <section class="mb-5" data-aos="fade-up" data-aos-duration="600">
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+      <h4 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+        <i class="bi bi-grid-fill text-success"></i> Temas de Ayuda Frecuentes
+      </h4>
+      <span class="text-muted small" id="contadorResultados">Explora las secciones</span>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-6 col-md-4 col-lg-2">
+        <button type="button" class="btn btn-light border w-100 p-3 rounded-4 text-center filtro-categoria h-100 d-flex flex-column align-items-center justify-content-center gap-2 shadow-sm transition-all" data-categoria="todas">
+          <i class="bi bi-collection-fill fs-3 text-success"></i>
+          <span class="small fw-bold text-dark">Todos</span>
+        </button>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <button type="button" class="btn btn-light border w-100 p-3 rounded-4 text-center filtro-categoria h-100 d-flex flex-column align-items-center justify-content-center gap-2 shadow-sm transition-all" data-categoria="reservas">
+          <i class="bi bi-calendar-check-fill fs-3 text-success"></i>
+          <span class="small fw-bold text-dark">Reservas</span>
+        </button>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <button type="button" class="btn btn-light border w-100 p-3 rounded-4 text-center filtro-categoria h-100 d-flex flex-column align-items-center justify-content-center gap-2 shadow-sm transition-all" data-categoria="pagos">
+          <i class="bi bi-credit-card-2-front-fill fs-3 text-success"></i>
+          <span class="small fw-bold text-dark">Pagos y Facturas</span>
+        </button>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <button type="button" class="btn btn-light border w-100 p-3 rounded-4 text-center filtro-categoria h-100 d-flex flex-column align-items-center justify-content-center gap-2 shadow-sm transition-all" data-categoria="promociones">
+          <i class="bi bi-tags-fill fs-3 text-success"></i>
+          <span class="small fw-bold text-dark">Promociones</span>
+        </button>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <button type="button" class="btn btn-light border w-100 p-3 rounded-4 text-center filtro-categoria h-100 d-flex flex-column align-items-center justify-content-center gap-2 shadow-sm transition-all" data-categoria="cancelaciones">
+          <i class="bi bi-arrow-repeat fs-3 text-success"></i>
+          <span class="small fw-bold text-dark">Cancelaciones</span>
+        </button>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <button type="button" class="btn btn-light border w-100 p-3 rounded-4 text-center filtro-categoria h-100 d-flex flex-column align-items-center justify-content-center gap-2 shadow-sm transition-all" data-categoria="accesibilidad">
+          <i class="bi bi-universal-access fs-3 text-success"></i>
+          <span class="small fw-bold text-dark">Accesibilidad</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 4. Acordeón de Preguntas Frecuentes (FAQ) ── -->
+  <section class="mb-5" data-aos="fade-up" data-aos-duration="600">
+    <div class="accordion accordion-flush rounded-4 overflow-hidden shadow-sm border bg-white" id="acordeonAyuda">
+
+      <!-- Item 1: Reservas -->
+      <div class="accordion-item faq-item" data-categoria="reservas" data-keywords="reservar reserva tour paquete fechas calendario cupo personas adultos menores">
+        <h2 class="accordion-header" id="headingOne">
+          <button class="accordion-button collapsed fw-bold text-dark py-3 px-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+            <i class="bi bi-calendar2-check text-success me-3 fs-5"></i>
+            ¿Cómo realizo una reserva de paquete turístico en Monagua?
+          </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#acordeonAyuda">
+          <div class="accordion-body px-4 pb-4 pt-1 text-secondary small lh-base">
+            <ol class="mb-2 ps-3">
+              <li>Ingresa a la sección <strong><a href="{% url 'tours' %}" class="text-success fw-bold text-decoration-none">Destinos y Paquetes</a></strong>.</li>
+              <li>Selecciona el tour de tu interés y haz clic en <strong>"Reservar Ahora"</strong>.</li>
+              <li>Elige la fecha de tu viaje en el calendario interactivo. Las fechas con tarifa vigente habilitada se resaltarán en color verde.</li>
+              <li>Ingresa el número de adultos y menores de edad. El sistema calculará el valor total automáticamente.</li>
+              <li>Acepta los términos y condiciones y haz clic en <strong>"Confirmar Reserva"</strong>.</li>
+            </ol>
+            <div class="p-3 bg-light rounded-3 border">
+              <i class="bi bi-info-circle-fill text-success me-1"></i>
+              <strong>Nota:</strong> Para reservar debes contar con una cuenta activa en Monagua. Si no has iniciado sesión, el sistema te redirigirá a autenticarte de forma segura.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 2: Pagos y Comprobantes -->
+      <div class="accordion-item faq-item" data-categoria="pagos" data-keywords="pago comprobante nequi daviplata bancolombia transferencia aprobacion verificacion factura qr">
+        <h2 class="accordion-header" id="headingTwo">
+          <button class="accordion-button collapsed fw-bold text-dark py-3 px-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+            <i class="bi bi-credit-card text-success me-3 fs-5"></i>
+            ¿Cuáles son los métodos de pago y cómo subo mi comprobante?
+          </button>
+        </h2>
+        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#acordeonAyuda">
+          <div class="accordion-body px-4 pb-4 pt-1 text-secondary small lh-base">
+            <p class="mb-2">Aceptamos transferencias bancarias a través de <strong>Bancolombia, Nequi y Daviplata</strong>. Una vez confirmes tu reserva:</p>
+            <ul class="mb-3 ps-3">
+              <li>Ingresa a <strong>Mis Reservas</strong> desde tu menú de usuario.</li>
+              <li>En la reserva en estado <em>Pendiente de Pago</em>, haz clic en <strong>"Subir Comprobante"</strong>.</li>
+              <li>Adjunta la imagen clara o PDF de la transferencia con el número de transacción bancaria visible.</li>
+              <li>Nuestro equipo administrativo validará la transacción en un plazo estimado de 2 a 12 horas hábiles. Una vez aprobada, tu reserva pasará a estado <strong>Confirmada</strong> y se generará tu factura oficial con código QR.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 3: Factura Electrónica y Código QR -->
+      <div class="accordion-item faq-item" data-categoria="pagos" data-keywords="factura pdf comprobante oficial codigo qr descargar imprimir validez">
+        <h2 class="accordion-header" id="headingThree">
+          <button class="accordion-button collapsed fw-bold text-dark py-3 px-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+            <i class="bi bi-qr-code-scan text-success me-3 fs-5"></i>
+            ¿Cómo descargo mi factura legal y verifico el código QR?
+          </button>
+        </h2>
+        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#acordeonAyuda">
+          <div class="accordion-body px-4 pb-4 pt-1 text-secondary small lh-base">
+            <p class="mb-2">
+              Cuando tu pago es aprobado, el sistema genera de forma automática una factura en formato PDF con los datos del emisor, cliente, itinerario y desglose de tarifas.
+            </p>
+            <p class="mb-0">
+              En cada factura encontrarás un <strong>código QR único</strong>. Cualquier persona o autoridad puede escanearlo con la cámara del celular para verificar en tiempo real la autenticidad y estado de tu reserva en los servidores oficiales de Monagua.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 4: Promociones -->
+      <div class="accordion-item faq-item" data-categoria="promociones" data-keywords="promociones descuentos ofertas cupon codigo porcentaje paquetes ahorro">
+        <h2 class="accordion-header" id="headingFour">
+          <button class="accordion-button collapsed fw-bold text-dark py-3 px-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+            <i class="bi bi-percent text-success me-3 fs-5"></i>
+            ¿Cómo aplican las promociones y descuentos en los tours?
+          </button>
+        </h2>
+        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#acordeonAyuda">
+          <div class="accordion-body px-4 pb-4 pt-1 text-secondary small lh-base">
+            <p class="mb-2">
+              Las promociones activas se aplican <strong>automáticamente</strong> sobre la tarifa de los paquetes turísticos vinculados. En el catálogo verás los distintivos color naranja indicando el porcentaje de rebaja (ejemplo: <em>-15% OFF</em>) y el precio final con el descuento ya reflejado.
+            </p>
+            <p class="mb-0">
+              Al momento de registrar tu reserva dentro del período de vigencia de la oferta, el sistema calculará las tarifas tanto de adultos como de menores con el descuento correspondiente sin necesidad de ingresar códigos manuales adicionales.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 5: Cancelaciones y Reembolsos -->
+      <div class="accordion-item faq-item" data-categoria="cancelaciones" data-keywords="cancelar cancelacion reembolso devolucion penalidad nota de credito politicas">
+        <h2 class="accordion-header" id="headingFive">
+          <button class="accordion-button collapsed fw-bold text-dark py-3 px-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+            <i class="bi bi-shield-x text-success me-3 fs-5"></i>
+            ¿Cuáles son las políticas y tiempos de cancelación o reembolso?
+          </button>
+        </h2>
+        <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#acordeonAyuda">
+          <div class="accordion-body px-4 pb-4 pt-1 text-secondary small lh-base">
+            <ul class="mb-3 ps-3">
+              <li><strong>Más de 72 horas antes del tour:</strong> Reembolso del 100% en Nota de Crédito o transferencia bancaria según corresponda.</li>
+              <li><strong>Entre 48 y 72 horas antes del tour:</strong> Aplica penalidad del 30% por costos logísticos y seguros emitidos.</li>
+              <li><strong>Menos de 48 horas o no asistencia (No Show):</strong> No aplica reembolso en dinero en efectivo debido a la reserva previa de guías, seguros y transporte local.</li>
+            </ul>
+            <p class="mb-0">
+              Puedes solicitar la cancelación directamente desde el detalle de tu reserva en <strong>Mis Reservas</strong>, indicando el motivo y adjuntando soportes si es por fuerza mayor o condición médica.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 6: Accesibilidad -->
+      <div class="accordion-item faq-item" data-categoria="accesibilidad" data-keywords="accesibilidad lector voz contraste fuentes tamano dislexia condy chat">
+        <h2 class="accordion-header" id="headingSix">
+          <button class="accordion-button collapsed fw-bold text-dark py-3 px-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
+            <i class="bi bi-universal-access text-success me-3 fs-5"></i>
+            ¿Cómo utilizo el menú de accesibilidad y el asistente virtual Condy?
+          </button>
+        </h2>
+        <div id="collapseSix" class="accordion-collapse collapse" aria-labelledby="headingSix" data-bs-parent="#acordeonAyuda">
+          <div class="accordion-body px-4 pb-4 pt-1 text-secondary small lh-base">
+            <p class="mb-2">
+              En la esquina inferior izquierda de todas las pantallas encontrarás el botón circular flotante de <strong>Accesibilidad</strong>. Al pulsarlo podrás:
+            </p>
+            <ul class="mb-2 ps-3">
+              <li>Aumentar o disminuir el tamaño de texto, espaciado e interlineado.</li>
+              <li>Activar alto contraste, inversión de colores o escala de grises.</li>
+              <li>Activar la guía de lectura o el cursor de gran visibilidad.</li>
+              <li>Habilitar la lectura en voz alta para escuchar el contenido de la página.</li>
+            </ul>
+            <p class="mb-0">
+              Asimismo, en la esquina inferior derecha dispones de <strong>Condy</strong>, nuestro guía virtual inteligente, listo para responder consultas en tiempo real sobre rutas, clima, recomendaciones y estado de tus reservas.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Mensaje cuando la categoría no tiene preguntas -->
+    <div id="sinResultadosFAQ" class="text-center py-5 d-none">
+      <div class="bg-light rounded-circle d-inline-flex p-3 mb-2 text-muted">
+        <i class="bi bi-folder2-open fs-2 text-secondary"></i>
+      </div>
+      <h6 class="fw-bold text-dark">No hay preguntas registradas en esta sección</h6>
+      <p class="text-muted small">Selecciona otra categoría o comunícate directamente con nuestros canales de soporte.</p>
+    </div>
+  </section>
+
+  <!-- ── 5. Canales de Contacto Directo ── -->
+  <section class="mt-5" data-aos="fade-up" data-aos-duration="600">
+    <div class="text-center mb-4">
+      <h4 class="fw-bold text-dark mb-1">¿Aún necesitas ayuda personalizada?</h4>
+      <p class="text-muted small">Estamos disponibles a través de nuestros canales oficiales de atención.</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+      <!-- Canal 1: Radicar PQRS -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-4 text-center bg-white transition-all card-hover">
+          <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-3 mx-auto" style="width: 60px; height: 60px;">
+            <i class="bi bi-envelope-paper-fill fs-3"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-2">Radicar PQRS</h5>
+          <p class="text-secondary small mb-3">
+            Presenta peticiones, quejas, reclamos o sugerencias oficiales con seguimiento radicado por correo.
+          </p>
+          <a href="{% url 'pqrs' %}" class="btn btn-outline-success rounded-pill px-4 fw-semibold mt-auto" title="Radicar PQRS">
+            Formulario PQRS
+          </a>
+        </div>
+      </div>
+
+      <!-- Canal 2: Chat Virtual Condy -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-4 text-center bg-white transition-all card-hover">
+          <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-3 mx-auto" style="width: 60px; height: 60px;">
+            <i class="bi bi-chat-dots-fill fs-3"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-2">Chat en Vivo con Condy</h5>
+          <p class="text-secondary small mb-3">
+            Habla con nuestro cóndor guía para responder dudas instantáneas sobre tours, equipaje y reservas.
+          </p>
+          <button type="button" class="btn btn-outline-primary rounded-pill px-4 fw-semibold mt-auto" onclick="window.abrirChatCondy ? window.abrirChatCondy() : document.querySelector('.condy-chat-widget')?.click();" title="Abrir chat virtual">
+            Iniciar Chat
+          </button>
+        </div>
+      </div>
+
+      <!-- Canal 3: Correo y Atención Telefónica -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-4 text-center bg-white transition-all card-hover">
+          <div class="bg-warning bg-opacity-15 text-warning-emphasis rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-3 mx-auto" style="width: 60px; height: 60px;">
+            <i class="bi bi-telephone-fill fs-3 text-dark"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-2">Línea de Atención</h5>
+          <p class="text-secondary small mb-3">
+            Horario: Lunes a Domingo, 7:00 AM – 7:00 PM.<br>
+            <strong>soporte@monagua.com</strong><br>
+            Mongua, Boyacá, Colombia
+          </p>
+          <a href="mailto:soporte@monagua.com" class="btn btn-outline-dark rounded-pill px-4 fw-semibold mt-auto" title="Enviar correo de soporte">
+            Escríbenos por Email
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Estilos y Scripts de Interacción -->
+<style>
+  .card-hover {
+    transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+  }
+  .card-hover:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.08) !important;
+  }
+  .filtro-categoria.active {
+    background-color: #198754 !important;
+    color: #ffffff !important;
+    border-color: #198754 !important;
+  }
+  .filtro-categoria.active span,
+  .filtro-categoria.active i {
+    color: #ffffff !important;
+  }
+  /* ── Responsive Centro de Ayuda ── */
+  #acordeonAyuda .accordion-button { font-size: .95rem; align-items: flex-start; }
+  #acordeonAyuda .accordion-body { overflow-wrap: anywhere; }
+  @media (max-width: 767.98px) {
+    #acordeonAyuda .accordion-button { padding: .85rem 1rem !important; font-size: .88rem; }
+    #acordeonAyuda .accordion-button i { margin-right: .6rem !important; font-size: 1rem !important; }
+    #acordeonAyuda .accordion-body { padding: .25rem 1rem 1rem !important; }
+    .filtro-categoria { padding: .75rem !important; }
+    .filtro-categoria i { font-size: 1.5rem !important; }
+    .card-body.p-4 { padding: 1.25rem !important; }
+    section.rounded-4 h1.display-5 { font-size: 1.6rem; }
+  }
+  @media (max-width: 575.98px) {
+    .card-body .btn { width: 100%; }
+    .card-hover:hover { transform: none !important; }
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const itemsFAQ = document.querySelectorAll('.faq-item');
+  const sinResultados = document.getElementById('sinResultadosFAQ');
+  const botonesFiltro = document.querySelectorAll('.filtro-categoria');
+
+  function filtrarFAQ() {
+    let categoriaActiva = 'todas';
+    const btnActivo = document.querySelector('.filtro-categoria.active');
+    if (btnActivo) {
+      categoriaActiva = btnActivo.getAttribute('data-categoria');
+    }
+
+    let visibles = 0;
+
+    itemsFAQ.forEach(function (item) {
+      const itemCat = item.getAttribute('data-categoria');
+      const coincideCat = categoriaActiva === 'todas' || itemCat === categoriaActiva;
+
+      if (coincideCat) {
+        item.classList.remove('d-none');
+        visibles++;
+      } else {
+        item.classList.add('d-none');
+      }
+    });
+
+    if (sinResultados) {
+      sinResultados.classList.toggle('d-none', visibles > 0);
+    }
+  }
+
+  botonesFiltro.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      botonesFiltro.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filtrarFAQ();
+    });
+  });
+
+  // Activar botón "Todos" por defecto
+  const primerBtn = document.querySelector('.filtro-categoria[data-categoria="todas"]');
+  if (primerBtn) {
+    primerBtn.classList.add('active');
+  }
+});
+</script>
+{% endblock %}

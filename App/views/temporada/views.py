@@ -9,7 +9,7 @@ from App.utils import crear_notificacion_sistema
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.utils import timezone
 
 
@@ -80,9 +80,19 @@ class TemporadaCreateView(StaffRequiredMixin, CreateView):
     def form_valid(self, form):
         fecha_inicio = form.cleaned_data.get('fecha_inicio')
         fecha_fin = form.cleaned_data.get('fecha_fin')
+        hoy = timezone.localdate()
+        limite_minimo_inicio = hoy - timedelta(days=7)
 
-        if fecha_inicio and fecha_fin and fecha_fin < fecha_inicio:
-            form.add_error('fecha_fin', "La fecha de finalización no puede ser anterior a la fecha de inicio.")
+        if fecha_inicio and fecha_inicio < limite_minimo_inicio:
+            form.add_error('fecha_inicio', f"La fecha de inicio no puede ser anterior a una semana antes de la fecha actual ({limite_minimo_inicio.strftime('%d/%m/%Y')}).")
+            return self.form_invalid(form)
+
+        if fecha_fin and fecha_fin <= hoy:
+            form.add_error('fecha_fin', f"La fecha de finalización no puede ser anterior ni el mismo día que hoy ({hoy.strftime('%d/%m/%Y')}). Debe ser posterior a la fecha actual.")
+            return self.form_invalid(form)
+
+        if fecha_inicio and fecha_fin and fecha_fin <= fecha_inicio:
+            form.add_error('fecha_fin', "La fecha de finalización no puede ser anterior ni igual a la fecha de inicio.")
             return self.form_invalid(form)
 
         response = super().form_valid(form)
@@ -104,9 +114,19 @@ class TemporadaUpdateView(StaffRequiredMixin, UpdateView):
     def form_valid(self, form):
         fecha_inicio = form.cleaned_data.get('fecha_inicio')
         fecha_fin = form.cleaned_data.get('fecha_fin')
+        hoy = timezone.localdate()
+        limite_minimo_inicio = hoy - timedelta(days=7)
 
-        if fecha_inicio and fecha_fin and fecha_fin < fecha_inicio:
-            form.add_error('fecha_fin', "La fecha de finalización no puede ser anterior a la fecha de inicio.")
+        if fecha_inicio and self.object.fecha_inicio != fecha_inicio and fecha_inicio < limite_minimo_inicio:
+            form.add_error('fecha_inicio', f"No puedes modificar la fecha de inicio a una fecha anterior a una semana antes de hoy ({limite_minimo_inicio.strftime('%d/%m/%Y')}).")
+            return self.form_invalid(form)
+
+        if fecha_fin and self.object.fecha_fin != fecha_fin and fecha_fin <= hoy:
+            form.add_error('fecha_fin', f"No puedes modificar la fecha de finalización a una fecha anterior o igual a hoy ({hoy.strftime('%d/%m/%Y')}). Debe ser posterior a la fecha actual.")
+            return self.form_invalid(form)
+
+        if fecha_inicio and fecha_fin and fecha_fin <= fecha_inicio:
+            form.add_error('fecha_fin', "La fecha de finalización no puede ser anterior ni igual a la fecha de inicio.")
             return self.form_invalid(form)
 
         temp_antigua = self.get_object()

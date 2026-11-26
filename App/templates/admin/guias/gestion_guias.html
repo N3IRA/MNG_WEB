@@ -36,7 +36,7 @@
     <div class="row g-4 mb-4">
         <!-- Total Guías -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="{% url 'gestion_guias' %}" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Ver todos los guías turísticos">
+            <a href="{% url 'gestion_guias' %}" class="text-decoration-none d-block h-100" title="Ver todos los guías turísticos">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if not estado_seleccionado %}border-primary border-opacity-75 shadow-sm ring-1{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-secondary small fw-bold text-uppercase">Total Guías</span>
@@ -54,7 +54,7 @@
 
         <!-- Guías Activos -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="?estado=activos" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar guías activos">
+            <a href="?estado=activos" class="text-decoration-none d-block h-100" title="Filtrar guías activos">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'activos' %}border-success shadow-sm border-2{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-success small fw-bold text-uppercase">Guías Activos</span>
@@ -72,7 +72,7 @@
 
         <!-- Guías Inactivos -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="?estado=inactivos" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar guías inactivos">
+            <a href="?estado=inactivos" class="text-decoration-none d-block h-100" title="Filtrar guías inactivos">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'inactivos' %}border-danger shadow-sm border-2{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-danger small fw-bold text-uppercase">Guías Inactivos</span>
@@ -90,7 +90,7 @@
 
         <!-- Acreditación Verificada -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="?estado=con_tarjeta" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar guías con tarjeta profesional">
+            <a href="?estado=con_tarjeta" class="text-decoration-none d-block h-100" title="Filtrar guías con tarjeta profesional">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'con_tarjeta' %}border-warning shadow-sm border-2{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-warning small fw-bold text-uppercase">Acreditación</span>
@@ -255,7 +255,7 @@
                         <!-- Estado -->
                         <td class="text-center py-3 text-nowrap">
                             {% if user_guia.is_active %}
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2 fw-semibold">
+                                <span class="badge bg-success text-white rounded-pill px-3 py-2 fw-semibold shadow-sm" style="background-color: #198754;">
                                     <i class="bi bi-check-circle-fill me-1"></i>Activo
                                 </span>
                             {% else %}
@@ -314,7 +314,7 @@
                     <div class="d-flex align-items-center gap-1">
                         <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-25 rounded-pill px-2 py-1 small fw-bold">GUÍA</span>
                         {% if user_guia.is_active %}
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-0" style="font-size: 0.7rem;">Activo</span>
+                            <span class="badge bg-success text-white rounded-pill px-2 py-0 shadow-sm" style="font-size: 0.7rem; background-color: #198754;">Activo</span>
                         {% else %}
                             <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2 py-0" style="font-size: 0.7rem;">Inactivo</span>
                         {% endif %}
@@ -355,20 +355,20 @@
                     </div>
 
                     <div class="border-top pt-3 d-flex flex-wrap gap-2">
-                        <button type="button" class="btn btn-sm btn-outline-secondary flex-fill rounded-pill fw-semibold shadow-sm py-1.5" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetallesGuia{{ user_guia.id }}">
+                        <button type="button" class="btn btn-sm btn-outline-secondary flex-fill rounded-pill fw-semibold shadow-sm py-1.5" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetallesGuia{{ user_guia.id }}" title="Ver perfil del guía">
                             <i class="bi bi-eye me-1"></i> Perfil
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary flex-fill rounded-pill fw-semibold shadow-sm py-1.5" data-bs-toggle="offcanvas" data-bs-target="#offcanvasEditarGuia{{ user_guia.id }}">
+                        <button type="button" class="btn btn-sm btn-outline-primary flex-fill rounded-pill fw-semibold shadow-sm py-1.5" data-bs-toggle="offcanvas" data-bs-target="#offcanvasEditarGuia{{ user_guia.id }}" title="Editar guía">
                             <i class="bi bi-pencil-square me-1"></i> Editar
                         </button>
                         <form action="{% url 'guias_toggle_estado' user_guia.id %}" method="POST" class="m-0 flex-fill">
                             {% csrf_token %}
                             {% if user_guia.is_active %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger w-100 rounded-pill fw-semibold shadow-sm py-1.5" data-confirm-title="¿Inactivar Guía?" data-confirm-message="¿Confirmas inactivar la cuenta de {{ user_guia.username }}? No podrá acceder al sistema." data-confirm-btn="Sí, inactivar" data-confirm-btn-class="btn-danger">
+                                <button type="submit" class="btn btn-sm btn-outline-danger w-100 rounded-pill fw-semibold shadow-sm py-1.5" title="Inactivar guía" data-confirm-title="¿Inactivar Guía?" data-confirm-message="¿Confirmas inactivar la cuenta de {{ user_guia.username }}? No podrá acceder al sistema." data-confirm-btn="Sí, inactivar" data-confirm-btn-class="btn-danger">
                                     <i class="bi bi-slash-circle me-1"></i> Inactivar
                                 </button>
                             {% else %}
-                                <button type="submit" class="btn btn-sm btn-outline-success w-100 rounded-pill fw-semibold shadow-sm py-1.5" data-confirm-title="¿Activar Guía?" data-confirm-message="¿Confirmas activar la cuenta de {{ user_guia.username }}? Podrá volver a operar en el sistema." data-confirm-btn="Sí, activar" data-confirm-btn-class="btn-success">
+                                <button type="submit" class="btn btn-sm btn-outline-success w-100 rounded-pill fw-semibold shadow-sm py-1.5" title="Activar guía" data-confirm-title="¿Activar Guía?" data-confirm-message="¿Confirmas activar la cuenta de {{ user_guia.username }}? Podrá volver a operar en el sistema." data-confirm-btn="Sí, activar" data-confirm-btn-class="btn-success">
                                     <i class="bi bi-check-circle me-1"></i> Activar
                                 </button>
                             {% endif %}
@@ -464,7 +464,7 @@
                 </div>
                 <div class="col-12">
                     <label class="form-label text-muted small fw-bold mb-1">Foto de Perfil</label>
-                    <input class="form-control form-control-sm" type="file" name="imagen_perfil" accept="image/*">
+                    <input class="form-control form-control-sm" type="file" name="imagen_perfil" accept="image/png, image/jpeg, image/webp">
                 </div>
             </div>
 
@@ -733,7 +733,7 @@
                     </div>
                     <div class="col-12">
                         <label class="form-label text-muted small fw-bold mb-1">Actualizar Foto de Perfil</label>
-                        <input class="form-control form-control-sm" type="file" name="imagen_perfil" accept="image/*">
+                        <input class="form-control form-control-sm" type="file" name="imagen_perfil" accept="image/png, image/jpeg, image/webp">
                     </div>
                 </div>
 

@@ -17,6 +17,13 @@
                     <i class="bi bi-archive text-success me-2"></i>Mis Aventuras Reservadas
                 </h2>
                 <p class="text-muted mb-0">Gestiona tus reservas activas, visualiza tus comprobantes o cancela si se te presentó un imprevisto sin recargar la página.</p>
+                {% if user.saldo_favor and user.saldo_favor > 0 %}
+                    <div class="mt-2">
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2 fw-semibold" title="Crédito acumulado por cancelaciones parciales para usar en futuras reservas">
+                            <i class="bi bi-wallet2 me-1"></i> Saldo a favor disponible: COP ${{ user.saldo_favor|floatformat:0|intcomma }}
+                        </span>
+                    </div>
+                {% endif %}
             </div>
 
             <!-- Botones de Filtro en Vivo con HTMX -->
@@ -113,6 +120,9 @@
                                             <span><i class="bi bi-geo-alt me-1 text-success"></i><strong>Punto:</strong> {{ reserva.paquete.punto_encuentro|truncatechars:48 }}</span>
                                             <span class="badge bg-light text-dark border">{{ reserva.paquete.dias_duracion }} d / {{ reserva.paquete.noches_duracion }} n</span>
                                         </div>
+                                        {% if reserva.paquete.descripcion %}
+                                            <p class="small text-muted mb-0 mt-2 lh-base">{{ reserva.paquete.descripcion }}</p>
+                                        {% endif %}
                                         {% if reserva.paquete.actividades.all %}
                                             <div class="d-flex flex-wrap gap-1 mt-2">
                                                 {% for actividad in reserva.paquete.actividades.all|slice:":4" %}
@@ -199,13 +209,28 @@
                                         </div>
                                     {% endif %}
 
-                                    <!-- Modificación de personas (máximo 10) -->
-                                    {% if reserva.puede_modificar_personas %}
-                                        <div class="mb-3">
-                                            <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-2 fw-semibold"
-                                                    onclick="document.getElementById('personas-panel-{{ reserva.id }}').classList.toggle('d-none');">
-                                                <i class="bi bi-people-fill me-1"></i> Modificar personas
-                                            </button>
+                                    <!-- Botones de gestión de personas -->
+                                    {% if reserva.puede_modificar_personas or reserva.puede_reducir_personas_pagada %}
+                                    <div class="mb-3">
+                                        <div class="d-flex flex-wrap align-items-center gap-2">
+                                            {% if reserva.puede_modificar_personas %}
+                                                <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-2 fw-semibold"
+                                                        onclick="document.getElementById('personas-panel-{{ reserva.id }}').classList.toggle('d-none');">
+                                                    <i class="bi bi-people-fill me-1"></i> Modificar personas
+                                                </button>
+                                            {% endif %}
+
+                                            {% if reserva.puede_reducir_personas_pagada %}
+                                                <button type="button" class="btn btn-outline-primary rounded-pill px-3 py-2 fw-semibold"
+                                                        title="Reduce el número de participantes sin cancelar toda tu reserva"
+                                                        onclick="document.getElementById('reducir-panel-{{ reserva.id }}').classList.toggle('d-none');">
+                                                    <i class="bi bi-person-dash-fill me-1"></i> Reducir personas (Cancelación parcial)
+                                                </button>
+                                            {% endif %}
+                                        </div>
+
+                                        <!-- Panel de Modificación de personas (antes del pago, máximo 10) -->
+                                        {% if reserva.puede_modificar_personas %}
                                             <div id="personas-panel-{{ reserva.id }}" class="d-none mt-3 p-3 bg-white rounded-4 border">
                                                 <div class="small text-muted mb-2">
                                                     Máximo 10 adultos y máximo 10 menores. Debes realizar el cambio como mínimo 48 horas antes del viaje.
@@ -228,6 +253,101 @@
                                                         </div>
                                                     </div>
                                                 </form>
+                                            </div>
+                                        {% endif %}
+
+                                        <!-- Panel de Reducción de personas / Cancelación Parcial en reservas YA PAGADAS -->
+                                        {% if reserva.puede_reducir_personas_pagada %}
+                                            {% with politica=reserva.evaluar_politica_reduccion %}
+                                            <div id="reducir-panel-{{ reserva.id }}" class="d-none mt-3 p-3 bg-white rounded-4 border border-primary border-opacity-25 shadow-sm">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <h6 class="fw-bold text-primary mb-0">
+                                                        <i class="bi bi-person-dash-fill me-1"></i> Reducir participantes — Reserva #{{ reserva.id }}
+                                                    </h6>
+                                                    <button type="button" class="btn-close btn-sm" onclick="document.getElementById('reducir-panel-{{ reserva.id }}').classList.add('d-none');" aria-label="Cerrar"></button>
+                                                </div>
+
+                                                <div class="alert {% if politica.tramo == 'gratuito' %}alert-success{% elif politica.tramo == 'penalidad_parcial' %}alert-warning{% else %}alert-danger{% endif %} rounded-3 py-2 px-3 small mb-3">
+                                                    <i class="bi bi-info-circle-fill me-1"></i>
+                                                    <strong>Política de anticipación vigente:</strong> {{ politica.descripcion }}
+                                                </div>
+
+                                                <form method="POST" action="{% url 'reducir_personas_reserva_pagada' reserva.id %}">
+                                                    {% csrf_token %}
+                                                    <div class="row g-2 mb-3">
+                                                        <div class="col-6">
+                                                            <label class="form-label small fw-bold">Nuevos Adultos (actual: {{ reserva.numero_adultos }})</label>
+                                                            <input type="number" name="adultos" class="form-control" min="1" max="{{ reserva.numero_adultos }}" value="{{ reserva.numero_adultos }}" required>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <label class="form-label small fw-bold">Nuevos Menores (actual: {{ reserva.numero_menores }})</label>
+                                                            <input type="number" name="menores" class="form-control" min="0" max="{{ reserva.numero_menores }}" value="{{ reserva.numero_menores }}" required>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label small fw-bold d-block">¿Cómo deseas gestionar tu saldo a favor?</label>
+                                                        <div class="form-check border rounded-3 p-2.5 ps-5 mb-2 bg-light">
+                                                            <input class="form-check-input" type="radio" name="modalidad" id="mod_credito_{{ reserva.id }}" value="credito" checked>
+                                                            <label class="form-check-label small" for="mod_credito_{{ reserva.id }}">
+                                                                <strong>Saldo / Crédito a favor en mi cuenta</strong>
+                                                                <span class="d-block text-muted">Se acredita al instante en tu cuenta Monagua para usar en futuras reservas.</span>
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check border rounded-3 p-2.5 ps-5 bg-light">
+                                                            <input class="form-check-input" type="radio" name="modalidad" id="mod_reembolso_{{ reserva.id }}" value="reembolso">
+                                                            <label class="form-check-label small" for="mod_reembolso_{{ reserva.id }}">
+                                                                <strong>Reembolso parcial al método de pago original</strong>
+                                                                <span class="d-block text-muted">Se emite nota de crédito y se tramita devolución parcial al medio de pago original.</span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label small fw-bold">Motivo (opcional)</label>
+                                                        <input type="text" name="motivo" class="form-control form-control-sm" maxlength="200" placeholder="Ej: Dos acompañantes no podrán viajar">
+                                                    </div>
+
+                                                    <div class="d-flex justify-content-end gap-2">
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="document.getElementById('reducir-panel-{{ reserva.id }}').classList.add('d-none');">Cancelar</button>
+                                                        <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold" title="Confirmar reducción y generar nota de crédito">
+                                                            <i class="bi bi-check2-circle me-1"></i> Confirmar reducción
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            {% endwith %}
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Notas de Crédito emitidas para esta reserva -->
+                                    {% if reserva.notas_credito.all %}
+                                        <div class="mb-3 p-3 bg-light rounded-4 border">
+                                            <h6 class="fw-bold text-dark small mb-2">
+                                                <i class="bi bi-receipt-cutoff text-success me-1"></i> Notas de Crédito / Cancelaciones Parciales
+                                            </h6>
+                                            <div class="d-flex flex-column gap-2">
+                                                {% for nc in reserva.notas_credito.all %}
+                                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 bg-white p-2.5 rounded-3 border">
+                                                        <div class="small">
+                                                            <strong class="text-dark">{{ nc.codigo }}</strong>
+                                                            <span class="text-muted">· {{ nc.cupos_liberados }} cupo{{ nc.cupos_liberados|pluralize:"s" }} liberado{{ nc.cupos_liberados|pluralize:"s" }}</span>
+                                                            <div class="text-muted">
+                                                                {{ nc.get_modalidad_display }} · Devolución: <strong class="text-success">COP ${{ nc.monto_devuelto|floatformat:0|intcomma }}</strong>
+                                                                {% if nc.porcentaje_penalidad > 0 %}(Penalidad {{ nc.porcentaje_penalidad|floatformat:0 }}%){% endif %}
+                                                            </div>
+                                                        </div>
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <span class="badge rounded-pill {% if nc.estado == 'procesada' %}bg-success text-white{% elif nc.estado == 'pendiente_reembolso' %}bg-warning text-dark{% else %}bg-secondary text-white{% endif %}">
+                                                                {{ nc.get_estado_display }}
+                                                            </span>
+                                                            <a href="{% url 'ver_nota_credito' nc.id %}" class="btn btn-sm btn-outline-success rounded-pill px-2.5 py-0.5 fw-semibold" title="Ver comprobante de nota de crédito">
+                                                                <i class="bi bi-file-earmark-text me-1"></i> Ver Nota
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
                                             </div>
                                         </div>
                                     {% endif %}

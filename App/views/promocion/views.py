@@ -40,13 +40,12 @@ class PromocionListView(StaffRequiredMixin, ListView):
     def get_queryset(self):
         queryset = Promocion.objects.prefetch_related('paquetepromocion_set__paquete').all()
 
-        # Filtro por término de búsqueda (nombre, código promoción, cupón)
+        # Filtro por término de búsqueda (nombre, código promoción)
         q = self.request.GET.get('q', '').strip()
         if q:
             queryset = queryset.filter(
                 Q(nombre__icontains=q) |
                 Q(codigo_promocion__icontains=q) |
-                Q(codigo_cupon__icontains=q) |
                 Q(descripcion__icontains=q)
             )
 
@@ -88,6 +87,12 @@ class PromocionListView(StaffRequiredMixin, ListView):
         )
         
         avg_desc_valor = round(stats['avg_descuento'] or 0)
+        context.update(stats)
+        context['avg_desc_valor'] = avg_desc_valor
+        context['total'] = stats['total']
+        context['activas'] = stats['activas']
+        context['inactivas'] = stats['inactivas']
+        context['estado_seleccionado'] = self.request.GET.get('estado', '')
 
         context['stats_list'] = [
             ('Total Promociones', stats['total'], 'text-dark', 'bi-megaphone'),

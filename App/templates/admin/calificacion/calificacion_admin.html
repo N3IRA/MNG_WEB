@@ -23,7 +23,7 @@
             <a href="{% url 'dashboard_admin' %}" class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 shadow-sm" title="Ir al Panel de Control de administración" aria-label="Ir al Panel de Control de administración">
                 <i class="bi bi-grid-1x2"></i> Panel de Control
             </a>
-            <a href="{% url 'gestion_usuarios' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-none d-md-inline-flex align-items-center gap-1 shadow-sm">
+            <a href="{% url 'gestion_usuarios' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-none d-md-inline-flex align-items-center gap-1 shadow-sm" title="Ir a la gestión de usuarios" aria-label="Ir a la gestión de usuarios">
                 <i class="bi bi-people"></i> Usuarios
             </a>
         </div>
@@ -33,7 +33,7 @@
     <div class="row g-4 mb-4">
         <!-- Total Calificaciones -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="{% url 'listar_calificaciones' %}" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Ver todas las calificaciones registradas">
+            <a href="{% url 'listar_calificaciones' %}" class="text-decoration-none d-block h-100" title="Ver todas las calificaciones registradas">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if not tipo_filtro and not valoracion_filtro %}border-success border-opacity-75 shadow-sm ring-1{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-secondary small fw-bold text-uppercase">Total Calificaciones</span>
@@ -51,7 +51,7 @@
 
         <!-- Calificaciones Públicas -->
         <div class="col-12 col-sm-6 col-md-3">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift">
+            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift" title="Cantidad de calificaciones publicadas y visibles para todos los visitantes en el portal">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <span class="text-primary small fw-bold text-uppercase">Públicas / Visibles</span>
                     <div class="p-2 bg-primary bg-opacity-10 text-primary rounded-3">
@@ -67,7 +67,7 @@
 
         <!-- Calificaciones Ocultas -->
         <div class="col-12 col-sm-6 col-md-3">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift">
+            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift" title="Calificaciones ocultas del público o pendientes de moderación">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <span class="text-warning small fw-bold text-uppercase">Ocultas / Moderación</span>
                     <div class="p-2 bg-warning bg-opacity-10 text-warning rounded-3">
@@ -83,7 +83,7 @@
 
         <!-- Promedio General -->
         <div class="col-12 col-sm-6 col-md-3">
-            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift">
+            <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift" title="Promedio general de estrellas obtenido entre todas las calificaciones">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <span class="text-success small fw-bold text-uppercase">Promedio Global</span>
                     <div class="p-2 bg-success bg-opacity-10 text-success rounded-3">
@@ -111,14 +111,14 @@
                     <span class="input-group-text border-0 bg-transparent text-success ps-3 pe-2">
                         <i class="bi bi-funnel-fill fs-5"></i>
                     </span>
-                    <select name="tipo" class="form-select border-0 bg-transparent text-dark fw-semibold shadow-none py-1" style="cursor: pointer; font-size: 0.9rem;">
+                    <select name="tipo" class="form-select border-0 bg-transparent text-dark fw-semibold shadow-none py-1" style="cursor: pointer; font-size: 0.9rem;" title="Filtrar por categoría de opinión">
                         <option value="">Tipo: Todos los tipos</option>
                         <option value="experiencia" {% if tipo_filtro == 'experiencia' %}selected{% endif %}>Experiencia</option>
                         <option value="sugerencia" {% if tipo_filtro == 'sugerencia' %}selected{% endif %}>Sugerencia</option>
                         <option value="felicitacion" {% if tipo_filtro == 'felicitacion' %}selected{% endif %}>Felicitación</option>
                         <option value="queja" {% if tipo_filtro == 'queja' %}selected{% endif %}>Queja</option>
                     </select>
-                    <select name="valoracion" class="form-select border-0 bg-transparent text-dark fw-semibold shadow-none py-1 border-start" style="cursor: pointer; font-size: 0.9rem;">
+                    <select name="valoracion" class="form-select border-0 bg-transparent text-dark fw-semibold shadow-none py-1 border-start" style="cursor: pointer; font-size: 0.9rem;" title="Filtrar por número de estrellas">
                         <option value="">Puntaje: Todas las estrellas</option>
                         <option value="5" {% if valoracion_filtro == '5' %}selected{% endif %}>5 Estrellas</option>
                         <option value="4" {% if valoracion_filtro == '4' %}selected{% endif %}>4 Estrellas</option>
@@ -127,10 +127,10 @@
                         <option value="1" {% if valoracion_filtro == '1' %}selected{% endif %}>1 Estrella</option>
                     </select>
                     <div class="d-flex align-items-center gap-1 ps-2 pe-1">
-                        <button type="submit" class="btn btn-success rounded-circle d-flex align-items-center justify-content-center p-0 shadow-sm" style="width: 34px; height: 34px;" title="Filtrar">
+                        <button type="submit" class="btn btn-success rounded-circle d-flex align-items-center justify-content-center p-0 shadow-sm" style="width: 34px; height: 34px;" title="Aplicar filtros seleccionados">
                             <i class="bi bi-search fs-6"></i>
                         </button>
-                        <a href="{% url 'listar_calificaciones' %}" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0" style="width: 34px; height: 34px;" title="Restaurar Filtros">
+                        <a href="{% url 'listar_calificaciones' %}" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0" style="width: 34px; height: 34px;" title="Limpiar todos los filtros">
                             <i class="bi bi-arrow-clockwise fs-6"></i>
                         </a>
                     </div>
@@ -151,7 +151,7 @@
             </div>
 
             <!-- Dropdown nativo Bootstrap 5 para Exportación -->
-            <div class="dropdown">
+            <div class="dropdown" title="Exportar listado a Excel, PDF o imprimir">
                 <button class="btn btn-outline-success btn-sm rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-2 shadow-sm dropdown-toggle" 
                         type="button" 
                         id="dropdownExportarCalificaciones" 
@@ -274,11 +274,11 @@
                         <!-- Estado -->
                         <td class="text-center py-3 text-nowrap">
                             {% if c.visible %}
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1.5 fw-semibold">
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1.5 fw-semibold" title="Visible para todos los usuarios en el portal web">
                                     <i class="bi bi-eye-fill me-1"></i>Visible
                                 </span>
                             {% else %}
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 rounded-pill px-3 py-1.5 fw-semibold">
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 rounded-pill px-3 py-1.5 fw-semibold" title="Oculta del público; solo visible para administradores">
                                     <i class="bi bi-eye-slash-fill me-1"></i>Oculto
                                 </span>
                             {% endif %}
@@ -300,13 +300,14 @@
                                     </button>
                                 </form>
 
-                                <button type="button" 
-                                        class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fw-semibold shadow-sm" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#modalResponder{{ c.id }}"
-                                        title="Gestionar respuesta oficial">
-                                    <i class="bi bi-chat-left-dots-fill me-1"></i>{% if c.admin_respuesta %}Editar{% else %}Responder{% endif %}
-                                </button>
+                                <span title="{% if c.admin_respuesta %}Editar respuesta oficial{% else %}Responder a esta calificación{% endif %}">
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fw-semibold shadow-sm" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#modalResponder{{ c.id }}">
+                                        <i class="bi bi-chat-left-dots-fill me-1"></i>{% if c.admin_respuesta %}Editar{% else %}Responder{% endif %}
+                                    </button>
+                                </span>
                             </div>
                         </td>
                     </tr>

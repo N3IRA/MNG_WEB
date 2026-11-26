@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Manual de Usuario Oficial — Monagua Web</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.8cm 1.5cm 2.2cm 1.5cm;
+            @frame footer_frame {
+                -pdf-frame-content: footer_content;
+                left: 1.5cm; width: 18cm; top: 27.6cm; height: 1cm;
+            }
+        }
+        #footer_content { font-size: 8px; color: #6b7280; text-align: right; }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            color: #1f2937;
+            font-size: 10px;
+            line-height: 1.45;
+        }
+        .header-table {
+            width: 100%;
+            border-bottom: 2px solid #047857;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .brand-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #047857;
+        }
+        .doc-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #111827;
+            text-align: right;
+        }
+        .doc-sub {
+            font-size: 8.5px;
+            color: #4b5563;
+            text-align: right;
+        }
+        h2 {
+            color: #047857;
+            font-size: 12px;
+            font-weight: bold;
+            border-bottom: 1px solid #d1fae5;
+            padding-bottom: 3px;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            page-break-after: avoid;
+        }
+        h3 {
+            color: #1f2937;
+            font-size: 10.5px;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 4px;
+            page-break-after: avoid;
+        }
+        p {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: #374151;
+            text-align: justify;
+        }
+        ul, ol {
+            margin-top: 2px;
+            margin-bottom: 6px;
+            padding-left: 18px;
+            color: #374151;
+        }
+        li {
+            margin-bottom: 3px;
+        }
+        .table-data {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px;
+            margin-bottom: 10px;
+            page-break-inside: avoid;
+        }
+        .table-data th, .table-data td {
+            border: 1px solid #d1d5db;
+            padding: 5px 7px;
+            font-size: 9px;
+            text-align: left;
+        }
+        .table-data th {
+            background-color: #f3f4f6;
+            color: #111827;
+            font-weight: bold;
+        }
+        .rule-box {
+            background-color: #fef2f2;
+            border-left: 3px solid #ef4444;
+            padding: 6px 10px;
+            margin: 8px 0;
+            font-size: 9px;
+            color: #991b1b;
+            page-break-inside: avoid;
+        }
+        .important-box {
+            background-color: #fffbeb;
+            border-left: 3px solid #f59e0b;
+            padding: 6px 10px;
+            margin: 8px 0;
+            font-size: 9px;
+            color: #92400e;
+            page-break-inside: avoid;
+        }
+        .tip-box {
+            background-color: #f0fdf4;
+            border-left: 3px solid #10b981;
+            padding: 6px 10px;
+            margin: 8px 0;
+            font-size: 9px;
+            color: #166534;
+            page-break-inside: avoid;
+        }
+        .footer-table {
+            width: 100%;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 20px;
+            padding-top: 8px;
+            font-size: 8px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+    <div id="footer_content">Monagua Turismo · Manual de Usuario — Página <pdf:pagenumber> de <pdf:pagecount></div>
+
+    <!-- Encabezado Institucional -->
+    <table class="header-table">
+        <tr>
+            <td style="width: 50%; vertical-align: middle;">
+                {% if logo_base64 %}
+                    <img src="{{ logo_base64 }}" width="42" height="42" style="vertical-align: middle; margin-right: 6px;" />
+                {% endif %}
+                <span class="brand-title">MONAGUA WEB</span>
+                <div style="font-size: 8px; color: #4b5563; margin-top: 2px;">
+                    Plataforma de Reservas, Pagos y Administración Turística de Mongua
+                </div>
+                <div style="font-size: 7.5px; color: #6b7280;">
+                    ADSO · SENA Sogamoso, Boyacá, Colombia
+                </div>
+            </td>
+            <td style="width: 50%; vertical-align: middle; text-align: right;">
+                <div class="doc-title">MANUAL OFICIAL DE USUARIO</div>
+                <div class="doc-sub">Guía de Operaciones, Roles y Flujos de Negocio</div>
+                <div class="doc-sub">Fecha de Emisión: {{ fecha_generacion }} · Versión ADSO 2026</div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="tip-box">
+        <strong>Introducción a Monagua Turismo (MNG_WEB):</strong> Plataforma web diseñada para descubrir, reservar y pagar expediciones ecológicas en Mongua, Boyacá: Páramo de Ocetá, Laguna Negra, Ciudad de Piedra y senderos Muiscas. Facilita la interacción entre visitantes, turistas registrados, guías locales certificados y equipo administrativo.
+    </div>
+
+    <!-- 1. Acerca de este manual -->
+    <h2>1. Acerca de este manual</h2>
+    <p>Este documento constituye el manual integral de operación del sistema, orientado a guiar a cada tipo de usuario en los procesos técnicos y comerciales de la plataforma.</p>
+    
+    <h3>1.1 ¿A quién va dirigido este manual?</h3>
+    <table class="table-data">
+        <thead>
+            <tr>
+                <th style="width: 35%;">Perfil de Usuario</th>
+                <th>Capítulos Recomendados</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Visitante (sin cuenta)</strong></td>
+                <td>Capítulos 3, 4 y 9</td>
+            </tr>
+            <tr>
+                <td><strong>Turista / Cliente registrado</strong></td>
+                <td>Capítulos 3, 4, 5, 8, 9 y 10</td>
+            </tr>
+            <tr>
+                <td><strong>Guía turístico</strong></td>
+                <td>Capítulos 3, 6 y 10</td>
+            </tr>
+            <tr>
+                <td><strong>Administrador / Staff</strong></td>
+                <td>Capítulos 3, 7, 8 y 10</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>1.2 Cómo usar este manual</h3>
+    <p>Cada capítulo describe paso a paso qué puede hacer el rol asignado, los requisitos de entrada y las reglas de negocio vinculantes que rigen cada operación.</p>
+
+    <!-- 2. Requisitos y conceptos básicos -->
+    <h2>2. Requisitos y conceptos básicos</h2>
+    <h3>2.1 Requisitos de acceso</h3>
+    <ul>
+        <li>Navegador web moderno (Chrome, Firefox, Edge o Safari) en computador, tableta o celular.</li>
+        <li>Conexión a internet para comunicación en tiempo real (con motor local resiliente en Cóndy).</li>
+        <li>Cuenta de correo electrónico activa para recepción del código OTP y notificaciones.</li>
+        <li>Comprobante de pago en imagen (JPG, PNG, WEBP o PDF) para acreditar reservas.</li>
+    </ul>
+
+    <h3>2.2 Roles del sistema</h3>
+    <table class="table-data">
+        <thead>
+            <tr>
+                <th>Rol</th>
+                <th>Descripción Funcional</th>
+                <th>Requisitos de Autenticación</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Visitante</strong></td>
+                <td>Navega el catálogo público, consulta ofertas, usa el asistente Cóndy y envía PQRS.</td>
+                <td>No requiere inicio de sesión.</td>
+            </tr>
+            <tr>
+                <td><strong>Turista / Cliente</strong> (rol = 2)</td>
+                <td>Reserva, paga mediante comprobante, modifica cupos, cancela, califica y descarga facturas QR.</td>
+                <td>Requiere cuenta activa verificada con código OTP.</td>
+            </tr>
+            <tr>
+                <td><strong>Guía turístico</strong> (rol = 3)</td>
+                <td>Lidera grupos en campo, consulta pasajeros, contactos de emergencia y pólizas.</td>
+                <td>Cuenta creada o habilitada por la administración.</td>
+            </tr>
+            <tr>
+                <td><strong>Administrador / Staff</strong> (rol = 1)</td>
+                <td>Control total: catálogo, auditoría de comprobantes, reembolsos, pólizas, usuarios y respaldos.</td>
+                <td>Cuenta administrativa autenticada.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>2.3 Glosario rápido</h3>
+    <ul>
+        <li><strong>Reserva:</strong> Compra de un tour o paquete para una fecha y cantidad de cupos definida.</li>
+        <li><strong>Cupos:</strong> Número total de personas (adultos y menores) incluidas en la reserva.</li>
+        <li><strong>Temporada (alta/baja):</strong> Periodo que define la tarifa aplicable según la fecha del tour.</li>
+        <li><strong>Comprobante de pago:</strong> Imagen o soporte de transferencia bancaria subida por el turista.</li>
+        <li><strong>OTP:</strong> Código temporal de 6 dígitos enviado por correo para activar cuentas de forma segura.</li>
+        <li><strong>Nota de Crédito:</strong> Documento contable que acredita saldo a favor tras reducción de cupos o cancelación.</li>
+        <li><strong>Saldo a favor:</strong> Dinero acreditado en el monedero del usuario para nuevas compras.</li>
+        <li><strong>Reembolso:</strong> Devolución bancaria real del dinero con comprobante adjunto obligatorio.</li>
+        <li><strong>PQRS:</strong> Módulo de Peticiones, Quejas, Reclamos y Sugerencias con seguimiento cronológico.</li>
+        <li><strong>Póliza de asistencia:</strong> Seguro de viaje contra accidentes exigido por ley en senderismo.</li>
+        <li><strong>Cóndy:</strong> Asistente virtual y guardián ecoturístico inspirado en el Cóndor Andino.</li>
+    </ul>
+
+    <!-- 3. Primeros pasos -->
+    <h2>3. Primeros pasos: registro, activación e ingreso</h2>
+    <h3>3.1 Registro de usuarios</h3>
+    <p>1. Ingresa a la página principal y pulsa <em>"Registrarse"</em>.<br>
+    2. Completa el formulario con nombres, apellidos, usuario, cédula, teléfono celular, correo y contraseña.<br>
+    3. <strong>Validación en tiempo real:</strong> La plataforma verifica que correo, cédula y teléfono sean únicos sin recargar la página.<br>
+    4. Envía el formulario para solicitar la activación.</p>
+
+    <h3>3.2 Activación con código OTP</h3>
+    <p>1. Revisa tu correo (incluyendo carpeta de spam) en busca del mensaje con el código de 6 dígitos.<br>
+    2. Ingrésalo en la pantalla de verificación.<br>
+    3. Al validarse, la cuenta queda formalmente activa para iniciar sesión.</p>
+    <div class="important-box">
+        <strong>Importante:</strong> El código OTP es temporal y de un solo uso. Si expira, solicita uno nuevo desde la misma pantalla. No compartas este código con nadie.
+    </div>
+
+    <h3>3.3 Inicio de sesión y seguridad</h3>
+    <p>Inicia sesión con tu correo y contraseña; el sistema te redirigirá a tu panel correspondiente. Al terminar en equipos compartidos, pulsa siempre <em>"Cerrar Sesión"</em>. La plataforma cuenta con rate-limiting contra ataques de fuerza bruta y bitácora de auditoría de todas las acciones sensibles.</p>
+
+    <!-- 4. Manual del Visitante -->
+    <h2>4. Manual del Visitante (sin cuenta)</h2>
+    <p>Sin iniciar sesión puedes explorar el catálogo de tours individuales (Páramo de Ocetá, Laguna Negra) y paquetes ecoturísticos, consultar artículos culturales en el blog, verificar cupones vigentes en Ofertas, conversar con Cóndy y radicar peticiones en el módulo público de PQRS.</p>
+
+    <!-- 5. Manual del Turista -->
+    <h2>5. Manual del Turista / Cliente registrado</h2>
+    <h3>5.1 Dashboard del turista</h3>
+    <p>Vista unificada con acceso a reservas activas, historial de viajes, comprobantes de pago, solicitudes PQRS y calificaciones.</p>
+
+    <h3>5.2 Proceso de Reserva</h3>
+    <p>1. Selecciona el tour y pulsa <em>"Reservar"</em>.<br>
+    2. Elige la fecha y especifica la cantidad de adultos y menores.<br>
+    3. El sistema cotiza en tiempo real según la temporada y aplica promociones.<br>
+    4. Confirma la creación de la reserva (estado inicial: <strong>Pendiente de Pago</strong>).</p>
+
+    <div class="important-box">
+        <strong>Regla importante – Precio inmutable:</strong> El precio total se calcula y fija exclusivamente al crear la reserva con la temporada de la fecha seleccionada. Cambios tarifarios posteriores no afectan cotizaciones ya registradas.
+    </div>
+
+    <h3>5.3 Pago con Comprobante Bancario</h3>
+    <p>Realiza la transferencia (Bancolombia, Nequi, Daviplata o Davivienda), dirígete a <em>"Subir comprobante"</em>, digita la referencia, banco emisor y adjunta la imagen nítida. La reserva pasa a <strong>Pago en revisión</strong>.</p>
+
+    <div class="rule-box">
+        <strong>Regla inquebrantable:</strong> Ninguna reserva pasa a confirmada si no existe un pago aprobado por la administración que cubra o supere el valor total liquidado.
+    </div>
+
+    <table class="table-data">
+        <thead>
+            <tr>
+                <th>Estado del Comprobante</th>
+                <th>Significado</th>
+                <th>Acción del Turista</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Pendiente de revisión</strong></td>
+                <td>En turno de verificación administrativa.</td>
+                <td>Esperar notificación de auditoría.</td>
+            </tr>
+            <tr>
+                <td><strong>Aprobado</strong></td>
+                <td>Pago conciliado exitosamente.</td>
+                <td>Reserva confirmada; descargar factura QR.</td>
+            </tr>
+            <tr>
+                <td><strong>Rechazado</strong></td>
+                <td>Inconsistencia o imagen ilegible.</td>
+                <td>Leer justificación obligatoria y corregir vía PQRS.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>5.4 Modificación y Cancelación</h3>
+    <p><strong>Reducir cupos:</strong> Puedes reducir cupos en <em>Mis Reservas</em>; el sistema genera automáticamente una <strong>Nota de Crédito</strong> por la diferencia líquida.<br>
+    <strong>Cancelación y Reembolso:</strong> Solicita la cancelación con motivo obligatorio. Al aprobarse, se aplica la penalidad por anticipación y con la Nota de Crédito tú decides: mantener el valor como <strong>Saldo a Favor</strong> o solicitar <strong>Reembolso Bancario</strong>.</p>
+
+    <h3>5.5 Facturas QR y Calificaciones</h3>
+    <p>Descarga tu factura legal y comprobante con <strong>Código QR</strong> para validación en campo. Al finalizar tu tour, califica al guía de 1 a 5 estrellas.</p>
+
+    <!-- 6. Manual del Guía -->
+    <h2>6. Manual del Guía Turístico</h2>
+    <p>El guía accede con credenciales asignadas por la administración, mantiene su tarjeta profesional (RNT) y ARL al día, consulta sus expediciones en <em>PlanGuia</em> y verifica antes de salir: listado de pasajeros (adultos/menores), contactos de emergencia familiares y pólizas de asistencia médica colectivas.</p>
+
+    <!-- 7. Manual del Administrador -->
+    <h2>7. Manual del Administrador / Staff</h2>
+    <p><strong>Dashboard operativo:</strong> Ingresos, reservas por estado, volumen de turistas y estadísticas.<br>
+    <strong>Catálogo y Tarifas:</strong> CRUD de categorías, actividades, paquetes, temporadas y cupones.<br>
+    <strong>Auditoría de Comprobantes:</strong> Validación visual de imágenes bancarias y aprobación o rechazo con justificación obligatoria.<br>
+    <strong>Módulo de Pagos Rechazados:</strong> Reconsideración de casos y reactivación de comprobantes legítimos.<br>
+    <strong>Cancelaciones y Reembolsos:</strong> Autorización de notas de crédito y dispersión bancaria con <em>soporte bancario obligatorio adjunto</em>.<br>
+    <strong>Seguros, Usuarios y Backups:</strong> Emisión de pólizas legales, gestión de credenciales y generación de respaldos SQL con bitácora de auditoría.</p>
+
+    <!-- 8. Flujos y reglas de negocio -->
+    <h2>8. Flujos clave y reglas de negocio</h2>
+    <table class="table-data">
+        <thead>
+            <tr>
+                <th>Etapa</th>
+                <th>Responsable</th>
+                <th>Resultado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Crear reserva</td>
+                <td>Turista</td>
+                <td>Estado Pendiente de Pago</td>
+            </tr>
+            <tr>
+                <td>Subir comprobante</td>
+                <td>Turista</td>
+                <td>Estado Pago en revisión</td>
+            </tr>
+            <tr>
+                <td>Revisar y auditar</td>
+                <td>Administrador</td>
+                <td>Pago Aprobado o Rechazado</td>
+            </tr>
+            <tr>
+                <td>Confirmación</td>
+                <td>Sistema</td>
+                <td>Reserva Confirmada y Factura QR</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 9. Preguntas frecuentes -->
+    <h2>9. Preguntas frecuentes (FAQ)</h2>
+    <p><strong>¿Puedo pagar con tarjeta de crédito directa o PayPal?</strong> No, Monagua opera con transferencias bancarias nacionales (Bancolombia, Davivienda) y billeteras móviles (Nequi, Daviplata).<br>
+    <strong>¿Por qué mi precio no cambió si la temporada subió?</strong> El precio pactado es inmutable para proteger tu presupuesto.<br>
+    <strong>¿Cómo sé que se realizó mi reembolso?</strong> En <em>Mis Reembolsos</em> podrás descargar el comprobante bancario oficial cargado por administración.</p>
+
+    <!-- 10. Solución de problemas -->
+    <h2>10. Solución de problemas y soporte</h2>
+    <table class="table-data">
+        <thead>
+            <tr>
+                <th>Problema</th>
+                <th>Causa Probable</th>
+                <th>Solución</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>No puedo iniciar sesión</td>
+                <td>Cuenta sin activar o clave errónea.</td>
+                <td>Activar con OTP o recuperar contraseña.</td>
+            </tr>
+            <tr>
+                <td>Demasiados intentos</td>
+                <td>Límite de solicitudes (rate-limiting).</td>
+                <td>Esperar 3 a 5 minutos antes de reintentar.</td>
+            </tr>
+            <tr>
+                <td>Error subiendo comprobante</td>
+                <td>Archivo muy pesado o formato no válido.</td>
+                <td>Subir imagen liviana en JPG, PNG o PDF.</td>
+            </tr>
+            <tr>
+                <td>No aparece cotización</td>
+                <td>Fecha sin temporada asignada.</td>
+                <td>Elegir otra fecha o informar a administración.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 11 y 12. Seguridad y Resumen -->
+    <h2>11. Recomendaciones de seguridad & 12. Resumen</h2>
+    <p>Utiliza contraseñas seguras, nunca compartas tu código OTP, cierra sesión en equipos compartidos y sube comprobantes legítimos. Monagua Turismo promueve el ecoturismo responsable, la conservación del Páramo de Ocetá y la transparencia en cada transacción.</p>
+
+    <table class="footer-table">
+        <tr>
+            <td>© 2026 Monagua Turismo · ADSO SENA Sogamoso, Boyacá</td>
+            <td style="text-align: right;">Documento Oficial del Sistema Monagua Web</td>
+        </tr>
+    </table>
+
+</body>
+</html>

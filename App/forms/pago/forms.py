@@ -3,6 +3,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from App.models import Pago
+from App.validators import validar_comprobante_pago
 
 
 class ComprobantePagoForm(forms.ModelForm):
@@ -157,44 +158,5 @@ class ComprobantePagoForm(forms.ModelForm):
     def clean_imagen_comprobante(self):
         archivo = self.cleaned_data.get('imagen_comprobante')
         if archivo:
-            # 1. Límite de tamaño: 10 MB
-            max_mb = 10
-            if archivo.size > max_mb * 1024 * 1024:
-                raise ValidationError(f"El comprobante no puede pesar más de {max_mb} MB.")
-
-            # 2. Protección contra dobles extensiones peligrosas (ej. archivo.php.png, exploit.sh.jpg)
-            nombre = archivo.name.lower()
-            extensiones_peligrosas = ('.php', '.exe', '.sh', '.bat', '.py', '.pl', '.jsp', '.asp', '.aspx', '.cgi', '.cmd', '.vbs', '.phtml')
-            for ext in extensiones_peligrosas:
-                if ext in nombre:
-                    raise ValidationError(
-                        f"Archivo sospechoso detectado con extensión no permitida ({ext}). Solo se admiten imágenes limpias o PDF."
-                    )
-
-            # 3. Inspección de código o scripts maliciosos en los primeros bytes del archivo
-            pos = archivo.tell() if hasattr(archivo, 'tell') else 0
-            archivo.seek(0)
-            primeros_bytes = archivo.read(2048)
-            archivo.seek(pos)
-
-            patrones_maliciosos = [b'<?php', b'<script', b'eval(', b'base64_decode', b'system(', b'shell_exec(']
-            for patron in patrones_maliciosos:
-                if patron in primeros_bytes.lower():
-                    raise ValidationError("El archivo adjunto contiene código ejecutable no permitido por seguridad.")
-
-            # 4. Verificación de integridad de imagen o PDF
-            import os
-            ext = os.path.splitext(nombre)[1].lower()
-            if ext == '.pdf':
-                if not primeros_bytes.startswith(b'%PDF-'):
-                    raise ValidationError("El archivo PDF del comprobante está dañado o no es un PDF válido.")
-            else:
-                try:
-                    from PIL import Image
-                    img = Image.open(archivo)
-                    img.verify()
-                    archivo.seek(pos)
-                except Exception:
-                    raise ValidationError("El archivo subido no es una imagen o archivo válido.")
-
+            validar_comprobante_pago(archivo)
         return archivo

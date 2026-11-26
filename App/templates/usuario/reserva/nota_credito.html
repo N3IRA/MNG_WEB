@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block titulo %}Nota de Crédito {{ nota.codigo }} | Monagua{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a href="{% if user.es_admin %}{% url 'editar_reserva' nota.reserva.id %}{% else %}{% url 'mis_reservas_usuario' %}{% endif %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </a>
+                <button type="button" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold" onclick="window.print()" title="Imprimir o guardar en PDF">
+                    <i class="bi bi-printer me-1"></i> Imprimir Nota de Crédito
+                </button>
+            </div>
+
+            <div class="card border-0 shadow rounded-4 overflow-hidden bg-white">
+                <div class="card-header bg-success text-white p-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <div class="small text-uppercase opacity-75 fw-semibold">Comprobante Contable de Cancelación Parcial</div>
+                        <h4 class="fw-bold mb-0">Nota de Crédito {{ nota.codigo }}</h4>
+                    </div>
+                    <span class="badge bg-white text-success rounded-pill px-3 py-2 fw-bold">
+                        {{ nota.get_estado_display }}
+                    </span>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="row g-3 mb-4 pb-3 border-bottom">
+                        <div class="col-md-6">
+                            <div class="small text-muted">Titular</div>
+                            <div class="fw-bold text-dark">{{ nota.usuario.get_full_name|default:nota.usuario.username }}</div>
+                            <div class="small text-secondary">{{ nota.usuario.email }}</div>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <div class="small text-muted">Fecha de Emisión</div>
+                            <div class="fw-bold text-dark">{{ nota.fecha_emision|date:"d/m/Y H:i" }}</div>
+                            <div class="small text-secondary">Reserva #{{ nota.reserva.id }} — {{ nota.reserva.paquete.nombre }}</div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-light rounded-3 border mb-4">
+                        <h6 class="fw-bold text-dark small mb-2">
+                            <i class="bi bi-link-45deg text-success me-1"></i> Comprobante de Pago Original Vinculado (Intacto)
+                        </h6>
+                        <div class="row g-2 small">
+                            <div class="col-sm-4"><span class="text-muted">Referencia:</span> <strong>{{ nota.pago_original.referencia }}</strong></div>
+                            <div class="col-sm-4"><span class="text-muted">Medio / Banco:</span> <strong>{{ nota.pago_original.banco_origen }}</strong></div>
+                            <div class="col-sm-4"><span class="text-muted">Monto Original:</span> <strong>COP ${{ nota.pago_original.monto|floatformat:0|intcomma }}</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered align-middle mb-0 small">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th class="text-end">Detalle / Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Cupos liberados en el paquete</td>
+                                    <td class="text-end fw-semibold">{{ nota.cupos_liberados }} persona{{ nota.cupos_liberados|pluralize:"s" }}</td>
+                                </tr>
+                                {% if nota.modificacion %}
+                                <tr>
+                                    <td>Ajuste de pasajeros</td>
+                                    <td class="text-end">
+                                        {{ nota.modificacion.adultos_anteriores }}A / {{ nota.modificacion.menores_anteriores }}M
+                                        &rarr;
+                                        <strong>{{ nota.modificacion.adultos_nuevos }}A / {{ nota.modificacion.menores_nuevos }}M</strong>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <td>Diferencia bruta por reducción</td>
+                                    <td class="text-end">COP ${{ nota.monto_bruto_diferencia|floatformat:0|intcomma }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Penalidad aplicada ({{ nota.porcentaje_penalidad|floatformat:0 }}%)</td>
+                                    <td class="text-end text-danger">- COP ${{ nota.monto_penalidad|floatformat:0|intcomma }}</td>
+                                </tr>
+                                <tr class="table-success">
+                                    <td class="fw-bold">Total Devuelto / Acreditado ({{ nota.get_modalidad_display }})</td>
+                                    <td class="text-end fw-bold fs-6 text-success">COP ${{ nota.monto_devuelto|floatformat:0|intcomma }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="small text-muted">
+                        <strong>Política aplicada:</strong> {{ nota.politica_aplicada }}<br>
+                        {% if nota.motivo %}<strong>Motivo:</strong> {{ nota.motivo }}{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

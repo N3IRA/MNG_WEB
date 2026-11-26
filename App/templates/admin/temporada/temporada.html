@@ -90,7 +90,27 @@
                     {% for t in temporadas %}
                     <tr>
                         <td>
-                            <div class="fw-bold text-dark">{{ t.nombre }}</div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">{{ t.nombre }}</h6>
+                                <div class="d-flex align-items-center gap-1">
+                                    <p class="text-muted small mb-0 text-truncate" style="max-width: 280px;">
+                                        {{ t.descripcion|default:"Sin descripción" }}
+                                    </p>
+                                    {% if t.descripcion %}
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-secondary rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0 p-0 border"
+                                            style="width: 18px; height: 18px; font-size: 11px; font-weight: 700; line-height: 1;"
+                                            data-bs-toggle="popover" 
+                                            data-bs-trigger="focus" 
+                                            data-bs-placement="top" 
+                                            data-bs-title="Descripción: {{ t.nombre }}" 
+                                            data-bs-content="{{ t.descripcion }}"
+                                            title="Ver descripción completa">
+                                        !
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </td>
                         <td class="text-center">
                             <span class="text-secondary fw-semibold">{{ t.fecha_inicio|date:"d \d\e M, Y" }}</span>
@@ -100,7 +120,7 @@
                         </td>
                         <td class="text-center">
                             {% if t.estado %}
-                                <span class="badge px-3 py-2 rounded-pill border border-success-subtle bg-success-subtle text-success-emphasis shadow-sm"><i class="bi bi-play-circle-fill me-1"></i> Activa</span>
+                                <span class="badge px-3 py-2 rounded-pill bg-success text-white shadow-sm" style="background-color: #198754;"><i class="bi bi-play-circle-fill me-1"></i> Activa</span>
                             {% else %}
                                 <span class="badge px-3 py-2 rounded-pill border border-danger-subtle bg-danger-subtle text-danger-emphasis shadow-sm"><i class="bi bi-stop-circle-fill me-1"></i> Inactiva</span>
                             {% endif %}
@@ -144,10 +164,28 @@
                         <div class="d-flex justify-content-between align-items-start mb-2 border-bottom pb-2">
                             <div>
                                 <h5 class="fw-bold text-dark mb-0">{{ t.nombre }}</h5>
+                                <div class="d-flex align-items-center gap-1 mt-1">
+                                    <small class="text-muted text-truncate d-block" style="max-width: 240px;">
+                                        {{ t.descripcion|default:"Sin descripción" }}
+                                    </small>
+                                    {% if t.descripcion %}
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-secondary rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0 p-0 border"
+                                            style="width: 18px; height: 18px; font-size: 11px; font-weight: 700; line-height: 1;"
+                                            data-bs-toggle="popover" 
+                                            data-bs-trigger="focus" 
+                                            data-bs-placement="top" 
+                                            data-bs-title="Descripción: {{ t.nombre }}" 
+                                            data-bs-content="{{ t.descripcion }}"
+                                            title="Ver descripción completa">
+                                        !
+                                    </button>
+                                    {% endif %}
+                                </div>
                             </div>
                             <div>
                                 {% if t.estado %}
-                                    <span class="badge rounded-pill border border-success-subtle bg-success-subtle text-success-emphasis shadow-sm">Activa</span>
+                                    <span class="badge rounded-pill bg-success text-white shadow-sm" style="background-color: #198754;">Activa</span>
                                 {% else %}
                                     <span class="badge rounded-pill border border-danger-subtle bg-danger-subtle text-danger-emphasis shadow-sm">Inactiva</span>
                                 {% endif %}
@@ -169,19 +207,19 @@
                             <form action="{% url 'toggle_estado_temporada' t.id %}" method="POST" class="flex-fill m-0">
                                 {% csrf_token %}
                                 {% if t.estado %}
-                                    <button type="submit" class="btn btn-sm btn-outline-warning w-100 fw-bold rounded-pill" data-confirm-title="¿Inactivar Temporada?" data-confirm-message="La temporada '{{ t.nombre }}' pasará a estado inactivo." data-confirm-btn="Sí, inactivar" data-confirm-btn-class="btn-warning">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning w-100 fw-bold rounded-pill" title="Inactivar Temporada" data-confirm-title="¿Inactivar Temporada?" data-confirm-message="La temporada '{{ t.nombre }}' pasará a estado inactivo." data-confirm-btn="Sí, inactivar" data-confirm-btn-class="btn-warning">
                                         <i class="bi bi-pause-circle me-1"></i> Inactivar
                                     </button>
                                 {% else %}
-                                    <button type="submit" class="btn btn-sm btn-outline-success w-100 fw-bold rounded-pill" data-confirm-title="¿Activar Temporada?" data-confirm-message="La temporada '{{ t.nombre }}' pasará a estado activo." data-confirm-btn="Sí, activar" data-confirm-btn-class="btn-success">
+                                    <button type="submit" class="btn btn-sm btn-outline-success w-100 fw-bold rounded-pill" title="Activar Temporada" data-confirm-title="¿Activar Temporada?" data-confirm-message="La temporada '{{ t.nombre }}' pasará a estado activo." data-confirm-btn="Sí, activar" data-confirm-btn-class="btn-success">
                                         <i class="bi bi-play-circle me-1"></i> Activar
                                     </button>
                                 {% endif %}
                             </form>
-                            <a href="{% url 'editar_temporada' t.id %}" class="btn btn-sm btn-outline-secondary flex-fill fw-bold rounded-pill">
+                            <a href="{% url 'editar_temporada' t.id %}" class="btn btn-sm btn-outline-secondary flex-fill fw-bold rounded-pill" title="Editar Temporada">
                                 <i class="bi bi-pencil me-1"></i> Editar
                             </a>
-                            <a href="{% url 'eliminar_temporada' t.id %}" class="btn btn-sm btn-outline-danger flex-fill fw-bold rounded-pill">
+                            <a href="{% url 'eliminar_temporada' t.id %}" class="btn btn-sm btn-outline-danger flex-fill fw-bold rounded-pill" title="Eliminar Temporada">
                                 <i class="bi bi-trash me-1"></i> Eliminar
                             </a>
                         </div>

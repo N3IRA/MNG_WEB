@@ -22,6 +22,7 @@ from App.views.actividades import views as actividades_views
 from App.views.tarifa import views as tarifa_views
 from App.views.guias import views as guias_views
 from App.views.promocion import views as promocion_views
+from App.views.soporte import views as soporte_views
 from App.views.comprobante_pago import views as comprobante_pago_views
 from App.views.pagos_rechazados import views as pagos_rechazados_views
 from App.views.reserva.views import listar_cancelaciones_admin
@@ -57,6 +58,13 @@ urlpatterns = [
 
     # Ofertas y Promociones públicas
     path('ofertas/', promocion_views.promociones_publicas, name='promociones_publicas'),
+
+    # Centro de Ayuda, Soporte y Manual de Usuario
+    path('soporte/', soporte_views.soporte_ayuda_view, name='soporte_ayuda'),
+    path('ayuda/', soporte_views.soporte_ayuda_view, name='ayuda'),
+    path('manual/', soporte_views.manual_usuario_view, name='manual_usuario'),
+    path('manual-usuario/', soporte_views.manual_usuario_view, name='manual_usuario_alt'),
+    path('soporte/manual-pdf/', soporte_views.manual_usuario_pdf_view, name='manual_usuario_pdf'),
 
     # Categorías (Administración / Staff)
     path('admin/categorias/', categoria_views.CategoriaListView.as_view(), name='listar_categorias'),
@@ -108,6 +116,8 @@ urlpatterns = [
     path('reservas/comprobante/<int:reserva_id>/', reserva_views.comprobante_reserva_html, name='comprobante_reserva'),
     path('reservas/comprobante-multiple/', reserva_views.comprobante_multiple, name='comprobante_multiple'),
     path('reservas/<int:reserva_id>/personas/modificar/', reserva_views.modificar_personas_reserva, name='modificar_personas_reserva'),
+    path('reservas/<int:reserva_id>/personas/reducir/', reserva_views.reducir_personas_reserva_pagada, name='reducir_personas_reserva_pagada'),
+    path('reservas/nota-credito/<int:nota_id>/', reserva_views.ver_nota_credito, name='ver_nota_credito'),
 
     # Reservas (Administración / Staff)
     path('admin/reservas/', reserva_views.GestionReservasListView.as_view(), name='gestion_reservas'),
@@ -215,6 +225,11 @@ urlpatterns = [
   #cancelaciones
   path('admin/reserva/', listar_cancelaciones_admin, name='listar_cancelaciones'),
   path('admin/cancelaciones/editar/<int:reserva_id>/', reserva_views.editar_cancelacion_admin, name='editar_cancelacion_admin'),
+
+    # Reembolsos bancarios (Administración y Turista)
+    path('admin/reembolsos/', reserva_views.listar_reembolsos_admin, name='listar_reembolsos_admin'),
+    path('admin/reembolsos/registrar/<int:reembolso_id>/', reserva_views.registrar_reembolso_admin, name='registrar_reembolso_admin'),
+    path('reservas/mis-reembolsos/', reserva_views.mis_reembolsos_usuario, name='mis_reembolsos_usuario'),
 
     # Respaldo y restauración de la base de datos
     path('admin/respaldo/', backup, name='backup'),

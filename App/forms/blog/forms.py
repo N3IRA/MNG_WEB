@@ -1,5 +1,6 @@
 from django import forms
 from App.models import Blog
+from App.validators import validar_imagen_blog
 
 
 class BlogForm(forms.ModelForm):
@@ -45,8 +46,14 @@ class BlogForm(forms.ModelForm):
 
         if 'imagen_destacada' in self.fields:
             self.fields['imagen_destacada'].label = 'Imagen destacada / portada'
-            self.fields['imagen_destacada'].widget.attrs['accept'] = 'image/*'
+            self.fields['imagen_destacada'].widget.attrs['accept'] = 'image/png, image/jpeg, image/webp'
             self.fields['imagen_destacada'].widget.attrs['title'] = 'Seleccionar imagen'
+
+    def clean_imagen_destacada(self):
+        imagen = self.cleaned_data.get('imagen_destacada')
+        if imagen:
+            validar_imagen_blog(imagen)
+        return imagen
 
     def clean_titulo(self):
         titulo = str(self.cleaned_data.get('titulo', '')).strip()

@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Sum, Q
-from App.models import Pago, Reserva
+from django.utils import timezone
+from App.models import Pago, Reserva, Usuario
 from App.utils import crear_notificacion_sistema, notificar_administradores
 from django.utils import timezone
 from App.models import Usuario

@@ -22,6 +22,23 @@
 
     <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=2.0" />
+    <style>
+      /* Estados de Alta Visibilidad: Activa / Activo / Confirmada (#198754) */
+      .badge.bg-success:not(.bg-opacity-10):not(.bg-opacity-25),
+      .badge[style*="#198754"],
+      .badge-estado-activa,
+      .badge-estado-activo {
+        background-color: #198754 !important;
+        color: #ffffff !important;
+        border-color: #198754 !important;
+      }
+      .badge.bg-success:not(.bg-opacity-10):not(.bg-opacity-25) *,
+      .badge[style*="#198754"] *,
+      .badge-estado-activa *,
+      .badge-estado-activo * {
+        color: #ffffff !important;
+      }
+    </style>
     <script src="{% static 'js/htmx.min.js' %}"></script>
     {% block extra_head %}{% endblock %}
   </head>
@@ -31,7 +48,7 @@
     <button
       id="sidebar-toggle"
       class="btn btn-success position-fixed d-lg-none shadow-sm"
-      style="top: 15px; left: 15px; z-index: 1050;"
+      style="top: 15px; left: 15px; z-index: 1085;"
       aria-label="Abrir o contraer barra lateral del panel de control"
       title="Alternar barra lateral del panel de control"
       aria-expanded="false"
@@ -44,7 +61,7 @@
     <div
       id="sidebar-overlay"
       class="position-fixed top-0 start-0 w-100 h-100 d-none"
-      style="z-index: 1040;"
+      style="z-index: 1075;"
     ></div>
 
     <!-- ══════════════ SIDEBAR ══════════════ -->

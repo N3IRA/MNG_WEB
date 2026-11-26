@@ -78,17 +78,19 @@ document.addEventListener('DOMContentLoaded', function() {
       prev.className = 'btn btn-sm btn-outline-secondary rounded-3';
       prev.innerHTML = '<i class="bi bi-chevron-left"></i>';
       prev.disabled = currentPage === 1;
+      prev.title = 'Página anterior';
       prev.addEventListener('click', () => {
         showPage(currentPage - 1);
         document.getElementById('calificaciones-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
       controls.appendChild(prev);
 
-      // Páginas numeradas
+      // Paginación
       for (let p = 1; p <= totalPages; p++) {
         const btn = document.createElement('button');
         btn.className = 'btn btn-sm rounded-3 ' + (p === currentPage ? 'btn-success' : 'btn-outline-secondary');
         btn.textContent = p;
+        btn.title = 'Ir a la página ' + p;
         btn.addEventListener('click', () => {
           showPage(p);
           document.getElementById('calificaciones-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -101,6 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
       next.className = 'btn btn-sm btn-outline-secondary rounded-3';
       next.innerHTML = '<i class="bi bi-chevron-right"></i>';
       next.disabled = currentPage === totalPages;
+      next.title = 'Página siguiente';
       next.addEventListener('click', () => {
         showPage(currentPage + 1);
         document.getElementById('calificaciones-container').scrollIntoView({ behavior: 'smooth', block: 'start' });

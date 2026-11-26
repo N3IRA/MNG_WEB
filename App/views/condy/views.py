@@ -14,22 +14,29 @@ def condy_chat_api(request):
     """
     if getattr(request, 'limited', False):
         return JsonResponse({
-            'reply': 'Has enviado muchos mensajes en poco tiempo. Por favor espera un momento antes de continuar consultando a Condy.',
+            'response': 'Has enviado muchos mensajes en poco tiempo. Por favor espera un momento antes de continuar consultando a Cóndy.',
+            'reply': 'Has enviado muchos mensajes en poco tiempo. Por favor espera un momento antes de continuar consultando a Cóndy.',
             'status': 'rate_limited'
         }, status=429)
 
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
+            data = json.loads(request.body.decode('utf-8') if isinstance(request.body, bytes) else request.body)
             mensaje = data.get('message', '')
-            
-            if not mensaje:
-                return JsonResponse({'error': 'Mensaje vacío'}, status=400)
             
             resultado = procesar_mensaje(mensaje, request)
             return JsonResponse(resultado)
             
         except json.JSONDecodeError:
-            return JsonResponse({'error': 'Formato JSON inválido'}, status=400)
+            return JsonResponse({'error': 'Formato JSON inválido', 'response': 'Formato de mensaje inválido.'}, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'response': 'Hubo un inconveniente al procesar tu mensaje. Puedes intentar nuevamente o comunicarte a nuestro WhatsApp oficial +57 322 3465191.',
+                'options': ['¿Qué tours ofrecen?', 'Regulaciones ambientales', 'Radicar PQRS']
+            }, status=200)
+    
+    if request.method == 'GET':
+        resultado = procesar_mensaje('', request)
+        return JsonResponse(resultado)
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)

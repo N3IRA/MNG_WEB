@@ -10,8 +10,16 @@
     <!-- Header -->
     <div class="condy-chat-header d-flex justify-content-between align-items-center p-3 text-white">
       <div class="d-flex align-items-center gap-2">
-        <i class="fa-solid fa-robot fs-4" aria-hidden="true"></i>
-        <h6 id="condy-chat-title" class="mb-0 fw-bold">Condy - Asistente Virtual</h6>
+        <i class="fa-solid fa-feather-pointed fs-4 text-warning" aria-hidden="true"></i>
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <h6 id="condy-chat-title" class="mb-0 fw-bold">Cóndy - Asistente Virtual</h6>
+            <span id="condy-status-badge" class="badge rounded-pill px-2 shadow-sm" style="font-size: 0.65rem; background-color: #28a745; color: #fff;">
+              ● En línea
+            </span>
+          </div>
+          <small id="condy-status-desc" class="text-white-50 d-none d-sm-inline" style="font-size: 0.72rem;">Mongua, Boyacá • Siempre disponible</small>
+        </div>
       </div>
       <div class="d-flex align-items-center gap-1">
         <button id="condy-chat-clear" class="btn btn-sm text-white border-0 p-1" title="Reiniciar conversación" aria-label="Reiniciar conversación">

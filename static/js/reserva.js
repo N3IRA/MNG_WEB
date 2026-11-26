@@ -198,7 +198,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <span>Total regular (${adultos} adulto${adultos > 1 ? 's' : ''}${menores > 0 ? ', ' + menores + ' menor' + (menores > 1 ? 'es' : '') : ''}):</span>
                         <span class="text-decoration-line-through fw-semibold">$${base_total.toLocaleString('es-CO')}</span>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mb-2 text-danger small">
+                    <div class="d-flex justify-content-between align-items-center mb-2 small" style="color: #ea580c !important; font-weight: 600;">
                         <span><i class="bi bi-tag-fill me-1"></i>Descuento (${promo_aplicada.porcentaje}% OFF - ${promo_aplicada.nombre}):</span>
                         <span class="fw-bold">-$${promo_aplicada.descuentoMonto.toLocaleString('es-CO')}</span>
                     </div>
