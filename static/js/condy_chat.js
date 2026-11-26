@@ -13,8 +13,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Opciones iniciales frecuentes (CA2)
   const initialOptions = [
-    "¿Cuáles son sus horarios?",
-    "¿Qué servicios ofrecen?",
+    "¿Cómo funciona la página?",
+    "Regulaciones ambientales",
+    "¿Qué tours ofrecen?",
+    "¿Cómo realizar un pago?",
     "¿Cómo radicar una PQRS?"
   ];
 
@@ -70,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
       chatHistory = [];
       messagesContainer.innerHTML = '';
       hideOptions();
-      const greeting = "¡Hola! He reiniciado nuestra conversación. Soy Cóndy, tu asistente en Monagua Turismo. ¿En qué te puedo colaborar?";
+      const greeting = "¡Hola! He reiniciado nuestra conversación. Soy Cóndy, tu cóndor guardián y asistente en Monagua Turismo. ¿En qué te puedo orientar hoy?";
       addMessage(greeting, "bot");
       showOptions(initialOptions);
   }
@@ -83,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
       window.classList.remove("d-none");
       
       if (isFirstOpen) {
-        const greeting = "¡Hola! Soy Condy, tu asistente virtual. ¿En qué puedo ayudarte hoy?";
+        const greeting = "¡Hola! Soy Cóndy, tu asistente virtual y cóndor guardián en Monagua Turismo. ¿En qué te puedo orientar hoy? Puedes consultarme sobre tours, cómo funciona la página, regulaciones ambientales o pagos.";
         addMessage(greeting, "bot");
         showOptions(initialOptions);
         isFirstOpen = false;
