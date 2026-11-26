@@ -103,6 +103,13 @@ class PaqueteListView(StaffRequiredMixin, ListView):
                     queryset = queryset.filter(categoria_id=cat_id)
             except (ValueError, TypeError):
                 pass
+
+        estado = self.request.GET.get('estado', '').strip()
+        if estado == 'activos':
+            queryset = queryset.filter(estado=True)
+        elif estado == 'inactivos':
+            queryset = queryset.filter(estado=False)
+
         return queryset.order_by('-id')
 
     def get_context_data(self, **kwargs):
@@ -113,6 +120,7 @@ class PaqueteListView(StaffRequiredMixin, ListView):
             inactivos=Count('id', filter=Q(estado=False))
         )
         context.update(stats)
+        context['total_categorias'] = Categoria.objects.count()
         context['stats_list'] = [
             ('Total Paquetes', stats['total'], 'text-dark'),
             ('Activos', stats['activos'], 'text-success'),
@@ -120,6 +128,7 @@ class PaqueteListView(StaffRequiredMixin, ListView):
         ]
         context['categorias'] = Categoria.objects.all()
         context['categoria_seleccionada'] = self.request.GET.get('categoria', '')
+        context['estado_seleccionado'] = self.request.GET.get('estado', '')
         return context
 
 

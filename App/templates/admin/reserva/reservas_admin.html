@@ -292,10 +292,10 @@
                                         <i class="bi bi-x-circle"></i> Cancelaciones
                                     </a>
                                 {% else %}
-                                    <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-sm btn-outline-primary px-3 rounded-pill fw-semibold shadow-sm">
+                                    <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-sm btn-outline-primary px-3 rounded-pill fw-semibold shadow-sm" title="Editar Reserva">
                                         <i class="bi bi-pencil-square me-1"></i> Editar
                                     </a>
-                                    <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger px-3 rounded-pill fw-semibold shadow-sm">
+                                    <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger px-3 rounded-pill fw-semibold shadow-sm" title="Eliminar Reserva">
                                         <i class="bi bi-trash me-1"></i> Eliminar
                                     </a>
                                 {% endif %}
@@ -343,15 +343,15 @@
                             <div class="text-center text-muted small py-1 fw-semibold mb-2">
                                 <i class="bi bi-lock-fill me-1"></i> Reserva bloqueada para edición
                             </div>
-                            <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger w-100 py-2 rounded-pill fw-semibold">
+                            <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger w-100 py-2 rounded-pill fw-semibold" title="Eliminar Reserva">
                                 <i class="bi bi-trash"></i> Eliminar
                             </a>
                         {% else %}
                             <div class="d-flex gap-2">
-                                <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-sm btn-outline-primary w-100 py-2 rounded-pill fw-semibold">
+                                <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-sm btn-outline-primary w-100 py-2 rounded-pill fw-semibold" title="Editar Reserva">
                                     <i class="bi bi-pencil-square"></i> Editar
                                 </a>
-                                <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger w-100 py-2 rounded-pill fw-semibold">
+                                <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger w-100 py-2 rounded-pill fw-semibold" title="Eliminar Reserva">
                                     <i class="bi bi-trash"></i> Eliminar
                                 </a>
                             </div>

@@ -49,13 +49,24 @@
                         <td>
                             <div>
                                 <h6 class="fw-bold text-dark mb-1">{{ cat.nombre }}</h6>
-                                <p class="text-muted small mb-0 text-truncate"
-                                   style="max-width: 320px; cursor: help;"
-                                   data-bs-toggle="tooltip"
-                                   data-bs-placement="top"
-                                   data-bs-title="{{ cat.descripcion|default:'Sin descripción' }}">
-                                    {{ cat.descripcion|default:"Sin descripción" }}
-                                </p>
+                                <div class="d-flex align-items-center gap-1">
+                                    <p class="text-muted small mb-0 text-truncate" style="max-width: 280px;">
+                                        {{ cat.descripcion|default:"Sin descripción" }}
+                                    </p>
+                                    {% if cat.descripcion %}
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-secondary rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0 p-0 border"
+                                            style="width: 18px; height: 18px; font-size: 11px; font-weight: 700; line-height: 1;"
+                                            data-bs-toggle="popover" 
+                                            data-bs-trigger="focus" 
+                                            data-bs-placement="top" 
+                                            data-bs-title="Descripción: {{ cat.nombre }}" 
+                                            data-bs-content="{{ cat.descripcion }}"
+                                            title="Ver descripción completa">
+                                        !
+                                    </button>
+                                    {% endif %}
+                                </div>
                             </div>
                         </td>
                         <td class="text-center">
@@ -104,13 +115,24 @@
                         <div class="d-flex justify-content-between align-items-start mb-2 border-bottom pb-2">
                             <div>
                                 <h5 class="fw-bold text-dark mb-0">{{ cat.nombre }}</h5>
-                                <small class="text-muted d-block mt-1 text-truncate"
-                                       style="cursor: help;"
-                                       data-bs-toggle="tooltip"
-                                       data-bs-placement="top"
-                                       data-bs-title="{{ cat.descripcion|default:'Sin descripción' }}">
-                                    {{ cat.descripcion|default:"Sin descripción" }}
-                                </small>
+                                <div class="d-flex align-items-center gap-1 mt-1">
+                                    <small class="text-muted text-truncate d-block" style="max-width: 240px;">
+                                        {{ cat.descripcion|default:"Sin descripción" }}
+                                    </small>
+                                    {% if cat.descripcion %}
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-secondary rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0 p-0 border"
+                                            style="width: 18px; height: 18px; font-size: 11px; font-weight: 700; line-height: 1;"
+                                            data-bs-toggle="popover" 
+                                            data-bs-trigger="focus" 
+                                            data-bs-placement="top" 
+                                            data-bs-title="Descripción: {{ cat.nombre }}" 
+                                            data-bs-content="{{ cat.descripcion }}"
+                                            title="Ver descripción completa">
+                                        !
+                                    </button>
+                                    {% endif %}
+                                </div>
                             </div>
                             <div>
                                 {% if cat.estado %}
@@ -125,19 +147,19 @@
                             <form action="{% url 'toggle_estado_categoria' cat.id %}" method="POST" class="flex-fill m-0">
                                 {% csrf_token %}
                                 {% if cat.estado %}
-                                    <button type="submit" class="btn btn-sm btn-outline-warning w-100 fw-bold rounded-pill" data-confirm-title="¿Inactivar Categoría?" data-confirm-message="La categoría '{{ cat.nombre }}' pasará a estado inactivo." data-confirm-btn="Sí, inactivar" data-confirm-btn-class="btn-warning">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning w-100 fw-bold rounded-pill" title="Inactivar Categoría" data-confirm-title="¿Inactivar Categoría?" data-confirm-message="La categoría '{{ cat.nombre }}' pasará a estado inactivo." data-confirm-btn="Sí, inactivar" data-confirm-btn-class="btn-warning">
                                         <i class="bi bi-pause-circle me-1"></i> Inactivar
                                     </button>
                                 {% else %}
-                                    <button type="submit" class="btn btn-sm btn-outline-success w-100 fw-bold rounded-pill" data-confirm-title="¿Activar Categoría?" data-confirm-message="La categoría '{{ cat.nombre }}' pasará a estado activo." data-confirm-btn="Sí, activar" data-confirm-btn-class="btn-success">
+                                    <button type="submit" class="btn btn-sm btn-outline-success w-100 fw-bold rounded-pill" title="Activar Categoría" data-confirm-title="¿Activar Categoría?" data-confirm-message="La categoría '{{ cat.nombre }}' pasará a estado activo." data-confirm-btn="Sí, activar" data-confirm-btn-class="btn-success">
                                         <i class="bi bi-play-circle me-1"></i> Activar
                                     </button>
                                 {% endif %}
                             </form>
-                            <a href="{% url 'editar_categoria' cat.id %}" class="btn btn-sm btn-outline-secondary flex-fill fw-bold rounded-pill">
+                            <a href="{% url 'editar_categoria' cat.id %}" class="btn btn-sm btn-outline-secondary flex-fill fw-bold rounded-pill" title="Editar Categoría">
                                 <i class="bi bi-pencil me-1"></i> Editar
                             </a>
-                            <a href="{% url 'eliminar_categoria' cat.id %}" class="btn btn-sm btn-outline-danger flex-fill fw-bold rounded-pill">
+                            <a href="{% url 'eliminar_categoria' cat.id %}" class="btn btn-sm btn-outline-danger flex-fill fw-bold rounded-pill" title="Eliminar Categoría">
                                 <i class="bi bi-trash me-1"></i> Eliminar
                             </a>
                         </div>

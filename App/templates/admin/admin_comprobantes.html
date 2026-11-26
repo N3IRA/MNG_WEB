@@ -62,7 +62,7 @@
                hx-select="#admin-comprobantes-container" 
                hx-swap="outerHTML" 
                hx-push-url="true" 
-               class="text-decoration-none d-block h-100" title="Ver todos los comprobantes recibidos" data-bs-toggle="tooltip">
+               class="text-decoration-none d-block h-100" title="Ver todos los comprobantes recibidos">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if not estado_filtro %}border-primary border-opacity-75 shadow-sm ring-1{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-secondary small fw-bold text-uppercase">Total Recibidos</span>
@@ -86,7 +86,7 @@
                hx-select="#admin-comprobantes-container" 
                hx-swap="outerHTML" 
                hx-push-url="true" 
-               class="text-decoration-none d-block h-100" title="Filtrar comprobantes pendientes de validación" data-bs-toggle="tooltip">
+               class="text-decoration-none d-block h-100" title="Filtrar comprobantes pendientes de validación">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_filtro == 'pendiente' %}border-warning shadow-sm border-2{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-warning small fw-bold text-uppercase">Pendientes</span>
@@ -110,7 +110,7 @@
                hx-select="#admin-comprobantes-container" 
                hx-swap="outerHTML" 
                hx-push-url="true" 
-               class="text-decoration-none d-block h-100" title="Filtrar comprobantes aprobados" data-bs-toggle="tooltip">
+               class="text-decoration-none d-block h-100" title="Filtrar comprobantes aprobados">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_filtro == 'aprobado' %}border-success shadow-sm border-2{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-success small fw-bold text-uppercase">Total Aprobado</span>
@@ -130,8 +130,7 @@
         <div class="col-12 col-sm-6 col-md-3">
             <a href="{% url 'admin_pagos_rechazados' %}" 
                class="text-decoration-none d-block h-100" 
-               title="Ir al apartado dedicado de pagos rechazados" 
-               data-bs-toggle="tooltip">
+               title="Ir al apartado dedicado de pagos rechazados">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-danger small fw-bold text-uppercase">Pagos Rechazados</span>

@@ -173,19 +173,19 @@
                             <form action="{% url 'toggle_estado_tarifa' tarifa.id %}" method="POST" class="flex-fill m-0">
                                 {% csrf_token %}
                                 {% if tarifa.estado %}
-                                    <button type="submit" class="btn btn-sm btn-outline-warning w-100 fw-bold rounded-pill" data-confirm-title="¿Inactivar Tarifa?" data-confirm-message="La tarifa de '{{ tarifa.paquete.nombre }}' en '{{ tarifa.temporada.nombre }}' pasará a estado inactivo." data-confirm-btn="Sí, inactivar" data-confirm-btn-class="btn-warning">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning w-100 fw-bold rounded-pill" title="Inactivar Tarifa" data-confirm-title="¿Inactivar Tarifa?" data-confirm-message="La tarifa de '{{ tarifa.paquete.nombre }}' en '{{ tarifa.temporada.nombre }}' pasará a estado inactivo." data-confirm-btn="Sí, inactivar" data-confirm-btn-class="btn-warning">
                                         <i class="bi bi-pause-circle me-1"></i> Inactivar
                                     </button>
                                 {% else %}
-                                    <button type="submit" class="btn btn-sm btn-outline-success w-100 fw-bold rounded-pill" data-confirm-title="¿Activar Tarifa?" data-confirm-message="La tarifa de '{{ tarifa.paquete.nombre }}' en '{{ tarifa.temporada.nombre }}' pasará a estado activo." data-confirm-btn="Sí, activar" data-confirm-btn-class="btn-success">
+                                    <button type="submit" class="btn btn-sm btn-outline-success w-100 fw-bold rounded-pill" title="Activar Tarifa" data-confirm-title="¿Activar Tarifa?" data-confirm-message="La tarifa de '{{ tarifa.paquete.nombre }}' en '{{ tarifa.temporada.nombre }}' pasará a estado activo." data-confirm-btn="Sí, activar" data-confirm-btn-class="btn-success">
                                         <i class="bi bi-play-circle me-1"></i> Activar
                                     </button>
                                 {% endif %}
                             </form>
-                            <a href="{% url 'editar_tarifa' tarifa.id %}" class="btn btn-sm btn-outline-secondary flex-fill fw-bold rounded-pill">
+                            <a href="{% url 'editar_tarifa' tarifa.id %}" class="btn btn-sm btn-outline-secondary flex-fill fw-bold rounded-pill" title="Editar Tarifa">
                                 <i class="bi bi-pencil me-1"></i> Editar
                             </a>
-                            <a href="{% url 'eliminar_tarifa' tarifa.id %}" class="btn btn-sm btn-outline-danger flex-fill fw-bold rounded-pill">
+                            <a href="{% url 'eliminar_tarifa' tarifa.id %}" class="btn btn-sm btn-outline-danger flex-fill fw-bold rounded-pill" title="Eliminar Tarifa">
                                 <i class="bi bi-trash me-1"></i> Eliminar
                             </a>
                         </div>

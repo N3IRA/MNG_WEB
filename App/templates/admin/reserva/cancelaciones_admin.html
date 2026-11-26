@@ -30,7 +30,7 @@
     <div class="row g-4 mb-4">
         <!-- Total Solicitudes -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="{% url 'listar_cancelaciones' %}" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Ver todas las solicitudes de cancelación">
+            <a href="{% url 'listar_cancelaciones' %}" class="text-decoration-none d-block h-100" title="Ver todas las solicitudes de cancelación">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if not estado_seleccionado %}border-primary border-opacity-75 shadow-sm ring-1{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-secondary small fw-bold text-uppercase">Total Solicitudes</span>
@@ -48,7 +48,7 @@
 
         <!-- Pendientes -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="?estado=pendiente" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar solicitudes pendientes de revisión">
+            <a href="?estado=pendiente" class="text-decoration-none d-block h-100" title="Filtrar solicitudes pendientes de revisión">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'pendiente' %}border-warning shadow-sm border-2{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-warning small fw-bold text-uppercase">Pendientes</span>
@@ -66,7 +66,7 @@
 
         <!-- Aprobadas -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="?estado=aprobada" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar solicitudes aprobadas">
+            <a href="?estado=aprobada" class="text-decoration-none d-block h-100" title="Filtrar solicitudes aprobadas">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'aprobada' %}border-success shadow-sm border-2{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-success small fw-bold text-uppercase">Aprobadas</span>
@@ -84,7 +84,7 @@
 
         <!-- Rechazadas -->
         <div class="col-12 col-sm-6 col-md-3">
-            <a href="?estado=rechazada" class="text-decoration-none d-block h-100" data-bs-toggle="tooltip" title="Filtrar solicitudes rechazadas">
+            <a href="?estado=rechazada" class="text-decoration-none d-block h-100" title="Filtrar solicitudes rechazadas">
                 <div class="card border border-light shadow-sm rounded-4 p-3 p-xl-4 h-100 bg-white card-hover-lift {% if estado_seleccionado == 'rechazada' %}border-danger shadow-sm border-2{% endif %}" style="cursor: pointer;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <span class="text-danger small fw-bold text-uppercase">Rechazadas</span>
@@ -256,7 +256,7 @@
                         <!-- Acciones -->
                         <td class="text-end pe-4 py-3">
                             <!-- Botón Editar / Gestionar -->
-                            <a href="{% url 'editar_cancelacion_admin' item.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold" data-bs-toggle="tooltip" title="Editar y Aprobar Cancelación">
+                            <a href="{% url 'editar_cancelacion_admin' item.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold" title="Editar y Aprobar Cancelación">
                                 <i class="bi bi-pencil-square me-1"></i> Editar
                             </a>
                         </td>

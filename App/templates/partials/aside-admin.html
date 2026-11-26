@@ -19,8 +19,6 @@
       <a
         href="/"
         class="text-decoration-none"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Monagua — Inicio"
       >
         <img
@@ -33,8 +31,6 @@
       <button
         class="btn btn-sm btn-outline-secondary border-0 text-white-50 p-1 toggle-sidebar-btn"
         type="button"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Desplegar menú lateral"
       >
         <i class="bi bi-layout-sidebar fs-5"></i>
@@ -50,8 +46,6 @@
         href="/"
         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 text-white-50 text-white-hover"
         style="width: 44px; height: 44px"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Página Principal"
       >
         <i class="bi bi-house fs-5"></i>
@@ -61,8 +55,6 @@
         href="{% url 'dashboard_admin' %}"
         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'dashboard_admin' %}bg-transparent text-white border-0{% else %}text-white-50 text-white-hover{% endif %}"
         style="width: 44px; height: 44px"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Panel de Control"
         aria-label="Panel de Control"
       >
@@ -73,8 +65,6 @@
         href="{% url 'estadisticas_admin' %}"
         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'estadisticas_admin' %}bg-transparent text-white border-0{% else %}text-white-50 text-white-hover{% endif %}"
         style="width: 44px; height: 44px"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Estadísticas"
       >
         <i class="bi bi-graph-up-arrow fs-5"></i>
@@ -84,8 +74,6 @@
         href="{% url 'admin_perfil' %}"
         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'admin_perfil' %}bg-transparent text-white border-0{% else %}text-white-50 text-white-hover{% endif %}"
         style="width: 44px; height: 44px"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Mi Perfil"
       >
         <i class="bi bi-person-vcard fs-5"></i>
@@ -95,8 +83,6 @@
         href="{% url 'listar_calificaciones' %}"
         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'listar_calificaciones' %}bg-transparent text-white border-0{% else %}text-white-50 text-white-hover{% endif %}"
         style="width: 44px; height: 44px"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Calificaciones"
       >
         <i class="bi bi-star fs-5"></i>
@@ -110,8 +96,6 @@
         style="width: 44px; height: 44px"
         type="button"
         data-expand-sidebar-target="#menuWidePaquetes"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Paquetes & Catálogo"
       >
         <i class="bi bi-box-seam fs-5"></i>
@@ -123,8 +107,6 @@
         style="width: 44px; height: 44px"
         type="button"
         data-expand-sidebar-target="#menuWideReservas"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Reservas & Pagos"
       >
         <i class="bi bi-calendar2-check fs-5"></i>
@@ -136,8 +118,6 @@
         style="width: 44px; height: 44px"
         type="button"
         data-expand-sidebar-target="#menuWideUsuarios"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Usuarios & Guías"
       >
         <i class="bi bi-people fs-5"></i>
@@ -149,8 +129,6 @@
         style="width: 44px; height: 44px"
         type="button"
         data-expand-sidebar-target="#menuWideContenido"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Contenido & Soporte"
       >
         <i class="bi bi-journal-richtext fs-5"></i>
@@ -161,8 +139,6 @@
         href="{% url 'listar_notificaciones' %}"
         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'listar_notificaciones' %}bg-transparent text-white border-0{% else %}text-white-50 text-white-hover{% endif %}"
         style="width: 44px; height: 44px"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Notificaciones"
       >
         <i class="bi bi-bell fs-5"></i>
@@ -173,8 +149,6 @@
         href="{% url 'configuracion_usuario' %}"
         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'configuracion_usuario' %}bg-transparent text-white border-0{% else %}text-white-50 text-white-hover{% endif %}"
         style="width: 44px; height: 44px"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Configuración"
       >
         <i class="bi bi-gear fs-5"></i>
@@ -188,8 +162,6 @@
       <a
         href="{% url 'admin_perfil' %}"
         class="position-relative d-inline-block text-decoration-none"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="{{ user.first_name|default:'Administrador' }} (Super Admin)"
       >
         <img
@@ -209,8 +181,6 @@
         <button
           type="submit"
           class="btn btn-sm btn-outline-danger border-0 p-2 text-white-50 text-white-hover rounded-2"
-          data-bs-toggle="tooltip"
-          data-bs-placement="right"
           title="Cerrar Sesión"
         >
           <i class="bi bi-power fs-5"></i>
@@ -258,8 +228,6 @@
         class="btn btn-sm btn-outline-secondary border-0 text-white-50 toggle-sidebar-btn rounded-2 p-1"
         type="button"
         aria-label="Contraer menú"
-        data-bs-toggle="tooltip"
-        data-bs-placement="bottom"
         title="Contraer menú"
       >
         <i class="bi bi-layout-sidebar-inset fs-5"></i>
