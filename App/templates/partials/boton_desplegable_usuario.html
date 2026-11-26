@@ -147,6 +147,20 @@
 
 <li><hr class="dropdown-divider" /></li>
 
+<!-- Centro de Ayuda y Soporte -->
+<li>
+  <a
+    class="dropdown-item py-2 fw-semibold text-dark"
+    href="{% url 'soporte_ayuda' %}"
+    title="Centro de ayuda, soporte y preguntas frecuentes"
+    aria-label="Centro de ayuda, soporte y preguntas frecuentes"
+  >
+    <i class="bi bi-question-circle me-2 text-success"></i>Ayuda y Soporte
+  </a>
+</li>
+
+<li><hr class="dropdown-divider" /></li>
+
 <!-- Cerrar Sesión -->
 <li>
   <form action="{% url 'logout' %}" method="post" class="m-0">

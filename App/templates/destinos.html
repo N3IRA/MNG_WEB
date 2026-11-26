@@ -234,9 +234,24 @@
                                 <span class="text-truncate" title="{{ tour.punto_encuentro }}"><i class="bi bi-geo-alt text-muted me-1"></i>{{ tour.punto_encuentro }}</span>
                             </div>
                             
-                            <p class="text-secondary fw-normal mb-1 lh-base fs-6 tour-card-desc" style="min-height: 48px;">
-                                {{ tour.descripcion|truncatechars:85 }}
-                            </p>
+                            <div class="d-flex align-items-start gap-1" style="min-height: 48px;">
+                                <p class="text-secondary fw-normal mb-1 lh-base fs-6 tour-card-desc flex-grow-1 mb-0">
+                                    {{ tour.descripcion|truncatechars:85 }}
+                                </p>
+                                {% if tour.descripcion %}
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-secondary rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0 p-0 border shadow-xs"
+                                        style="width: 19px; height: 19px; font-size: 11px; font-weight: 700; line-height: 1; margin-top: 4px;"
+                                        data-bs-toggle="popover" 
+                                        data-bs-trigger="focus" 
+                                        data-bs-placement="top" 
+                                        data-bs-title="Descripción: {{ tour.nombre }}" 
+                                        data-bs-content="{{ tour.descripcion }}"
+                                        title="Ver descripción completa">
+                                    !
+                                </button>
+                                {% endif %}
+                            </div>
                             
                             <hr class="text-muted opacity-25 my-1">
 

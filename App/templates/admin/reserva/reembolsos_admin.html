@@ -156,7 +156,7 @@
                         <th class="py-3 text-center">Monto a Devolver</th>
                         <th class="py-3 text-center">Estado</th>
                         <th class="py-3 text-center">Comprobante</th>
-                        <th class="text-end pe-3 py-3">Acciones</th>
+                        <th class="text-center py-3 text-nowrap">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -230,13 +230,13 @@
                         </td>
 
                         <!-- Acciones -->
-                        <td class="text-end pe-3 py-3">
-                            <div class="d-inline-flex gap-2">
-                                <button type="button" class="btn btn-sm {% if r.estado == 'pendiente' %}btn-success text-white shadow-sm{% else %}btn-outline-primary{% endif %} rounded-pill px-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalRegistrarDesembolso{{ r.id }}" title="Registrar o actualizar transferencia bancaria">
-                                    <i class="bi bi-upload me-1"></i> {% if r.estado == 'pendiente' %}Transferir{% else %}Editar{% endif %}
+                        <td class="text-center text-nowrap">
+                            <div class="d-inline-flex align-items-center gap-1">
+                                <button type="button" class="btn btn-sm {% if r.estado == 'pendiente' %}btn-outline-warning{% else %}btn-outline-secondary{% endif %} shadow-sm" data-bs-toggle="modal" data-bs-target="#modalRegistrarDesembolso{{ r.id }}" title="{% if r.estado == 'pendiente' %}Registrar Transferencia Bancaria{% else %}Editar Transferencia Bancaria{% endif %}">
+                                    <i class="bi bi-upload"></i>
                                 </button>
-                                <a href="{% url 'editar_cancelacion_admin' r.reserva.id %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold" title="Ver cancelación de la reserva">
-                                    <i class="bi bi-x-circle me-1"></i> Cancelación
+                                <a href="{% url 'editar_cancelacion_admin' r.reserva.id %}" class="btn btn-sm btn-outline-danger shadow-sm" title="Ver Cancelación de la Reserva">
+                                    <i class="bi bi-x-circle"></i>
                                 </a>
                             </div>
                         </td>
