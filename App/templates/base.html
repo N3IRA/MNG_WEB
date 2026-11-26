@@ -81,12 +81,42 @@
             delay: { show: 700, hide: 150 }
           });
         });
+
+        // Inicialización global de popovers (para descripciones con icono '!')
+        var popoverTriggerList = [].slice.call(
+          document.querySelectorAll('[data-bs-toggle="popover"]')
+        );
+        var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+          return new bootstrap.Popover(popoverTriggerEl, {
+            trigger: popoverTriggerEl.getAttribute('data-bs-trigger') || 'focus',
+            boundary: document.body,
+            html: true
+          });
+        });
+
         AOS.init({
           duration: 600,
           once: true,
           mirror: false,
           offset: 80,
         });
+      });
+
+      // Delegación de eventos para inicializar popovers dinámicos al hacer clic
+      document.addEventListener('click', function (e) {
+        if (typeof bootstrap === "undefined") return;
+        var btn = e.target.closest('[data-bs-toggle="popover"]');
+        if (btn) {
+          var instance = bootstrap.Popover.getInstance(btn);
+          if (!instance) {
+            instance = new bootstrap.Popover(btn, {
+              trigger: btn.getAttribute('data-bs-trigger') || 'focus',
+              boundary: document.body,
+              html: true
+            });
+            instance.show();
+          }
+        }
       });
     </script>
   </body>
