@@ -14,7 +14,7 @@
 <div class="container py-4">
     <!-- Encabezado con Botón Volver y Badges -->
     <div class="mb-4">
-        <a href="{% url 'gestion_promociones' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 mb-3 fw-semibold shadow-sm">
+        <a href="{% url 'gestion_promociones' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 mb-3 fw-semibold shadow-sm" title="Volver a Gestión de Promociones">
             <i class="bi bi-arrow-left me-1"></i> Volver a Promociones
         </a>
         <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
@@ -159,10 +159,10 @@
 
                         <!-- Botones de Acción -->
                         <div class="d-flex justify-content-end align-items-center gap-2 pt-3 border-top">
-                            <a href="{% url 'gestion_promociones' %}" class="btn btn-outline-secondary px-4 rounded-pill fw-semibold">
+                            <a href="{% url 'gestion_promociones' %}" class="btn btn-outline-secondary px-4 rounded-pill fw-semibold" title="Cancelar creación y regresar">
                                 <i class="bi bi-x-circle me-1"></i> Cancelar
                             </a>
-                            <button type="submit" class="btn btn-success px-4 rounded-pill shadow-sm fw-bold">
+                            <button type="submit" class="btn btn-success px-4 rounded-pill shadow-sm fw-bold" title="Guardar nueva promoción">
                                 <i class="bi bi-plus-circle me-1"></i> Guardar Promoción
                             </button>
                         </div>

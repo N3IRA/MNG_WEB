@@ -201,7 +201,7 @@
                                         <i class="bi bi-geo-alt-fill text-success me-1"></i>Destino
                                     </span>
                                     {% if tour.tiene_promocion %}
-                                        <span class="badge bg-danger text-white px-2.5 py-1.5 rounded-pill shadow-sm d-inline-flex align-items-center fw-bold badge-interactive" style="font-size: 0.78rem; letter-spacing: 0.3px; box-shadow: 0 4px 10px rgba(220,53,69,0.35) !important;">
+                                        <span class="badge text-white px-2.5 py-1.5 rounded-pill shadow-sm d-inline-flex align-items-center fw-bold badge-interactive" style="background-color: #ea580c !important; font-size: 0.78rem; letter-spacing: 0.3px; box-shadow: 0 4px 10px rgba(234, 88, 12, 0.35) !important;">
                                             <i class="bi bi-tag-fill me-1"></i>-{{ tour.porcentaje_descuento_calculado|default:tour.promocion_activa.porcentaje_descuento }}% Descuento
                                         </span>
                                     {% endif %}
@@ -222,7 +222,7 @@
                             </div>
                         </div>
                         
-                        <div class="card-body p-4 d-flex flex-column gap-3">
+                        <div class="card-body p-3 p-sm-4 d-flex flex-column gap-3">
                             <h4 class="fw-bold text-dark mb-0 text-truncate tour-card-title" title="{{ tour.nombre }}">{{ tour.nombre }}</h4>
                             
                             <div class="d-flex gap-3 fs-6 fw-normal text-secondary mb-1">
@@ -240,24 +240,24 @@
                             
                             <hr class="text-muted opacity-25 my-1">
 
-                            <div class="d-flex align-items-center justify-content-between py-2">
-                                <div>
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 py-2">
+                                <div class="flex-grow-1 min-w-0">
                                     {% if tour.tiene_promocion %}
                                         <div class="d-flex flex-column">
-                                            <div class="d-flex align-items-center gap-2">
+                                            <div class="d-flex align-items-center gap-2 flex-wrap">
                                                 <span class="text-muted text-decoration-line-through small fw-semibold" style="font-size: 0.85rem;">
                                                     COP ${{ tour.precio_minimo|floatformat:0|intcomma }}
                                                 </span>
-                                                <span class="badge bg-danger text-white rounded-pill px-2 py-0.5 fw-bold" style="font-size: 0.72rem;">
+                                                <span class="badge text-white rounded-pill px-2 py-0.5 fw-bold" style="background-color: #ea580c !important; font-size: 0.72rem;">
                                                     -{{ tour.porcentaje_descuento_calculado|default:tour.promocion_activa.porcentaje_descuento }}%
                                                 </span>
                                             </div>
-                                            <span class="text-danger fw-black fs-4 tour-card-price" style="font-weight: 800; letter-spacing: -0.5px; line-height: 1.2;">
+                                            <span class="fw-black fs-4 tour-card-price" style="color: #ea580c !important; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2;">
                                                 COP ${{ tour.precio_final|floatformat:0|intcomma }}
                                             </span>
 
-                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle rounded-pill px-2.5 py-1 mt-1 text-start d-inline-flex align-items-center gap-1" style="width: fit-content; font-size: 0.76rem;">
-                                                <i class="bi bi-megaphone-fill"></i> {{ tour.promocion_activa.nombre }}
+                                            <span class="badge rounded-pill px-2.5 py-1 mt-1 text-start d-inline-flex align-items-center gap-1 text-wrap" style="background-color: rgba(249, 115, 22, 0.12) !important; color: #c2410c !important; border: 1px solid rgba(249, 115, 22, 0.28) !important; width: fit-content; max-width: 100%; font-size: 0.76rem;">
+                                                <i class="bi bi-megaphone-fill flex-shrink-0"></i> <span>{{ tour.promocion_activa.nombre }}</span>
                                             </span>
                                         </div>
                                     {% else %}
@@ -271,9 +271,9 @@
                                 </div>
                                 
                                 {% if tour.categoria %}
-                                    <div class="text-end align-self-start">
-                                        <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fw-semibold fs-6 shadow-sm d-inline-flex align-items-center badge-interactive">
-                                            <i class="bi bi-tag text-success me-1"></i>{{ tour.categoria.nombre }}
+                                    <div class="align-self-start mw-100">
+                                        <span class="badge bg-light text-dark border px-2.5 py-1.5 px-sm-3 py-sm-2 rounded-pill fw-semibold shadow-sm d-inline-flex align-items-center badge-interactive text-wrap" style="font-size: 0.8rem; max-width: 100%;">
+                                            <i class="bi bi-tag text-success me-1 flex-shrink-0"></i><span class="text-truncate" style="max-width: 160px;">{{ tour.categoria.nombre }}</span>
                                         </span>
                                     </div>
                                 {% endif %}

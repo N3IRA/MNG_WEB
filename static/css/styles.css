@@ -549,8 +549,9 @@ main .breadcrumb-item.active {
     transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.offcanvas-backdrop.show,
-body.menu-open-active .offcanvas-backdrop {
+body.menu-open-active .offcanvas-backdrop,
+html:has(.menu-hamburguesa-premium.show) .offcanvas-backdrop,
+body:has(.menu-hamburguesa-premium.show) .offcanvas-backdrop {
     z-index: 1075 !important;
 }
 
@@ -1728,8 +1729,9 @@ main .breadcrumb-item.active {
     transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.offcanvas-backdrop.show,
-body.menu-open-active .offcanvas-backdrop {
+body.menu-open-active .offcanvas-backdrop,
+html:has(.menu-hamburguesa-premium.show) .offcanvas-backdrop,
+body:has(.menu-hamburguesa-premium.show) .offcanvas-backdrop {
     z-index: 1075 !important;
 }
 
@@ -2907,8 +2909,9 @@ main .breadcrumb-item.active {
     transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.offcanvas-backdrop.show,
-body.menu-open-active .offcanvas-backdrop {
+body.menu-open-active .offcanvas-backdrop,
+html:has(.menu-hamburguesa-premium.show) .offcanvas-backdrop,
+body:has(.menu-hamburguesa-premium.show) .offcanvas-backdrop {
     z-index: 1075 !important;
 }
 
