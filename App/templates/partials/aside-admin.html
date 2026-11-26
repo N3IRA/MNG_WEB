@@ -400,7 +400,7 @@
               <a
                 href="{% url 'listar_reembolsos_admin' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name in 'listar_reembolsos_admin registrar_reembolso_admin' %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
-                ><i class="bi bi-cash-stack text-warning"></i> Reembolsos</a
+                ><i class="bi bi-cash-stack text-white"></i> Reembolsos</a
               >
             </li>
             <li>
@@ -415,7 +415,7 @@
               <a
                 href="{% url 'aseguradora_listar' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if 'aseguradora' in request.resolver_match.url_name %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
-                ><i class="bi bi-building-shield text-info"></i> Aseguradoras</a
+                ><i class="bi bi-building"></i> Aseguradoras</a
               >
             </li>
             <li>
