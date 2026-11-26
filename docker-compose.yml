@@ -1,0 +1,64 @@
+# ==============================================================================
+# Docker Compose - MNG_WEB (Monagua Turismo)
+# Arquitectura: Aplicación Web Django + Base de Datos PostgreSQL
+# ==============================================================================
+
+services:
+  # Servicio de Base de Datos PostgreSQL
+  db:
+    image: postgres:16-alpine
+    container_name: mng_web_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-monagua_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-monagua_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Servicio de la Aplicación Web Django
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mng_web_app
+    restart: unless-stopped
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+      - media_volume:/app/media
+      - static_volume:/app/staticfiles
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-mng-web-secret-key-prod-docker-2026}
+      - ALLOWED_HOSTS=*
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_NAME=${DB_NAME:-monagua_db}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER:-monaguamongua@gmail.com}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD:-ccrolchemrlyhqqh}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+
+# Volúmenes persistentes
+volumes:
+  postgres_data:
+    driver: local
+  media_volume:
+    driver: local
+  static_volume:
+    driver: local

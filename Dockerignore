@@ -1,0 +1,57 @@
+# ==============================================================================
+# Dockerignore - MNG_WEB (Monagua Turismo)
+# Archivos y carpetas excluidos del contexto de construcción de Docker
+# ==============================================================================
+
+# Control de Versiones Git
+.git/
+.gitignore
+.gitattributes
+.github/
+
+# Archivos compilados y temporales de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.pyc
+*.pyo
+*.pyd
+
+# Entornos virtuales locales
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Bases de datos locales SQLite y respaldos
+*.sqlite3
+*.sqlite3-journal
+*.sqlite3.bak
+*.bak
+backup/
+
+# Archivos estáticos generados y media local
+staticfiles/
+media/
+*.log
+
+# Configuraciones de editores y SO
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker (evita recrear capas al editar estos archivos)
+.dockerignore
+Dockerignore
+Dockerfile*
+docker-compose*.yml
+Docker-compose*.yml
+README.md

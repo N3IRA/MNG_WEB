@@ -147,6 +147,8 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 
 # Media files (User uploads and dynamic assets)
 MEDIA_URL = '/media/'
