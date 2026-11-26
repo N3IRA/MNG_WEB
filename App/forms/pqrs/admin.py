@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Usuario, Temporada, Categoria, Actividades, Paquete, Tarifa, PaqueteActividad, Blog, PQRS, Seguimiento, Reserva, Calificacion, PlanGuia, Pago, Promocion, PolizaViaje, Aseguradora, Bitacora
+from .models import Usuario, Temporada, Categoria, Actividades, Paquete, Tarifa, PaqueteActividad, Blog, PQRS, Seguimiento, Reserva, Calificacion, PlanGuia, Pago, Promocion, Bitacora
 
 class UsuarioAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'rol', 'is_active')
@@ -43,8 +43,6 @@ admin.site.register(Calificacion)
 admin.site.register(PlanGuia)
 admin.site.register(Pago)
 admin.site.register(Promocion)
-admin.site.register(PolizaViaje)
-admin.site.register(Aseguradora)
 admin.site.register(Bitacora, BitacoraAdmin)
 
 

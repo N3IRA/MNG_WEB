@@ -8,7 +8,6 @@
     "guias": "helper",
     "usuario": "client",
     "actividades": "event",
-    "aseguradora": "guard",
     "blog": "content",
     "calificacion": "review",
     "categoria": "class",

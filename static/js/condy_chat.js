@@ -326,16 +326,9 @@ document.addEventListener("DOMContentLoaded", function () {
       id: "guias",
       keywords: ["guia", "guias", "guia turistico", "guia certificado", "sena", "quien nos guia", "por que se exige guia", "acompañante"],
       answer: "🧗 **Guías Turísticos Certificados:**\n\nTodos los recorridos son guiados por profesionales locales acreditados por el **SENA** e inscritos en el **Registro Nacional de Turismo (RNT)**. Cuentan con formación en rescate, primeros auxilios, conocimiento de flora y respeto por el patrimonio Muisca. Por regulación ambiental y seguridad en niebla, no se permite subir al páramo sin guía.",
-      options: ["Regulaciones ambientales", "Póliza médica", "Destinos de Mongua"]
+      options: ["Regulaciones ambientales", "Recomendaciones de seguridad", "Destinos de Mongua"]
     },
-    // 22. Seguro y Póliza Médica
-    {
-      id: "seguro_poliza",
-      keywords: ["seguro", "seguros", "poliza", "polizas", "asistencia medica", "seguro de viaje", "accidente", "cobertura", "aseguradora", "rescate"],
-      answer: "🛡️ **Póliza de Asistencia Médica Incluida:**\n\nCada paquete confirmado en Monagua incluye una póliza de asistencia médica y seguro de viaje emitida con aseguradoras autorizadas. Cubre gastos médicos de urgencia, rescate en montaña y accidentes personales durante toda la duración de la expedición.",
-      options: ["Primeros auxilios / Altura", "¿Qué ropa llevar?", "¿Cómo reservar?"]
-    },
-    // 23. Ubicación y Cómo Llegar
+    // 22. Ubicación y Cómo Llegar
     {
       id: "ubicacion_transporte",
       keywords: ["donde estan", "ubicacion", "donde queda mongua", "como llegar", "transporte", "bus", "flota", "terminal", "sogamoso", "bogota", "tunja", "punto de encuentro", "parque"],

@@ -1149,44 +1149,11 @@ def construir_faqs(user=None):
             ),
             "options": [
                 "¿Qué tours ofrecen?",
-                "¿Qué incluye la póliza de viaje?",
+                "Recomendaciones de seguridad",
                 "Regulaciones ambientales",
             ],
         },
-        # 23. Seguro y Póliza de Asistencia Médica
-        {
-            "id": "seguro_poliza",
-            "keywords": [
-                "seguro",
-                "seguros",
-                "poliza",
-                "polizas",
-                "asistencia medica",
-                "seguro de viaje",
-                "seguro medico",
-                "emergencia",
-                "primeros auxilios",
-                "accidente",
-                "cobertura",
-                "aseguradora",
-                "rescate",
-                "clinica",
-            ],
-            "answer": (
-                "🛡️ **Póliza de Asistencia y Cobertura Médica:**\n\n"
-                "¡Tu bienestar es nuestra máxima prioridad! Cada reserva confirmada en Monagua incluye "
-                "una póliza de asistencia médica y seguro de viaje emitida con aseguradoras autorizadas. "
-                "Cubre eventualidades médicas, rescate en montaña y accidentes personales durante todo el itinerario."
-            ),
-            "link_url": "/nosotros/",
-            "link_text": "Conoce más sobre nuestras coberturas",
-            "options": [
-                "Ver tours disponibles",
-                "¿Qué recomendaciones debo seguir?",
-                "¿Cómo reservar?",
-            ],
-        },
-        # 24. Clima y Ropa Recomendada
+        # 23. Clima y Ropa Recomendada
         {
             "id": "clima_ropa",
             "keywords": [
