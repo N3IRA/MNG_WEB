@@ -1,12 +1,20 @@
 import os
 import re
 import json
+import time
+import logging
+import unicodedata
 import urllib.request
 import urllib.error
-import unicodedata
 from decimal import Decimal
 from django.conf import settings
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
+
+# Control de resiliencia y disyuntor (Circuit Breaker) para cortes de internet saliente
+_LAST_INTERNET_ERROR_TIME = 0.0
+_CIRCUIT_BREAKER_COOLDOWN_SECONDS = 45.0  # 45 segundos de pausa antes de reintentar si no hay internet
 
 
 def remove_accents(input_str):
@@ -172,8 +180,15 @@ def consultar_gemini(mensaje, request):
     """
     Si existe GEMINI_API_KEY configurada, procesa el mensaje con Google Gemini
     proporcionándole contexto estricto de Monagua con guardrails anti-alucinación.
-    Si falla o no hay clave, retorna None para activar el motor local sin interrumpir al usuario.
+    Si falla el internet o no hay clave, activa de inmediato el motor local sin interrumpir al usuario.
     """
+    global _LAST_INTERNET_ERROR_TIME
+
+    # Disyuntor (Circuit Breaker): si recientemente falló la conexión a internet, evitar latencia y pasar a local
+    ahora = time.time()
+    if ahora - _LAST_INTERNET_ERROR_TIME < _CIRCUIT_BREAKER_COOLDOWN_SECONDS:
+        return None
+
     api_key = getattr(settings, 'GEMINI_API_KEY', '') or os.environ.get('GEMINI_API_KEY', '')
     if not api_key:
         return None
@@ -274,7 +289,7 @@ def consultar_gemini(mensaje, request):
                 headers={'Content-Type': 'application/json'},
                 method='POST'
             )
-            with urllib.request.urlopen(req, timeout=5.0) as response:
+            with urllib.request.urlopen(req, timeout=2.5) as response:
                 if response.status == 200:
                     res_data = json.loads(response.read().decode('utf-8'))
                     candidates = res_data.get('candidates', [])
@@ -312,7 +327,13 @@ def consultar_gemini(mensaje, request):
                                 resultado["link_text"] = "Ver Blog de Monagua"
 
                             return resultado
-        except Exception:
+        except (urllib.error.URLError, TimeoutError, OSError) as net_err:
+            # Corte de internet, fallo DNS o timeout de red: activar disyuntor y conmutar a motor local sin demoras
+            _LAST_INTERNET_ERROR_TIME = time.time()
+            logger.info("Conexión externa no disponible (%s). Activando motor local resiliente.", net_err)
+            break
+        except Exception as ex:
+            logger.debug("Error evaluando modelo %s: %s", modelo, ex)
             continue
 
     return None
