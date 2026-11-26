@@ -4,7 +4,8 @@ from django.contrib import messages
 from django.db.models import Sum, Q
 from App.models import Pago, Reserva
 from App.utils import crear_notificacion_sistema, notificar_administradores
-
+from django.utils import timezone
+from App.models import Usuario
 from App.forms.pago.forms import ComprobantePagoForm
 
 @login_required(login_url='login')

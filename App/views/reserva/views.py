@@ -13,6 +13,7 @@ from django.contrib import messages
 from django.db.models import Count, Q
 from django.db import transaction
 from django.utils import timezone
+from django.http import HttpResponse
 
 from App.models import Reserva, Paquete, Tarifa, Pago, ModificacionReserva
 
@@ -203,9 +204,6 @@ class EditarReservaAdminView(UpdateView):
 
         response = super().form_valid(form)
         reserva = self.object
-        nombre_cliente = (reserva.usuario.first_name or reserva.usuario.username) if reserva.usuario else 'Cliente'
-        
-        valor_nuevo = f"Estado: {reserva.estado_reserva}, Fecha: {reserva.fecha_inicio}, Adultos: {reserva.numero_adultos}, Menores: {reserva.numero_menores}"
 
         if personas_cambiaron:
             reserva.recalcular_monto()
@@ -611,9 +609,8 @@ def mis_cancelaciones(request):
     ).filter(
         Q(estado_cancelacion='pendiente') |
         Q(estado_cancelacion='aprobada') |
+        Q(estado_cancelacion='rechazada') |
         Q(estado_reserva='cancelada', estado_cancelacion='aprobada')
-    ).exclude(
-        estado_cancelacion='rechazada'
     ).select_related('paquete').prefetch_related('paquete__actividades').order_by('-fecha_registro')
 
     context = {
@@ -843,7 +840,8 @@ def ver_factura(request, reserva_id):
         return redirect('mis_reservas_usuario')
     
     pago = getattr(reserva, 'pago', None)
-    if pago and getattr(pago, 'estado_transaccion', None) == 'aprobado' and reserva.estado_reserva != 'confirmada':
+    es_penalidad = reserva.estado_cancelacion == 'aprobada' and reserva.penalidad and reserva.penalidad > 0
+    if pago and getattr(pago, 'estado_transaccion', None) == 'aprobado' and reserva.estado_reserva != 'confirmada' and not es_penalidad:
         reserva.estado_reserva = 'confirmada'
         reserva.save(update_fields=['estado_reserva'])
 
@@ -965,30 +963,69 @@ def editar_cancelacion_admin(request, reserva_id):
 
     if request.method == 'POST':
         estado = request.POST.get('estado_cancelacion')
+        motivo_resolucion = (request.POST.get('motivo_resolucion_cancelacion') or '').strip()
+        estado_reembolso = (request.POST.get('estado_reembolso') or '').strip()
+        banco_reembolso = (request.POST.get('banco_reembolso') or '').strip()
+        referencia_reembolso = (request.POST.get('referencia_reembolso') or '').strip()
         if estado not in {'pendiente', 'aprobada', 'rechazada'}:
             messages.error(request, "El estado de cancelación no es válido.")
+            return redirect('editar_cancelacion_admin', reserva_id=reserva.id)
+        if estado == 'rechazada' and len(motivo_resolucion) < 5:
+            messages.error(request, "Debes indicar un motivo válido para rechazar la solicitud de cancelación.")
             return redirect('editar_cancelacion_admin', reserva_id=reserva.id)
 
         estado_anterior = reserva.estado_cancelacion
         reserva.estado_cancelacion = estado
+        reserva.motivo_resolucion_cancelacion = motivo_resolucion if estado == 'rechazada' else ''
+
         if estado == 'aprobada':
             reserva.estado_reserva = 'cancelada'
-        elif estado == 'rechazada' and reserva.estado_reserva == 'cancelada':
-            # Al reactivar la reserva solo se confirma si tiene pago aprobado;
-            # en caso contrario vuelve a 'pendiente' a la espera del pago.
+            reserva.monto_reembolsable = max(reserva.monto_total - (reserva.penalidad or 0), 0)
+            if reserva.monto_reembolsable > 0:
+                reserva.estado_reembolso = 'pendiente'
+        elif estado == 'rechazada':
+            reserva.penalidad = 0
+            reserva.monto_reembolsable = 0
+            reserva.estado_reembolso = 'pendiente'
+            reserva.banco_reembolso = ''
+            reserva.referencia_reembolso = ''
+            reserva.fecha_reembolso = None
+
             pago = getattr(reserva, 'pago', None)
             if pago and pago.estado_transaccion == 'aprobado':
                 reserva.estado_reserva = 'confirmada'
             else:
                 reserva.estado_reserva = 'pendiente'
 
+        if estado_reembolso in {'nota_credito', 'pagado'}:
+            if reserva.monto_reembolsable <= 0:
+                messages.error(request, "Esta reserva no tiene un monto reembolsable.")
+                return redirect('editar_cancelacion_admin', reserva_id=reserva.id)
+            reserva.estado_reembolso = estado_reembolso
+            if estado_reembolso == 'nota_credito':
+                reserva.banco_reembolso = ''
+                reserva.referencia_reembolso = ''
+                reserva.fecha_reembolso = timezone.now()
+            else:
+                if not banco_reembolso or not referencia_reembolso:
+                    messages.error(request, "Para registrar un reembolso pagado debes indicar banco y referencia.")
+                    return redirect('editar_cancelacion_admin', reserva_id=reserva.id)
+                reserva.banco_reembolso = banco_reembolso
+                reserva.referencia_reembolso = referencia_reembolso
+                reserva.fecha_reembolso = timezone.now()
+
         reserva.save()
 
         if reserva.usuario and estado_anterior != estado:
+            detalle_motivo = (
+                f" Motivo del rechazo: {reserva.motivo_resolucion_cancelacion}"
+                if estado == 'rechazada' and reserva.motivo_resolucion_cancelacion
+                else ""
+            )
             crear_notificacion_sistema(
                 usuario=reserva.usuario,
                 reserva=reserva,
-                mensaje=f"La solicitud de cancelación de tu reserva #{reserva.id} fue marcada como '{estado}'.",
+                mensaje=f"La solicitud de cancelación de tu reserva #{reserva.id} fue marcada como '{estado}'.{detalle_motivo}",
                 tipo="Reserva",
                 prioridad="alta"
             )
@@ -996,7 +1033,8 @@ def editar_cancelacion_admin(request, reserva_id):
             asunto = f"Actualización de tu cancelación - Reserva #{reserva.id} | Monagua"
             mensaje_texto = (
                 f"Hola {reserva.usuario.get_full_name() or reserva.usuario.username}, "
-                f"la solicitud de cancelación de tu reserva #{reserva.id} fue marcada como '{estado}'."
+                f"la solicitud de cancelación de tu reserva #{reserva.id} fue marcada como '{estado}'. "
+                f"{detalle_motivo}"
             )
             html_respuesta = plantilla_cancelacion_html(
                 nombre_cliente=reserva.usuario.get_full_name() or reserva.usuario.username,
@@ -1012,8 +1050,20 @@ def editar_cancelacion_admin(request, reserva_id):
         messages.success(request, f"La reserva #{reserva.id} ha sido actualizada.")
         return redirect('listar_cancelaciones')
 
+    monto_reembolsable_preview = max((reserva.monto_total or 0) - (reserva.penalidad or 0), 0)
+    pago = getattr(reserva, 'pago', None)
+    penalidad_pagada = bool(
+        pago
+        and pago.estado_transaccion == 'aprobado'
+        and reserva.penalidad
+        and reserva.penalidad > 0
+        and pago.monto >= reserva.penalidad
+    )
+
     return render(request, 'admin/reserva/editar_cancelacion_admin.html', {
-        'reserva': reserva
+        'reserva': reserva,
+        'monto_reembolsable_preview': monto_reembolsable_preview,
+        'penalidad_pagada': penalidad_pagada,
     })
 
 @login_required(login_url='login')

@@ -111,17 +111,24 @@
                             <label class="form-label fw-bold text-dark small">
                                 <i class="bi bi-check2-circle text-success me-1"></i> Estado de Cancelación <span class="text-danger">*</span>
                             </label>
-                            <select name="estado_cancelacion" class="form-select rounded-3 py-2 fw-semibold" required>
-                                <option value="pendiente" {% if reserva.estado_cancelacion == 'pendiente' %}selected{% endif %}>
-                                     Pendiente de Revisión
-                                </option>
-                                <option value="aprobada" {% if reserva.estado_cancelacion == 'aprobada' %}selected{% endif %}>
-                                     Aprobada
-                                </option>
-                                <option value="rechazada" {% if reserva.estado_cancelacion == 'rechazada' %}selected{% endif %}>
-                                     Rechazada
-                                </option>
+                            <select name="estado_cancelacion" id="estado_cancelacion" class="form-select rounded-3 py-2 fw-semibold" required>
+                                <option value="pendiente" {% if reserva.estado_cancelacion == 'pendiente' %}selected{% endif %}> Pendiente de Revisión</option>
+                                <option value="aprobada" {% if reserva.estado_cancelacion == 'aprobada' %}selected{% endif %}> Aprobada</option>
+                                <option value="rechazada" {% if reserva.estado_cancelacion == 'rechazada' %}selected{% endif %}> Rechazada</option>
                             </select>
+                        </div>
+
+                        <div class="mb-4{% if reserva.estado_cancelacion != 'rechazada' %} d-none{% endif %}" id="motivo_rechazo_container">
+                            <label for="motivo_resolucion_cancelacion" class="form-label fw-bold text-dark small">
+                                <i class="bi bi-chat-square-text text-danger me-1"></i>
+                                Motivo del rechazo <span class="text-danger">*</span>
+                            </label>
+                            <textarea name="motivo_resolucion_cancelacion" id="motivo_resolucion_cancelacion"
+                                      class="form-control rounded-3" rows="3" minlength="5"
+                                      placeholder="Ej.: No es posible aprobar la cancelación porque el viaje ya fue realizado.">{{ reserva.motivo_resolucion_cancelacion|default:"" }}</textarea>
+                            <div class="form-text text-muted small">
+                                Obligatorio únicamente cuando rechaces la solicitud. Será visible para el turista.
+                            </div>
                         </div>
 
                         <div class="mb-4">
@@ -151,6 +158,61 @@
                             {% include "partials/politicas_cancelacion.html" %}
                         </div>
 
+                        {% if reserva.estado_cancelacion == 'aprobada' and reserva.monto_reembolsable and reserva.monto_reembolsable > 0 %}
+                        <div class="mb-4 p-3 border rounded-3 bg-light">
+                            <h6 class="fw-bold mb-3"><i class="bi bi-cash-coin text-success me-1"></i> Distribución del valor pagado</h6>
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-4">
+                                    <div class="border rounded-3 p-2 bg-white h-100">
+                                        <small class="text-muted d-block">Monto total</small>
+                                        <strong>COP ${{ reserva.monto_total|floatformat:0|intcomma }}</strong>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="border rounded-3 p-2 bg-warning bg-opacity-10 h-100">
+                                        <small class="text-muted d-block">Penalidad</small>
+                                        <strong class="text-warning">COP ${{ reserva.penalidad|floatformat:0|intcomma }}</strong>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="border rounded-3 p-2 bg-success bg-opacity-10 h-100">
+                                        <small class="text-muted d-block">Reembolso</small>
+                                        <strong class="text-success">COP ${{ monto_reembolsable_preview|floatformat:0|intcomma }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <span class="small text-muted">Estado de la penalidad:</span>
+                                {% if penalidad_pagada %}
+                                    <span class="badge bg-success rounded-pill ms-1">Pagada y aprobada</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark rounded-pill ms-1">Pendiente de pago o revisión</span>
+                                {% endif %}
+                            </div>
+
+                            <div id="control_reembolso" class="{% if reserva.estado_cancelacion != 'aprobada' %}d-none{% endif %}">
+                                <div class="mb-3">
+                                    <label for="estado_reembolso" class="form-label fw-bold small">Decisión de reembolso</label>
+                                    <select name="estado_reembolso" id="estado_reembolso" class="form-select rounded-3">
+                                        <option value="pendiente" {% if reserva.estado_reembolso == 'pendiente' %}selected{% endif %}>Pendiente de decisión</option>
+                                        <option value="nota_credito" {% if reserva.estado_reembolso == 'nota_credito' %}selected{% endif %}>Nota de crédito / saldo a favor</option>
+                                        <option value="pagado" {% if reserva.estado_reembolso == 'pagado' %}selected{% endif %}>Reembolsado por transferencia</option>
+                                    </select>
+                                </div>
+                                <div id="datos_reembolso" class="row g-2 {% if reserva.estado_reembolso != 'pagado' %}d-none{% endif %}">
+                                    <div class="col-md-6">
+                                        <label for="banco_reembolso" class="form-label small fw-bold">Banco / entidad</label>
+                                        <input type="text" name="banco_reembolso" id="banco_reembolso" class="form-control rounded-3" value="{{ reserva.banco_reembolso|default:'' }}" placeholder="Ej.: Bancolombia">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="referencia_reembolso" class="form-label small fw-bold">Referencia de transferencia</label>
+                                        <input type="text" name="referencia_reembolso" id="referencia_reembolso" class="form-control rounded-3" value="{{ reserva.referencia_reembolso|default:'' }}" placeholder="Ej.: 123456789">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
                         <div class="d-flex justify-content-end align-items-center gap-2 pt-3 border-top">
                             <a href="{% url 'listar_cancelaciones' %}" class="btn btn-outline-secondary px-4 rounded-pill fw-semibold">
                                 <i class="bi bi-x-circle me-1"></i> Cancelar
@@ -165,4 +227,43 @@
         </div>
     </div>
 </div>
+<script>
+(function () {
+    const estado = document.getElementById('estado_cancelacion');
+    const contenedor = document.getElementById('motivo_rechazo_container');
+    const motivo = document.getElementById('motivo_resolucion_cancelacion');
+
+    function actualizarMotivoRechazo() {
+        const esRechazo = estado && estado.value === 'rechazada';
+        if (contenedor) contenedor.classList.toggle('d-none', !esRechazo);
+        if (motivo) {
+            motivo.required = esRechazo;
+            motivo.disabled = !esRechazo;
+        }
+    }
+
+    if (estado) {
+        const actualizarControlReembolso = () => {
+            const controlReembolso = document.getElementById('control_reembolso');
+            if (controlReembolso) controlReembolso.classList.toggle('d-none', estado.value !== 'aprobada');
+        };
+        estado.addEventListener('change', () => {
+            actualizarMotivoRechazo();
+            actualizarControlReembolso();
+        });
+        actualizarMotivoRechazo();
+        actualizarControlReembolso();
+    }
+
+    const estadoReembolso = document.getElementById('estado_reembolso');
+    const datosReembolso = document.getElementById('datos_reembolso');
+    if (estadoReembolso && datosReembolso) {
+        const actualizarDatosReembolso = () => {
+            datosReembolso.classList.toggle('d-none', estadoReembolso.value !== 'pagado');
+        };
+        estadoReembolso.addEventListener('change', actualizarDatosReembolso);
+        actualizarDatosReembolso();
+    }
+})();
+</script>
 {% endblock %}

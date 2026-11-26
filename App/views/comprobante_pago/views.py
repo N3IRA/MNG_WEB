@@ -88,8 +88,12 @@ def admin_revisar_comprobante(request, pk):
                     error_msg = "Debe especificar el banco o medio de pago de origen para aprobar el comprobante."
                 elif not monto_val or monto_val <= 0:
                     error_msg = "Debe especificar un monto pagado válido mayor a cero para aprobar el comprobante."
-                elif comprobante.reserva and monto_val < comprobante.reserva.monto_total:
-                    error_msg = f"El monto verificado (COP ${monto_val:,.0f}) no puede ser menor al monto total de la reserva (COP ${comprobante.reserva.monto_total:,.0f})."
+                elif comprobante.reserva:
+                    es_penalidad = comprobante.reserva.estado_cancelacion == 'aprobada' and comprobante.reserva.penalidad and comprobante.reserva.penalidad > 0
+                    monto_requerido = comprobante.reserva.penalidad if es_penalidad else comprobante.reserva.monto_total
+                    if monto_val < monto_requerido:
+                        tipo_texto = 'penalidad' if es_penalidad else 'reserva'
+                        error_msg = f"El monto verificado (COP ${monto_val:,.0f}) no puede ser menor al monto requerido de la {tipo_texto} (COP ${monto_requerido:,.0f})."
 
             if not error_msg:
                 estado_anterior = comprobante.estado_transaccion
@@ -106,11 +110,17 @@ def admin_revisar_comprobante(request, pk):
                     if comprobante.reserva:
                         reserva = comprobante.reserva
                         if estado_transaccion == 'aprobado':
-                            reserva.estado_reserva = 'confirmada'
+                            es_penalidad = reserva.estado_cancelacion == 'aprobada' and reserva.penalidad and reserva.penalidad > 0
+                            if es_penalidad:
+                                reserva.estado_reserva = 'cancelada'
+                            else:
+                                reserva.estado_reserva = 'confirmada'
                             reserva.save()
-                        elif estado_transaccion == 'rechazado' and reserva.estado_reserva == 'confirmada':
-                            reserva.estado_reserva = 'pendiente'
-                            reserva.save()
+                        elif estado_transaccion == 'rechazado':
+                            es_penalidad = reserva.estado_cancelacion == 'aprobada' and reserva.penalidad and reserva.penalidad > 0
+                            if not es_penalidad and reserva.estado_reserva == 'confirmada':
+                                reserva.estado_reserva = 'pendiente'
+                                reserva.save()
 
                     # Registrar en Bitácora del sistema para auditoría y trazabilidad
                     registrar_bitacora(
@@ -126,10 +136,20 @@ def admin_revisar_comprobante(request, pk):
 
                     # Registrar notificación en el sistema
                     cliente = comprobante.reserva.usuario if comprobante.reserva else None
+                    if estado_transaccion == 'rechazado':
+                        mensaje_notificacion = f"El comprobante #{comprobante.pk} fue rechazado. Motivo: {nota_admin}"
+                    elif estado_transaccion == 'aprobado':
+                        es_penalidad = comprobante.reserva.estado_cancelacion == 'aprobada' and comprobante.reserva.penalidad and comprobante.reserva.penalidad > 0
+                        if es_penalidad:
+                            mensaje_notificacion = f"El comprobante #{comprobante.pk} fue aprobado y la penalidad fue pagada correctamente."
+                        else:
+                            mensaje_notificacion = f"El comprobante #{comprobante.pk} fue aprobado y la reserva fue confirmada exitosamente."
+                    else:
+                        mensaje_notificacion = f"El comprobante #{comprobante.pk} fue actualizado a '{estado_transaccion}'."
                     crear_notificacion_sistema(
                         usuario=cliente,
                         reserva=comprobante.reserva,
-                        mensaje=f"El comprobante #{comprobante.pk} fue actualizado a '{estado_transaccion}'.",
+                        mensaje=mensaje_notificacion,
                         tipo="Comprobante de Pago",
                         prioridad="alta"
                     )
