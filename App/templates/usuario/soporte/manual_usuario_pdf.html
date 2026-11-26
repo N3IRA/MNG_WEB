@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Manual de Usuario y Guía de Ayuda — Monagua</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.8cm 1.5cm 1.8cm 1.5cm;
+            @bottom-right {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 9px;
+                color: #777;
+            }
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            color: #2c3e50;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+        .header-table {
+            width: 100%;
+            border-bottom: 2px solid #198754;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+        .brand-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #198754;
+        }
+        .doc-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1f2937;
+            text-align: right;
+        }
+        .doc-sub {
+            font-size: 9px;
+            color: #6b7280;
+            text-align: right;
+        }
+        h2 {
+            color: #198754;
+            font-size: 13px;
+            font-weight: bold;
+            border-bottom: 1px solid #d1e7dd;
+            padding-bottom: 4px;
+            margin-top: 18px;
+            margin-bottom: 8px;
+        }
+        h3 {
+            color: #111827;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 4px;
+        }
+        p {
+            margin-top: 0;
+            margin-bottom: 6px;
+            color: #4b5563;
+        }
+        ul, ol {
+            margin-top: 2px;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            color: #4b5563;
+        }
+        li {
+            margin-bottom: 4px;
+        }
+        .highlight-box {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+        .tip-box {
+            background-color: #fefce8;
+            border: 1px solid #fef08a;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+        .footer-table {
+            width: 100%;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 25px;
+            padding-top: 10px;
+            font-size: 9px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Encabezado con Logo y Datos Institucionales -->
+    <table class="header-table">
+        <tr>
+            <td style="width: 50%; vertical-align: middle;">
+                {% if logo_base64 %}
+                    <img src="{{ logo_base64 }}" width="50" height="50" style="vertical-align: middle; margin-right: 8px;" />
+                {% endif %}
+                <span class="brand-title">MONAGUA</span>
+                <div style="font-size: 9px; color: #6b7280; margin-top: 3px;">
+                    Ecoturismo y Turismo Comunitario en Mongua, Boyacá
+                </div>
+            </td>
+            <td style="width: 50%; vertical-align: middle; text-align: right;">
+                <div class="doc-title">MANUAL DE USUARIO</div>
+                <div class="doc-sub">Guía de Ayuda, Reservas y Funcionamiento</div>
+                <div class="doc-sub">Versión Oficial {{ anio }} · Emisión: {{ fecha_generacion }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="highlight-box">
+        <strong>Bienvenido a Monagua Ecoturismo:</strong> Esta guía contiene las instrucciones esenciales para explorar destinos, registrar reservas, reportar comprobantes de pago, aplicar promociones y utilizar las herramientas de accesibilidad de la plataforma.
+    </div>
+
+    <!-- Sección 1 -->
+    <h2>1. Registro e Inicio de Sesión</h2>
+    <p>
+        Para reservar experiencias turísticas debes contar con una cuenta activa en el sistema:
+    </p>
+    <ul>
+        <li><strong>Registro:</strong> Ingresa tus nombres completos, correo electrónico válido, número de documento y una contraseña segura.</li>
+        <li><strong>Inicio de Sesión:</strong> Puedes acceder desde el botón superior derecho <em>"Iniciar Sesión"</em> utilizando tu usuario o correo electrónico.</li>
+        <li><strong>Perfil de Usuario:</strong> Desde tu perfil puedes actualizar foto de usuario, número telefónico y revisar el historial de reservas y calificaciones.</li>
+    </ul>
+
+    <!-- Sección 2 -->
+    <h2>2. Exploración de Paquetes y Destinos</h2>
+    <p>
+        En la sección <strong>Destinos y Paquetes</strong> encontrarás los recorridos ecológicos disponibles (Laguna Negra, Páramo de Ocetá, Senderos Coloniales, entre otros):
+    </p>
+    <ul>
+        <li><strong>Filtros Avanzados:</strong> Filtra por admisión de menores (familiar vs. solo adultos), categoría de ecoturismo y rango de precios.</li>
+        <li><strong>Detalle del Itinerario:</strong> Pulsa el botón <em>"Detalles"</em> o el icono <em>"!"</em> en cada tarjeta para conocer el cronograma de actividades, equipo requerido y recomendaciones de viaje.</li>
+    </ul>
+
+    <!-- Sección 3 -->
+    <h2>3. Proceso Paso a Paso de Reserva</h2>
+    <ol>
+        <li>Haz clic en <strong>"Reservar Ahora"</strong> en el tour seleccionado.</li>
+        <li>Selecciona la <strong>Fecha de tu Aventura</strong> en el calendario interactivo. Las fechas disponibles con temporada se iluminarán en verde.</li>
+        <li>Indica la cantidad de <strong>Adultos</strong> y <strong>Menores</strong>. El sistema calculará automáticamente la liquidación de tarifas con promociones activas.</li>
+        <li>Revisa el punto de encuentro y hora de salida señalados en el cartel de información del paquete.</li>
+        <li>Acepta los Términos y Condiciones y pulsa <strong>"Confirmar Reserva"</strong>.</li>
+    </ol>
+
+    <!-- Sección 4 -->
+    <h2>4. Pagos, Comprobantes y Facturación Electrónica</h2>
+    <p>
+        Monagua opera bajo el modelo de reserva garantizada mediante transferencia bancaria (Bancolombia, Nequi y Daviplata):
+    </p>
+    <ul>
+        <li><strong>Cargue de Comprobante:</strong> Dirígete a <em>"Mis Reservas"</em>, localiza la reserva en estado <em>Pendiente de Pago</em> y adjunta la captura o PDF legible de la transferencia.</li>
+        <li><strong>Aprobación y Validación:</strong> El equipo administrativo verificará el comprobante. Una vez aprobado, tu reserva pasará a estado <strong>Confirmada</strong>.</li>
+        <li><strong>Factura Oficial con Código QR:</strong> Podrás descargar tu factura legal en PDF. El código QR impreso permite verificar en cualquier momento la autenticidad de tu viaje.</li>
+    </ul>
+
+    <div class="tip-box">
+        <strong>Consejo para pagos:</strong> Asegúrate de que el número de aprobación o transacción bancaria sea totalmente legible al subir tu comprobante para acelerar la validación.
+    </div>
+
+    <!-- Sección 5 -->
+    <h2>5. Promociones y Descuentos</h2>
+    <p>
+        Las promociones vigentes se identifican con sellos de color naranja (ej: <em>-15% OFF</em>) y aplican de manera automática al calcular el costo final de los paquetes incluidos, sin necesidad de introducir cupones manuales.
+    </p>
+
+    <!-- Sección 6 -->
+    <h2>6. Políticas de Cancelación y Reembolsos</h2>
+    <ul>
+        <li><strong>Más de 72 horas de anticipación:</strong> Reembolso del 100% mediante Nota de Crédito o transferencia.</li>
+        <li><strong>Entre 48 y 72 horas:</strong> Retención del 30% por penalidad logística y pólizas de viaje emitidas.</li>
+        <li><strong>Menos de 48 horas o inasistencia:</strong> Sin reembolso económico debido a la reserva previa de guías y seguros.</li>
+    </ul>
+
+    <!-- Sección 7 -->
+    <h2>7. Accesibilidad y Asistente Virtual Condy</h2>
+    <ul>
+        <li><strong>Menú de Accesibilidad (Botón inferior izquierdo):</strong> Permite ajustar tamaño de texto, espaciado, alto contraste, lectura en voz alta y modo de lectura sin bloquear la visualización de la página.</li>
+        <li><strong>Condy (Asistente Virtual):</strong> Botón flotante inferior derecho para resolver dudas sobre rutas, clima y estado de reservas en tiempo real.</li>
+    </ul>
+
+    <!-- Sección 8 -->
+    <h2>8. Canales de Contacto y PQRS</h2>
+    <table style="width: 100%; margin-top: 6px;">
+        <tr>
+            <td style="width: 33%;"><strong>Correo Electrónico:</strong><br>soporte@monagua.com</td>
+            <td style="width: 33%;"><strong>Atención Virtual:</strong><br>Formulario PQRS en línea</td>
+            <td style="width: 33%;"><strong>Sede Central:</strong><br>Mongua, Boyacá, Colombia</td>
+        </tr>
+    </table>
+
+    <table class="footer-table">
+        <tr>
+            <td>© {{ anio }} Monagua Ecoturismo — Todos los derechos reservados.</td>
+            <td style="text-align: right;">Documento Informativo para el Usuario</td>
+        </tr>
+    </table>
+
+</body>
+</html>

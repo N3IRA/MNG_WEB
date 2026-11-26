@@ -120,15 +120,34 @@
       </a>
       {% endif %}
 
+      <!-- Botón de Ayuda y Soporte (?) al lado derecho de Iniciar Sesión -->
+      <a
+        class="btn btn-link text-dark p-2 position-relative shadow-none hover-success"
+        href="{% url 'soporte_ayuda' %}"
+        aria-label="Centro de ayuda y soporte"
+        title="Centro de ayuda y soporte"
+      >
+        <i class="bi bi-question-circle fs-5" aria-hidden="true"></i>
+      </a>
+
       <!-- Notificaciones (al lado izquierdo de Mis Reservas) -->
       {% if user.is_authenticated %}
         {% include 'partials/notificacion/notificaciones.html' with en_header=True %}
       {% endif %}
 
-      <!-- Mis Reservas (solo para turistas/clientes) -->
-      {% if not user.is_authenticated or user.rol != 'ADMIN' %}
+      <!-- Reservas en Header: Gestión de Reservas para Administrador / Mis Reservas para Turistas y Clientes -->
+      {% if user.is_authenticated and user.es_admin %}
       <a
-        class="btn btn-link text-dark p-2 position-relative shadow-none"
+        class="btn btn-link text-dark p-2 position-relative shadow-none hover-success"
+        href="{% url 'gestion_reservas' %}"
+        aria-label="Gestión de reservas de clientes"
+        title="Gestión de Reservas (Administración)"
+      >
+        <i class="bi bi-calendar-check fs-5" aria-hidden="true"></i>
+      </a>
+      {% else %}
+      <a
+        class="btn btn-link text-dark p-2 position-relative shadow-none hover-success"
         href="{% url 'mis_reservas_usuario' %}"
         aria-label="Ver y gestionar mis reservas"
         title="Ver y gestionar mis reservas"

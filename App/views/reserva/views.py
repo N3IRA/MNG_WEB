@@ -281,18 +281,27 @@ class EditarReservaAdminView(UpdateView):
                 except Exception as e:
                     print(f"Error enviando correo de confirmación de reserva (admin): {e}")
             else:
+                url_pago = self.request.build_absolute_uri(f"{reverse('enviar_comprobante')}?reserva_id={reserva.id}&tipo=reserva") if self.request else None
+                url_mis_reservas = self.request.build_absolute_uri(reverse('mis_reservas_usuario')) if self.request else None
+
                 asunto = f"Tu Reserva #{reserva.id} ha sido {reserva.estado_reserva.upper()} - Monagua"
-                mensaje_texto = f"Hola {nombre_cliente}, el estado de tu reserva para {reserva.paquete.nombre} ha cambiado a {reserva.estado_reserva}."
+                mensaje_texto = f"Hola {nombre_cliente}, el estado de tu reserva #{reserva.id} para {reserva.paquete.nombre} ha cambiado a {reserva.estado_reserva}."
+                if reserva.estado_reserva == 'pendiente' and url_pago:
+                    mensaje_texto += f"\n\nRecuerda que debes realizar tu pago y adjuntar tu comprobante a tiempo; de lo contrario, la reserva será cancelada automáticamente:\n{url_pago}"
                 
                 html_contenido = plantilla_reserva_html(
                     nombre_cliente=nombre_cliente,
                     paquete=reserva.paquete.nombre,
-                    fecha=str(reserva.fecha_inicio),
+                    fecha=reserva.fecha_inicio.strftime('%d/%m/%Y') if reserva.fecha_inicio else None,
                     adultos=reserva.numero_adultos,
                     menores=reserva.numero_menores,
+                    punto_encuentro=reserva.paquete.punto_encuentro or None,
+                    hora_encuentro=reserva.paquete.hora_encuentro.strftime('%H:%M') if reserva.paquete.hora_encuentro else None,
                     estado=reserva.estado_reserva,
                     reserva_id=reserva.id,
-                    monto_total=str(reserva.monto_total)
+                    monto_total=str(reserva.monto_total),
+                    url_pago=url_pago,
+                    url_mis_reservas=url_mis_reservas
                 )
                 try:
                     enviar_correo_html_monagua(asunto, mensaje_texto, reserva.usuario.email, html_contenido)
@@ -407,6 +416,8 @@ def obtener_contexto_mis_reservas(usuario, estado_filtro=''):
 
 @login_required(login_url='login')
 def mis_reservas_usuario(request):
+    if getattr(request.user, 'es_admin', False) or request.user.is_staff or request.user.is_superuser or getattr(request.user, 'rol', None) == 'ADMIN':
+        return redirect('gestion_reservas')
     estado_filtro = request.GET.get('estado', '')
     context = obtener_contexto_mis_reservas(request.user, estado_filtro)
     return render(request, 'admin/reserva/mis_reservas.html', context)
@@ -829,10 +840,46 @@ def guardar_reserva(request, paquete_id):
             prioridad="media"
         )
 
-        asunto = "Confirmación de tu reserva en Monagua"
-        nombre_cliente = request.user.first_name or request.user.username
+        url_pago = request.build_absolute_uri(f"{reverse('enviar_comprobante')}?reserva_id={reserva.id}&tipo=reserva")
+        url_mis_reservas = request.build_absolute_uri(reverse('mis_reservas_usuario'))
 
-        mensaje_texto = f"Hola {nombre_cliente}, hemos recibido tu solicitud de reserva para {paquete.nombre}."
+        asunto = f"¡Tu reserva #{reserva.id} está registrada! - Recuerda realizar tu pago | Monagua"
+        nombre_cliente = request.user.first_name or request.user.username
+        punto_encuentro = paquete.punto_encuentro or "Por definir (Sujeto a confirmación)"
+        hora_encuentro = paquete.hora_encuentro.strftime('%H:%M') if paquete.hora_encuentro else "08:00"
+
+        try:
+            monto_num = float(reserva.monto_total)
+            monto_txt = f"${monto_num:,.0f} COP".replace(",", ".")
+        except (ValueError, TypeError):
+            monto_txt = f"${reserva.monto_total} COP"
+
+        mensaje_texto = (
+            f"¡Hola, {nombre_cliente}!\n\n"
+            f"Hemos recibido con éxito tu solicitud de reserva #{reserva.id} para la experiencia '{paquete.nombre}'.\n\n"
+            f"DETALLES DE LA RESERVA:\n"
+            f"-----------------------------------------\n"
+            f"- Número de Reserva: #{reserva.id}\n"
+            f"- Destino / Experiencia: {paquete.nombre}\n"
+            f"- Fecha de Salida: {reserva.fecha_inicio.strftime('%d/%m/%Y')}\n"
+            f"- Punto de Encuentro: {punto_encuentro}\n"
+            f"- Hora de Encuentro: {hora_encuentro}\n"
+            f"- Pasajeros: {reserva.numero_adultos} Adulto(s)"
+            f"{f', {reserva.numero_menores} Menor(es)' if reserva.numero_menores > 0 else ''}\n"
+            f"- Monto Total a Pagar: {monto_txt}\n"
+            f"-----------------------------------------\n\n"
+            f"⚠️ RECORDATORIO IMPORTANTE DE PAGO:\n"
+            f"Tu reserva se encuentra en estado PENDIENTE DE PAGO. Para garantizar tus cupos debes "
+            f"realizar el pago correspondiente y adjuntar tu comprobante en la plataforma.\n\n"
+            f"🔔 ATENCIÓN: Si no realizas el pago oportunamente, el sistema cancelará y eliminará automáticamente "
+            f"tu reserva para liberar los cupos disponibles a otros viajeros.\n\n"
+            f"👉 Realiza tu pago y sube tu comprobante en el siguiente enlace:\n"
+            f"{url_pago}\n\n"
+            f"También puedes consultar y gestionar todas tus reservas en:\n"
+            f"{url_mis_reservas}\n\n"
+            f"Si tienes dudas o necesitas asistencia, puedes responder directamente a este correo.\n\n"
+            f"¡Gracias por elegir Monagua Experiencias!"
+        )
 
         html_bonito = plantilla_reserva_html(
             nombre_cliente=nombre_cliente,
@@ -840,11 +887,13 @@ def guardar_reserva(request, paquete_id):
             fecha=reserva.fecha_inicio.strftime('%d/%m/%Y'),  
             adultos=reserva.numero_adultos,
             menores=reserva.numero_menores,
-            punto_encuentro="Por definir (Sujeto a confirmación)", 
-            hora_encuentro="08:00",
+            punto_encuentro=punto_encuentro, 
+            hora_encuentro=hora_encuentro,
             estado=reserva.estado_reserva,
             reserva_id=reserva.id,
-            monto_total=str(reserva.monto_total)
+            monto_total=str(reserva.monto_total),
+            url_pago=url_pago,
+            url_mis_reservas=url_mis_reservas
         )
         
         correo_enviado = enviar_correo_html_monagua(
