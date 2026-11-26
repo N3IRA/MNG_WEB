@@ -23,6 +23,20 @@ def soporte_ayuda_view(request):
     return render(request, 'usuario/soporte/soporte_ayuda.html', context)
 
 
+def manual_usuario_view(request):
+    """
+    Vista interactiva del Manual de Usuario oficial de Monagua Turismo (ADSO SENA).
+    Permite navegar por capítulos, filtrar por roles (Visitante, Turista, Guía, Administrador),
+    buscar temas en tiempo real y descargar o visualizar el documento en PDF.
+    """
+    context = {
+        'titulo': 'Manual de Usuario Oficial — Monagua Turismo',
+        'anio': timezone.now().year,
+        'fecha_actual': timezone.now(),
+    }
+    return render(request, 'usuario/soporte/manual_usuario.html', context)
+
+
 def manual_usuario_pdf_view(request):
     """
     Genera y sirve el documento PDF del Manual de Usuario y Guía de Ayuda de Monagua.

@@ -802,7 +802,7 @@ class CancelacionReservaTests(TestCase):
         cancelaciones = list(response.context['cancelaciones'])
         self.assertIn(aprobada, cancelaciones)
         self.assertIn(pendiente, cancelaciones)
-        self.assertNotIn(rechazada, cancelaciones)
+        self.assertIn(rechazada, cancelaciones)
 
 
 class ConfirmacionReservaTests(TestCase):
@@ -1667,7 +1667,7 @@ class FlujoReservaPagoFacturaRigurosoTests(TestCase):
             'monto': str(reserva.monto_total),
             'nota_admin': ''  # Vacía
         })
-        self.assertEqual(res.status_code, 200)  # Re-renderiza formulario con error
+        self.assertEqual(res.status_code, 200)  # Re-renderiza formulario with error
         pago.refresh_from_db()
         self.assertEqual(pago.estado_transaccion, 'pendiente')
 

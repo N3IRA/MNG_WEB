@@ -538,6 +538,14 @@
         <i class="bi bi-gear fs-6" style="width: 20px"></i>
         <span class="small">Configuración</span>
       </a>
+
+      <a
+        href="{% url 'manual_usuario' %}"
+        class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'manual_usuario' %}bg-transparent text-white fw-semibold{% else %}text-white-50 text-white-hover{% endif %}"
+      >
+        <i class="bi bi-book-half fs-6" style="width: 20px"></i>
+        <span class="small">Manual de Usuario</span>
+      </a>
     </nav>
 
     <!-- Footer: Perfil + Logout -->

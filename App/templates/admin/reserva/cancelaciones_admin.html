@@ -221,6 +221,11 @@
                             <p class="text-muted small mb-0 text-truncate" style="max-width: 230px;" title="{{ item.motivo_cancelacion }}">
                                 {{ item.motivo_cancelacion|default:"Sin motivo especificado" }}
                             </p>
+                            {% if item.estado_cancelacion == 'rechazada' and item.motivo_resolucion_cancelacion %}
+                                <p class="text-danger small mb-0 mt-1" title="{{ item.motivo_resolucion_cancelacion }}">
+                                    <strong>Rechazo:</strong> {{ item.motivo_resolucion_cancelacion|truncatechars:80 }}
+                                </p>
+                            {% endif %}
                         </td>
 
                         <!-- Penalidad -->

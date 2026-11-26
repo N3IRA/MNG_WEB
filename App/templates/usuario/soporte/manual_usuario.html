@@ -1,0 +1,1104 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}Manual de Usuario Oficial — Monagua Turismo{% endblock %}
+
+{% block content %}
+<style>
+  .manual-hero {
+    background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #0f172a 100%);
+  }
+  .manual-sidebar {
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+  .manual-nav-link {
+    font-size: 0.85rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 0.5rem;
+    color: #4b5563;
+    text-decoration: none;
+    display: block;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+  }
+  .manual-nav-link:hover, .manual-nav-link.active {
+    background-color: #ecfdf5;
+    color: #065f46;
+    border-left-color: #10b981;
+    font-weight: 600;
+  }
+  .rule-badge {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+  }
+  .important-badge {
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    color: #92400e;
+    border-left: 4px solid #f59e0b;
+  }
+  .tip-badge {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    border-left: 4px solid #10b981;
+  }
+  .chapter-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+    padding: 1.75rem;
+    scroll-margin-top: 95px;
+  }
+  .chapter-title {
+    color: #064e3b;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 2px solid #f0fdf4;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .manual-table th {
+    background-color: #f8fafc;
+    color: #1e293b;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .manual-table td {
+    font-size: 0.9rem;
+    vertical-align: middle;
+  }
+  .role-pill.active {
+    background-color: #047857 !important;
+    color: #ffffff !important;
+    border-color: #047857 !important;
+  }
+  /* ── Responsive ── */
+  .chapter-card img, .chapter-card table { max-width: 100%; }
+  .chapter-card { overflow-wrap: anywhere; }
+  .role-filter-scroll { display: flex; gap: .4rem; flex-wrap: wrap; }
+  @media (max-width: 991.98px) {
+    .manual-hero h1 { font-size: 1.6rem; }
+    .chapter-card { padding: 1.25rem; scroll-margin-top: 80px; }
+  }
+  @media (max-width: 575.98px) {
+    .manual-hero { padding: 1.25rem !important; }
+    .manual-hero .btn { width: 100%; }
+    .chapter-card { padding: 1rem; border-radius: .75rem; margin-bottom: 1.25rem; }
+    .chapter-title { font-size: 1.1rem; }
+    .manual-table th, .manual-table td { font-size: .75rem; padding: .4rem; }
+    .role-filter-scroll { flex-wrap: nowrap; overflow-x: auto; padding-bottom: .35rem; -webkit-overflow-scrolling: touch; }
+    .role-filter-scroll .btn { white-space: nowrap; flex: 0 0 auto; }
+  }
+</style>
+<!-- Migas de Pan -->
+{% include "partials/breadcrumbs.html" with current_title="Manual de Usuario" current_icon="bi bi-book-half" %}
+
+<div class="container py-3 mb-5">
+
+  <!-- ── HERO PRINCIPAL INSTITUCIONAL ── -->
+  <section class="manual-hero text-white rounded-4 shadow-lg p-4 p-md-5 mb-4 position-relative overflow-hidden">
+    <div class="row align-items-center g-4 position-relative" style="z-index: 2;">
+      <div class="col-lg-8">
+        <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+          <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill shadow-sm">
+            <i class="bi bi-award-fill me-1"></i> ADSO SENA · SOGAMOSO
+          </span>
+          <span class="badge bg-white bg-opacity-20 text-white px-3 py-1.5 rounded-pill">
+            Versión Oficial 26/11/2026
+          </span>
+          <span class="badge bg-white bg-opacity-20 text-white px-3 py-1.5 rounded-pill">
+            12 Capítulos Completos
+          </span>
+        </div>
+        <h1 class="display-6 fw-bold mb-2">MONAGUA WEB</h1>
+        <h2 class="h5 fw-normal text-white-50 mb-3">
+          Plataforma de Reservas, Pagos y Administración Turística de Mongua, Boyacá
+        </h2>
+        <p class="small text-white text-opacity-90 mb-0 col-xl-11 lh-base">
+          Guía técnica y operativa integral para visitantes, turistas registrados, guías turísticos certificados y personal administrativo. Contiene los flujos de negocio, validaciones de seguridad, auditoría de comprobantes y resolución de incidencias.
+        </p>
+      </div>
+
+      <div class="col-lg-4 text-lg-end">
+        <div class="d-flex flex-column flex-sm-row flex-lg-column gap-2 justify-content-lg-end">
+          <a href="{% url 'manual_usuario_pdf' %}" class="btn btn-light fw-bold rounded-pill px-4 py-2.5 shadow d-inline-flex align-items-center justify-content-center gap-2 text-dark">
+            <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+            <span>Descargar Manual PDF</span>
+          </a>
+          <a href="{% url 'manual_usuario_pdf' %}?ver=1" target="_blank" class="btn btn-outline-light rounded-pill px-4 py-2 d-inline-flex align-items-center justify-content-center gap-2">
+            <i class="bi bi-eye-fill"></i>
+            <span>Ver PDF en Navegador</span>
+          </a>
+          <a href="{% url 'soporte_ayuda' %}" class="btn btn-sm btn-link text-white text-opacity-75 text-decoration-none text-center">
+            <i class="bi bi-arrow-left me-1"></i> Centro de Ayuda & FAQ
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── BARRA DE BÚSQUEDA Y FILTRO POR ROL ── -->
+  <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white p-3 p-md-4">
+    <div class="row g-3 align-items-center">
+      <!-- Buscador en tiempo real -->
+      <div class="col-12 col-md-5">
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0 rounded-start-pill text-muted px-3">
+            <i class="bi bi-search"></i>
+          </span>
+          <input type="text" id="manualSearchInput" class="form-control bg-light border-start-0 rounded-end-pill py-2" placeholder="Buscar capítulo, palabra clave, flujo o regla...">
+        </div>
+      </div>
+
+      <!-- Filtros rápidos por rol -->
+      <div class="col-12 col-md-7">
+        <div class="role-filter-scroll align-items-center justify-content-md-end">
+          <span class="small text-muted me-1 d-none d-lg-inline"><i class="bi bi-funnel me-1"></i>Filtrar por rol:</span>
+          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1.5 role-pill active" data-role="todos">
+            Todos
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1.5 role-pill" data-role="visitante">
+            <i class="bi bi-eye me-1"></i>Visitante
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1.5 role-pill" data-role="turista">
+            <i class="bi bi-person-walking me-1"></i>Turista
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1.5 role-pill" data-role="guia">
+            <i class="bi bi-compass me-1"></i>Guía
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1.5 role-pill" data-role="admin">
+            <i class="bi bi-shield-check me-1"></i>Admin
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONTENIDO EN 2 COLUMNAS (SIDEBAR TOC + CAPÍTULOS) ── -->
+  <div class="row g-4">
+    <!-- Columna Izquierda: Índice Rápido Flotante -->
+    <div class="col-lg-3 d-none d-lg-block">
+      <div class="manual-sidebar card border-0 shadow-sm rounded-4 p-3 bg-white">
+        <h6 class="fw-bold text-dark px-2 mb-2 d-flex align-items-center gap-2">
+          <i class="bi bi-list-nested text-success"></i> Tabla de Contenido
+        </h6>
+        <nav class="d-flex flex-column gap-1" id="manualTocNav">
+          <a href="#cap-intro" class="manual-nav-link active">Introducción</a>
+          <a href="#cap-1" class="manual-nav-link" data-roles="visitante,turista,guia,admin">1. Acerca de este manual</a>
+          <a href="#cap-2" class="manual-nav-link" data-roles="visitante,turista,guia,admin">2. Requisitos y conceptos</a>
+          <a href="#cap-3" class="manual-nav-link" data-roles="visitante,turista,guia,admin">3. Primeros pasos (Registro/OTP)</a>
+          <a href="#cap-4" class="manual-nav-link" data-roles="visitante,turista">4. Manual del Visitante</a>
+          <a href="#cap-5" class="manual-nav-link" data-roles="turista">5. Manual del Turista</a>
+          <a href="#cap-6" class="manual-nav-link" data-roles="guia">6. Manual del Guía</a>
+          <a href="#cap-7" class="manual-nav-link" data-roles="admin">7. Manual del Administrador</a>
+          <a href="#cap-8" class="manual-nav-link" data-roles="turista,admin">8. Flujos y reglas de negocio</a>
+          <a href="#cap-9" class="manual-nav-link" data-roles="visitante,turista">9. Preguntas frecuentes</a>
+          <a href="#cap-10" class="manual-nav-link" data-roles="turista,guia,admin">10. Solución de problemas</a>
+          <a href="#cap-11" class="manual-nav-link" data-roles="visitante,turista,guia,admin">11. Recomendaciones de seguridad</a>
+          <a href="#cap-12" class="manual-nav-link" data-roles="visitante,turista,guia,admin">12. Resumen de la plataforma</a>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Columna Derecha: Contenido Completo del Manual -->
+    <div class="col-lg-9">
+
+      <!-- INTRODUCCIÓN -->
+      <article id="cap-intro" class="chapter-card" data-roles="visitante,turista,guia,admin">
+        <h3 class="chapter-title">
+          <i class="bi bi-info-circle-fill text-success"></i> Introducción a Monagua Turismo
+        </h3>
+        <p class="text-secondary lh-base">
+          <strong>Monagua Turismo (MNG_WEB)</strong> es una plataforma web desarrollada para descubrir, reservar y pagar experiencias de alta montaña y naturaleza en el municipio de <strong>Mongua, Boyacá, Colombia</strong>: el imponente <em>Páramo de Ocetá</em>, la mística <em>Laguna Negra</em>, cascadas cristalinas, senderos ecológicos y patrimonio cultural de la ancestral cultura Muisca.
+        </p>
+        <p class="text-secondary lh-base mb-0">
+          A través de la plataforma, los turistas pueden explorar tours y paquetes, reservar con cotización automática por temporada, pagar mediante carga de comprobantes, modificar o cancelar reservas, descargar facturas oficiales en PDF con código QR y calificar su experiencia. Los guías locales acreditados consultan sus grupos y pólizas de viaje asignadas, y la administración gestiona el catálogo, audita comprobantes, controla reembolsos con dispersión bancaria y atiende PQRS.
+        </p>
+      </article>
+
+      <!-- CAPÍTULO 1 -->
+      <article id="cap-1" class="chapter-card" data-roles="visitante,turista,guia,admin">
+        <h3 class="chapter-title">
+          <i class="bi bi-compass-fill text-success"></i> 1. Acerca de este manual
+        </h3>
+        
+        <h5 class="fw-bold text-dark mt-3">1.1 ¿A quién va dirigido este manual?</h5>
+        <p class="text-secondary small mb-3">
+          Este manual se organiza en capítulos orientados a cada rol del sistema para que cada actor encuentre rápidamente las funciones y directrices que le corresponden:
+        </p>
+
+        <!-- Tabla 1 -->
+        <div class="table-responsive mb-4">
+          <table class="table table-bordered manual-table align-middle">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 35%;">Perfil / Rol</th>
+                <th>Capítulos recomendados en este manual</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge bg-secondary">Visitante (sin cuenta)</span></td>
+                <td>Capítulos <strong>3</strong>, <strong>4</strong> y <strong>9</strong></td>
+              </tr>
+              <tr>
+                <td><span class="badge bg-success">Turista / Cliente registrado</span></td>
+                <td>Capítulos <strong>3</strong>, <strong>4</strong>, <strong>5</strong>, <strong>8</strong>, <strong>9</strong> y <strong>10</strong></td>
+              </tr>
+              <tr>
+                <td><span class="badge bg-info text-dark">Guía turístico</span></td>
+                <td>Capítulos <strong>3</strong>, <strong>6</strong> y <strong>10</strong></td>
+              </tr>
+              <tr>
+                <td><span class="badge bg-dark">Administrador / Staff</span></td>
+                <td>Capítulos <strong>3</strong>, <strong>7</strong>, <strong>8</strong> y <strong>10</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h5 class="fw-bold text-dark">1.2 Cómo usar este manual</h5>
+        <p class="text-secondary small mb-0 lh-base">
+          Cada capítulo describe las acciones disponibles paso a paso, los requisitos necesarios y las reglas que rigen cada operación. Los nombres exactos de menús y botones pueden variar levemente según la vista o dispositivo, pero la lógica del negocio se mantiene intacta.
+        </p>
+      </article>
+
+      <!-- CAPÍTULO 2 -->
+      <article id="cap-2" class="chapter-card" data-roles="visitante,turista,guia,admin">
+        <h3 class="chapter-title">
+          <i class="bi bi-layers-fill text-success"></i> 2. Requisitos y conceptos básicos
+        </h3>
+
+        <h5 class="fw-bold text-dark mt-2">2.1 Requisitos para usar la plataforma</h5>
+        <ul class="text-secondary small lh-base">
+          <li><strong>Navegador web actualizado:</strong> Google Chrome, Mozilla Firefox, Microsoft Edge o Safari en computador, tableta o dispositivo móvil.</li>
+          <li><strong>Conexión a internet:</strong> Para interactuar en tiempo real con el servidor web (con modo resiliente offline para consultas frecuentes de montaña con Cóndy).</li>
+          <li><strong>Correo electrónico activo:</strong> Indispensable para recibir el código de activación temporal (OTP) y las notificaciones oficiales de reservas.</li>
+          <li><strong>Para turistas:</strong> Comprobante de transferencia bancaria en imagen legible (JPG, PNG, WEBP o PDF) para acreditar el pago.</li>
+        </ul>
+
+        <h5 class="fw-bold text-dark mt-4">2.2 Roles del sistema</h5>
+        <!-- Tabla 2 -->
+        <div class="table-responsive mb-4">
+          <table class="table table-bordered manual-table align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Rol</th>
+                <th>Descripción Funcional</th>
+                <th>Requisitos de Autenticación</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Visitante</strong></td>
+                <td>Navega el catálogo público, consulta ofertas, chatea con el asistente Cóndy y envía PQRS o contactos.</td>
+                <td>No requiere inicio de sesión.</td>
+              </tr>
+              <tr>
+                <td><strong>Turista / Cliente</strong><br><small class="text-muted">(rol = 2)</small></td>
+                <td>Reserva paquetes, reporta pagos con comprobante, modifica o cancela reservas, califica tours y descarga facturas con código QR.</td>
+                <td>Requiere cuenta activa verificada con código OTP.</td>
+              </tr>
+              <tr>
+                <td><strong>Guía turístico</strong><br><small class="text-muted">(rol = 3)</small></td>
+                <td>Lidera las expediciones en campo, consulta pasajeros asignados, contactos de emergencia y especificaciones de pólizas médicas.</td>
+                <td>Cuenta creada o habilitada directamente por la administración.</td>
+              </tr>
+              <tr>
+                <td><strong>Administrador / Staff</strong><br><small class="text-muted">(rol = 1 / is_staff)</small></td>
+                <td>Control total del sistema: gestión del catálogo, auditoría de comprobantes, pagos rechazados, reembolsos y respaldos.</td>
+                <td>Cuenta administrativa con permisos especiales y doble factor.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h5 class="fw-bold text-dark mt-4">2.3 Glosario rápido</h5>
+        <div class="row g-2 text-secondary small">
+          <div class="col-md-6">
+            <div class="p-2.5 bg-light rounded-3 border">
+              <strong>• Reserva:</strong> Compra de un tour o paquete para una fecha específica y un número definido de cupos.
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-2.5 bg-light rounded-3 border">
+              <strong>• Cupos:</strong> Número total de personas (adultos y menores) amparadas bajo una misma reserva.
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-2.5 bg-light rounded-3 border">
+              <strong>• Temporada (alta/baja):</strong> Periodo del calendario que determina la tarifa unitaria aplicable.
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-2.5 bg-light rounded-3 border">
+              <strong>• Comprobante de pago:</strong> Imagen o captura de la transferencia o consignación bancaria cargada por el turista.
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-2.5 bg-light rounded-3 border">
+              <strong>• OTP:</strong> Código temporal de 6 dígitos enviado por correo para autenticación de un solo uso.
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-2.5 bg-light rounded-3 border">
+              <strong>• Nota de Crédito:</strong> Documento contable que acredita un saldo a favor tras reducción de cupos o cancelación.
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-2.5 bg-light rounded-3 border">
+              <strong>• Saldo a favor:</strong> Dinero acreditado en la cuenta del usuario para usar en nuevas reservas o solicitar reembolso.
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-2.5 bg-light rounded-3 border">
+              <strong>• Reembolso:</strong> Devolución bancaria real del dinero con comprobante de transferencia adjunto.
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-2.5 bg-light rounded-3 border">
+              <strong>• PQRS:</strong> Módulo de Peticiones, Quejas, Reclamos y Sugerencias formales con número de radicado.
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-2.5 bg-light rounded-3 border">
+              <strong>• Cóndy:</strong> Asistente virtual inteligente inspirado en el Cóndor Andino guardián de Mongua.
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- CAPÍTULO 3 -->
+      <article id="cap-3" class="chapter-card" data-roles="visitante,turista,guia,admin">
+        <h3 class="chapter-title">
+          <i class="bi bi-person-check-fill text-success"></i> 3. Primeros pasos: registro, activación e ingreso
+        </h3>
+
+        <h5 class="fw-bold text-dark mt-2">3.1 Registrarse</h5>
+        <ol class="text-secondary small lh-base">
+          <li>Dirígete a la parte superior de la página y selecciona <strong>"Registrarse"</strong> (o <em>"Crear cuenta nueva"</em> en la pantalla de inicio de sesión).</li>
+          <li>Completa el formulario con tus datos personales: nombres, apellidos, nombre de usuario, cédula de ciudadanía, número telefónico celular, correo electrónico y contraseña segura.</li>
+          <li><strong>Validación en tiempo real:</strong> La plataforma valida sin recargar la página que el correo, cédula o teléfono no se encuentren ya registrados. Si alguno existe, te alertará para que inicies sesión o recuperes tu contraseña.</li>
+          <li>Envía el formulario para generar la solicitud.</li>
+        </ol>
+
+        <h5 class="fw-bold text-dark mt-4">3.2 Activar la cuenta con el código OTP</h5>
+        <ol class="text-secondary small lh-base">
+          <li>Abre tu bandeja de entrada de correo electrónico (y revisa la carpeta de correo no deseado/spam).</li>
+          <li>Encontrarás un mensaje con un <strong>código numérico de 6 dígitos</strong> de un solo uso.</li>
+          <li>Ingresa el código en la pantalla de verificación OTP de Monagua.</li>
+          <li>Al validarse satisfactoriamente, tu cuenta queda formalmente activa y puedes iniciar sesión de inmediato.</li>
+        </ol>
+        <div class="important-badge p-3 rounded-3 small mb-3">
+          <strong><i class="bi bi-exclamation-triangle-fill me-1"></i> Importante sobre el OTP:</strong> El código expira tras un periodo de tiempo determinado. Si expira o fue utilizado, solicita uno nuevo desde la misma pantalla. No compartas este código con terceros.
+        </div>
+
+        <h5 class="fw-bold text-dark mt-4">3.3 Iniciar sesión y cerrar sesión</h5>
+        <ul class="text-secondary small lh-base">
+          <li><strong>Iniciar sesión:</strong> Ingresa tu usuario o correo electrónico y tu contraseña. Según tu rol, el sistema te redirigirá a tu panel correspondiente (Panel de Turista, Panel de Guía o Dashboard de Administración).</li>
+          <li><strong>Cerrar sesión:</strong> Abre el menú de usuario desplegable superior derecho y pulsa <em>"Cerrar Sesión"</em>, especialmente cuando utilices computadores o dispositivos compartidos.</li>
+        </ul>
+
+        <h5 class="fw-bold text-dark mt-4">3.4 Seguridad de su cuenta</h5>
+        <ul class="text-secondary small lh-base mb-0">
+          <li><strong>Control de solicitudes (Rate-Limiting):</strong> Las APIs públicas del sistema cuentan con límite de intentos para prevenir ataques de fuerza bruta. Si superas los intentos permitidos, deberás esperar unos minutos antes de reintentar.</li>
+          <li><strong>Auditoría integral:</strong> Toda acción sensible (modificación de contraseñas, cambios de estado, pagos y reembolsos) queda registrada en la bitácora interna del sistema.</li>
+        </ul>
+      </article>
+
+      <!-- CAPÍTULO 4 -->
+      <article id="cap-4" class="chapter-card" data-roles="visitante,turista">
+        <h3 class="chapter-title">
+          <i class="bi bi-binoculars-fill text-success"></i> 4. Manual del Visitante (sin cuenta)
+        </h3>
+        <p class="text-secondary small mb-3">
+          Cualquier visitante puede explorar libremente la oferta ecoturística de Mongua sin necesidad de iniciar sesión:
+        </p>
+
+        <h5 class="fw-bold text-dark">4.1 Explorar el catálogo</h5>
+        <ul class="text-secondary small lh-base">
+          <li><strong>Tours individuales:</strong> Experiencias de senderismo de alta montaña como el Páramo de Ocetá o la Laguna Negra.</li>
+          <li><strong>Paquetes turísticos:</strong> Combinaciones de senderismo, alimentación tradicional boyacense y hospedaje comunitario.</li>
+          <li><strong>Filtros avanzados:</strong> Permite filtrar por actividades para menores (familiar), nivel de dificultad y rango de precios.</li>
+          <li><strong>Blog de historias y galerías:</strong> Artículos sobre flora nativa, leyendas Muiscas y recomendaciones de alta montaña.</li>
+        </ul>
+
+        <h5 class="fw-bold text-dark mt-4">4.2 Consultar tarifas y ofertas</h5>
+        <p class="text-secondary small lh-base">
+          En la sección de <strong>Ofertas</strong> (/promociones/) puedes consultar los cupones activos (porcentuales o de valor fijo), su vigencia y tours participantes. Para liquidar y apartar cupos formales se requerirá crear cuenta o iniciar sesión.
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4">4.3 Conversar con Cóndy</h5>
+        <p class="text-secondary small lh-base">
+          Cóndy está disponible en la esquina inferior derecha. Puedes preguntarle sobre el clima, qué ropa llevar, cómo funciona la plataforma, regulaciones de la Ley 1930 de Páramos o pedirle recomendaciones de ruta. <em>Cóndy consulta los paquetes reales de la base de datos y no inventa precios ni itinerarios ficticios.</em>
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4">4.4 Enviar una PQRS o contacto</h5>
+        <p class="text-secondary small lh-base mb-0">
+          Cualquier ciudadano puede ingresar a la sección de Contacto / PQRS para radicar consultas institucionales, solicitudes o peticiones antes de viajar.
+        </p>
+      </article>
+
+      <!-- CAPÍTULO 5 -->
+      <article id="cap-5" class="chapter-card" data-roles="turista">
+        <h3 class="chapter-title">
+          <i class="bi bi-person-badge-fill text-success"></i> 5. Manual del Turista / Cliente registrado
+        </h3>
+
+        <h5 class="fw-bold text-dark mt-2">5.1 Panel (Dashboard) del turista</h5>
+        <p class="text-secondary small lh-base">
+          Al ingresar a tu cuenta verás una consola central unificada con:
+        </p>
+        <ul class="text-secondary small lh-base">
+          <li>Reservas activas y estado de pagos en tiempo real.</li>
+          <li>Historial de expediciones finalizadas y facturas emitidas.</li>
+          <li>Listado de comprobantes bancarios subidos con su respectivo estado de validación.</li>
+          <li>Centro de calificaciones para valorar a los guías asignados.</li>
+          <li>Panel de solicitudes PQRS con seguimiento cronológico de respuestas.</li>
+        </ul>
+
+        <h5 class="fw-bold text-dark mt-4">5.2 Reservar un tour o paquete</h5>
+        <ol class="text-secondary small lh-base">
+          <li>Selecciona el tour o paquete de tu preferencia y pulsa <strong>"Reservar"</strong>.</li>
+          <li>Elige la fecha de tu expedición en el calendario interactivo.</li>
+          <li>Indica los cupos: número de adultos (mínimo 1) y número de menores de edad.</li>
+          <li>El sistema realiza la <strong>cotización automática</strong> considerando la temporada vigente para la fecha elegida y las promociones aplicables.</li>
+          <li>Revisa el desglose y confirma la reserva.</li>
+        </ol>
+
+        <div class="important-badge p-3 rounded-3 small mb-4">
+          <strong><i class="bi bi-shield-lock-fill me-1"></i> Regla importante – Precio inmutable:</strong> El valor total de la reserva se calcula y fija únicamente en el instante de su creación con base en la temporada de la fecha seleccionada. No se recalcula si la administración modifica las tarifas o temporadas posteriormente, garantizando la cotización pactada con el usuario.
+        </div>
+
+        <h5 class="fw-bold text-dark">5.3 Pagar una reserva (carga de comprobante)</h5>
+        <ol class="text-secondary small lh-base">
+          <li>Realiza la transferencia por el valor exacto a través de los canales autorizados (Bancolombia, Nequi, Daviplata o Davivienda).</li>
+          <li>Ingresa a tu reserva y selecciona <strong>"Subir comprobante de pago"</strong> (o desde el menú <em>"Enviar Comprobante"</em>).</li>
+          <li>Digita el número de referencia de la transacción, selecciona el banco emisor y adjunta la captura o fotografía nítida del comprobante.</li>
+          <li>Envía el formulario. La reserva pasará de inmediato a estado <strong>"Pago en revisión"</strong>.</li>
+        </ol>
+
+        <div class="rule-badge p-3 rounded-3 small mb-4">
+          <strong><i class="bi bi-slash-circle-fill me-1"></i> Regla inquebrantable:</strong> Ninguna reserva pasa a estado <strong>Confirmada</strong> si no existe un pago aprobado por la administración cuyo monto cubra o supere el valor total de la liquidación.
+        </div>
+
+        <!-- Tabla 3 -->
+        <h6 class="fw-bold text-dark">Tabla de Estados del Comprobante:</h6>
+        <div class="table-responsive mb-4">
+          <table class="table table-bordered manual-table align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Estado</th>
+                <th>Significado</th>
+                <th>Acción recomendada para el turista</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge bg-warning text-dark">Pendiente de revisión</span></td>
+                <td>El comprobante fue recibido y está en turno de verificación por auditoría financiera.</td>
+                <td>Esperar la validación; el sistema enviará notificación por correo y web.</td>
+              </tr>
+              <tr>
+                <td><span class="badge bg-success">Aprobado</span></td>
+                <td>La transacción fue validada en los extractos bancarios de Monagua.</td>
+                <td>Tu reserva se confirma si cubre el total; puedes descargar tu factura con código QR.</td>
+              </tr>
+              <tr>
+                <td><span class="badge bg-danger">Rechazado</span></td>
+                <td>Se detectó una discrepancia (monto insuficiente, soporte ilegible o referencia duplicada).</td>
+                <td>Lee la justificación obligatoria del rechazo, corrige el soporte o radica una PQRS.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h5 class="fw-bold text-dark mt-4">5.4 ¿Qué hacer si su pago fue rechazado?</h5>
+        <ul class="text-secondary small lh-base">
+          <li>Abre el detalle de tu comprobante y revisa la justificación emitida por el administrador (la cual es obligatoria para la administración).</li>
+          <li>Verifica número de referencia, valor y nitidez de la imagen.</li>
+          <li>Si consideras que se trató de un error, radica una PQRS adjuntando la aclaración. La administración dispone de un módulo especializado de <em>Pagos Rechazados</em> para reconsiderar casos y reactivar comprobantes.</li>
+        </ul>
+
+        <h5 class="fw-bold text-dark mt-4">5.5 Modificar una reserva pagada (reducir cupos)</h5>
+        <p class="text-secondary small lh-base">
+          Si necesitas viajar con menos personas, ingresa a <strong>"Mis Reservas"</strong> y pulsa <em>"Modificar reserva"</em>:
+        </p>
+        <ul class="text-secondary small lh-base">
+          <li>Selecciona la nueva cantidad de cupos dentro de los plazos reglamentarios.</li>
+          <li>Al confirmar, el sistema recalcula el valor y genera de forma automática una <strong>Nota de Crédito</strong> por la diferencia líquida a tu favor.</li>
+        </ul>
+
+        <h5 class="fw-bold text-dark mt-4">5.6 Cancelar una reserva y solicitar reembolso</h5>
+        <ol class="text-secondary small lh-base">
+          <li>En el detalle de tu reserva en <em>Mis Reservas</em>, selecciona <strong>"Solicitar cancelación"</strong>.</li>
+          <li>Ingresa el motivo de la cancelación (campo obligatorio).</li>
+          <li>La administración revisa la solicitud. Al aprobarse, el sistema calcula la penalidad según los días de anticipación y emite una <strong>Nota de Crédito</strong>.</li>
+          <li>Con la Nota de Crédito puedes elegir entre:
+            <ul>
+              <li>Mantener el valor como <strong>Saldo a Favor</strong> para futuros viajes.</li>
+              <li>Solicitar un <strong>Reembolso bancario</strong> formal.</li>
+            </ul>
+          </li>
+        </ol>
+
+        <h5 class="fw-bold text-dark mt-4">5.7 Seguimiento del reembolso</h5>
+        <p class="text-secondary small lh-base">
+          Puedes monitorear el estado de tu reembolso en tiempo real desde <strong>"Mis Reembolsos"</strong>. Cuando la administración ejecute la transferencia bancaria, adjuntará obligatoriamente el comprobante bancario oficial, el cual podrás visualizar y descargar para verificar la transacción.
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4">5.8 Facturas y comprobantes de viaje con Código QR</h5>
+        <p class="text-secondary small lh-base">
+          Desde tu panel puedes descargar tu <strong>Factura Legal en PDF</strong> y tu comprobante de viaje. Ambos incorporan un <strong>Código QR dinámico</strong> que permite al guía certificar la autenticidad de tu viaje en el punto de encuentro en Mongua.
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4">5.9 Calificar sus experiencias</h5>
+        <p class="text-secondary small lh-base">
+          Al culminar tu tour, dirígete a <em>"Mis Calificaciones"</em>, califica de 1 a 5 estrellas y redacta tu testimonio sobre la belleza de los senderos y el profesionalismo del guía asignado.
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4">5.10 PQRS y Centro de Notificaciones</h5>
+        <p class="text-secondary small lh-base mb-0">
+          El Centro de Notificaciones te avisa en tiempo real cuando tu pago sea aprobado, tu reserva confirmada o cuando haya respuestas en tus radicados de PQRS.
+        </p>
+      </article>
+
+      <!-- CAPÍTULO 6 -->
+      <article id="cap-6" class="chapter-card" data-roles="guia">
+        <h3 class="chapter-title">
+          <i class="bi bi-compass-fill text-success"></i> 6. Manual del Guía Turístico
+        </h3>
+
+        <h5 class="fw-bold text-dark mt-2">6.1 Acceso y Credenciales</h5>
+        <p class="text-secondary small lh-base">
+          Las cuentas de guía son creadas y habilitadas directamente por el administrador. Inicia sesión con las credenciales suministradas y cambia tu contraseña periódicamente.
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4">6.2 Perfil profesional</h5>
+        <p class="text-secondary small lh-base">
+          El guía debe mantener actualizado su perfil con su <strong>Licencia Nacional de Turismo (RNT / SENA)</strong>, afiliación a EPS/ARL, años de experiencia y reseña curricular.
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4">6.3 Planes y grupos asignados (PlanGuia)</h5>
+        <p class="text-secondary small lh-base">
+          La administración vincula a los guías mediante la asignación de planes. En tu panel de guía visualizarás exclusivamente los recorridos y expediciones que tengas programadas.
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4">6.4 Control en campo</h5>
+        <p class="text-secondary small lh-base">
+          Previo al inicio de cada jornada en el Parque Principal de Mongua, el guía debe verificar en la plataforma:
+        </p>
+        <ul class="text-secondary small lh-base">
+          <li>Listado completo de pasajeros (adultos y menores con cupos validados).</li>
+          <li>Contactos de emergencia de cada viajero.</li>
+          <li>Póliza médica y de asistencia contra accidentes emitida para el grupo.</li>
+        </ul>
+
+        <h5 class="fw-bold text-dark mt-4">6.5 Reputación y retroalimentación</h5>
+        <p class="text-secondary small lh-base mb-0">
+          Al finalizar la ruta, los turistas calificarán tu servicio. Puedes revisar tus puntuaciones y comentarios para fortalecer la experiencia y protocolos en alta montaña.
+        </p>
+      </article>
+
+      <!-- CAPÍTULO 7 -->
+      <article id="cap-7" class="chapter-card" data-roles="admin">
+        <h3 class="chapter-title">
+          <i class="bi bi-gear-wide-connected text-success"></i> 7. Manual del Administrador / Staff
+        </h3>
+
+        <h5 class="fw-bold text-dark mt-2">7.1 Dashboard operativo y estadístico</h5>
+        <p class="text-secondary small lh-base">
+          Ofrece visión gerencial en tiempo real: volumen de turistas, ingresos brutos recaudados, distribución de reservas por estado y tareas pendientes críticas (comprobantes por auditar, cancelaciones por revisar y PQRS abiertas).
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4">7.2 Gestión comercial y catálogo (CRUD)</h5>
+        <ul class="text-secondary small lh-base">
+          <li><strong>Categorías y Actividades:</strong> Creación, edición y suspensión de modalidades ecoturísticas.</li>
+          <li><strong>Paquetes turísticos:</strong> Parametrización de itinerarios, desniveles, capacidad máxima de cupos y atractivos incluidos.</li>
+          <li><strong>Temporadas y Tarifas:</strong> Configuración de temporadas altas (festivos, vacaciones) y bajas con tarifas diferenciadas por tipo de pasajero (adulto o menor).</li>
+          <li><strong>Cupones y Promociones:</strong> Configuración de descuentos con fecha de inicio y vencimiento.</li>
+        </ul>
+
+        <h5 class="fw-bold text-dark mt-4">7.3 Auditoría financiera: validación de comprobantes</h5>
+        <ol class="text-secondary small lh-base">
+          <li>Ingresa a la mesa de comprobantes de pago.</li>
+          <li>Inspecciona la imagen adjunta, el banco y el número de referencia.</li>
+          <li>Compara el importe contra el valor liquidado de la reserva.</li>
+          <li><strong>Aprobar:</strong> Si el valor cubre el monto pactado, aprueba el soporte; el sistema confirmará la reserva en automático.</li>
+          <li><strong>Rechazar:</strong> Si hay inconsistencias, pulsa rechazar y digita la <em>justificación obligatoria</em> para que el turista sea notificado de inmediato.</li>
+        </ol>
+
+        <h5 class="fw-bold text-dark mt-4">7.4 Módulo especializado de Pagos Rechazados</h5>
+        <p class="text-secondary small lh-base">
+          Permite auditar el historial de comprobantes declinados, reconsiderar casos tras el envío de aclaraciones por parte del turista y reactivar comprobantes legítimos sin necesidad de crear nuevas reservas.
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4">7.5 Cancelaciones, Notas de Crédito y Reembolsos</h5>
+        <ul class="text-secondary small lh-base">
+          <li><strong>Gestión de Cancelaciones:</strong> Aprueba o rechaza solicitudes conforme a los términos y condiciones.</li>
+          <li><strong>Notas de Crédito:</strong> Acredita el saldo a favor en la cuenta del cliente.</li>
+          <li><strong>Dispersión bancaria:</strong> Al efectuar la transferencia de devolución al turista, el administrador debe <strong>adjuntar obligatoriamente el soporte bancario de la transferencia</strong> para poder cerrar el reembolso.</li>
+        </ul>
+
+        <h5 class="fw-bold text-dark mt-4">7.6 Seguros y pólizas de asistencia médica</h5>
+        <p class="text-secondary small lh-base">
+          Parametriza las compañías aseguradoras aliadas y emite las pólizas colectivas de asistencia médica para senderistas, requeridas por ley en turismo de aventura.
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4">7.7 Gestión de personal y usuarios</h5>
+        <p class="text-secondary small lh-base">
+          Control de cuentas (alta, suspensión, reactivación), asignación de credenciales a guías y vinculación de guías a paquetes mediante el modelo <em>PlanGuia</em>.
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4">7.8 Atención al cliente y moderación</h5>
+        <p class="text-secondary small lh-base">
+          Respuesta formal a solicitudes PQRS con historial trazable y moderación de calificaciones públicas del blog y destinos.
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4">7.9 Blog y contenidos</h5>
+        <p class="text-secondary small lh-base">
+          Publicación y edición de artículos culturales, recomendaciones de salud para alta montaña e historias de la comunidad monguana.
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4">7.10 Seguridad y respaldo (Backups y Bitácora)</h5>
+        <p class="text-secondary small lh-base mb-0">
+          Generación y descarga de copias de seguridad de la base de datos SQL desde el panel web, módulo de restauración y consulta de la bitácora de auditoría (quién modificó qué registro, fecha y dirección IP).
+        </p>
+      </article>
+
+      <!-- CAPÍTULO 8 -->
+      <article id="cap-8" class="chapter-card" data-roles="turista,admin">
+        <h3 class="chapter-title">
+          <i class="bi bi-diagram-3-fill text-success"></i> 8. Flujos clave y reglas de negocio
+        </h3>
+
+        <h5 class="fw-bold text-dark mt-2">8.1 Flujo de reserva y aprobación</h5>
+        <p class="text-secondary small lh-base">
+          <code>Reserva creada (Pendiente)</code> ➔ <code>Pago subido (En revisión)</code> ➔ <code>Aprobación de auditoría</code> ➔ <code>Reserva confirmada</code>
+        </p>
+
+        <!-- Tabla 4 -->
+        <div class="table-responsive mb-4">
+          <table class="table table-bordered manual-table align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Etapa</th>
+                <th>Responsable</th>
+                <th>Resultado en el Sistema</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>1. Crear reserva</strong></td>
+                <td>Turista</td>
+                <td>Reserva en estado <em>Pendiente de Pago</em></td>
+              </tr>
+              <tr>
+                <td><strong>2. Subir comprobante</strong></td>
+                <td>Turista</td>
+                <td>Reserva en estado <em>Pago en revisión</em></td>
+              </tr>
+              <tr>
+                <td><strong>3. Revisar y auditar</strong></td>
+                <td>Administrador</td>
+                <td>Pago <em>Aprobado</em> o <em>Rechazado</em></td>
+              </tr>
+              <tr>
+                <td><strong>4. Confirmación final</strong></td>
+                <td>Sistema automático</td>
+                <td>Reserva <em>Confirmada</em> y factura PDF emitida</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="rule-badge p-3 rounded-3 small mb-4">
+          <strong><i class="bi bi-shield-fill-check me-1"></i> Regla inquebrantable de confirmación:</strong> Ninguna reserva pasa a confirmada sin un pago validado que cubra o supere el valor total liquidado.
+        </div>
+
+        <h5 class="fw-bold text-dark">8.2 Cálculo tarifario inmutable</h5>
+        <p class="text-secondary small lh-base">
+          El precio total acordado al momento de crear la reserva queda congelado e inmutable, protegiendo al usuario ante fluctuaciones posteriores en el tarifario.
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4">8.3 Reducción de personas y cancelación</h5>
+        <p class="text-secondary small lh-base">
+          La anticipación respecto a la fecha del tour define la penalidad logística. El saldo neto a favor se emite como <strong>Nota de Crédito</strong> oficial, otorgando al cliente la potestad de conservarlo como saldo en su cuenta o solicitar la dispersión bancaria correspondiente.
+        </p>
+
+        <h5 class="fw-bold text-dark mt-4">8.4 Cóndy y la veracidad de la información</h5>
+        <p class="text-secondary small lh-base mb-0">
+          El asistente virtual Cóndy está anclado a la base de datos real del sistema: nunca alucina ni inventa destinos fuera de Mongua, ni pasarelas inexistentes (como PayPal o crypto), garantizando información verídica y transparente.
+        </p>
+      </article>
+
+      <!-- CAPÍTULO 9 -->
+      <article id="cap-9" class="chapter-card" data-roles="visitante,turista">
+        <h3 class="chapter-title">
+          <i class="bi bi-question-circle-fill text-success"></i> 9. Preguntas frecuentes (FAQ)
+        </h3>
+
+        <div class="accordion accordion-flush" id="faqAccordionManual">
+          <!-- FAQ 1 -->
+          <div class="accordion-item border-bottom py-2">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed fw-bold text-dark bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq-m-1">
+                ¿Necesito una cuenta para ver los tours y precios?
+              </button>
+            </h2>
+            <div id="faq-m-1" class="accordion-collapse collapse" data-bs-parent="#faqAccordionManual">
+              <div class="accordion-body text-secondary small">
+                No. Cualquier persona puede navegar libremente el catálogo, blog, galerías fotográficas y promociones. Únicamente se requiere crear una cuenta para apartar cupos formales y realizar el pago de la reserva.
+              </div>
+            </div>
+          </div>
+
+          <!-- FAQ 2 -->
+          <div class="accordion-item border-bottom py-2">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed fw-bold text-dark bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq-m-2">
+                No me llega el código OTP al registrarme, ¿qué debo hacer?
+              </button>
+            </h2>
+            <div id="faq-m-2" class="accordion-collapse collapse" data-bs-parent="#faqAccordionManual">
+              <div class="accordion-body text-secondary small">
+                Revisa tu carpeta de spam o correo no deseado. Asegúrate de haber escrito correctamente tu correo y solicita un reenvío desde la pantalla de activación. Recuerda que cada código es de un solo uso y cuenta con tiempo de caducidad.
+              </div>
+            </div>
+          </div>
+
+          <!-- FAQ 3 -->
+          <div class="accordion-item border-bottom py-2">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed fw-bold text-dark bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq-m-3">
+                La plataforma indica que mi correo, cédula o teléfono ya existen.
+              </button>
+            </h2>
+            <div id="faq-m-3" class="accordion-collapse collapse" data-bs-parent="#faqAccordionManual">
+              <div class="accordion-body text-secondary small">
+                Por seguridad y control contable, cada uno de estos datos debe ser único en la plataforma. Si olvidaste tu contraseña, utiliza la opción de recuperación de acceso o comunícate vía PQRS si sospechas de una duplicidad errónea.
+              </div>
+            </div>
+          </div>
+
+          <!-- FAQ 4 -->
+          <div class="accordion-item border-bottom py-2">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed fw-bold text-dark bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq-m-4">
+                Pagué mediante transferencia pero mi reserva sigue "Pendiente".
+              </button>
+            </h2>
+            <div id="faq-m-4" class="accordion-collapse collapse" data-bs-parent="#faqAccordionManual">
+              <div class="accordion-body text-secondary small">
+                La confirmación no es automática tras la transferencia; requiere que subas el comprobante en la web y que el equipo administrativo lo valide frente al extracto bancario. Revisa el estado de tu comprobante en <em>"Mis Comprobantes"</em>.
+              </div>
+            </div>
+          </div>
+
+          <!-- FAQ 5 -->
+          <div class="accordion-item border-bottom py-2">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed fw-bold text-dark bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq-m-5">
+                Mi comprobante de pago fue rechazado, ¿puedo reclamar?
+              </button>
+            </h2>
+            <div id="faq-m-5" class="accordion-collapse collapse" data-bs-parent="#faqAccordionManual">
+              <div class="accordion-body text-secondary small">
+                Sí. Consulta el motivo obligatorio del rechazo en tu panel, verifica si cargaste una imagen equivocada o un valor menor y radica una PQRS adjuntando la aclaración para que administración revise tu caso en el módulo de Pagos Rechazados.
+              </div>
+            </div>
+          </div>
+
+          <!-- FAQ 6 -->
+          <div class="accordion-item border-bottom py-2">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed fw-bold text-dark bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq-m-6">
+                ¿Por qué el precio de mi reserva no varió cuando cambió la temporada?
+              </button>
+            </h2>
+            <div id="faq-m-6" class="accordion-collapse collapse" data-bs-parent="#faqAccordionManual">
+              <div class="accordion-body text-secondary small">
+                Porque el sistema aplica la regla de <strong>precio inmutable</strong>: respeta la cotización original con la que apartaste tu cupo, protegiéndote de alzas posteriores.
+              </div>
+            </div>
+          </div>
+
+          <!-- FAQ 7 -->
+          <div class="accordion-item border-bottom py-2">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed fw-bold text-dark bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq-m-7">
+                ¿Puedo reducir el número de personas de una reserva ya pagada?
+              </button>
+            </h2>
+            <div id="faq-m-7" class="accordion-collapse collapse" data-bs-parent="#faqAccordionManual">
+              <div class="accordion-body text-secondary small">
+                Sí. Puedes ingresar a <em>"Mis Reservas"</em> y usar la opción <em>"Modificar reserva"</em>. Se generará automáticamente una Nota de Crédito por los cupos liberados.
+              </div>
+            </div>
+          </div>
+
+          <!-- FAQ 8 -->
+          <div class="accordion-item border-bottom py-2">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed fw-bold text-dark bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq-m-8">
+                ¿Qué pasa con mi dinero si cancelo mi expedición?
+              </button>
+            </h2>
+            <div id="faq-m-8" class="accordion-collapse collapse" data-bs-parent="#faqAccordionManual">
+              <div class="accordion-body text-secondary small">
+                Se liquida la penalidad estipulada según los días de anticipación (Ley de Turismo). El valor resultante se emite como Nota de Crédito y tú eliges si dejarlo como saldo a favor o solicitar la transferencia de reembolso a tu banco.
+              </div>
+            </div>
+          </div>
+
+          <!-- FAQ 9 -->
+          <div class="accordion-item border-bottom py-2">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed fw-bold text-dark bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq-m-9">
+                ¿Cómo sé que ya me transfirieron el dinero del reembolso?
+              </button>
+            </h2>
+            <div id="faq-m-9" class="accordion-collapse collapse" data-bs-parent="#faqAccordionManual">
+              <div class="accordion-body text-secondary small">
+                En el apartado <em>"Mis Reembolsos"</em> encontrarás la fecha de pago y el comprobante bancario digital de la transferencia emitido y adjuntado obligatoriamente por la administración.
+              </div>
+            </div>
+          </div>
+
+          <!-- FAQ 10 -->
+          <div class="accordion-item border-bottom py-2">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed fw-bold text-dark bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq-m-10">
+                ¿Cóndy puede darme el precio definitivo de un grupo grande?
+              </button>
+            </h2>
+            <div id="faq-m-10" class="accordion-collapse collapse" data-bs-parent="#faqAccordionManual">
+              <div class="accordion-body text-secondary small">
+                Cóndy te informará sobre las tarifas base y promociones activas registradas en la base de datos, pero la cotización definitiva y liquidada con exactitud se obtiene seleccionando la fecha y número de personas en el formulario de reserva de Destinos.
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- CAPÍTULO 10 -->
+      <article id="cap-10" class="chapter-card" data-roles="turista,guia,admin">
+        <h3 class="chapter-title">
+          <i class="bi bi-tools text-success"></i> 10. Solución de problemas y soporte
+        </h3>
+
+        <h5 class="fw-bold text-dark mt-2">10.1 Diagnóstico rápido</h5>
+        <!-- Tabla 5 -->
+        <div class="table-responsive mb-4">
+          <table class="table table-bordered manual-table align-middle">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 25%;">Problema</th>
+                <th style="width: 35%;">Posible causa</th>
+                <th>Solución recomendada</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>No puedo iniciar sesión</strong></td>
+                <td>Cuenta sin activar con OTP, contraseña incorrecta o cuenta suspendida.</td>
+                <td>Ingresa el código OTP de activación, restablece contraseña o contacta al administrador.</td>
+              </tr>
+              <tr>
+                <td><strong>Demasiados intentos seguidos</strong></td>
+                <td>Límite de solicitudes de seguridad (rate-limiting) activado.</td>
+                <td>Espera entre 3 y 5 minutos antes de volver a ingresar tus credenciales.</td>
+              </tr>
+              <tr>
+                <td><strong>No puedo subir el comprobante</strong></td>
+                <td>Archivo demasiado pesado (&gt;10MB) o formato no permitido (ej. TIFF).</td>
+                <td>Toma una captura de pantalla más liviana o sube en JPG, PNG, WEBP o PDF legible.</td>
+              </tr>
+              <tr>
+                <td><strong>La cotización no aparece</strong></td>
+                <td>La fecha seleccionada no tiene temporada asignada en el calendario.</td>
+                <td>Elige otra fecha de salida o reporta al administrador para que configure la temporada.</td>
+              </tr>
+              <tr>
+                <td><strong>No veo mis grupos asignados (Guía)</strong></td>
+                <td>Falta la vinculación en el modelo <em>PlanGuia</em> por parte del staff.</td>
+                <td>Comunícate con la administración para que vincule tu usuario al tour respectivo.</td>
+              </tr>
+              <tr>
+                <td><strong>El cupón de descuento no aplica</strong></td>
+                <td>Cupón vencido o no aplicable al destino seleccionado.</td>
+                <td>Verifica las fechas de vigencia y condiciones en la sección de Ofertas.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h5 class="fw-bold text-dark mt-4">10.2 Canales de ayuda oficiales</h5>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="p-3 bg-light rounded-3 text-center border h-100">
+              <i class="bi bi-chat-dots-fill fs-2 text-success mb-2 d-block"></i>
+              <h6 class="fw-bold text-dark">Asistente Cóndy</h6>
+              <p class="text-secondary small mb-0">Dudas inmediatas sobre clima, rutas, ropa y regulaciones ambientales.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 bg-light rounded-3 text-center border h-100">
+              <i class="bi bi-file-earmark-text-fill fs-2 text-primary mb-2 d-block"></i>
+              <h6 class="fw-bold text-dark">Radicar PQRS</h6>
+              <p class="text-secondary small mb-0">Atención institucional formal con radicado para quejas, pagos o reembolsos.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 bg-light rounded-3 text-center border h-100">
+              <i class="bi bi-whatsapp fs-2 text-success mb-2 d-block"></i>
+              <h6 class="fw-bold text-dark">WhatsApp Oficial</h6>
+              <p class="text-secondary small mb-0">Línea directa de atención comunitaria: <strong>+57 322 3465191</strong>.</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- CAPÍTULO 11 -->
+      <article id="cap-11" class="chapter-card" data-roles="visitante,turista,guia,admin">
+        <h3 class="chapter-title">
+          <i class="bi bi-shield-lock-fill text-success"></i> 11. Recomendaciones de seguridad
+        </h3>
+        <ul class="text-secondary small lh-base mb-0">
+          <li><strong>Contraseñas robustas:</strong> Utiliza combinaciones de letras, números y símbolos y cámbiala periódicamente.</li>
+          <li><strong>Confidencialidad del OTP:</strong> Nunca entregues tu código OTP a terceras personas; Monagua nunca te lo solicitará por llamada o chat.</li>
+          <li><strong>Cierre de sesión:</strong> Finaliza sesión expresamente si accedes desde computadores de hoteles, cafés internet o equipos compartidos.</li>
+          <li><strong>Autenticidad de comprobantes:</strong> Sube únicamente soportes de transacciones verídicas y propias. Las conductas fraudulentas ocasionan la cancelación definitiva de la cuenta.</li>
+          <li><strong>Para administradores:</strong> Limitar el rol staff únicamente al personal autorizado, auditar periódicamente la bitácora del sistema y descargar copias de respaldo de la base de datos de forma regular.</li>
+        </ul>
+      </article>
+
+      <!-- CAPÍTULO 12 -->
+      <article id="cap-12" class="chapter-card" data-roles="visitante,turista,guia,admin">
+        <h3 class="chapter-title">
+          <i class="bi bi-card-checklist text-success"></i> 12. Resumen de la plataforma
+        </h3>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="card h-100 border-0 bg-light p-3 rounded-3">
+              <h6 class="fw-bold text-success"><i class="bi bi-person-fill me-1"></i> Para Turistas</h6>
+              <p class="small text-secondary mb-0">Explorar, cotizar en tiempo real, reservar, pagar con comprobante bancario, modificar cupos, solicitar reembolsos con Nota de Crédito, descargar facturas con código QR y calificar su experiencia.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100 border-0 bg-light p-3 rounded-3">
+              <h6 class="fw-bold text-primary"><i class="bi bi-compass-fill me-1"></i> Para Guías</h6>
+              <p class="small text-secondary mb-0">Consultar grupos y pasajeros asignados en campo, contactos de emergencia familiares, pólizas médicas de asistencia vigentes y consultar su reputación profesional.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100 border-0 bg-light p-3 rounded-3">
+              <h6 class="fw-bold text-dark"><i class="bi bi-shield-check me-1"></i> Para Administradores</h6>
+              <p class="small text-secondary mb-0">Gestionar catálogo y temporadas, auditar comprobantes bancarios, resolver cancelaciones y reembolsos con soporte adjunto, emitir pólizas, responder PQRS, gestionar usuarios y custodiar respaldos.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center mt-4 pt-3 border-top">
+          <p class="fw-bold text-success mb-1">MONAGUA TURISMO</p>
+          <p class="small text-muted mb-0">Conectando a los viajeros con la riqueza natural y ancestral de Mongua, Boyacá.</p>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const searchInput = document.getElementById("manualSearchInput");
+  const roleButtons = document.querySelectorAll(".role-pill");
+  const chapters = document.querySelectorAll(".chapter-card");
+  const tocLinks = document.querySelectorAll(".manual-nav-link");
+
+  let currentRole = "todos";
+  let currentSearch = "";
+
+  function filterManual() {
+    const query = currentSearch.toLowerCase().trim();
+
+    chapters.forEach(card => {
+      const cardRoles = (card.getAttribute("data-roles") || "").toLowerCase().split(",");
+      const cardText = card.textContent.toLowerCase();
+
+      // Validación por Rol
+      const roleMatches = (currentRole === "todos") || cardRoles.includes(currentRole);
+
+      // Validación por Búsqueda
+      const searchMatches = !query || cardText.includes(query);
+
+      if (roleMatches && searchMatches) {
+        card.style.display = "block";
+      } else {
+        card.style.display = "none";
+      }
+    });
+
+    // Actualizar visibilidad de enlaces en TOC
+    tocLinks.forEach(link => {
+      const targetId = link.getAttribute("href");
+      const targetEl = document.querySelector(targetId);
+      if (targetEl && targetEl.style.display === "none") {
+        link.style.display = "none";
+      } else {
+        link.style.display = "block";
+      }
+    });
+  }
+
+  // Evento Búsqueda
+  if (searchInput) {
+    searchInput.addEventListener("input", function (e) {
+      currentSearch = e.target.value;
+      filterManual();
+    });
+  }
+
+  // Evento Filtro por Rol
+  roleButtons.forEach(btn => {
+    btn.addEventListener("click", function () {
+      roleButtons.forEach(b => b.classList.remove("active"));
+      this.classList.add("active");
+      currentRole = this.getAttribute("data-role");
+      filterManual();
+    });
+  });
+
+  // Scrollspy simple para TOC
+  window.addEventListener("scroll", function () {
+    let currentId = "";
+    chapters.forEach(card => {
+      if (card.style.display !== "none") {
+        const top = card.offsetTop - 120;
+        if (window.scrollY >= top) {
+          currentId = "#" + card.id;
+        }
+      }
+    });
+    if (currentId) {
+      tocLinks.forEach(link => {
+        link.classList.remove("active");
+        if (link.getAttribute("href") === currentId) {
+          link.classList.add("active");
+        }
+      });
+    }
+  });
+});
+</script>
+{% endblock %}
