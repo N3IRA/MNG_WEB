@@ -244,7 +244,7 @@
                         <th class="py-3">Fecha de Viaje</th>
                         <th class="py-3">Monto Total</th>
                         <th class="text-center py-3">Estado</th>
-                        <th class="text-end pe-4 py-3">Acciones</th>
+                        <th class="text-center py-3 text-nowrap">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -285,18 +285,18 @@
                             {% endif %}
                         </td>
                         
-                        <td class="text-end pe-4 py-3">
-                            <div class="d-inline-flex gap-2">
+                        <td class="text-center text-nowrap">
+                            <div class="d-inline-flex align-items-center gap-1">
                                 {% if reserva.estado_reserva == 'cancelada' %}
-                                    <a href="{% url 'listar_cancelaciones' %}" class="btn btn-sm btn-outline-danger px-3 rounded-pill fw-semibold shadow-sm d-inline-flex align-items-center gap-1" title="Ir a Gestión de Cancelaciones">
-                                        <i class="bi bi-x-circle"></i> Cancelaciones
+                                    <a href="{% url 'listar_cancelaciones' %}" class="btn btn-sm btn-outline-danger shadow-sm" title="Ver en Cancelaciones">
+                                        <i class="bi bi-x-circle"></i>
                                     </a>
                                 {% else %}
-                                    <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-sm btn-outline-primary px-3 rounded-pill fw-semibold shadow-sm" title="Editar Reserva">
-                                        <i class="bi bi-pencil-square me-1"></i> Editar
+                                    <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-sm btn-outline-secondary shadow-sm" title="Editar Reserva">
+                                        <i class="bi bi-pencil"></i>
                                     </a>
-                                    <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger px-3 rounded-pill fw-semibold shadow-sm" title="Eliminar Reserva">
-                                        <i class="bi bi-trash me-1"></i> Eliminar
+                                    <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger shadow-sm" title="Eliminar Reserva">
+                                        <i class="bi bi-trash"></i>
                                     </a>
                                 {% endif %}
                             </div>
@@ -348,11 +348,11 @@
                             </a>
                         {% else %}
                             <div class="d-flex gap-2">
-                                <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-sm btn-outline-primary w-100 py-2 rounded-pill fw-semibold" title="Editar Reserva">
-                                    <i class="bi bi-pencil-square"></i> Editar
+                                <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-sm btn-outline-secondary flex-fill py-2 rounded-pill fw-semibold shadow-sm" title="Editar Reserva">
+                                    <i class="bi bi-pencil me-1"></i> Editar
                                 </a>
-                                <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger w-100 py-2 rounded-pill fw-semibold" title="Eliminar Reserva">
-                                    <i class="bi bi-trash"></i> Eliminar
+                                <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger flex-fill py-2 rounded-pill fw-semibold shadow-sm" title="Eliminar Reserva">
+                                    <i class="bi bi-trash me-1"></i> Eliminar
                                 </a>
                             </div>
                         {% endif %}

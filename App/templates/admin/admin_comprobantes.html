@@ -396,42 +396,35 @@
                         </td>
 
                         <!-- Acciones -->
-                        <td class="text-center pe-4 py-3 text-nowrap" style="min-width: 320px;">
-                            <div class="d-inline-flex align-items-center justify-content-center gap-2">
+                        <td class="text-center text-nowrap">
+                            <div class="d-inline-flex align-items-center gap-1">
                                 <!-- 1. Factura -->
                                 {% if c.estado_transaccion == 'aprobado' and c.reserva %}
                                     <a href="{% url 'ver_factura' c.reserva.id %}"
-                                       class="btn btn-sm btn-outline-success px-3 rounded-pill fw-semibold shadow-sm text-nowrap"
+                                       class="btn btn-sm btn-outline-success shadow-sm"
                                        target="_blank"
                                        title="Ver Factura Oficial">
-                                        <i class="bi bi-file-earmark-text me-1"></i>Factura
+                                        <i class="bi bi-file-earmark-text"></i>
                                     </a>
-                                {% else %}
-                                    <button type="button"
-                                            class="btn btn-sm btn-light text-muted border rounded-pill px-3 fw-semibold text-nowrap opacity-50"
-                                            disabled
-                                            title="Factura disponible al aprobar el pago">
-                                        <i class="bi bi-file-earmark-text me-1"></i>Factura
-                                    </button>
                                 {% endif %}
 
                                 <!-- 2. Revisar -->
                                 <a href="{% url 'admin_revisar_comprobante' c.pk %}"
-                                   class="btn btn-sm btn-outline-primary px-3 rounded-pill fw-semibold shadow-sm text-nowrap"
+                                   class="btn btn-sm btn-outline-secondary shadow-sm"
                                    title="Revisar Comprobante">
-                                    <i class="bi bi-pencil-square me-1"></i>Revisar
+                                    <i class="bi bi-pencil"></i>
                                 </a>
 
                                 <!-- 3. Eliminar -->
                                 <form action="{% url 'admin_eliminar_comprobante' c.pk %}"
                                       method="post"
                                       onsubmit="return confirm('¿Eliminar este comprobante? Esta acción no se puede deshacer.')"
-                                      class="m-0 d-inline-flex">
+                                      class="d-inline m-0">
                                     {% csrf_token %}
                                     <button type="submit"
-                                            class="btn btn-sm btn-outline-danger px-3 rounded-pill fw-semibold shadow-sm text-nowrap"
+                                            class="btn btn-sm btn-outline-danger shadow-sm"
                                             title="Eliminar Comprobante">
-                                        <i class="bi bi-trash me-1"></i>Eliminar
+                                        <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
                             </div>
@@ -542,9 +535,9 @@
                             </div>
                             <div class="col-4">
                                 <a href="{% url 'admin_revisar_comprobante' c.pk %}"
-                                   class="btn btn-sm btn-outline-primary w-100 fw-semibold rounded-pill py-2 text-nowrap"
+                                   class="btn btn-sm btn-outline-secondary w-100 fw-semibold rounded-pill py-2 text-nowrap"
                                    title="Revisar Comprobante">
-                                    <i class="bi bi-pencil-square me-1"></i>Revisar
+                                    <i class="bi bi-pencil me-1"></i>Revisar
                                 </a>
                             </div>
                             <div class="col-4">

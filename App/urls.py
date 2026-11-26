@@ -22,6 +22,7 @@ from App.views.actividades import views as actividades_views
 from App.views.tarifa import views as tarifa_views
 from App.views.guias import views as guias_views
 from App.views.promocion import views as promocion_views
+from App.views.soporte import views as soporte_views
 from App.views.comprobante_pago import views as comprobante_pago_views
 from App.views.pagos_rechazados import views as pagos_rechazados_views
 from App.views.reserva.views import listar_cancelaciones_admin
@@ -57,6 +58,11 @@ urlpatterns = [
 
     # Ofertas y Promociones públicas
     path('ofertas/', promocion_views.promociones_publicas, name='promociones_publicas'),
+
+    # Centro de Ayuda, Soporte y Manual de Usuario
+    path('soporte/', soporte_views.soporte_ayuda_view, name='soporte_ayuda'),
+    path('ayuda/', soporte_views.soporte_ayuda_view, name='ayuda'),
+    path('soporte/manual-pdf/', soporte_views.manual_usuario_pdf_view, name='manual_usuario_pdf'),
 
     # Categorías (Administración / Staff)
     path('admin/categorias/', categoria_views.CategoriaListView.as_view(), name='listar_categorias'),

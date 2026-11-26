@@ -182,7 +182,7 @@
                         <th class="py-3 border-0">MOTIVO DE CANCELACIÓN</th>
                         <th class="text-center py-3 border-0">PENALIDAD</th>
                         <th class="text-center py-3 border-0">ESTADO REVISIÓN</th>
-                        <th class="text-end pe-4 py-3 border-0">ACCIONES</th>
+                        <th class="text-center py-3 border-0 text-nowrap">ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -254,11 +254,12 @@
                         </td>
 
                         <!-- Acciones -->
-                        <td class="text-end pe-4 py-3">
-                            <!-- Botón Editar / Gestionar -->
-                            <a href="{% url 'editar_cancelacion_admin' item.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold" title="Editar y Aprobar Cancelación">
-                                <i class="bi bi-pencil-square me-1"></i> Editar
-                            </a>
+                        <td class="text-center text-nowrap">
+                            <div class="d-inline-flex align-items-center gap-1">
+                                <a href="{% url 'editar_cancelacion_admin' item.id %}" class="btn btn-sm btn-outline-secondary shadow-sm" title="Editar y Gestionar Cancelación">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
