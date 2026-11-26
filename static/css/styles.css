@@ -89,16 +89,28 @@
 }
 
 .admin-data-table .btn-success,
-.admin-data-table .badge.bg-success,
-.admin-data-table .badge.bg-success.bg-opacity-75,
-.admin-data-table .bg-success,
 .admin-data-table .bg-success.bg-opacity-10,
 .admin-data-table .text-success,
-.admin-data-table .border-success,
-.admin-data-table .badge.bg-success-subtle {
+.admin-data-table .border-success {
     background-color: rgba(148, 163, 184, 0.08) !important;
     color: #374151 !important;
     border-color: rgba(148, 163, 184, 0.25) !important;
+}
+
+.admin-data-table .badge.bg-success:not([class*="bg-opacity-"]),
+.admin-data-table .badge[style*="#198754"],
+.badge-estado-activa,
+.badge-estado-activo {
+    background-color: #198754 !important;
+    color: #ffffff !important;
+    border-color: #198754 !important;
+}
+
+.admin-data-table .badge.bg-success:not([class*="bg-opacity-"]) *,
+.admin-data-table .badge[style*="#198754"] *,
+.badge-estado-activa *,
+.badge-estado-activo * {
+    color: #ffffff !important;
 }
 
 .admin-data-table .btn-success {
@@ -527,6 +539,7 @@ main .breadcrumb-item.active {
 /* ══════════════ 6. COMPONENTE: MENÚ DE HAMBURGUESA PREMIUM (FULLSCREEN) ══════════════ */
 
 .menu-hamburguesa-premium {
+    z-index: 1080 !important;
     background: rgba(26, 38, 31, 0.85) !important;
     backdrop-filter: blur(20px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
@@ -534,6 +547,27 @@ main .breadcrumb-item.active {
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
     color: #ffffff;
     transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.offcanvas-backdrop.show,
+body.menu-open-active .offcanvas-backdrop {
+    z-index: 1075 !important;
+}
+
+/* Ocultar botones flotantes (Condy y Accesibilidad) cuando el menú hamburguesa o el sidebar móvil están desplegados */
+body.menu-open-active #btnAccesibilidadMonagua,
+body.menu-open-active .condy-chat-widget,
+body.sidebar-open #btnAccesibilidadMonagua,
+body.sidebar-open .condy-chat-widget,
+html:has(.menu-hamburguesa-premium.show) #btnAccesibilidadMonagua,
+html:has(.menu-hamburguesa-premium.show) .condy-chat-widget,
+body:has(.menu-hamburguesa-premium.show) #btnAccesibilidadMonagua,
+body:has(.menu-hamburguesa-premium.show) .condy-chat-widget {
+    z-index: 1020 !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: opacity 0.2s ease, visibility 0.2s ease !important;
 }
 
 /* Bloqueo total del fondo cuando el menú hamburguesa está abierto */
@@ -1125,13 +1159,9 @@ body:has(.menu-hamburguesa-premium.show) {
 }
 
 .admin-data-table .btn-success,
-.admin-data-table .badge.bg-success,
-.admin-data-table .badge.bg-success.bg-opacity-75,
-.admin-data-table .bg-success,
 .admin-data-table .bg-success.bg-opacity-10,
 .admin-data-table .text-success,
 .admin-data-table .border-success,
-.admin-data-table .badge.bg-success-subtle,
 .admin-data-table .table-success {
     background-color: rgba(148, 163, 184, 0.08) !important;
     color: #374151 !important;
@@ -1688,6 +1718,7 @@ main .breadcrumb-item.active {
 /* ══════════════ 6. COMPONENTE: MENÚ DE HAMBURGUESA PREMIUM (FULLSCREEN) ══════════════ */
 
 .menu-hamburguesa-premium {
+    z-index: 1080 !important;
     background: rgba(26, 38, 31, 0.85) !important;
     backdrop-filter: blur(20px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
@@ -1695,6 +1726,27 @@ main .breadcrumb-item.active {
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
     color: #ffffff;
     transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.offcanvas-backdrop.show,
+body.menu-open-active .offcanvas-backdrop {
+    z-index: 1075 !important;
+}
+
+/* Ocultar botones flotantes (Condy y Accesibilidad) cuando el menú hamburguesa o el sidebar móvil están desplegados */
+body.menu-open-active #btnAccesibilidadMonagua,
+body.menu-open-active .condy-chat-widget,
+body.sidebar-open #btnAccesibilidadMonagua,
+body.sidebar-open .condy-chat-widget,
+html:has(.menu-hamburguesa-premium.show) #btnAccesibilidadMonagua,
+html:has(.menu-hamburguesa-premium.show) .condy-chat-widget,
+body:has(.menu-hamburguesa-premium.show) #btnAccesibilidadMonagua,
+body:has(.menu-hamburguesa-premium.show) .condy-chat-widget {
+    z-index: 1020 !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: opacity 0.2s ease, visibility 0.2s ease !important;
 }
 
 /* Bloqueo total del fondo cuando el menú hamburguesa está abierto */
@@ -2286,13 +2338,9 @@ body:has(.menu-hamburguesa-premium.show) {
 }
 
 .admin-data-table .btn-success,
-.admin-data-table .badge.bg-success,
-.admin-data-table .badge.bg-success.bg-opacity-75,
-.admin-data-table .bg-success,
 .admin-data-table .bg-success.bg-opacity-10,
 .admin-data-table .text-success,
 .admin-data-table .border-success,
-.admin-data-table .badge.bg-success-subtle,
 .admin-data-table .table-success {
     background-color: rgba(148, 163, 184, 0.08) !important;
     color: #374151 !important;
@@ -2849,6 +2897,7 @@ main .breadcrumb-item.active {
 /* ══════════════ 6. COMPONENTE: MENÚ DE HAMBURGUESA PREMIUM (FULLSCREEN) ══════════════ */
 
 .menu-hamburguesa-premium {
+    z-index: 1080 !important;
     background: rgba(26, 38, 31, 0.85) !important;
     backdrop-filter: blur(20px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
@@ -2856,6 +2905,27 @@ main .breadcrumb-item.active {
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
     color: #ffffff;
     transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.offcanvas-backdrop.show,
+body.menu-open-active .offcanvas-backdrop {
+    z-index: 1075 !important;
+}
+
+/* Ocultar botones flotantes (Condy y Accesibilidad) cuando el menú hamburguesa o el sidebar móvil están desplegados */
+body.menu-open-active #btnAccesibilidadMonagua,
+body.menu-open-active .condy-chat-widget,
+body.sidebar-open #btnAccesibilidadMonagua,
+body.sidebar-open .condy-chat-widget,
+html:has(.menu-hamburguesa-premium.show) #btnAccesibilidadMonagua,
+html:has(.menu-hamburguesa-premium.show) .condy-chat-widget,
+body:has(.menu-hamburguesa-premium.show) #btnAccesibilidadMonagua,
+body:has(.menu-hamburguesa-premium.show) .condy-chat-widget {
+    z-index: 1020 !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: opacity 0.2s ease, visibility 0.2s ease !important;
 }
 
 /* Bloqueo total del fondo cuando el menú hamburguesa está abierto */
@@ -3447,13 +3517,9 @@ body:has(.menu-hamburguesa-premium.show) {
 }
 
 .admin-data-table .btn-success,
-.admin-data-table .badge.bg-success,
-.admin-data-table .badge.bg-success.bg-opacity-75,
-.admin-data-table .bg-success,
 .admin-data-table .bg-success.bg-opacity-10,
 .admin-data-table .text-success,
 .admin-data-table .border-success,
-.admin-data-table .badge.bg-success-subtle,
 .admin-data-table .table-success {
     background-color: rgba(148, 163, 184, 0.08) !important;
     color: #374151 !important;

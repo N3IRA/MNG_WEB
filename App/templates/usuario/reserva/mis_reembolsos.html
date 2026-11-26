@@ -1,0 +1,210 @@
+{% extends "usuario/base-turista-dashboard.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Mis Reembolsos | Monagua{% endblock %}
+
+{% block content %}
+{% include "partials/breadcrumbs.html" with current_title="Mis Reembolsos" current_icon="bi bi-cash-stack" %}
+
+<div class="container py-4 mx-auto">
+    <!-- Encabezado Principal -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+        <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <span class="badge bg-success bg-opacity-10 text-success px-3 py-1.5 rounded-pill mb-2 fw-bold small">
+                    <i class="bi bi-arrow-left-right me-1"></i> DEVOLUCIONES BANCARIAS
+                </span>
+                <h2 class="display-6 fw-bold text-dark mb-1 fs-3">
+                    <i class="bi bi-cash-stack text-success me-2"></i>Mis Reembolsos
+                </h2>
+                <p class="text-muted small mb-0">Consulta el estado de tus transferencias de dinero, comprobantes bancarios y radicación de consultas.</p>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <a href="{% url 'mis_cancelaciones' %}" class="btn btn-outline-danger rounded-pill px-3 py-2 btn-sm fw-semibold shadow-sm">
+                    <i class="bi bi-x-circle me-1"></i> Mis Cancelaciones
+                </a>
+                <a href="{% url 'mis_reservas_usuario' %}" class="btn btn-outline-secondary rounded-pill px-3 py-2 btn-sm fw-semibold shadow-sm">
+                    <i class="bi bi-journal-text me-1"></i> Mis Reservas
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen de Métricas -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white d-flex flex-row align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small fw-semibold text-uppercase">Total Dinero Reembolsado</span>
+                    <h3 class="fw-bold text-success mb-0 fs-4">COP ${{ total_reembolsado|floatformat:0|intcomma }}</h3>
+                    <small class="text-muted">Transferido a tus cuentas</small>
+                </div>
+                <div class="p-3 bg-success bg-opacity-10 text-success rounded-circle">
+                    <i class="bi bi-check-circle-fill fs-3"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white d-flex flex-row align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small fw-semibold text-uppercase">Reembolsos en Trámite</span>
+                    <h3 class="fw-bold text-warning mb-0 fs-4">{{ pendientes_count|default:0 }}</h3>
+                    <small class="text-muted">En proceso de desembolso por nuestro equipo</small>
+                </div>
+                <div class="p-3 bg-warning bg-opacity-10 text-warning rounded-circle">
+                    <i class="bi bi-hourglass-split fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Reembolsos -->
+    <div class="row g-3">
+        {% for item in reembolsos %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+                <div class="card-header bg-light border-0 py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-secondary text-white rounded-pill px-2.5 py-1 small">Reembolso #{{ item.id }}</span>
+                        <strong class="text-dark small">Reserva #{{ item.reserva.id }}</strong>
+                        <span class="text-muted small">· Solicitado el {{ item.fecha_solicitud|date:"d/m/Y H:i" }}</span>
+                    </div>
+
+                    <div>
+                        {% if item.estado == 'completado' %}
+                            <span class="badge bg-success text-white px-3 py-1.5 rounded-pill fw-semibold">
+                                <i class="bi bi-check-circle-fill me-1"></i>Reembolso Transferido
+                            </span>
+                        {% elif item.estado == 'pendiente' %}
+                            <span class="badge bg-warning text-dark border border-warning px-3 py-1.5 rounded-pill fw-semibold">
+                                <i class="bi bi-clock-history me-1"></i>En Proceso de Transferencia
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary text-white px-3 py-1.5 rounded-pill fw-semibold">
+                                {{ item.get_estado_display }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="row g-3 align-items-center">
+                        <!-- Detalles del Paquete -->
+                        <div class="col-12 col-md-5">
+                            <h5 class="fw-bold text-dark mb-1">{{ item.reserva.paquete.nombre|default:"Aventura Monagua" }}</h5>
+                            <small class="text-muted d-block"><i class="bi bi-calendar-event me-1"></i>Fecha de viaje programada: {{ item.reserva.fecha_inicio|date:"d M Y" }}</small>
+                            <small class="text-muted d-block"><i class="bi bi-people me-1"></i>{{ item.reserva.numero_adultos }} Adultos / {{ item.reserva.numero_menores }} Menores</small>
+                            {% if item.motivo %}
+                                <div class="mt-2 p-2 bg-light rounded-3 small text-muted">
+                                    <strong class="text-dark">Motivo:</strong> {{ item.motivo|truncatechars:80 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Desglose de Montos -->
+                        <div class="col-12 col-md-4">
+                            <div class="border rounded-3 p-3 bg-light">
+                                <div class="d-flex justify-content-between align-items-center small mb-1">
+                                    <span class="text-muted">Total pagado:</span>
+                                    <span class="fw-semibold text-dark">COP ${{ item.monto_total_reserva|floatformat:0|intcomma }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center small mb-1">
+                                    <span class="text-muted">Penalidad retenida:</span>
+                                    <span class="text-danger fw-semibold">COP ${{ item.penalidad_aplicada|floatformat:0|intcomma }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                    <strong class="text-dark">Monto Reembolsado:</strong>
+                                    <h5 class="fw-bold text-success mb-0">COP ${{ item.monto_reembolsado|floatformat:0|intcomma }}</h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información Bancaria y Soporte -->
+                        <div class="col-12 col-md-3 text-md-end text-start">
+                            {% if item.estado == 'completado' %}
+                                <div class="mb-2">
+                                    {% if item.banco_emisor %}<small class="text-muted d-block">Emisor: {{ item.banco_emisor }}</small>{% endif %}
+                                    {% if item.referencia_transferencia %}<small class="text-secondary d-block">Ref: {{ item.referencia_transferencia }}</small>{% endif %}
+                                    <small class="text-success d-block fw-semibold"><i class="bi bi-check-lg me-1"></i>{{ item.fecha_reembolso|date:"d/m/Y H:i" }}</small>
+                                </div>
+
+                                {% if item.imagen_comprobante %}
+                                    <button type="button" class="btn btn-success btn-sm rounded-pill px-3 fw-semibold shadow-sm w-100 mb-2" data-bs-toggle="modal" data-bs-target="#modalComprobanteReembolso{{ item.id }}">
+                                        <i class="bi bi-receipt me-1"></i> Ver Comprobante
+                                    </button>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-warning bg-opacity-10 border-warning border-opacity-25 rounded-3 p-2 small text-start mb-2">
+                                    <i class="bi bi-info-circle me-1 text-warning"></i> Nuestro equipo financiero está gestionando la transferencia a tu cuenta.
+                                </div>
+                            {% endif %}
+
+                            <!-- Botón PQRS para el usuario -->
+                            <a href="{% url 'pqrs' %}?reserva_id={{ item.reserva.id }}" class="btn btn-outline-warning text-dark btn-sm rounded-pill px-3 fw-semibold w-100" title="¿Tienes alguna duda o inconveniente con este reembolso? Radica una PQRS">
+                                <i class="bi bi-chat-square-text me-1 text-warning"></i> Radicar PQRS
+                            </a>
+                        </div>
+                    </div>
+
+                    {% if item.notas_admin %}
+                        <div class="mt-3 pt-2 border-top small text-muted">
+                            <strong class="text-dark"><i class="bi bi-chat-quote me-1"></i> Mensaje de la Administración:</strong> {{ item.notas_admin }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para ver comprobante del turista -->
+        {% if item.imagen_comprobante %}
+        <div class="modal fade" id="modalComprobanteReembolso{{ item.id }}" tabindex="-1" aria-labelledby="modalLabel{{ item.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content border-0 rounded-4 shadow">
+                    <div class="modal-header border-0 px-4 pt-4 pb-0">
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark" id="modalLabel{{ item.id }}">
+                                <i class="bi bi-check2-circle text-success me-2"></i>Comprobante de Transferencia de Reembolso
+                            </h5>
+                            <p class="text-muted small mb-0">Reserva #{{ item.reserva.id }} · Monto: COP ${{ item.monto_reembolsado|floatformat:0|intcomma }}</p>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body p-4 text-center">
+                        <div class="p-3 bg-light rounded-3 mb-3 text-start small">
+                            <div class="row g-2">
+                                <div class="col-sm-6"><strong>Monto Transferido:</strong> <span class="text-success fw-bold">COP ${{ item.monto_reembolsado|floatformat:0|intcomma }}</span></div>
+                                <div class="col-sm-6"><strong>Fecha de Transferencia:</strong> {{ item.fecha_reembolso|date:"d/m/Y H:i"|default:"Registrada" }}</div>
+                                <div class="col-sm-6"><strong>Banco Emisor:</strong> {{ item.banco_emisor|default:"Monagua" }}</div>
+                                <div class="col-sm-6"><strong>Referencia de Transferencia:</strong> {{ item.referencia_transferencia|default:"Sin referencia" }}</div>
+                            </div>
+                        </div>
+
+                        <img src="{{ item.imagen_comprobante.url }}" alt="Comprobante Bancario" class="img-fluid rounded border shadow-sm mb-3" style="max-height: 480px; object-fit: contain;">
+
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="{{ item.imagen_comprobante.url }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                <i class="bi bi-box-arrow-up-right me-1"></i> Abrir en tamaño completo
+                            </a>
+                            <a href="{{ item.imagen_comprobante.url }}" download class="btn btn-outline-success btn-sm rounded-pill px-3">
+                                <i class="bi bi-download me-1"></i> Descargar Comprobante
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% empty %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+                <i class="bi bi-wallet2 display-4 text-muted mb-3"></i>
+                <h5 class="fw-bold text-dark mb-1">No tienes reembolsos registrados</h5>
+                <p class="text-muted small mb-0">Cuando realices una cancelación que aplique para devolución de dinero, tus comprobantes de transferencia bancaria aparecerán en este panel.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

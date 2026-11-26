@@ -12,11 +12,11 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
 from django.db import transaction
 from django.utils import timezone
 
-from App.models import Reserva, Paquete, Tarifa, Pago, ModificacionReserva, NotaCredito, Usuario
+from App.models import Reserva, Paquete, Tarifa, Pago, ModificacionReserva, NotaCredito, Usuario, Reembolso
 
 logger = logging.getLogger(__name__)
 from App.forms.reserva.forms import ReservaForm
@@ -998,11 +998,23 @@ def listar_cancelaciones_admin(request):
 @requiere_administrador
 def editar_cancelacion_admin(request, reserva_id):
     """
-    Vista para que el administrador revise la cancelación de una Reserva,
-    ajuste la penalidad y modifique el estado.
+    Vista administrativa para revisar la cancelación de una Reserva.
+    Calcula automáticamente la penalidad y el reembolso según las políticas oficiales
+    del proyecto (anticipación de la reserva y reglas de negocio de Monagua).
     """
+    reserva = get_object_or_404(
+        Reserva.objects.select_related('usuario', 'paquete', 'pago').prefetch_related('reembolsos'),
+        id=reserva_id
+    )
 
-    reserva = get_object_or_404(Reserva, id=reserva_id)
+    reembolso = reserva.reembolsos.order_by('-fecha_solicitud').first()
+    pago = getattr(reserva, 'pago', None)
+
+    # Evaluación 100% automática según las políticas oficiales del proyecto Monagua
+    politica = reserva.evaluar_politica_cancelacion()
+    monto_pagado = politica['monto_pagado']
+    penalidad_automatica = politica['penalidad']
+    monto_reembolso_automatico = politica['reembolso']
 
     if request.method == 'POST':
         estado = request.POST.get('estado_cancelacion')
@@ -1010,52 +1022,267 @@ def editar_cancelacion_admin(request, reserva_id):
             messages.error(request, "El estado de cancelación no es válido.")
             return redirect('editar_cancelacion_admin', reserva_id=reserva.id)
 
+        nota_admin = request.POST.get('nota_admin', '').strip()
+
         estado_anterior = reserva.estado_cancelacion
         reserva.estado_cancelacion = estado
+        reserva.penalidad = penalidad_automatica
+
         if estado == 'aprobada':
             reserva.estado_reserva = 'cancelada'
-        elif estado == 'rechazada' and reserva.estado_reserva == 'cancelada':
-            # Al reactivar la reserva solo se confirma si tiene pago aprobado;
-            # en caso contrario vuelve a 'pendiente' a la espera del pago.
-            pago = getattr(reserva, 'pago', None)
-            if pago and pago.estado_transaccion == 'aprobado':
-                reserva.estado_reserva = 'confirmada'
-            else:
-                reserva.estado_reserva = 'pendiente'
+
+            # Gestión o actualización del Reembolso si aplica devolución
+            if monto_reembolso_automatico > 0 and pago:
+                if not reembolso:
+                    reembolso = Reembolso.objects.create(
+                        reserva=reserva,
+                        usuario=reserva.usuario,
+                        pago_asociado=pago,
+                        monto_total_reserva=monto_pagado,
+                        penalidad_aplicada=penalidad_automatica,
+                        monto_reembolsado=monto_reembolso_automatico,
+                        motivo=reserva.motivo_cancelacion or 'Cancelación aprobada'
+                    )
+                else:
+                    reembolso.monto_total_reserva = monto_pagado
+                    reembolso.penalidad_aplicada = penalidad_automatica
+                    reembolso.monto_reembolsado = monto_reembolso_automatico
+                    reembolso.pago_asociado = pago
+
+                # Si el administrador adjuntó la captura de transferencia bancaria
+                if 'imagen_comprobante' in request.FILES:
+                    reembolso.imagen_comprobante = request.FILES['imagen_comprobante']
+                    reembolso.banco_emisor = request.POST.get('banco_emisor', '').strip() or reembolso.banco_emisor
+                    reembolso.banco_destino = request.POST.get('banco_destino', '').strip() or reembolso.banco_destino
+                    reembolso.cuenta_o_telefono = request.POST.get('cuenta_o_telefono', '').strip() or reembolso.cuenta_o_telefono
+                    reembolso.referencia_transferencia = request.POST.get('referencia_transferencia', '').strip() or reembolso.referencia_transferencia
+                    reembolso.notas_admin = nota_admin or reembolso.notas_admin
+                    reembolso.estado = 'completado'
+                    reembolso.fecha_reembolso = timezone.now()
+                    reembolso.gestionado_por = request.user
+                    reembolso.save()
+                else:
+                    reembolso.banco_emisor = request.POST.get('banco_emisor', '').strip() or reembolso.banco_emisor
+                    reembolso.banco_destino = request.POST.get('banco_destino', '').strip() or reembolso.banco_destino
+                    reembolso.cuenta_o_telefono = request.POST.get('cuenta_o_telefono', '').strip() or reembolso.cuenta_o_telefono
+                    reembolso.referencia_transferencia = request.POST.get('referencia_transferencia', '').strip() or reembolso.referencia_transferencia
+                    reembolso.notas_admin = nota_admin or reembolso.notas_admin
+                    if reembolso.estado != 'completado':
+                        reembolso.estado = 'pendiente'
+                    reembolso.gestionado_por = request.user
+                    reembolso.save()
+
+            elif monto_reembolso_automatico <= 0 and reembolso:
+                reembolso.estado = 'rechazado'
+                reembolso.penalidad_aplicada = penalidad_automatica
+                reembolso.monto_reembolsado = Decimal('0.00')
+                reembolso.notas_admin = nota_admin
+                reembolso.save()
+
+        elif estado == 'rechazada':
+            if reserva.estado_reserva == 'cancelada':
+                if pago and pago.estado_transaccion == 'aprobado':
+                    reserva.estado_reserva = 'confirmada'
+                else:
+                    reserva.estado_reserva = 'pendiente'
+            if reembolso and reembolso.estado == 'pendiente':
+                reembolso.estado = 'rechazado'
+                reembolso.notas_admin = nota_admin
+                reembolso.save()
 
         reserva.save()
 
-        if reserva.usuario and estado_anterior != estado:
+        # Notificación y Correo al usuario
+        if reserva.usuario and (estado_anterior != estado or nota_admin or 'imagen_comprobante' in request.FILES):
+            detalle_reembolso = ""
+            if estado == 'aprobada':
+                if monto_reembolso_automatico > 0:
+                    if reembolso and reembolso.estado == 'completado':
+                        detalle_reembolso = f" Se realizó el reembolso bancario de COP ${monto_reembolso_automatico:,.0f} con comprobante disponible."
+                    else:
+                        detalle_reembolso = f" Se programó el reembolso bancario de COP ${monto_reembolso_automatico:,.0f} en estado pendiente de transferencia."
+                else:
+                    detalle_reembolso = " No aplica reembolso debido a la penalidad del 100% calculada por política."
+            elif estado == 'rechazada':
+                detalle_reembolso = " Tu itinerario y reserva continúan vigentes."
+
+            nota_texto = f" Mensaje del equipo: '{nota_admin}'" if nota_admin else ""
+            mensaje_notif = f"La solicitud de cancelación de tu reserva #{reserva.id} fue '{estado}'.{detalle_reembolso}{nota_texto}"
+
             crear_notificacion_sistema(
                 usuario=reserva.usuario,
                 reserva=reserva,
-                mensaje=f"La solicitud de cancelación de tu reserva #{reserva.id} fue marcada como '{estado}'.",
+                mensaje=mensaje_notif,
                 tipo="Reserva",
                 prioridad="alta"
             )
 
-            asunto = f"Actualización de tu cancelación - Reserva #{reserva.id} | Monagua"
+            asunto = f"Resolución de Cancelación - Reserva #{reserva.id} | Monagua"
             mensaje_texto = (
-                f"Hola {reserva.usuario.get_full_name() or reserva.usuario.username}, "
-                f"la solicitud de cancelación de tu reserva #{reserva.id} fue marcada como '{estado}'."
+                f"Hola {reserva.usuario.get_full_name() or reserva.usuario.username},\n\n"
+                f"La solicitud de cancelación de tu reserva #{reserva.id} ha sido '{estado}'.\n"
+                f"{detalle_reembolso}\n"
+                f"{nota_texto}\n\n"
+                f"Puedes ingresar a tu panel de usuario para consultar los detalles y comprobantes de reembolso."
             )
             html_respuesta = plantilla_cancelacion_html(
                 nombre_cliente=reserva.usuario.get_full_name() or reserva.usuario.username,
                 paquete=reserva.paquete.nombre if reserva.paquete else 'Paquete',
                 estado=estado,
-                penalidad=str(reserva.penalidad or '0.00')
+                penalidad=f"{penalidad_automatica:,.0f}"
             )
             try:
                 enviar_correo_html_monagua(asunto, mensaje_texto, reserva.usuario.email, html_respuesta)
             except Exception as exc:
-                print(f"Error enviando correo de actualización de cancelación: {exc}")
+                logger.error(f"Error enviando correo de cancelación: {exc}")
 
-        messages.success(request, f"La reserva #{reserva.id} ha sido actualizada.")
+        messages.success(request, f"La cancelación de la reserva #{reserva.id} fue actualizada con éxito.")
         return redirect('listar_cancelaciones')
 
     return render(request, 'admin/reserva/editar_cancelacion_admin.html', {
-        'reserva': reserva
+        'reserva': reserva,
+        'reembolso': reembolso,
+        'pago': pago,
+        'monto_pagado': monto_pagado,
+        'politica': politica,
+        'penalidad_actual': penalidad_automatica,
+        'monto_reembolsar_actual': monto_reembolso_automatico,
     })
+
+
+@requiere_administrador
+def listar_reembolsos_admin(request):
+    """
+    Vista administrativa para listar, supervisar y auditar los reembolsos bancarios a turistas.
+    Permite auditar el estado del desembolso y los comprobantes de transferencia.
+    """
+    estado_filtro = request.GET.get('estado', '').strip().lower()
+    busqueda = request.GET.get('q', '').strip()
+
+    reembolsos = Reembolso.objects.select_related(
+        'reserva', 'usuario', 'pago_asociado', 'reserva__paquete', 'gestionado_por'
+    ).order_by('-fecha_solicitud')
+
+    if estado_filtro in ['pendiente', 'completado', 'rechazado']:
+        reembolsos = reembolsos.filter(estado=estado_filtro)
+
+    if busqueda:
+        reembolsos = reembolsos.filter(
+            Q(usuario__first_name__icontains=busqueda) |
+            Q(usuario__last_name__icontains=busqueda) |
+            Q(usuario__username__icontains=busqueda) |
+            Q(usuario__email__icontains=busqueda) |
+            Q(referencia_transferencia__icontains=busqueda) |
+            Q(reserva__id__icontains=busqueda)
+        )
+
+    stats = Reembolso.objects.aggregate(
+        total=Count('id'),
+        pendientes=Count('id', filter=Q(estado='pendiente')),
+        completados=Count('id', filter=Q(estado='completado')),
+        monto_total_reembolsado=Sum('monto_reembolsado', filter=Q(estado='completado'))
+    )
+
+    context = {
+        'reembolsos': reembolsos,
+        'estado_filtro': estado_filtro,
+        'busqueda': busqueda,
+        'total': stats['total'] or 0,
+        'pendientes': stats['pendientes'] or 0,
+        'completados': stats['completados'] or 0,
+        'monto_total_reembolsado': stats['monto_total_reembolsado'] or Decimal('0.00'),
+    }
+    return render(request, 'admin/reserva/reembolsos_admin.html', context)
+
+
+@requiere_administrador
+def registrar_reembolso_admin(request, reembolso_id):
+    """
+    Registra el desembolso bancario completado de un reembolso, adjuntando
+    la captura del comprobante bancario de pago (Nequi, Daviplata, Bancolombia, etc.).
+    """
+    reembolso = get_object_or_404(
+        Reembolso.objects.select_related('reserva', 'usuario'),
+        id=reembolso_id
+    )
+
+    if request.method == 'POST':
+        if 'imagen_comprobante' in request.FILES:
+            reembolso.imagen_comprobante = request.FILES['imagen_comprobante']
+
+        reembolso.banco_emisor = request.POST.get('banco_emisor', '').strip() or reembolso.banco_emisor
+        reembolso.banco_destino = request.POST.get('banco_destino', '').strip() or reembolso.banco_destino
+        reembolso.cuenta_o_telefono = request.POST.get('cuenta_o_telefono', '').strip() or reembolso.cuenta_o_telefono
+        reembolso.referencia_transferencia = request.POST.get('referencia_transferencia', '').strip() or reembolso.referencia_transferencia
+        reembolso.notas_admin = request.POST.get('notas_admin', '').strip() or reembolso.notas_admin
+        reembolso.estado = 'completado'
+        reembolso.fecha_reembolso = timezone.now()
+        reembolso.gestionado_por = request.user
+        reembolso.save()
+
+        # Notificar al turista
+        mensaje = (
+            f"¡Tu reembolso de COP ${reembolso.monto_reembolsado:,.0f} por la reserva #{reembolso.reserva_id} "
+            f"ha sido transferido exitosamente! Ya puedes ver el comprobante en 'Mis Reembolsos'."
+        )
+        crear_notificacion_sistema(
+            usuario=reembolso.usuario,
+            reserva=reembolso.reserva,
+            mensaje=mensaje,
+            tipo="Reserva",
+            prioridad="alta"
+        )
+
+        asunto = f"Reembolso transferido - Reserva #{reembolso.reserva_id} | Monagua"
+        mensaje_email = (
+            f"Hola {reembolso.usuario.get_full_name() or reembolso.usuario.username},\n\n"
+            f"Te confirmamos que se ha realizado la transferencia de tu reembolso por un valor de "
+            f"COP ${reembolso.monto_reembolsado:,.0f} correspondiente a la reserva #{reembolso.reserva_id}.\n\n"
+            f"Banco emisor: {reembolso.banco_emisor or 'Monagua'}\n"
+            f"Referencia de transferencia: {reembolso.referencia_transferencia or 'N/A'}\n\n"
+            f"Puedes ingresar a tu cuenta de Monagua en 'Mis Reembolsos' para visualizar la captura del comprobante."
+        )
+        try:
+            enviar_correo_html_monagua(
+                asunto,
+                mensaje_email,
+                reembolso.usuario.email,
+                f"<div style='font-family: sans-serif; padding: 20px;'><h2>Reembolso Efectuado</h2><p>{mensaje_email.replace(chr(10), '<br>')}</p></div>"
+            )
+        except Exception as exc:
+            logger.error(f"Error enviando correo de reembolso: {exc}")
+
+        messages.success(request, f"El comprobante de reembolso #{reembolso.id} fue registrado con éxito.")
+        return redirect('listar_reembolsos_admin')
+
+    return redirect('listar_reembolsos_admin')
+
+
+@login_required(login_url='login')
+def mis_reembolsos_usuario(request):
+    """
+    Vista para que el turista consulte sus reembolsos tramitados, verifique el estado
+    de desembolso, consulte el comprobante de transferencia bancaria y radique PQRS si lo requiere.
+    """
+    reembolsos = Reembolso.objects.filter(
+        usuario=request.user
+    ).select_related(
+        'reserva', 'reserva__paquete', 'pago_asociado'
+    ).order_by('-fecha_solicitud')
+
+    total_reembolsado = reembolsos.filter(estado='completado').aggregate(
+        total=Sum('monto_reembolsado')
+    )['total'] or Decimal('0.00')
+
+    pendientes_count = reembolsos.filter(estado='pendiente').count()
+
+    context = {
+        'reembolsos': reembolsos,
+        'total_reembolsado': total_reembolsado,
+        'pendientes_count': pendientes_count,
+    }
+    return render(request, 'usuario/reserva/mis_reembolsos.html', context)
+
 
 @login_required(login_url='login')
 @solo_turistas_requerido

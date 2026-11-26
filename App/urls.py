@@ -218,6 +218,11 @@ urlpatterns = [
   path('admin/reserva/', listar_cancelaciones_admin, name='listar_cancelaciones'),
   path('admin/cancelaciones/editar/<int:reserva_id>/', reserva_views.editar_cancelacion_admin, name='editar_cancelacion_admin'),
 
+    # Reembolsos bancarios (Administración y Turista)
+    path('admin/reembolsos/', reserva_views.listar_reembolsos_admin, name='listar_reembolsos_admin'),
+    path('admin/reembolsos/registrar/<int:reembolso_id>/', reserva_views.registrar_reembolso_admin, name='registrar_reembolso_admin'),
+    path('reservas/mis-reembolsos/', reserva_views.mis_reembolsos_usuario, name='mis_reembolsos_usuario'),
+
     # Respaldo y restauración de la base de datos
     path('admin/respaldo/', backup, name='backup'),
     path('admin/respaldo/restaurar/', restaurar_datos, name='restaurar_datos'),

@@ -63,9 +63,14 @@
       .badge.bg-success-subtle,
       .btn-success,
       .alert.bg-success,
-      .card.bg-success {
+      .card.bg-success,
+      .admin-data-table .badge.bg-success,
+      .admin-data-table .badge[style*="#198754"],
+      .badge-estado-activa,
+      .badge-estado-activo {
         background-color: #198754 !important;
         color: #ffffff !important;
+        border-color: #198754 !important;
       }
 
       .bg-success:not(.bg-opacity-10):not(.bg-opacity-25) *,
@@ -73,7 +78,11 @@
       .badge.bg-success-subtle *,
       .btn-success *,
       .alert.bg-success *,
-      .card.bg-success * {
+      .card.bg-success *,
+      .admin-data-table .badge.bg-success *,
+      .admin-data-table .badge[style*="#198754"] *,
+      .badge-estado-activa *,
+      .badge-estado-activo * {
         color: #ffffff !important;
       }
 
@@ -119,7 +128,7 @@
       style="
         top: 15px;
         left: 15px;
-        z-index: 1050;
+        z-index: 1085;
         background: rgba(255, 255, 255, 0.12);
         border-color: rgba(255, 255, 255, 0.2);
         color: #fff;
@@ -134,7 +143,7 @@
     <div
       id="sidebar-overlay"
       class="position-fixed top-0 start-0 w-100 h-100 d-none"
-      style="z-index: 1040"
+      style="z-index: 1075"
     ></div>
 
     {% include 'partials/aside-admin.html' %}

@@ -61,7 +61,7 @@
   #mainSidebar {
     width: 260px !important;
     transform: translateX(-100%);
-    z-index: 1050 !important;
+    z-index: 1080 !important;
   }
 
   .sidebar-wide-view {
@@ -76,6 +76,14 @@
     padding-top: 4.5rem !important;
   }
 
+  #sidebar-toggle {
+    z-index: 1085 !important;
+  }
+
+  #sidebar-overlay {
+    z-index: 1075 !important;
+  }
+
   body.sidebar-open #mainSidebar {
     transform: translateX(0) !important;
   }
@@ -85,6 +93,14 @@
     background: rgba(0, 0, 0, 0.65);
     backdrop-filter: blur(2px);
   }
+}
+
+body.sidebar-open #btnAccesibilidadMonagua,
+body.sidebar-open .condy-chat-widget {
+  z-index: 1020 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 /* ── Scrollbar minimalista ──────────────────────────────────── */

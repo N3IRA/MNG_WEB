@@ -262,7 +262,7 @@
                         <!-- Estado -->
                         <td class="text-center py-3 text-nowrap">
                             {% if u.is_active %}
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2 fw-semibold">
+                                <span class="badge bg-success text-white rounded-pill px-3 py-2 fw-semibold shadow-sm" style="background-color: #198754;">
                                     <i class="bi bi-check-circle-fill me-1"></i>Activo
                                 </span>
                             {% else %}
@@ -319,7 +319,7 @@
                             <span class="badge bg-info bg-opacity-10 text-dark border border-info border-opacity-25 rounded-pill px-2 py-1 small fw-bold">CLIENTE</span>
                         {% endif %}
                         {% if u.is_active %}
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-0" style="font-size: 0.7rem;">Activo</span>
+                            <span class="badge bg-success text-white rounded-pill px-2 py-0 shadow-sm" style="font-size: 0.7rem; background-color: #198754;">Activo</span>
                         {% else %}
                             <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2 py-0" style="font-size: 0.7rem;">Inactivo</span>
                         {% endif %}

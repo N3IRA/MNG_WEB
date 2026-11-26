@@ -93,6 +93,14 @@
                             <div class="d-flex justify-content-between align-items-center gap-2 border-top pt-2 flex-wrap">
                                 <div class="small"><span class="text-muted fw-bold">Motivo:</span> {{ item.motivo_cancelacion|default:"Sin motivo especificado"|truncatechars:100 }}</div>
                                 <div class="d-flex gap-2 align-items-center flex-wrap">
+                                    {% if item.reembolsos.exists %}
+                                        <a href="{% url 'mis_reembolsos_usuario' %}" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm">
+                                            <i class="bi bi-cash-stack me-1"></i> Ver Reembolso
+                                        </a>
+                                    {% endif %}
+                                    <a href="{% url 'pqrs' %}?reserva_id={{ item.id }}" class="btn btn-outline-warning text-dark btn-sm rounded-pill px-3 fw-semibold shadow-sm" title="¿Inconformidad con tu cancelación o reembolso? Radica una PQRS">
+                                        <i class="bi bi-chat-square-text me-1 text-warning"></i> Radicar PQRS
+                                    </a>
                                     {% if item.estado_cancelacion == 'pendiente' %}
                                         <span class="badge bg-warning-subtle text-warning border rounded-pill px-3 py-2">En revisión administrativa</span>
                                     {% elif item.estado_cancelacion == 'aprobada' and item.penalidad and item.penalidad > 0 %}

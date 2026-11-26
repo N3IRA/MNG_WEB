@@ -78,7 +78,7 @@
 
       <!-- Mis Viajes (Al hacer clic: despliega el aside y abre el acordeón de Mis Viajes) -->
       <button
-        class="btn p-0 d-flex align-items-center justify-content-center border-0 rounded-3 text-white-hover {% if request.resolver_match.url_name in 'mis_reservas_usuario mis_cancelaciones mis_comprobantes mis_facturas' %}bg-success text-white shadow-sm border-start border-3 border-success{% else %}text-white-50{% endif %}"
+        class="btn p-0 d-flex align-items-center justify-content-center border-0 rounded-3 text-white-hover {% if request.resolver_match.url_name in 'mis_reservas_usuario mis_cancelaciones mis_reembolsos_usuario mis_comprobantes mis_facturas' %}bg-success text-white shadow-sm border-start border-3 border-success{% else %}text-white-50{% endif %}"
         style="width: 44px; height: 44px"
         type="button"
         data-expand-sidebar-target="#menuTuristaViajes"
@@ -258,7 +258,7 @@
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#menuTuristaViajes"
-          aria-expanded="{% if request.resolver_match.url_name in 'mis_reservas_usuario mis_cancelaciones mis_comprobantes mis_facturas' %}true{% else %}false{% endif %}"
+          aria-expanded="{% if request.resolver_match.url_name in 'mis_reservas_usuario mis_cancelaciones mis_reembolsos_usuario mis_comprobantes mis_facturas' %}true{% else %}false{% endif %}"
         >
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-compass fs-6" style="width: 20px"></i>
@@ -267,7 +267,7 @@
           <i class="bi bi-chevron-down small"></i>
         </button>
         <div
-          class="collapse {% if request.resolver_match.url_name in 'mis_reservas_usuario mis_cancelaciones mis_comprobantes mis_facturas' %}show{% endif %}"
+          class="collapse {% if request.resolver_match.url_name in 'mis_reservas_usuario mis_cancelaciones mis_reembolsos_usuario mis_comprobantes mis_facturas' %}show{% endif %}"
           id="menuTuristaViajes"
         >
           <ul
@@ -285,6 +285,13 @@
                 href="{% url 'mis_cancelaciones' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'mis_cancelaciones' %}bg-danger text-white fw-bold shadow-sm{% else %}text-danger text-white-hover{% endif %}"
                 ><i class="bi bi-x-octagon"></i> Mis Cancelaciones</a
+              >
+            </li>
+            <li>
+              <a
+                href="{% url 'mis_reembolsos_usuario' %}"
+                class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'mis_reembolsos_usuario' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
+                ><i class="bi bi-cash-stack"></i> Mis Reembolsos</a
               >
             </li>
             <li>

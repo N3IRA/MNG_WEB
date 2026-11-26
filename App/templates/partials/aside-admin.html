@@ -119,7 +119,7 @@
 
       <!-- Reservas & Pagos (Al hacer clic: despliega el aside y abre Reservas & Pagos) -->
       <button
-        class="btn p-0 d-flex align-items-center justify-content-center border-0 rounded-3 text-white-hover {% if request.resolver_match.url_name in 'gestion_reservas listar_cancelaciones admin_comprobantes admin_pagos_rechazados' %}bg-transparent text-white border-0{% else %}text-white-50{% endif %}"
+        class="btn p-0 d-flex align-items-center justify-content-center border-0 rounded-3 text-white-hover {% if request.resolver_match.url_name in 'gestion_reservas listar_cancelaciones admin_comprobantes admin_pagos_rechazados listar_reembolsos_admin registrar_reembolso_admin' or 'reembolso' in request.resolver_match.url_name %}bg-transparent text-white border-0{% else %}text-white-50{% endif %}"
         style="width: 44px; height: 44px"
         type="button"
         data-expand-sidebar-target="#menuWideReservas"
@@ -155,6 +155,30 @@
       >
         <i class="bi bi-journal-richtext fs-5"></i>
       </button>
+
+      <!-- Notificaciones -->
+      <a
+        href="{% url 'listar_notificaciones' %}"
+        class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'listar_notificaciones' %}bg-transparent text-white border-0{% else %}text-white-50 text-white-hover{% endif %}"
+        style="width: 44px; height: 44px"
+        data-bs-toggle="tooltip"
+        data-bs-placement="right"
+        title="Notificaciones"
+      >
+        <i class="bi bi-bell fs-5"></i>
+      </a>
+
+      <!-- Configuración -->
+      <a
+        href="{% url 'configuracion_usuario' %}"
+        class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'configuracion_usuario' %}bg-transparent text-white border-0{% else %}text-white-50 text-white-hover{% endif %}"
+        style="width: 44px; height: 44px"
+        data-bs-toggle="tooltip"
+        data-bs-placement="right"
+        title="Configuración"
+      >
+        <i class="bi bi-gear fs-5"></i>
+      </a>
     </nav>
 
     <!-- Footer Slim: Avatar + Logout -->
@@ -371,11 +395,11 @@
       <!-- Acordeón Reservas & Pagos -->
       <div>
         <button
-          class="btn w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded-2 text-decoration-none border-0 text-start text-white-hover {% if request.resolver_match.url_name in 'gestion_reservas listar_cancelaciones admin_comprobantes' %}text-white fw-semibold bg-transparent border-0{% else %}text-white-50 collapsed{% endif %}"
+          class="btn w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded-2 text-decoration-none border-0 text-start text-white-hover {% if request.resolver_match.url_name in 'gestion_reservas listar_cancelaciones admin_comprobantes listar_reembolsos_admin registrar_reembolso_admin' or 'reembolso' in request.resolver_match.url_name %}text-white fw-semibold bg-transparent border-0{% else %}text-white-50 collapsed{% endif %}"
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#menuWideReservas"
-          aria-expanded="{% if request.resolver_match.url_name in 'gestion_reservas listar_cancelaciones admin_comprobantes' %}true{% else %}false{% endif %}"
+          aria-expanded="{% if request.resolver_match.url_name in 'gestion_reservas listar_cancelaciones admin_comprobantes listar_reembolsos_admin registrar_reembolso_admin' or 'reembolso' in request.resolver_match.url_name %}true{% else %}false{% endif %}"
         >
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-calendar2-check fs-6" style="width: 20px"></i>
@@ -384,7 +408,7 @@
           <i class="bi bi-chevron-down small"></i>
         </button>
         <div
-          class="collapse {% if request.resolver_match.url_name in 'gestion_reservas listar_cancelaciones admin_comprobantes admin_pagos_rechazados poliza_listar poliza_crear poliza_editar poliza_eliminar aseguradora_listar aseguradora_crear aseguradora_editar aseguradora_eliminar' or 'poliza' in request.resolver_match.url_name or 'aseguradora' in request.resolver_match.url_name %}show{% endif %}"
+          class="collapse {% if request.resolver_match.url_name in 'gestion_reservas listar_cancelaciones admin_comprobantes admin_pagos_rechazados poliza_listar poliza_crear poliza_editar poliza_eliminar aseguradora_listar aseguradora_crear aseguradora_editar aseguradora_eliminar listar_reembolsos_admin registrar_reembolso_admin' or 'poliza' in request.resolver_match.url_name or 'aseguradora' in request.resolver_match.url_name or 'reembolso' in request.resolver_match.url_name %}show{% endif %}"
           id="menuWideReservas"
         >
           <ul
@@ -402,6 +426,13 @@
                 href="{% url 'listar_cancelaciones' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'listar_cancelaciones' %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
                 ><i class="bi bi-x-circle"></i> Cancelaciones</a
+              >
+            </li>
+            <li>
+              <a
+                href="{% url 'listar_reembolsos_admin' %}"
+                class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name in 'listar_reembolsos_admin registrar_reembolso_admin' %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
+                ><i class="bi bi-cash-stack text-warning"></i> Reembolsos</a
               >
             </li>
             <li>
@@ -530,6 +561,30 @@
           </ul>
         </div>
       </div>
+
+      <!-- Sistema -->
+      <div
+        class="text-secondary text-uppercase fw-bold px-2 pt-3 pb-1 small"
+        style="font-size: 0.68rem; letter-spacing: 0.8px"
+      >
+        Sistema
+      </div>
+
+      <a
+        href="{% url 'listar_notificaciones' %}"
+        class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'listar_notificaciones' %}bg-transparent text-white fw-semibold{% else %}text-white-50 text-white-hover{% endif %}"
+      >
+        <i class="bi bi-bell fs-6" style="width: 20px"></i>
+        <span class="small">Notificaciones</span>
+      </a>
+
+      <a
+        href="{% url 'configuracion_usuario' %}"
+        class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'configuracion_usuario' %}bg-transparent text-white fw-semibold{% else %}text-white-50 text-white-hover{% endif %}"
+      >
+        <i class="bi bi-gear fs-6" style="width: 20px"></i>
+        <span class="small">Configuración</span>
+      </a>
     </nav>
 
     <!-- Footer: Perfil + Logout -->

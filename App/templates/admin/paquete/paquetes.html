@@ -123,7 +123,7 @@
                         </td>
                         <td class="text-center">
                             {% if paquete.estado %}
-                                <span class="badge px-3 py-2 rounded-pill border border-success-subtle bg-success-subtle text-success-emphasis shadow-sm"><i class="bi bi-check-circle-fill me-1"></i> Activo</span>
+                                <span class="badge px-3 py-2 rounded-pill bg-success text-white shadow-sm" style="background-color: #198754;"><i class="bi bi-check-circle-fill me-1"></i> Activo</span>
                             {% else %}
                                 <span class="badge px-3 py-2 rounded-pill border border-danger-subtle bg-danger-subtle text-danger-emphasis shadow-sm"><i class="bi bi-x-circle-fill me-1"></i> Inactivo</span>
                             {% endif %}
@@ -175,7 +175,7 @@
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h5 class="fw-bold text-dark mb-0">{{ paquete.nombre }}</h5>
                                 {% if paquete.estado %}
-                                    <span class="badge rounded-pill border border-success-subtle bg-success-subtle text-success-emphasis shadow-sm">Activo</span>
+                                    <span class="badge rounded-pill bg-success text-white shadow-sm" style="background-color: #198754;">Activo</span>
                                 {% else %}
                                     <span class="badge rounded-pill border border-danger-subtle bg-danger-subtle text-danger-emphasis shadow-sm">Inactivo</span>
                                 {% endif %}

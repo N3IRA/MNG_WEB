@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.exceptions import ValidationError
-from App.models import Usuario, Paquete, Reserva, Categoria, Pago, Temporada, Tarifa, Notificacion, Bitacora, NotaCredito
+from App.models import Usuario, Paquete, Reserva, Categoria, Pago, Temporada, Tarifa, Notificacion, Bitacora, NotaCredito, Reembolso
 from App.forms.usuario.forms import PerfilTuristaForm
 from App.forms.pago.forms import ComprobantePagoForm
 from autenticacion.forms import IniciarSesionForm
@@ -2070,6 +2070,182 @@ class CancelacionParcialReservaPagadaTests(TestCase):
         reserva.refresh_from_db()
         self.assertEqual(reserva.numero_adultos, 6)
         self.assertEqual(NotaCredito.objects.filter(reserva=reserva).count(), 0)
+
+
+class GestionReembolsosTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.admin = Usuario.objects.create_user(
+            username='admin_reembolsos',
+            email='admin@monagua.com',
+            password='Password123#',
+            first_name='Admin',
+            last_name='Monagua',
+            numero_documento='9998887771',
+            rol=Usuario.Roles.ADMIN,
+            is_staff=True,
+            is_superuser=True
+        )
+        self.turista = Usuario.objects.create_user(
+            username='turista_reembolso',
+            email='turista_reembolso@monagua.com',
+            password='Password123#',
+            first_name='Carlos',
+            last_name='Perez',
+            numero_documento='9998887772',
+            rol=Usuario.Roles.CLIENTE,
+            is_staff=False,
+            is_superuser=False
+        )
+        self.categoria = Categoria.objects.create(nombre='Aventura')
+        self.paquete = Paquete.objects.create(
+            nombre='Cascadas del Silencio',
+            descripcion='Aventura acuática',
+            categoria=self.categoria,
+            punto_encuentro='Muelle Monagua',
+            hora_encuentro='07:30:00',
+            dias_duracion=1,
+            noches_duracion=1,
+            imagen=SimpleUploadedFile('cascada.jpg', b'img_bytes', content_type='image/jpeg')
+        )
+
+    def _crear_reserva_pagada(self, monto=Decimal('500000.00')):
+        reserva = Reserva.objects.create(
+            usuario=self.turista,
+            paquete=self.paquete,
+            monto_total=monto,
+            numero_adultos=2,
+            numero_menores=0,
+            estado_reserva='pendiente',
+            fecha_inicio=date.today() + timedelta(days=20),
+            estado_cancelacion='pendiente',
+            motivo_cancelacion='Problemas familiares urgentes'
+        )
+        pago = Pago.objects.create(
+            reserva=reserva,
+            referencia='PAG-REF-1001',
+            banco_origen='Bancolombia',
+            metodo_pago='Transferencia',
+            monto=monto,
+            estado_transaccion='aprobado',
+            imagen_comprobante=SimpleUploadedFile('pago.jpg', b'comprobante_original', content_type='image/jpeg')
+        )
+        reserva.estado_reserva = 'confirmada'
+        reserva.save(update_fields=['estado_reserva'])
+        return reserva, pago
+
+    def test_aprobar_cancelacion_crea_reembolso_pendiente(self):
+        reserva, _ = self._crear_reserva_pagada(Decimal('600000.00'))
+        self.client.force_login(self.admin)
+
+        # Cálculo 100% automático por política (>15 días = 10% penalidad / 90% reembolso)
+        res = self.client.post(
+            reverse('editar_cancelacion_admin', args=[reserva.id]),
+            {
+                'estado_cancelacion': 'aprobada',
+                'nota_admin': 'Se aprueba cancelación con cálculo automático según políticas de Monagua.'
+            }
+        )
+        self.assertRedirects(res, reverse('listar_cancelaciones'))
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.estado_reserva, 'cancelada')
+        self.assertEqual(reserva.estado_cancelacion, 'aprobada')
+        self.assertEqual(reserva.penalidad, Decimal('60000.00'))
+
+        reembolso = Reembolso.objects.get(reserva=reserva)
+        self.assertEqual(reembolso.estado, 'pendiente')
+        self.assertEqual(reembolso.monto_reembolsado, Decimal('540000.00'))
+        self.assertEqual(reembolso.penalidad_aplicada, Decimal('60000.00'))
+
+    def test_aprobar_cancelacion_automatica_tramo_parcial(self):
+        # 5 días antes del tour: tramo parcial automático (50% penalidad / 50% reembolso)
+        reserva, _ = self._crear_reserva_pagada(Decimal('400000.00'))
+        reserva.fecha_inicio = date.today() + timedelta(days=5)
+        reserva.penalidad = Decimal('0.00')
+        reserva.save(update_fields=['fecha_inicio', 'penalidad'])
+
+        self.client.force_login(self.admin)
+
+        res = self.client.post(
+            reverse('editar_cancelacion_admin', args=[reserva.id]),
+            {
+                'estado_cancelacion': 'aprobada',
+                'nota_admin': 'Aprobada con política automática de 5 a 15 días (50%).'
+            }
+        )
+        self.assertRedirects(res, reverse('listar_cancelaciones'))
+        reembolso = Reembolso.objects.get(reserva=reserva)
+        self.assertEqual(reembolso.monto_reembolsado, Decimal('200000.00'))
+        self.assertEqual(reembolso.penalidad_aplicada, Decimal('200000.00'))
+
+    def test_registrar_comprobante_de_reembolso_completa_desembolso(self):
+        reserva, _ = self._crear_reserva_pagada(Decimal('300000.00'))
+        reembolso = Reembolso.objects.create(
+            reserva=reserva,
+            usuario=self.turista,
+            monto_total_reserva=Decimal('300000.00'),
+            penalidad_aplicada=Decimal('30000.00'),
+            monto_reembolsado=Decimal('270000.00'),
+            estado='pendiente'
+        )
+        self.client.force_login(self.admin)
+
+        comprobante_fake = SimpleUploadedFile('reembolso_nequi.jpg', b'captura_transferencia', content_type='image/jpeg')
+        res = self.client.post(
+            reverse('registrar_reembolso_admin', args=[reembolso.id]),
+            {
+                'imagen_comprobante': comprobante_fake,
+                'banco_emisor': 'Bancolombia Monagua',
+                'banco_destino': 'Nequi',
+                'cuenta_o_telefono': '3101234567',
+                'referencia_transferencia': 'TR-998877',
+                'notas_admin': 'Transferido a Nequi exitosamente.'
+            }
+        )
+        self.assertRedirects(res, reverse('listar_reembolsos_admin'))
+        reembolso.refresh_from_db()
+        self.assertEqual(reembolso.estado, 'completado')
+        self.assertTrue(bool(reembolso.imagen_comprobante))
+        self.assertEqual(reembolso.referencia_transferencia, 'TR-998877')
+
+    def test_turista_visualiza_mis_reembolsos_y_boton_pqrs(self):
+        reserva, _ = self._crear_reserva_pagada(Decimal('500000.00'))
+        reembolso = Reembolso.objects.create(
+            reserva=reserva,
+            usuario=self.turista,
+            monto_total_reserva=Decimal('500000.00'),
+            penalidad_aplicada=Decimal('50000.00'),
+            monto_reembolsado=Decimal('450000.00'),
+            estado='completado',
+            imagen_comprobante=SimpleUploadedFile('reembolso_vista.jpg', b'bytes_img', content_type='image/jpeg'),
+            banco_emisor='Bancolombia',
+            referencia_transferencia='REF-VISTA-01'
+        )
+        self.client.force_login(self.turista)
+        res = self.client.get(reverse('mis_reembolsos_usuario'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'Mis Reembolsos')
+        self.assertContains(res, 'COP $450.000')
+        self.assertContains(res, 'Radicar PQRS')
+        self.assertContains(res, reverse('pqrs'))
+
+    def test_admin_visualiza_listado_reembolsos(self):
+        reserva, _ = self._crear_reserva_pagada(Decimal('500000.00'))
+        reembolso = Reembolso.objects.create(
+            reserva=reserva,
+            usuario=self.turista,
+            monto_total_reserva=Decimal('500000.00'),
+            penalidad_aplicada=Decimal('50000.00'),
+            monto_reembolsado=Decimal('450000.00'),
+            estado='pendiente'
+        )
+        self.client.force_login(self.admin)
+        res = self.client.get(reverse('listar_reembolsos_admin'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'Gestión de Reembolsos Bancarios')
+        self.assertContains(res, 'COP $450.000')
+        self.assertContains(res, 'Pendiente')
+
 
 
 

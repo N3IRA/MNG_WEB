@@ -168,7 +168,7 @@
                         <td class="text-center">
                             <a href="{% url 'toggle_estado_promocion' promo.id %}" class="text-decoration-none" title="Haz clic para cambiar estado">
                                 {% if promo.activa %}
-                                    <span class="badge bg-success bg-opacity-75 px-3 py-2 rounded-pill shadow-sm">
+                                    <span class="badge px-3 py-2 rounded-pill bg-success text-white shadow-sm" style="background-color: #198754;">
                                         <i class="bi bi-play-circle-fill me-1"></i> Activa
                                     </span>
                                 {% else %}
@@ -233,7 +233,7 @@
                             <div>
                                 <a href="{% url 'toggle_estado_promocion' promo.id %}" class="text-decoration-none">
                                     {% if promo.activa %}
-                                        <span class="badge bg-success rounded-pill">Activa</span>
+                                        <span class="badge rounded-pill bg-success text-white shadow-sm" style="background-color: #198754;">Activa</span>
                                     {% else %}
                                         <span class="badge bg-secondary rounded-pill">Inactiva</span>
                                     {% endif %}

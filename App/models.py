@@ -777,6 +777,125 @@ class Reserva(models.Model):
             'descripcion': 'Último momento (menos de 24h antes del tour): no aplica reembolso debido a costos operativos ya comprometidos.',
         }
 
+    def evaluar_politica_cancelacion(self, ahora=None):
+        """
+        Calcula automáticamente la penalidad y el reembolso según las políticas oficiales
+        de cancelación de Monagua:
+        - Reserva sin pago registrado: 0% penalidad ($0), 0% reembolso ($0).
+        - Más de 15 días antes del tour: 10% penalidad, 90% reembolso.
+        - Entre 48 horas y 15 días antes del tour: 50% penalidad, 50% reembolso.
+        - Menos de 48 horas antes del tour: 100% penalidad, 0% reembolso.
+        """
+        pago = getattr(self, 'pago', None)
+        tiene_pago_valido = pago is not None and pago.estado_transaccion in ['pendiente', 'aprobado']
+        monto_pagado = Decimal(pago.monto) if (tiene_pago_valido and pago.monto) else Decimal(self.monto_total or 0)
+
+        if not tiene_pago_valido or monto_pagado <= 0:
+            return {
+                'tramo': 'sin_pago',
+                'porcentaje_penalidad': Decimal('0'),
+                'porcentaje_reembolso': Decimal('0'),
+                'monto_pagado': Decimal('0.00'),
+                'penalidad': Decimal('0.00'),
+                'reembolso': Decimal('0.00'),
+                'horas_restantes': 0.0,
+                'dias_restantes': 0,
+                'descripcion': 'Reserva sin pago registrado: Cancelación sin costo ni penalidad.',
+                'badge_class': 'bg-secondary',
+                'texto_anticipacion': 'Sin pago registrado'
+            }
+
+        ahora = ahora or timezone.now()
+        inicio_viaje = timezone.make_aware(
+            datetime.combine(self.fecha_inicio, time.min),
+            timezone.get_current_timezone()
+        )
+        tiempo_restante = inicio_viaje - ahora
+        horas_restantes = tiempo_restante.total_seconds() / 3600.0
+        dias_restantes = max(0, tiempo_restante.days)
+
+        # Si ya se guardó una penalidad mayor a 0 calculada numéricamente al momento de la solicitud,
+        # la respetamos para preservar la anticipación que tenía el turista al cancelar.
+        if self.penalidad and self.penalidad > 0 and self.penalidad <= monto_pagado:
+            penalidad = Decimal(self.penalidad)
+            reembolso = max(Decimal('0.00'), monto_pagado - penalidad)
+            if monto_pagado > 0:
+                pct_penalidad = (penalidad / monto_pagado * Decimal('100')).quantize(Decimal('1'))
+            else:
+                pct_penalidad = Decimal('0')
+            pct_reembolso = max(Decimal('0'), Decimal('100') - pct_penalidad)
+
+            if pct_penalidad == 0:
+                tramo = 'exonerado'
+                desc = 'Penalidad del 0%: Aplica reembolso total del 100%.'
+                badge = 'bg-success'
+            elif pct_penalidad <= 10:
+                tramo = 'favorable'
+                desc = f'Política Favorable (Más de 15 días): Reembolso del {pct_reembolso:.0f}% / Penalidad del {pct_penalidad:.0f}%.'
+                badge = 'bg-success'
+            elif pct_penalidad <= 50:
+                tramo = 'parcial'
+                desc = f'Política Parcial (Entre 48h y 15 días): Reembolso del {pct_reembolso:.0f}% / Penalidad del {pct_penalidad:.0f}%.'
+                badge = 'bg-warning text-dark'
+            else:
+                tramo = 'sin_reembolso'
+                desc = f'Penalidad del {pct_penalidad:.0f}%: Reembolso del {pct_reembolso:.0f}%.'
+                badge = 'bg-danger'
+
+            return {
+                'tramo': tramo,
+                'porcentaje_penalidad': pct_penalidad,
+                'porcentaje_reembolso': pct_reembolso,
+                'monto_pagado': monto_pagado,
+                'penalidad': penalidad,
+                'reembolso': reembolso,
+                'horas_restantes': round(horas_restantes, 1),
+                'dias_restantes': dias_restantes,
+                'descripcion': desc,
+                'badge_class': badge,
+                'texto_anticipacion': f"{dias_restantes} días ({round(horas_restantes, 1)} h) antes del tour"
+            }
+
+        # Cálculo dinámico según anticipación
+        if tiempo_restante > timedelta(days=15):
+            pct_penalidad = Decimal('10')
+            pct_reembolso = Decimal('90')
+            penalidad = (monto_pagado * Decimal('0.10')).quantize(Decimal('1.00'))
+            reembolso = monto_pagado - penalidad
+            tramo = 'favorable'
+            desc = 'Política Favorable (Más de 15 días de anticipación): Reembolso del 90% / Penalidad del 10%.'
+            badge = 'bg-success'
+        elif tiempo_restante >= timedelta(hours=48):
+            pct_penalidad = Decimal('50')
+            pct_reembolso = Decimal('50')
+            penalidad = (monto_pagado * Decimal('0.50')).quantize(Decimal('1.00'))
+            reembolso = monto_pagado - penalidad
+            tramo = 'parcial'
+            desc = 'Política Parcial (Entre 48h y 15 días de anticipación): Reembolso del 50% / Penalidad del 50%.'
+            badge = 'bg-warning text-dark'
+        else:
+            pct_penalidad = Decimal('100')
+            pct_reembolso = Decimal('0')
+            penalidad = monto_pagado
+            reembolso = Decimal('0.00')
+            tramo = 'sin_reembolso'
+            desc = 'Menos de 48 horas de anticipación: Sin reembolso / Penalidad del 100% por costos operativos comprometidos.'
+            badge = 'bg-danger'
+
+        return {
+            'tramo': tramo,
+            'porcentaje_penalidad': pct_penalidad,
+            'porcentaje_reembolso': pct_reembolso,
+            'monto_pagado': monto_pagado,
+            'penalidad': penalidad,
+            'reembolso': reembolso,
+            'horas_restantes': round(horas_restantes, 1),
+            'dias_restantes': dias_restantes,
+            'descripcion': desc,
+            'badge_class': badge,
+            'texto_anticipacion': f"{dias_restantes} días ({round(horas_restantes, 1)} h) antes del tour"
+        }
+
     def calcular_monto_para_personas(self, adultos, menores):
         """Calcula el monto total para una combinación dada de adultos y menores."""
         if not self.paquete or not self.fecha_inicio:
@@ -1402,4 +1521,135 @@ class NotaCredito(models.Model):
 
     def __str__(self):
         return f'{self.codigo} — Reserva #{self.reserva_id} (COP ${self.monto_devuelto:,.0f})'
+
+
+# ==============================================================================
+# REEMBOLSOS BANCARIOS (GESTIÓN CON COMPROBANTES DE TRANSFERENCIA)
+# ==============================================================================
+
+class Reembolso(models.Model):
+    """
+    Registro y gestión de reembolsos monetarios reales a turistas tras cancelaciones.
+    El administrador realiza la transferencia bancaria (Nequi, Daviplata, Bancolombia, etc.)
+    y sube la captura del comprobante bancario para que el turista y la administración
+    puedan auditarlo y visualizarlo.
+    """
+    ESTADO_CHOICES = [
+        ('pendiente', 'Pendiente de desembolso'),
+        ('completado', 'Completado (Reembolsado)'),
+        ('rechazado', 'Rechazado / No aplica'),
+    ]
+
+    id = models.AutoField(primary_key=True)
+    reserva = models.ForeignKey(
+        'Reserva',
+        on_delete=models.CASCADE,
+        related_name='reembolsos',
+        verbose_name='Reserva Asociada'
+    )
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='reembolsos',
+        verbose_name='Turista Beneficiario'
+    )
+    pago_asociado = models.ForeignKey(
+        'Pago',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reembolsos',
+        verbose_name='Pago Original'
+    )
+
+    monto_total_reserva = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='Monto Total Pagado'
+    )
+    penalidad_aplicada = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='Penalidad Retenida'
+    )
+    monto_reembolsado = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='Monto a Reembolsar / Devuelto'
+    )
+
+    estado = models.CharField(
+        max_length=25,
+        choices=ESTADO_CHOICES,
+        default='pendiente',
+        verbose_name='Estado del Reembolso'
+    )
+    motivo = models.TextField(
+        blank=True,
+        verbose_name='Motivo de la Cancelación / Solicitud'
+    )
+
+    # Soporte bancario: captura de pantalla subida por la administración
+    imagen_comprobante = models.ImageField(
+        upload_to='comprobantes_reembolsos/%Y/%m/',
+        null=True,
+        blank=True,
+        verbose_name='Comprobante de Transferencia de Reembolso'
+    )
+    banco_emisor = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Banco / Billetera Emisora (Monagua)'
+    )
+    banco_destino = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Banco / Billetera Destino (Turista)'
+    )
+    cuenta_o_telefono = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Cuenta / Teléfono del Turista'
+    )
+    referencia_transferencia = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Número de Aprobación / Referencia Bancaria'
+    )
+
+    notas_admin = models.TextField(
+        blank=True,
+        verbose_name='Observaciones del Administrador / Soporte'
+    )
+    gestionado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reembolsos_gestionados',
+        verbose_name='Gestionado por'
+    )
+
+    fecha_solicitud = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Fecha de Solicitud'
+    )
+    fecha_reembolso = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Fecha de Desembolso / Transferencia'
+    )
+
+    class Meta:
+        db_table = 'reembolso'
+        verbose_name = 'Reembolso'
+        verbose_name_plural = 'Reembolsos'
+        ordering = ['-fecha_solicitud']
+
+    def __str__(self):
+        return f"Reembolso #{self.id} — Reserva #{self.reserva_id} — {self.usuario.get_full_name() or self.usuario.username} (COP ${self.monto_reembolsado:,.0f})"
+
 

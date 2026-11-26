@@ -18,20 +18,39 @@
                 <i class="bi bi-shield-exclamation me-1"></i> REVISIÓN DE CANCELACIÓN
             </span>
             {% if reserva.estado_cancelacion == 'pendiente' %}
-                <span class="badge bg-warning text-dark rounded-pill px-3 py-1 small fw-semibold">Pendiente</span>
+                <span class="badge bg-warning text-dark rounded-pill px-3 py-1 small fw-semibold">
+                    <i class="bi bi-hourglass-split me-1"></i>Pendiente de Revisión
+                </span>
             {% elif reserva.estado_cancelacion == 'aprobada' %}
-                <span class="badge bg-success text-white rounded-pill px-3 py-1 small fw-semibold">Aprobada</span>
+                <span class="badge bg-success text-white rounded-pill px-3 py-1 small fw-semibold">
+                    <i class="bi bi-check-circle me-1"></i>Aprobada
+                </span>
             {% else %}
-                <span class="badge bg-danger text-white rounded-pill px-3 py-1 small fw-semibold">Rechazada</span>
+                <span class="badge bg-danger text-white rounded-pill px-3 py-1 small fw-semibold">
+                    <i class="bi bi-x-circle me-1"></i>Rechazada
+                </span>
+            {% endif %}
+
+            {% if reembolso %}
+                {% if reembolso.estado == 'completado' %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 small fw-semibold">
+                        <i class="bi bi-cash-stack me-1"></i>Reembolso Transferido (COP ${{ reembolso.monto_reembolsado|floatformat:0|intcomma }})
+                    </span>
+                {% elif reembolso.estado == 'pendiente' %}
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-1 small fw-semibold">
+                        <i class="bi bi-clock-history me-1"></i>Reembolso Pendiente de Desembolso
+                    </span>
+                {% endif %}
             {% endif %}
         </div>
         <h1 class="display-6 fw-bold text-dark mb-1">Revisar Cancelación: Reserva #{{ reserva.id }}</h1>
-        <p class="text-muted mb-0">Evalúa los motivos expuestos por el cliente, verifica penalidades y define la resolución de la solicitud.</p>
+        <p class="text-muted mb-0">Evalúa los motivos del cliente, ajusta o exonera penalidades por fuerza mayor y gestiona el reembolso bancario con soporte de comprobante.</p>
     </div>
 
     <div class="row g-4">
-        <!-- Información del Cliente y Reserva (Columna Izquierda) -->
+        <!-- Información del Cliente, Reserva y Pago Original (Columna Izquierda) -->
         <div class="col-12 col-lg-5">
+            <!-- Datos del Cliente -->
             <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <div class="bg-success bg-opacity-10 text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
@@ -44,10 +63,14 @@
                     <div class="overflow-hidden">
                         <h6 class="fw-bold mb-0 text-dark text-truncate">{{ reserva.usuario.get_full_name|default:reserva.usuario.username }}</h6>
                         <span class="text-muted small text-truncate d-block">{{ reserva.usuario.email }}</span>
+                        {% if reserva.usuario.telefono %}
+                            <span class="text-secondary small d-block"><i class="bi bi-telephone me-1"></i>{{ reserva.usuario.telefono }}</span>
+                        {% endif %}
                     </div>
                 </div>
             </div>
 
+            <!-- Detalles de la Reserva y Aventura -->
             <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
@@ -58,10 +81,10 @@
                 <div class="border-bottom border-light pb-2 mb-2 d-flex justify-content-between align-items-center">
                     <span class="text-muted small">Aventura / Paquete:</span>
                     <span class="fw-bold text-success small">
-                        {% if reserva.actividad %}
-                            {{ reserva.actividad.nombre }}
-                        {% elif reserva.paquete %}
+                        {% if reserva.paquete %}
                             {{ reserva.paquete.nombre }}
+                        {% elif reserva.actividad %}
+                            {{ reserva.actividad.nombre }}
                         {% else %}
                             Reserva #{{ reserva.id }}
                         {% endif %}
@@ -71,21 +94,75 @@
                     <span class="text-muted small">Fecha viaje:</span>
                     <span class="text-dark small fw-semibold">{{ reserva.fecha_inicio|date:"d/m/Y" }}</span>
                 </div>
+                <div class="border-bottom border-light pb-2 mb-2 d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">Pasajeros:</span>
+                    <span class="text-dark small fw-semibold">{{ reserva.numero_adultos }} Adultos / {{ reserva.numero_menores }} Menores</span>
+                </div>
                 <div class="d-flex justify-content-between align-items-center pt-1">
                     <span class="text-muted small">Monto pagado / total:</span>
-                    <span class="fw-bold text-dark small">COP ${{ reserva.monto_total|floatformat:0|intcomma }}</span>
+                    <span class="fw-bold text-dark small">COP ${{ monto_pagado|floatformat:0|intcomma }}</span>
                 </div>
 
+                <!-- Motivo expuesto por el cliente -->
                 <div class="mt-3 p-3 bg-light rounded-4">
-                    <span class="text-uppercase fw-bold text-muted d-block mb-1" style="font-size: 0.7rem;">
-                        <i class="bi bi-chat-left-quote me-1"></i> Motivo de cancelación:
+                    <span class="text-uppercase fw-bold text-muted d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                        <i class="bi bi-chat-left-quote me-1 text-primary"></i> Motivo de Cancelación del Cliente:
                     </span>
-                    <p class="text-dark small mb-0">{{ reserva.motivo_cancelacion|default:"Sin motivo especificado" }}</p>
+                    <p class="text-dark small mb-0 fw-semibold">{{ reserva.motivo_cancelacion|default:"Sin motivo especificado" }}</p>
                 </div>
+            </div>
+
+            <!-- Soporte del Pago Original -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="bg-success bg-opacity-10 text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                            <i class="bi bi-receipt fs-5"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-0">Comprobante de Pago Original</h6>
+                    </div>
+                    {% if pago %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 small">
+                            {{ pago.get_estado_transaccion_display|default:"Pagado" }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                {% if pago %}
+                    <div class="small mb-3">
+                        <div class="d-flex justify-content-between py-1 border-bottom border-light">
+                            <span class="text-muted">Banco / Medio:</span>
+                            <span class="fw-semibold text-dark">{{ pago.banco_origen|default:pago.metodo_pago }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-1 border-bottom border-light">
+                            <span class="text-muted">Referencia:</span>
+                            <span class="fw-semibold text-dark">{{ pago.referencia|default:"Sin referencia" }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-1">
+                            <span class="text-muted">Fecha del pago:</span>
+                            <span class="fw-semibold text-dark">{{ pago.fecha_pago|date:"d/m/Y H:i"|default:"Registrado" }}</span>
+                        </div>
+                    </div>
+
+                    {% if pago.imagen_comprobante %}
+                        <div class="text-center p-2 bg-light rounded-3">
+                            <img src="{{ pago.imagen_comprobante.url }}" alt="Comprobante Original" class="img-fluid rounded border mb-2" style="max-height: 140px; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalComprobanteOriginal">
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalComprobanteOriginal">
+                                    <i class="bi bi-zoom-in me-1"></i> Ver Comprobante Original
+                                </button>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i>No hay imagen de comprobante adjunta.</p>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted small mb-0"><i class="bi bi-exclamation-circle me-1"></i>Esta reserva no tiene un registro de pago asociado.</p>
+                {% endif %}
             </div>
         </div>
 
-        <!-- Formulario de Dictamen del Administrador (Columna Derecha) -->
+        <!-- Formulario de Dictamen y Gestión de Reembolso (Columna Derecha) -->
         <div class="col-12 col-lg-7">
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
                 <div class="card-header bg-success text-white p-4 border-0">
@@ -95,8 +172,8 @@
                                 <i class="bi bi-sliders fs-4"></i>
                             </div>
                             <div>
-                                <h5 class="fw-bold mb-0 text-white">Dictamen del Administrador</h5>
-                                <p class="mb-0 text-white-50 small">Actualiza la resolución de esta solicitud</p>
+                                <h5 class="fw-bold mb-0 text-white">Dictamen y Gestión Financiera</h5>
+                                <p class="mb-0 text-white-50 small">Define el estado, ajusta la penalidad y registra el comprobante de transferencia bancaria</p>
                             </div>
                         </div>
                         <span class="badge bg-white text-success fw-bold px-3 py-1 rounded-pill small">#{{ reserva.id }}</span>
@@ -104,59 +181,178 @@
                 </div>
 
                 <div class="card-body p-4 p-md-5">
-                    <form method="POST">
+                    <form method="POST" enctype="multipart/form-data" id="formEditarCancelacion">
                         {% csrf_token %}
 
+                        <!-- 1. Estado de Cancelación -->
                         <div class="mb-4">
                             <label class="form-label fw-bold text-dark small">
-                                <i class="bi bi-check2-circle text-success me-1"></i> Estado de Cancelación <span class="text-danger">*</span>
+                                <i class="bi bi-check2-circle text-success me-1"></i> Dictamen de la Solicitud <span class="text-danger">*</span>
                             </label>
-                            <select name="estado_cancelacion" class="form-select rounded-3 py-2 fw-semibold" required>
+                            <select name="estado_cancelacion" id="selectEstadoCancelacion" class="form-select rounded-3 py-2 fw-semibold" required>
                                 <option value="pendiente" {% if reserva.estado_cancelacion == 'pendiente' %}selected{% endif %}>
-                                     Pendiente de Revisión
+                                     Pendiente de Revisión (Requiere verificación)
                                 </option>
                                 <option value="aprobada" {% if reserva.estado_cancelacion == 'aprobada' %}selected{% endif %}>
-                                     Aprobada
+                                     Aprobada (Cancelar reserva y procesar reembolso/penalidad)
                                 </option>
                                 <option value="rechazada" {% if reserva.estado_cancelacion == 'rechazada' %}selected{% endif %}>
-                                     Rechazada
+                                     Rechazada (Desestimar solicitud y mantener reserva activa)
                                 </option>
                             </select>
+                            <div class="form-text small text-muted mt-1">
+                                Al <strong>Aprobar</strong>, la reserva se anula definitivamente y se procesa el reembolso correspondiente. Al <strong>Rechazar</strong>, la reserva se reactiva en el itinerario.
+                            </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-dark small">
-                                <i class="bi bi-cash-stack text-success me-1"></i> Multa calculada (COP)
-                            </label>
-                            {% if reserva.penalidad and reserva.penalidad > 0 %}
-                                <div class="alert alert-warning d-flex align-items-center gap-2 mb-0 rounded-3">
-                                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                        <!-- 2. Desglose Financiero y Penalidad (Cálculo Automático según Políticas de Monagua) -->
+                        <div class="mb-4 p-4 bg-light rounded-4 border">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                <label class="form-label fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                                    <i class="bi bi-shield-check text-success fs-5"></i>
+                                    <span>Desglose Financiero y Penalidad (Cálculo Automático)</span>
+                                </label>
+                                <span class="badge {{ politica.badge_class }} rounded-pill px-3 py-1.5 fw-bold">
+                                    {{ politica.porcentaje_penalidad|floatformat:0 }}% Penalidad / {{ politica.porcentaje_reembolso|floatformat:0 }}% Reembolso
+                                </span>
+                            </div>
+
+                            <!-- Explicación de la política oficial aplicada -->
+                            <div class="alert alert-white bg-white border rounded-3 p-3 mb-3 shadow-sm">
+                                <div class="d-flex align-items-start gap-2">
+                                    <i class="bi bi-info-circle-fill text-success fs-5 flex-shrink-0 mt-0.5"></i>
                                     <div>
-                                        <span class="d-block small text-muted">Valor calculado automáticamente según políticas de cancelación</span>
-                                        <strong class="fs-6">COP ${{ reserva.penalidad|floatformat:0|intcomma }}</strong>
+                                        <strong class="d-block text-dark small mb-1">Cálculo determinado automáticamente por políticas de Monagua:</strong>
+                                        <p class="text-secondary small mb-1">{{ politica.descripcion }}</p>
+                                        <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 small">
+                                            <i class="bi bi-clock-history me-1"></i>{{ politica.texto_anticipacion }}
+                                        </span>
                                     </div>
                                 </div>
-                            {% else %}
-                                <div class="alert alert-success d-flex align-items-center gap-2 mb-0 rounded-3">
-                                    <i class="bi bi-check-circle-fill fs-5"></i>
-                                    <div>
-                                        <span class="d-block small text-muted">Aplica reembolso total</span>
-                                        <strong class="fs-6">Sin multa / penalidad (COP $0)</strong>
+                            </div>
+
+                            <!-- Tarjetas de desglose numérico automático -->
+                            <div class="row g-3 text-center">
+                                <div class="col-sm-4">
+                                    <div class="p-3 bg-white rounded-3 border h-100 shadow-sm">
+                                        <span class="text-muted small d-block mb-1">Monto Pagado Original</span>
+                                        <h6 class="fw-bold text-dark mb-0 fs-6">
+                                            COP ${{ politica.monto_pagado|floatformat:0|intcomma }}
+                                        </h6>
                                     </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="p-3 bg-white rounded-3 border h-100 shadow-sm">
+                                        <span class="text-muted small d-block mb-1">Penalidad Retenida</span>
+                                        <h6 class="fw-bold {% if politica.penalidad > 0 %}text-danger{% else %}text-muted{% endif %} mb-0 fs-6">
+                                            COP ${{ politica.penalidad|floatformat:0|intcomma }}
+                                        </h6>
+                                        <small class="text-muted" style="font-size: 0.72rem;">({{ politica.porcentaje_penalidad|floatformat:0 }}% según política)</small>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="p-3 bg-white rounded-3 border h-100 shadow-sm border-success border-opacity-50">
+                                        <span class="text-muted small d-block mb-1">Monto a Reembolsar</span>
+                                        <h5 class="fw-bold {% if politica.reembolso > 0 %}text-success{% else %}text-danger{% endif %} mb-0 fs-6">
+                                            COP ${{ politica.reembolso|floatformat:0|intcomma }}
+                                        </h5>
+                                        <small class="text-muted" style="font-size: 0.72rem;">({{ politica.porcentaje_reembolso|floatformat:0 }}% al cliente)</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Registro del Soporte de Reembolso Bancario (Captura de Transferencia) -->
+                        <div class="mb-4 p-3 bg-white border rounded-4 shadow-sm" id="bloqueReembolsoBancario">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                                    <i class="bi bi-bank text-success"></i> Transferencia Bancaria de Reembolso
+                                </h6>
+                                {% if reembolso and reembolso.estado == 'completado' %}
+                                    <span class="badge bg-success text-white rounded-pill px-3 py-1 small fw-semibold">
+                                        <i class="bi bi-check2-circle me-1"></i>Comprobante Cargado
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning bg-opacity-25 text-dark border border-warning rounded-pill px-2.5 py-1 small fw-semibold">
+                                        Pendiente de Transferencia
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <p class="text-muted small mb-3">
+                                Sube la captura de pantalla de la transferencia bancaria (Nequi, Daviplata, Bancolombia, etc.) realizada al turista para devolver el dinero.
+                            </p>
+
+                            {% if reembolso and reembolso.imagen_comprobante %}
+                                <div class="alert alert-success bg-opacity-10 border-success border-opacity-25 rounded-3 d-flex align-items-center justify-content-between p-2 mb-3">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-image fs-4 text-success"></i>
+                                        <div>
+                                            <strong class="d-block text-dark small">Comprobante de reembolso actual disponible</strong>
+                                            <span class="text-muted small">Ref: {{ reembolso.referencia_transferencia|default:"Sin referencia" }} · {{ reembolso.fecha_reembolso|date:"d/m/Y H:i" }}</span>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalComprobanteReembolso">
+                                        <i class="bi bi-eye me-1"></i> Ver Comprobante
+                                    </button>
                                 </div>
                             {% endif %}
-                            <div class="form-text text-muted small mt-2 mb-3">
-                                <i class="bi bi-lock-fill me-1"></i> Este valor se calcula automáticamente conforme a las políticas de cancelación de Monagua.
+
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold text-dark small mb-1">
+                                        <i class="bi bi-upload text-success me-1"></i> Adjuntar Captura de la Transferencia Bancaria
+                                    </label>
+                                    <input type="file" name="imagen_comprobante" class="form-control form-control-sm rounded-3" accept="image/*">
+                                    <div class="form-text small text-muted">
+                                        Formatos admitidos: JPG, PNG o WEBP. Si no se adjunta ahora, el reembolso quedará pendiente en el módulo de Reembolsos.
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label text-muted small mb-1">Banco / Billetera Emisora (Monagua):</label>
+                                    <input type="text" name="banco_emisor" class="form-control form-control-sm rounded-3"
+                                           placeholder="Ej. Bancolombia Monagua, Nequi..."
+                                           value="{{ reembolso.banco_emisor|default:'' }}">
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label text-muted small mb-1">Banco / Billetera Destino (Turista):</label>
+                                    <input type="text" name="banco_destino" class="form-control form-control-sm rounded-3"
+                                           placeholder="Ej. Nequi, Daviplata, Bancolombia..."
+                                           value="{{ reembolso.banco_destino|default:'' }}">
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label text-muted small mb-1">Cuenta o Teléfono del Turista:</label>
+                                    <input type="text" name="cuenta_o_telefono" class="form-control form-control-sm rounded-3"
+                                           placeholder="Ej. 3001234567..."
+                                           value="{{ reembolso.cuenta_o_telefono|default:'' }}">
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label text-muted small mb-1">N° de Referencia / Aprobación:</label>
+                                    <input type="text" name="referencia_transferencia" class="form-control form-control-sm rounded-3"
+                                           placeholder="Ej. 0987654321..."
+                                           value="{{ reembolso.referencia_transferencia|default:'' }}">
+                                </div>
                             </div>
-                            {% include "partials/politicas_cancelacion.html" %}
                         </div>
 
+                        <!-- 4. Observaciones y Justificación Oficial para el Cliente -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark small">
+                                <i class="bi bi-chat-text text-success me-1"></i> Mensaje de Resolución para el Turista
+                            </label>
+                            <textarea name="nota_admin" class="form-control rounded-3" rows="3"
+                                      placeholder="Explica al turista las razones de la resolución, instrucciones para el cobro de la transferencia o soporte de la decisión...">{{ reembolso.notas_admin|default:'' }}</textarea>
+                            <div class="form-text small text-muted">
+                                Este mensaje se incluirá automáticamente en la notificación del sistema y en el correo electrónico enviado al cliente.
+                            </div>
+                        </div>
+
+                        <!-- Botones de Acción -->
                         <div class="d-flex justify-content-end align-items-center gap-2 pt-3 border-top">
                             <a href="{% url 'listar_cancelaciones' %}" class="btn btn-outline-secondary px-4 rounded-pill fw-semibold">
                                 <i class="bi bi-x-circle me-1"></i> Cancelar
                             </a>
                             <button type="submit" class="btn btn-success px-4 rounded-pill shadow-sm fw-bold">
-                                <i class="bi bi-check-circle me-1"></i> Guardar Cambios
+                                <i class="bi bi-check-circle me-1"></i> Guardar Dictamen y Procesar
                             </button>
                         </div>
                     </form>
@@ -165,4 +361,55 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Comprobante Pago Original -->
+{% if pago and pago.imagen_comprobante %}
+<div class="modal fade" id="modalComprobanteOriginal" tabindex="-1" aria-labelledby="modalComprobanteOriginalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 px-4 pt-4 pb-0">
+                <h5 class="modal-title fw-bold text-dark" id="modalComprobanteOriginalLabel">
+                    <i class="bi bi-receipt text-success me-2"></i>Comprobante de Pago Original - Reserva #{{ reserva.id }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <img src="{{ pago.imagen_comprobante.url }}" alt="Comprobante Original" class="img-fluid rounded border shadow-sm" style="max-height: 520px; object-fit: contain;">
+                <div class="d-flex justify-content-center gap-2 mt-3">
+                    <a href="{{ pago.imagen_comprobante.url }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                        <i class="bi bi-box-arrow-up-right me-1"></i> Abrir en tamaño completo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Modal Comprobante Reembolso -->
+{% if reembolso and reembolso.imagen_comprobante %}
+<div class="modal fade" id="modalComprobanteReembolso" tabindex="-1" aria-labelledby="modalComprobanteReembolsoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 px-4 pt-4 pb-0">
+                <h5 class="modal-title fw-bold text-dark" id="modalComprobanteReembolsoLabel">
+                    <i class="bi bi-cash-stack text-success me-2"></i>Captura de Transferencia Bancaria (Reembolso #{{ reembolso.id }})
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <img src="{{ reembolso.imagen_comprobante.url }}" alt="Comprobante Reembolso" class="img-fluid rounded border shadow-sm" style="max-height: 520px; object-fit: contain;">
+                <div class="d-flex justify-content-center gap-2 mt-3">
+                    <a href="{{ reembolso.imagen_comprobante.url }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                        <i class="bi bi-box-arrow-up-right me-1"></i> Abrir en tamaño completo
+                    </a>
+                    <a href="{{ reembolso.imagen_comprobante.url }}" download class="btn btn-outline-success btn-sm rounded-pill px-3">
+                        <i class="bi bi-download me-1"></i> Descargar Comprobante
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

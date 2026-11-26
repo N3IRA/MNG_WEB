@@ -196,17 +196,7 @@
                 <small class="text-muted">Gestiona y consulta el historial completo de reservas</small>
             </div>
 
-            <div class="d-flex align-items-center gap-2">
-                <button type="button"
-                        class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm"
-                        hx-get="{% url 'gestion_reservas' %}{% if estado_seleccionado %}?estado={{ estado_seleccionado }}{% endif %}"
-                        hx-target="#gestion-reservas-live"
-                        hx-select="#gestion-reservas-live"
-                        hx-swap="outerHTML"
-                        title="Actualizar listado ahora sin recargar la página">
-                    <i class="bi bi-arrow-repeat"></i>
-                    <span>Actualizar</span>
-                </button>
+
 
                 <!-- Dropdown nativo Bootstrap 5 -->
                 <div class="dropdown">
