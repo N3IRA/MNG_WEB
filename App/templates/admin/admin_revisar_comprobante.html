@@ -257,8 +257,27 @@
                         <span class="fw-bold text-dark small text-uppercase d-flex align-items-center gap-2">
                             <i class="bi bi-shield-check text-success"></i> Panel de Decisión Administrativa
                         </span>
-                        <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1 small">Actualización en vivo</span>
+                        {% if comprobante.estado_transaccion == 'aprobado' %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 small fw-semibold">
+                                <i class="bi bi-lock-fill me-1"></i>Acción Bloqueada (Aprobado)
+                            </span>
+                        {% else %}
+                            <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1 small">Actualización en vivo</span>
+                        {% endif %}
                     </div>
+
+                    {% if comprobante.estado_transaccion == 'aprobado' %}
+                        <!-- Banner Informativo de Bloqueo por Aprobación -->
+                        <div class="alert alert-success border border-success border-opacity-50 rounded-4 shadow-sm p-3 mb-3 d-flex align-items-center gap-3">
+                            <div class="p-2 bg-success text-white rounded-circle shadow-sm flex-shrink-0">
+                                <i class="bi bi-shield-lock-fill fs-5"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-success mb-1">Comprobante Aprobado — Decisión Oficial Definitiva</div>
+                                <p class="small text-muted mb-0">Esta factura ya fue revisada y aprobada por la administración. La acción ha quedado bloqueada para proteger la integridad contable y la reserva confirmada.</p>
+                            </div>
+                        </div>
+                    {% endif %}
 
                     <!-- Mensaje de Error en Validación -->
                     {% if error_msg %}
@@ -269,17 +288,19 @@
                     {% endif %}
 
                     <!-- Formulario con HTMX implementado con precisión de target y select -->
-                    <form hx-post="{% url 'admin_revisar_comprobante' comprobante.pk %}" 
+                    <form {% if comprobante.estado_transaccion != 'aprobado' %}
+                          hx-post="{% url 'admin_revisar_comprobante' comprobante.pk %}" 
                           hx-target="#revisar-comprobante-content" 
                           hx-select="#revisar-comprobante-content" 
                           hx-swap="outerHTML" 
+                          {% endif %}
                           id="formRevisarComprobante">
                         {% csrf_token %}
 
                         <!-- 1. SELECTOR VISUAL DE ESTADO (Radio Cards Segmentadas de Bootstrap 5) -->
                         <div class="mb-3">
                             <label class="form-label fw-bold text-dark small mb-2 d-flex align-items-center gap-1">
-                                <i class="bi bi-ui-checks text-success"></i> Selecciona la Decisión Oficial *
+                                <i class="bi bi-ui-checks text-success"></i> Decisión Oficial del Administrador *
                             </label>
                             
                             <div class="row g-2">
@@ -291,13 +312,14 @@
                                            id="radio_aprobado" 
                                            value="aprobado" 
                                            {% if comprobante.estado_transaccion == 'aprobado' %}checked{% endif %} 
+                                           {% if comprobante.estado_transaccion == 'aprobado' %}disabled{% endif %}
                                            required>
-                                    <label class="btn btn-outline-success w-100 p-3 rounded-4 text-start h-100 d-flex flex-column justify-content-between shadow-sm" for="radio_aprobado">
+                                    <label class="btn {% if comprobante.estado_transaccion == 'aprobado' %}btn-success text-white pe-none shadow-sm{% else %}btn-outline-success{% endif %} w-100 p-3 rounded-4 text-start h-100 d-flex flex-column justify-content-between shadow-sm" for="radio_aprobado">
                                         <div class="d-flex align-items-center justify-content-between mb-1">
-                                            <span class="fw-bold fs-6">Aprobar</span>
+                                            <span class="fw-bold fs-6">Aprobado</span>
                                             <i class="bi bi-check-circle-fill fs-5"></i>
                                         </div>
-                                        <small class="text-muted" style="font-size: 0.74rem; line-height: 1.2;">Confirma fondos y aprueba la reserva.</small>
+                                        <small class="{% if comprobante.estado_transaccion == 'aprobado' %}text-white-50{% else %}text-muted{% endif %}" style="font-size: 0.74rem; line-height: 1.2;">Fondos confirmados y reserva activada.</small>
                                     </label>
                                 </div>
 
@@ -309,8 +331,9 @@
                                            id="radio_pendiente" 
                                            value="pendiente" 
                                            {% if comprobante.estado_transaccion == 'pendiente' or not comprobante.estado_transaccion %}checked{% endif %} 
+                                           {% if comprobante.estado_transaccion == 'aprobado' %}disabled{% endif %}
                                            required>
-                                    <label class="btn btn-outline-warning w-100 p-3 rounded-4 text-start h-100 d-flex flex-column justify-content-between shadow-sm" for="radio_pendiente">
+                                    <label class="btn btn-outline-warning w-100 p-3 rounded-4 text-start h-100 d-flex flex-column justify-content-between shadow-sm {% if comprobante.estado_transaccion == 'aprobado' %}pe-none opacity-50{% endif %}" for="radio_pendiente">
                                         <div class="d-flex align-items-center justify-content-between mb-1">
                                             <span class="fw-bold fs-6 text-dark">Pendiente</span>
                                             <i class="bi bi-hourglass-split fs-5 text-warning"></i>
@@ -327,8 +350,9 @@
                                            id="radio_rechazado" 
                                            value="rechazado" 
                                            {% if comprobante.estado_transaccion == 'rechazado' %}checked{% endif %} 
+                                           {% if comprobante.estado_transaccion == 'aprobado' %}disabled{% endif %}
                                            required>
-                                    <label class="btn btn-outline-danger w-100 p-3 rounded-4 text-start h-100 d-flex flex-column justify-content-between shadow-sm" for="radio_rechazado">
+                                    <label class="btn btn-outline-danger w-100 p-3 rounded-4 text-start h-100 d-flex flex-column justify-content-between shadow-sm {% if comprobante.estado_transaccion == 'aprobado' %}pe-none opacity-50{% endif %}" for="radio_rechazado">
                                         <div class="d-flex align-items-center justify-content-between mb-1">
                                             <span class="fw-bold fs-6">Rechazar</span>
                                             <i class="bi bi-x-circle-fill fs-5"></i>
@@ -340,9 +364,15 @@
                         </div>
 
                         <!-- Banner Contextual Dinámico según la decisión -->
-                        <div id="bannerDecision" class="alert py-2.5 px-3 rounded-3 mb-3 small d-flex align-items-center gap-2">
-                            <i id="bannerIcon" class="bi fs-5 flex-shrink-0"></i>
-                            <span id="bannerTexto">Selecciona una decisión para continuar.</span>
+                        <div id="bannerDecision" class="alert py-2.5 px-3 rounded-3 mb-3 small d-flex align-items-center gap-2 {% if comprobante.estado_transaccion == 'aprobado' %}alert-success border-success border-opacity-25{% endif %}">
+                            <i id="bannerIcon" class="bi fs-5 flex-shrink-0 {% if comprobante.estado_transaccion == 'aprobado' %}bi-check-circle-fill text-success{% endif %}"></i>
+                            <span id="bannerTexto">
+                                {% if comprobante.estado_transaccion == 'aprobado' %}
+                                    Comprobante aprobado y liquidado. La reserva asociada se encuentra confirmada.
+                                {% else %}
+                                    Selecciona una decisión para continuar.
+                                {% endif %}
+                            </span>
                         </div>
 
                         <!-- 2. DATOS FINANCIEROS VERIFICADOS -->
@@ -355,9 +385,9 @@
                                        name="banco_origen" 
                                        id="id_banco_origen" 
                                        value="{{ comprobante.banco_origen|default:comprobante.banco_origen_pago|default:'' }}" 
-                                       class="form-control rounded-pill px-3 shadow-sm" 
+                                       class="form-control rounded-pill px-3 shadow-sm {% if comprobante.estado_transaccion == 'aprobado' %}bg-light text-muted pe-none{% endif %}" 
                                        placeholder="Ej: Bancolombia, Nequi, Daviplata" 
-                                       required>
+                                       {% if comprobante.estado_transaccion == 'aprobado' %}readonly disabled{% else %}required{% endif %}>
                                 <div class="form-text text-muted" style="font-size: 0.74rem;">Especifica la entidad que emitió la transferencia.</div>
                             </div>
 
@@ -373,11 +403,11 @@
                                            value="{% if comprobante.monto and comprobante.monto > 0 %}{{ comprobante.monto }}{% elif comprobante.reserva %}{{ comprobante.reserva.monto_total }}{% else %}0.00{% endif %}" 
                                            step="0.01" 
                                            min="0" 
-                                           class="form-control rounded-end-pill px-3 shadow-sm border-start-0" 
+                                           class="form-control rounded-end-pill px-3 shadow-sm border-start-0 {% if comprobante.estado_transaccion == 'aprobado' %}bg-light text-muted pe-none{% endif %}" 
                                            placeholder="0.00" 
-                                           required>
+                                           {% if comprobante.estado_transaccion == 'aprobado' %}readonly disabled{% else %}required{% endif %}>
                                 </div>
-                                <div class="form-text text-muted" style="font-size: 0.74rem;">Debe cubrir la reserva para poder aprobar.</div>
+                                <div class="form-text text-muted" style="font-size: 0.74rem;">Monto cubierto en la transacción.</div>
                             </div>
                         </div>
 
@@ -390,8 +420,9 @@
                             </div>
                             <textarea name="nota_admin" 
                                       id="id_nota_admin" 
-                                      class="form-control rounded-4 shadow-sm" 
+                                      class="form-control rounded-4 shadow-sm {% if comprobante.estado_transaccion == 'aprobado' %}bg-light text-muted pe-none{% endif %}" 
                                       rows="3" 
+                                      {% if comprobante.estado_transaccion == 'aprobado' %}readonly disabled{% endif %}
                                       placeholder="Si apruebas puedes dejar una observación; si rechazas, explica el motivo detallado (ej: imagen ilegible, monto incompleto, etc.)...">{{ comprobante.nota_admin|default:comprobante.nota_admin_pago|default:'' }}</textarea>
                             <div id="notaAyuda" class="form-text text-muted mt-1" style="font-size: 0.74rem;">
                                 Esta nota será visible para el cliente en su panel de comprobantes.
@@ -400,19 +431,31 @@
 
                         <!-- 4. BOTONES DE ACCIÓN -->
                         <div class="d-flex flex-wrap align-items-center gap-2">
-                            <button type="submit" id="btnSubmitDecision" class="btn btn-success text-white flex-grow-1 py-2.5 rounded-pill fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2">
-                                <i class="bi bi-check2-circle fs-5 text-white" id="btnSubmitIcono"></i>
-                                <span id="btnSubmitTexto" class="text-white">Guardar y Aplicar Decisión</span>
-                            </button>
-                            
-                            {% if comprobante.estado_transaccion == 'rechazado' %}
-                                <a href="{% url 'admin_pagos_rechazados' %}" class="btn btn-outline-secondary py-2.5 px-4 rounded-pill fw-semibold">
-                                    Cancelar
+                            {% if comprobante.estado_transaccion == 'aprobado' %}
+                                {% if comprobante.reserva %}
+                                    <a href="{% url 'ver_factura' comprobante.reserva.id %}" target="_blank" class="btn btn-success text-white flex-grow-1 py-2.5 rounded-pill fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2">
+                                        <i class="bi bi-file-earmark-text text-white fs-5"></i>
+                                        <span class="text-white">Ver Factura Oficial</span>
+                                    </a>
+                                {% endif %}
+                                <a href="{% url 'admin_comprobantes' %}" class="btn btn-outline-secondary py-2.5 px-4 rounded-pill fw-semibold">
+                                    Volver a Comprobantes
                                 </a>
                             {% else %}
-                                <a href="{% url 'admin_comprobantes' %}" class="btn btn-outline-secondary py-2.5 px-4 rounded-pill fw-semibold">
-                                    Cancelar
-                                </a>
+                                <button type="submit" id="btnSubmitDecision" class="btn btn-success text-white flex-grow-1 py-2.5 rounded-pill fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2">
+                                    <i class="bi bi-check2-circle fs-5 text-white" id="btnSubmitIcono"></i>
+                                    <span id="btnSubmitTexto" class="text-white">Guardar y Aplicar Decisión</span>
+                                </button>
+                                
+                                {% if comprobante.estado_transaccion == 'rechazado' %}
+                                    <a href="{% url 'admin_pagos_rechazados' %}" class="btn btn-outline-secondary py-2.5 px-4 rounded-pill fw-semibold">
+                                        Cancelar
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'admin_comprobantes' %}" class="btn btn-outline-secondary py-2.5 px-4 rounded-pill fw-semibold">
+                                        Cancelar
+                                    </a>
+                                {% endif %}
                             {% endif %}
                         </div>
 

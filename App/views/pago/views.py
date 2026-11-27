@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.db.models import Sum, Q
 from django.utils import timezone
 from App.models import Pago, Reserva, Usuario
-from App.utils import crear_notificacion_sistema, notificar_administradores
+from App.utils import crear_notificacion_sistema, notificar_administradores, registrar_bitacora
 from django.utils import timezone
 from App.models import Usuario
 from App.forms.pago.forms import ComprobantePagoForm
@@ -52,6 +52,22 @@ def enviar_comprobante(request):
             metodo = request.POST.get('metodo_pago', '').strip()
             pago.metodo_pago = metodo or 'Transferencia Bancaria'
             pago.save()
+
+            # Registrar en Bitácora del sistema
+            registrar_bitacora(
+                usuario=request.user,
+                accion='INSERT',
+                modulo='Comprobantes de Pago',
+                registro_id=pago.id,
+                pago=pago,
+                reserva=reserva,
+                descripcion=(
+                    f"El usuario @{request.user.username} envió comprobante de pago #{pago.id} "
+                    f"para {'la penalidad' if es_penalidad else 'la reserva'} #{reserva.id} "
+                    f"('{reserva.paquete.nombre}') por COP ${pago.monto:,.0f} vía {pago.banco_origen} (Ref: {pago.referencia})."
+                ),
+                ip_origen=request.META.get('REMOTE_ADDR'),
+            )
 
             # Notificar al turista
             crear_notificacion_sistema(

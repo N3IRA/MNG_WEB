@@ -1,12 +1,13 @@
 import json
 import random
+from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.db.models import Q
 from django.utils import timezone
-from App.models import Usuario, Paquete, Reserva, PQRS, Calificacion
-from App.utils import crear_notificacion_sistema
+from App.models import Usuario, Paquete, Reserva, Pago, Bitacora, PQRS, Calificacion
+from App.utils import crear_notificacion_sistema, registrar_bitacora
 from App.forms.usuario.forms import PerfilTuristaForm, PerfilGuiaForm, CambiarClaveSeguraForm
 from App.validators import validar_archivo_subido, validar_foto_perfil
 
@@ -292,13 +293,299 @@ def configuracion_usuario_view(request):
 # GESTIÓN DE USUARIOS (ADMINISTRACIÓN)
 # ==============================================================================
 
+def _construir_expediente_usuario(u):
+    """
+    Construye el expediente integral de actividad de un usuario para consulta administrativa:
+    - Paquetes comprados / reservas realizadas y métricas financieras.
+    - Comprobantes de pago, PQRS, calificaciones y planes guía.
+    - Bitácora cronológica unificada de todas las acciones del usuario.
+    """
+    reservas_list = sorted(
+        list(u.reservas.all()),
+        key=lambda r: r.fecha_registro or timezone.now(),
+        reverse=True,
+    )
+    u.reservas_list = reservas_list
+    u.total_reservas_count = len(reservas_list)
+    u.paquetes_comprados_count = sum(1 for r in reservas_list if r.estado_reserva == 'confirmada')
+    u.reservas_pendientes_count = sum(1 for r in reservas_list if r.estado_reserva == 'pendiente')
+    u.reservas_canceladas_count = sum(1 for r in reservas_list if r.estado_reserva == 'cancelada')
+
+    pagos_list = []
+    calificaciones_list = []
+    modificaciones_list = []
+    total_invertido = Decimal('0.00')
+
+    for r in reservas_list:
+        pago_obj = getattr(r, 'pago', None)
+        if pago_obj:
+            pagos_list.append(pago_obj)
+            if pago_obj.estado_transaccion == 'aprobado':
+                total_invertido += (pago_obj.monto or r.monto_total or Decimal('0.00'))
+        elif r.estado_reserva == 'confirmada':
+            total_invertido += (r.monto_total or Decimal('0.00'))
+
+        for cal in r.calificaciones.all():
+            calificaciones_list.append(cal)
+        for mod in r.modificaciones_personas.all():
+            modificaciones_list.append(mod)
+
+    pagos_list.sort(key=lambda p: p.fecha_envio or timezone.now(), reverse=True)
+    calificaciones_list.sort(key=lambda c: c.fecha_calificacion or timezone.now(), reverse=True)
+
+    pqrs_list = sorted(
+        list(u.pqrs.all()),
+        key=lambda pq: pq.fecha or timezone.now(),
+        reverse=True,
+    )
+    planes_guia_list = sorted(
+        list(u.planes_guia.all()),
+        key=lambda pg: pg.fecha_creacion or timezone.now(),
+        reverse=True,
+    )
+    notas_credito_list = sorted(
+        list(u.notas_credito.all()),
+        key=lambda nc: nc.fecha_emision or timezone.now(),
+        reverse=True,
+    )
+    reembolsos_list = sorted(
+        list(u.reembolsos.all()),
+        key=lambda rb: rb.fecha_solicitud or timezone.now(),
+        reverse=True,
+    )
+
+    u.pagos_list = pagos_list
+    u.calificaciones_list = calificaciones_list
+    u.pqrs_list = pqrs_list
+    u.planes_guia_list = planes_guia_list
+    u.notas_credito_list = notas_credito_list
+    u.reembolsos_list = reembolsos_list
+    u.total_invertido = total_invertido
+
+    # ── Construcción de la Bitácora Unificada del Usuario ──
+    eventos = []
+    claves_registradas = set()
+
+    accion_meta = {
+        'INSERT': ('Creación / Registro', 'success', 'bi-plus-circle-fill'),
+        'UPDATE': ('Actualización / Cambio', 'primary', 'bi-pencil-square'),
+        'DELETE': ('Eliminación', 'danger', 'bi-trash3-fill'),
+        'LOGIN': ('Inicio de Sesión', 'info', 'bi-box-arrow-in-right'),
+        'LOGOUT': ('Cierre de Sesión', 'secondary', 'bi-box-arrow-right'),
+        'ACCESO': ('Acceso / Consulta', 'info', 'bi-eye-fill'),
+        'RESPUESTA': ('Respuesta / Seguimiento', 'primary', 'bi-reply-fill'),
+        'NOTIFICACION': ('Notificación', 'warning', 'bi-bell-fill'),
+    }
+
+    # 1. Registros explícitos en tabla Bitacora (hechos por el usuario o sobre sus reservas/pagos/pqrs)
+    bitacoras_db = Bitacora.objects.filter(
+        Q(usuario=u) |
+        Q(reserva__usuario=u) |
+        Q(pago__reserva__usuario=u) |
+        Q(pqrs__usuario=u)
+    ).select_related('usuario', 'reserva', 'pago', 'pqrs').distinct().order_by('-fecha_registro')[:60]
+
+    for b in bitacoras_db:
+        label, color, icon = accion_meta.get(b.accion, (b.get_accion_display(), 'secondary', 'bi-activity'))
+        autor_txt = ""
+        if b.usuario and b.usuario_id != u.id:
+            autor_txt = f" (Gestionado por Admin: @{b.usuario.username})"
+        eventos.append({
+            'id': f"BIT-{b.id}",
+            'accion_codigo': b.accion,
+            'accion_label': label,
+            'modulo': b.modulo or 'General',
+            'descripcion': f"{b.descripcion or 'Acción registrada en el sistema.'}{autor_txt}",
+            'fecha': b.fecha_registro,
+            'ip_origen': b.ip_origen,
+            'badge_color': color,
+            'icono': icon,
+            'registro_id': b.registro_id,
+        })
+        if b.modulo and b.registro_id:
+            claves_registradas.add((b.modulo.lower(), b.registro_id, b.accion))
+
+    # 2. Eventos históricos de Reservas / Paquetes comprados
+    for r in reservas_list:
+        nombre_paq = r.paquete.nombre if r.paquete else 'Paquete turístico'
+        if ('reservas', r.id, 'INSERT') not in claves_registradas:
+            eventos.append({
+                'id': f"RES-{r.id}",
+                'accion_codigo': 'INSERT',
+                'accion_label': 'Reserva de Paquete',
+                'modulo': 'Reservas',
+                'descripcion': (
+                    f"Reservó el paquete '{nombre_paq}' (Reserva #{r.id}) para "
+                    f"{r.numero_adultos} adulto(s) y {r.numero_menores} menor(es) por COP ${r.monto_total:,.0f}. "
+                    f"Estado actual: {r.get_estado_reserva_display()}."
+                ),
+                'fecha': r.fecha_registro,
+                'ip_origen': None,
+                'badge_color': 'success',
+                'icono': 'bi-bag-check-fill',
+                'registro_id': r.id,
+            })
+        if r.estado_reserva == 'cancelada' or r.motivo_cancelacion:
+            if ('cancelaciones', r.id, 'UPDATE') not in claves_registradas:
+                eventos.append({
+                    'id': f"CAN-{r.id}",
+                    'accion_codigo': 'UPDATE',
+                    'accion_label': 'Cancelación de Reserva',
+                    'modulo': 'Reservas',
+                    'descripcion': (
+                        f"Solicitud de cancelación en Reserva #{r.id} ('{nombre_paq}'). "
+                        f"Motivo: {r.motivo_cancelacion or 'No especificado'}."
+                    ),
+                    'fecha': r.fecha_reembolso or r.fecha_registro,
+                    'ip_origen': None,
+                    'badge_color': 'danger',
+                    'icono': 'bi-x-octagon-fill',
+                    'registro_id': r.id,
+                })
+
+    # 3. Modificaciones de cantidad de personas
+    for mod in modificaciones_list:
+        eventos.append({
+            'id': f"MOD-{mod.id}",
+            'accion_codigo': 'UPDATE',
+            'accion_label': 'Modificación de Pasajeros',
+            'modulo': 'Reservas',
+            'descripcion': (
+                f"Cambio de pasajeros en Reserva #{mod.reserva_id}: "
+                f"de {mod.adultos_anteriores} ad. / {mod.menores_anteriores} men. "
+                f"a {mod.adultos_nuevos} ad. / {mod.menores_nuevos} men. "
+                f"(Monto: COP ${mod.monto_anterior:,.0f} → COP ${mod.monto_nuevo:,.0f})."
+            ),
+            'fecha': mod.fecha_modificacion,
+            'ip_origen': None,
+            'badge_color': 'primary',
+            'icono': 'bi-people-fill',
+            'registro_id': mod.reserva_id,
+        })
+
+    # 4. Eventos de Comprobantes de Pago enviados
+    for p in pagos_list:
+        nombre_paq = p.reserva.paquete.nombre if (p.reserva and p.reserva.paquete) else 'Reserva'
+        if ('comprobantes de pago', p.id, 'INSERT') not in claves_registradas:
+            eventos.append({
+                'id': f"PAG-{p.id}",
+                'accion_codigo': 'INSERT',
+                'accion_label': 'Envío de Comprobante',
+                'modulo': 'Comprobantes de Pago',
+                'descripcion': (
+                    f"Envió comprobante de pago #{p.id} para '{nombre_paq}' (Reserva #{p.reserva_id}) "
+                    f"por COP ${p.monto:,.0f} vía {p.banco_origen} (Ref: {p.referencia}). "
+                    f"Estado: {p.get_estado_transaccion_display()}."
+                ),
+                'fecha': p.fecha_envio,
+                'ip_origen': None,
+                'badge_color': 'success' if p.estado_transaccion == 'aprobado' else ('danger' if p.estado_transaccion == 'rechazado' else 'warning'),
+                'icono': 'bi-receipt-cutoff',
+                'registro_id': p.id,
+            })
+
+    # 5. Notas de Crédito / Reembolsos
+    for nc in notas_credito_list:
+        eventos.append({
+            'id': f"NC-{nc.id}",
+            'accion_codigo': 'INSERT',
+            'accion_label': 'Nota de Crédito',
+            'modulo': 'Pagos / Créditos',
+            'descripcion': (
+                f"Generación de Nota de Crédito {nc.codigo} en Reserva #{nc.reserva_id} "
+                f"({nc.cupos_liberados} cupos liberados). Monto acreditado/devuelto: COP ${nc.monto_devuelto:,.0f}."
+            ),
+            'fecha': nc.fecha_emision,
+            'ip_origen': None,
+            'badge_color': 'info',
+            'icono': 'bi-wallet2',
+            'registro_id': nc.id,
+        })
+
+    # 6. Solicitudes PQRS radicadas
+    for pq in pqrs_list:
+        if ('pqrs', pq.id, 'INSERT') not in claves_registradas:
+            eventos.append({
+                'id': f"PQRS-{pq.id}",
+                'accion_codigo': 'INSERT',
+                'accion_label': f"PQRS ({pq.get_tipo_display()})",
+                'modulo': 'PQRS',
+                'descripcion': f"Radicó {pq.radicado or f'PQRS #{pq.id}'}: '{pq.asunto}' — Estado: {pq.get_estado_display()}.",
+                'fecha': pq.fecha,
+                'ip_origen': None,
+                'badge_color': 'warning',
+                'icono': 'bi-chat-left-text-fill',
+                'registro_id': pq.id,
+            })
+
+    # 7. Calificaciones / Reseñas publicadas
+    for cal in calificaciones_list:
+        paq_txt = cal.reserva.paquete.nombre if (cal.reserva and cal.reserva.paquete) else 'Experiencia Monagua'
+        eventos.append({
+            'id': f"CAL-{cal.id}",
+            'accion_codigo': 'INSERT',
+            'accion_label': 'Calificación / Reseña',
+            'modulo': 'Calificaciones',
+            'descripcion': f"Calificó '{paq_txt}' con {cal.puntaje_estrellas} estrella(s): \"{cal.titulo}\".",
+            'fecha': cal.fecha_calificacion,
+            'ip_origen': None,
+            'badge_color': 'warning',
+            'icono': 'bi-star-fill',
+            'registro_id': cal.id,
+        })
+
+    # 8. Último inicio de sesión y fecha de registro de la cuenta
+    if u.last_login:
+        eventos.append({
+            'id': f"LOGIN-{u.id}",
+            'accion_codigo': 'LOGIN',
+            'accion_label': 'Último Inicio de Sesión',
+            'modulo': 'Autenticación',
+            'descripcion': f"Inicio de sesión autenticado en la plataforma con la cuenta @{u.username}.",
+            'fecha': u.last_login,
+            'ip_origen': None,
+            'badge_color': 'info',
+            'icono': 'bi-box-arrow-in-right',
+            'registro_id': u.id,
+        })
+
+    if u.date_joined:
+        eventos.append({
+            'id': f"JOIN-{u.id}",
+            'accion_codigo': 'INSERT',
+            'accion_label': 'Alta / Creación de Cuenta',
+            'modulo': 'Usuarios',
+            'descripcion': f"Registro inicial de la cuenta @{u.username} con rol '{u.get_rol_display()}'.",
+            'fecha': u.date_joined,
+            'ip_origen': None,
+            'badge_color': 'secondary',
+            'icono': 'bi-person-check-fill',
+            'registro_id': u.id,
+        })
+
+    eventos.sort(key=lambda e: e['fecha'] or timezone.now(), reverse=True)
+    u.bitacora_list = eventos
+    u.total_acciones_bitacora = len(eventos)
+
+
 @user_passes_test(es_administrador)
 def gestion_usuarios_admin(request):
-    """Directorio y gestión de cuentas de usuario en el panel de administración."""
+    """Directorio, expediente de paquetes comprados, bitácora y gestión de cuentas de usuario en el panel de administración."""
     filtro = request.GET.get('filtro', '').strip()
     query = request.GET.get('q', '').strip()
 
-    usuarios = Usuario.objects.all().order_by('-id')
+    usuarios_qs = Usuario.objects.all().prefetch_related(
+        'reservas__paquete',
+        'reservas__pago',
+        'reservas__notas_credito',
+        'reservas__reembolsos',
+        'reservas__modificaciones_personas',
+        'reservas__calificaciones',
+        'pqrs',
+        'planes_guia__paquete',
+        'notas_credito',
+        'reembolsos',
+    ).order_by('-id')
 
     rol_mapping = {
         'ADMIN': Usuario.Roles.ADMIN,
@@ -312,14 +599,14 @@ def gestion_usuarios_admin(request):
     if filtro:
         filtro_norm = filtro.upper()
         if filtro_norm in rol_mapping:
-            usuarios = usuarios.filter(rol=rol_mapping[filtro_norm])
+            usuarios_qs = usuarios_qs.filter(rol=rol_mapping[filtro_norm])
         elif filtro_norm in ['ACTIVO', 'ACTIVOS']:
-            usuarios = usuarios.filter(is_active=True)
+            usuarios_qs = usuarios_qs.filter(is_active=True)
         elif filtro_norm in ['INACTIVO', 'INACTIVOS']:
-            usuarios = usuarios.filter(is_active=False)
+            usuarios_qs = usuarios_qs.filter(is_active=False)
 
     if query:
-        usuarios = usuarios.filter(
+        usuarios_qs = usuarios_qs.filter(
             Q(username__icontains=query) |
             Q(first_name__icontains=query) |
             Q(last_name__icontains=query) |
@@ -327,6 +614,10 @@ def gestion_usuarios_admin(request):
             Q(numero_documento__icontains=query) |
             Q(telefono__icontains=query)
         )
+
+    usuarios = list(usuarios_qs)
+    for u in usuarios:
+        _construir_expediente_usuario(u)
 
     total_usuarios = Usuario.objects.count()
     total_admins = Usuario.objects.filter(rol=Usuario.Roles.ADMIN).count()

@@ -1,3 +1,4 @@
+import hashlib
 import json
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
@@ -22,11 +23,32 @@ def es_admin(user):
     return user.is_authenticated and (user.is_staff or getattr(user, 'rol', None) in [Usuario.Roles.ADMIN, 1, 'ADMIN'])
 
 
+def _calcular_hash_comprobantes(comprobantes_qs, total, total_pendientes, total_aprobados, total_rechazados):
+    """Calcula un hash MD5 determinista del estado actual de comprobantes para polling HTMX sin recargas innecesarias."""
+    filas = list(
+        comprobantes_qs.values_list(
+            'id',
+            'reserva_id',
+            'monto',
+            'banco_origen',
+            'referencia',
+            'fecha_envio',
+            'estado_transaccion',
+            'imagen_comprobante',
+            'nota_admin',
+            'fecha_revision',
+        )
+    )
+    payload = f"{total}|{total_pendientes}|{total_aprobados}|{total_rechazados}|{filas}"
+    return hashlib.md5(payload.encode('utf-8')).hexdigest()
+
+
 @login_required(login_url='login')
 @user_passes_test(es_admin, login_url='login')
 def admin_comprobantes(request):
     """
     Vista administrativa para listar, filtrar y buscar los comprobantes de pago subidos por los usuarios.
+    Soporta actualización en tiempo real vía HTMX (responde 204 No Content si no hubo cambios en BD).
     Los comprobantes rechazados se gestionan exclusivamente en su apartado dedicado.
     """
     estado_filtro = request.GET.get('estado', '').strip().lower()
@@ -48,6 +70,13 @@ def admin_comprobantes(request):
     total_aprobados = Pago.objects.filter(estado_transaccion='aprobado').aggregate(total=Sum('monto'))['total'] or Decimal('0.00')
     total_rechazados = Pago.objects.filter(estado_transaccion='rechazado').count()
 
+    current_hash = _calcular_hash_comprobantes(
+        comprobantes, total, total_pendientes, total_aprobados, total_rechazados
+    )
+    last_hash = request.GET.get('last_hash')
+    if request.headers.get('HX-Request') == 'true' and last_hash and current_hash == last_hash:
+        return HttpResponse(status=204)
+
     context = {
         'comprobantes': comprobantes,
         'estado_filtro': estado_filtro,
@@ -55,6 +84,7 @@ def admin_comprobantes(request):
         'total_pendientes': total_pendientes,
         'total_aprobados': total_aprobados,
         'total_rechazados': total_rechazados,
+        'comprobantes_hash': current_hash,
     }
     return render(request, 'admin/admin_comprobantes.html', context)
 
@@ -70,6 +100,20 @@ def admin_revisar_comprobante(request, pk):
         Pago.objects.select_related('reserva', 'reserva__usuario', 'reserva__paquete'),
         pk=pk
     )
+
+    # Si el comprobante ya fue aprobado por la administración, la acción queda bloqueada y no puede modificarse de nuevo
+    if comprobante.estado_transaccion == 'aprobado' and request.method == 'POST':
+        messages.warning(
+            request,
+            f"El comprobante #{comprobante.pk} ya fue revisado y aprobado anteriormente. Esta acción no puede ser modificada."
+        )
+        destino_url = reverse('admin_comprobantes')
+        if request.headers.get('HX-Request'):
+            response = HttpResponse(status=200)
+            response['HX-Redirect'] = destino_url
+            return response
+        return redirect(destino_url)
+
     error_msg = None
 
     if request.method == 'POST':
@@ -193,6 +237,7 @@ def admin_revisar_comprobante(request, pk):
     context = {
         'comprobante': comprobante,
         'error_msg': error_msg,
+        'ya_aprobado': comprobante.estado_transaccion == 'aprobado',
     }
     return render(request, 'admin/admin_revisar_comprobante.html', context)
 
@@ -202,9 +247,15 @@ def admin_revisar_comprobante(request, pk):
 def admin_eliminar_comprobante(request, pk):
     """
     Vista administrativa para eliminar un comprobante de pago.
+    Protege los comprobantes aprobados para evitar inconsistencias contables o en reservas confirmadas.
     """
     if request.method == 'POST':
         comprobante = get_object_or_404(Pago, pk=pk)
+
+        if comprobante.estado_transaccion == 'aprobado':
+            messages.error(request, f"No se puede eliminar el comprobante #{comprobante.pk} porque ya fue aprobado y liquidado.")
+            return redirect('admin_comprobantes')
+
         reserva_id = comprobante.reserva.id if comprobante.reserva else "N/A"
         pago_id = comprobante.pk
 

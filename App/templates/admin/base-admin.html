@@ -136,7 +136,7 @@
     {% block extra_head %}{% endblock %}
   </head>
 
-  <body class="u-style-0e1c2a89 bg-body">
+  <body class="u-style-0e1c2a89 bg-body" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     <a
       href="#mainContent"
       class="visually-hidden-focusable p-3 bg-primary text-white position-absolute z-3"

@@ -83,8 +83,21 @@
         {% endif %}
         <div class="d-flex justify-content-between align-items-center ps-3 pe-3 mt-2">
           <span class="small text-muted" style="font-size: 0.8rem">¿No recibiste el código?</span>
-          <a href="{% url 'reenviar_otp_registro' %}" class="link-success fw-bold small text-decoration-none" style="font-size: 0.82rem">
-            <i class="bi bi-arrow-clockwise me-1"></i>Reenviar código
+          <a
+            href="{% url 'reenviar_otp_registro' %}"
+            id="btn_reenviar_otp"
+            class="fw-bold small text-decoration-none {% if cooldown_restante > 0 %}text-muted pe-none{% else %}link-success{% endif %}"
+            style="font-size: 0.82rem"
+            data-cooldown="{{ cooldown_restante|default:0 }}"
+          >
+            <i class="bi bi-arrow-clockwise me-1"></i>
+            <span id="texto_reenviar">
+              {% if cooldown_restante > 0 %}
+                Reenviar código (<span id="cuenta_regresiva">{{ cooldown_restante }}</span>s)
+              {% else %}
+                Reenviar código
+              {% endif %}
+            </span>
           </a>
         </div>
         <p class="small text-muted ps-3 mt-2 mb-0" style="font-size: 0.78rem">

@@ -293,6 +293,17 @@
                         
                         <td class="text-center text-nowrap">
                             <div class="d-inline-flex align-items-center gap-1">
+                                {% if reserva.estado_reserva == 'pendiente' %}
+                                    {% if reserva.pago %}
+                                        <a href="{% url 'admin_revisar_comprobante' reserva.pago.pk %}" class="btn btn-sm btn-outline-success shadow-sm" title="Revisar y decidir comprobante de pago #{{ reserva.pago.pk }}">
+                                            <i class="bi bi-receipt-cutoff"></i>
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'admin_comprobantes' %}?q={{ reserva.id }}" class="btn btn-sm btn-outline-warning shadow-sm" title="Sin comprobante registrado aún — Ir a comprobantes">
+                                            <i class="bi bi-receipt"></i>
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
                                 {% if reserva.estado_reserva == 'cancelada' %}
                                     <a href="{% url 'listar_cancelaciones' %}" class="btn btn-sm btn-outline-danger shadow-sm" title="Ver detalles de la cancelación en el módulo de cancelaciones">
                                         <i class="bi bi-x-circle"></i>
@@ -350,6 +361,19 @@
                     </div>
 
                     <div class="border-top pt-2">
+                        {% if reserva.estado_reserva == 'pendiente' %}
+                            <div class="mb-2">
+                                {% if reserva.pago %}
+                                    <a href="{% url 'admin_revisar_comprobante' reserva.pago.pk %}" class="btn btn-sm btn-success text-white w-100 py-2 rounded-pill fw-semibold shadow-sm d-inline-flex align-items-center justify-content-center gap-1" title="Revisar y decidir comprobante de pago">
+                                        <i class="bi bi-receipt-cutoff"></i> Revisar Comprobante
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'admin_comprobantes' %}?q={{ reserva.id }}" class="btn btn-sm btn-outline-warning w-100 py-2 rounded-pill fw-semibold shadow-sm d-inline-flex align-items-center justify-content-center gap-1" title="Sin comprobante registrado aún — Ir a comprobantes">
+                                        <i class="bi bi-receipt"></i> Ver Comprobantes
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
                         {% if reserva.estado_reserva == 'cancelada' %}
                             <a href="{% url 'listar_cancelaciones' %}" class="btn btn-sm btn-outline-danger w-100 py-2 rounded-pill fw-semibold d-inline-flex align-items-center justify-content-center gap-1" title="Ver detalles de la cancelación en el módulo de cancelaciones">
                                 <i class="bi bi-x-circle"></i> Ver en Cancelaciones

@@ -1,4 +1,9 @@
-function initTablaComprobantes() {
+var _comprobantesDtState = {
+    search: '',
+    page: 0
+};
+
+function initTablaComprobantes(savedState) {
     var $tabla = $('#tablaComprobantes');
     if (!$tabla.length) return;
 
@@ -6,7 +11,7 @@ function initTablaComprobantes() {
         $('#tablaComprobantes').DataTable().destroy();
     }
 
-    $tabla.DataTable({
+    var dt = $tabla.DataTable({
         order: [],
         autoWidth: false,
         columnDefs: [
@@ -52,10 +57,46 @@ function initTablaComprobantes() {
         scrollX: false,
         scrollCollapse: false
     });
+
+    // Restaurar búsqueda y página si venimos de una actualización HTMX
+    if (savedState) {
+        if (savedState.search) {
+            dt.search(savedState.search);
+        }
+        if (savedState.page && savedState.page > 0) {
+            var info = dt.page.info();
+            var targetPage = Math.min(savedState.page, Math.max(info.pages - 1, 0));
+            dt.page(targetPage);
+        }
+        dt.draw(false);
+    }
 }
 
 $(document).ready(function() {
-    initTablaComprobantes();
+    initTablaComprobantes(null);
+});
+
+// Preservar estado de DataTables SOLO si HTMX realmente va a reemplazar el DOM (ignorar 204 No Content)
+document.body.addEventListener('htmx:beforeSwap', function(evt) {
+    if (!evt.detail || !evt.detail.shouldSwap) return;
+    if (evt.detail.xhr && evt.detail.xhr.status === 204) return;
+    if (evt.detail.target && evt.detail.target.id === 'admin-comprobantes-container') {
+        var $tabla = $('#tablaComprobantes');
+        if ($tabla.length && $.fn.DataTable.isDataTable($tabla)) {
+            var dt = $tabla.DataTable();
+            _comprobantesDtState.search = dt.search() || '';
+            _comprobantesDtState.page = dt.page() || 0;
+            dt.destroy();
+        }
+    }
+});
+
+// Reinicializar DataTables tras actualización asíncrona de HTMX
+document.body.addEventListener('htmx:afterSettle', function(evt) {
+    if (evt.detail && evt.detail.xhr && evt.detail.xhr.status === 204) return;
+    if (document.getElementById('tablaComprobantes') && !$.fn.DataTable.isDataTable('#tablaComprobantes')) {
+        initTablaComprobantes(_comprobantesDtState);
+    }
 });
 
 // Vincular botones del Dropdown nativo Bootstrap 5 con las acciones de exportación de DataTables
@@ -74,9 +115,9 @@ $(document).on('click', '#btn-export-print', function(e) {
     $('.btn-export-print-hidden').trigger('click');
 });
 
-// Reinicializar DataTables tras actualización asíncrona de HTMX
-document.addEventListener('htmx:afterSwap', function(evt) {
-    if (evt.detail && evt.detail.target && (evt.detail.target.id === 'admin-comprobantes-container' || evt.detail.target.querySelector('#tablaComprobantes'))) {
-        initTablaComprobantes();
+// Ajuste automático de columnas en caso de redimensión de pantalla o cambio de orientación
+$(window).on('resize orientationchange', function() {
+    if ($.fn.DataTable.isDataTable('#tablaComprobantes')) {
+        $('#tablaComprobantes').DataTable().columns.adjust();
     }
 });

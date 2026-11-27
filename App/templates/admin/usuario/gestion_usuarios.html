@@ -275,7 +275,13 @@
                         <!-- Acciones -->
                         <td class="text-end pe-4 py-3 text-nowrap">
                             <div class="d-inline-flex gap-2">
-                                <button type="button" class="btn btn-sm btn-outline-secondary px-3 rounded-pill fw-semibold shadow-sm" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetallesUsuario{{ u.id }}" title="Ver detalles del usuario">
+                                <button type="button" class="btn btn-sm btn-outline-success px-3 rounded-pill fw-semibold shadow-sm" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetallesUsuario{{ u.id }}" onclick="activarTabExpedienteUsuario('{{ u.id }}', 'bitacora')" title="Revisar bitácora de acciones, paquetes comprados y pagos del usuario">
+                                    <i class="bi bi-journal-text me-1"></i> Bitácora
+                                    {% if u.total_reservas_count > 0 %}
+                                        <span class="badge bg-success text-white rounded-pill ms-1 px-1.5 py-0.5" style="font-size: 0.68rem;" title="{{ u.total_reservas_count }} paquete(s) / reserva(s)">{{ u.total_reservas_count }}</span>
+                                    {% endif %}
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary px-3 rounded-pill fw-semibold shadow-sm" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetallesUsuario{{ u.id }}" onclick="activarTabExpedienteUsuario('{{ u.id }}', 'perfil')" title="Ver detalles del usuario">
                                     <i class="bi bi-eye me-1"></i> Detalles
                                 </button>
                                 <button type="button" class="btn btn-sm btn-outline-primary px-3 rounded-pill fw-semibold shadow-sm" data-bs-toggle="offcanvas" data-bs-target="#offcanvasEditarUsuario{{ u.id }}" title="Editar usuario">
@@ -356,7 +362,10 @@
                     </div>
 
                     <div class="border-top pt-3 d-flex flex-wrap gap-2">
-                        <button type="button" class="btn btn-sm btn-outline-secondary flex-fill rounded-pill fw-semibold shadow-sm py-1.5" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetallesUsuario{{ u.id }}" title="Ver detalles del usuario">
+                        <button type="button" class="btn btn-sm btn-outline-success flex-fill rounded-pill fw-semibold shadow-sm py-1.5" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetallesUsuario{{ u.id }}" onclick="activarTabExpedienteUsuario('{{ u.id }}', 'bitacora')" title="Revisar bitácora y paquetes comprados">
+                            <i class="bi bi-journal-text me-1"></i> Bitácora ({{ u.total_acciones_bitacora }})
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary flex-fill rounded-pill fw-semibold shadow-sm py-1.5" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDetallesUsuario{{ u.id }}" onclick="activarTabExpedienteUsuario('{{ u.id }}', 'perfil')" title="Ver detalles del usuario">
                             <i class="bi bi-eye me-1"></i> Detalles
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-primary flex-fill rounded-pill fw-semibold shadow-sm py-1.5" data-bs-toggle="offcanvas" data-bs-target="#offcanvasEditarUsuario{{ u.id }}" title="Editar usuario">
@@ -499,190 +508,605 @@
 <!-- ============================================== -->
 {% for u in usuarios %}
 
-    <!-- 1. OFFCANVAS DE DETALLES -->
-    <div class="offcanvas offcanvas-end border-0 shadow-lg" style="width: 500px; max-width: 95vw;" tabindex="-1" id="offcanvasDetallesUsuario{{ u.id }}">
-        <div class="offcanvas-header {% if u.rol == 1 %}bg-primary{% elif u.rol == 3 %}bg-warning{% else %}bg-info{% endif %} bg-opacity-10 border-bottom p-4">
-            <div class="d-flex align-items-center gap-3">
+    <!-- 1. OFFCANVAS DE EXPEDIENTE INTEGRAL, PAQUETES COMPRADOS Y BITÁCORA DEL USUARIO -->
+    <div class="offcanvas offcanvas-end border-0 shadow-lg" style="width: 720px; max-width: 96vw;" tabindex="-1" id="offcanvasDetallesUsuario{{ u.id }}">
+        <div class="offcanvas-header {% if u.rol == 1 %}bg-primary{% elif u.rol == 3 %}bg-warning{% else %}bg-success{% endif %} bg-opacity-10 border-bottom p-4">
+            <div class="d-flex align-items-center gap-3 min-w-0">
                 {% if u.imagen_perfil %}
                     <img src="{{ u.imagen_perfil.url }}" alt="Avatar" class="rounded-circle shadow border border-white flex-shrink-0" style="width: 55px; height: 55px; min-width: 55px; min-height: 55px; object-fit: cover;">
                 {% else %}
-                    <div class="rounded-circle shadow d-flex align-items-center justify-content-center text-white fw-bold fs-4 flex-shrink-0 {% if u.rol == 1 %}bg-primary{% elif u.rol == 3 %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}" style="width: 55px; height: 55px; min-width: 55px; min-height: 55px;">
+                    <div class="rounded-circle shadow d-flex align-items-center justify-content-center text-white fw-bold fs-4 flex-shrink-0 {% if u.rol == 1 %}bg-primary{% elif u.rol == 3 %}bg-warning text-dark{% else %}bg-success text-white{% endif %}" style="width: 55px; height: 55px; min-width: 55px; min-height: 55px;">
                         {{ u.first_name|first|default:u.username|first|upper }}
                     </div>
                 {% endif %}
                 <div class="text-truncate">
-                    <h5 class="offcanvas-title fw-bold text-dark m-0 text-truncate">{{ u.get_full_name|default:u.username }}</h5>
-                    <small class="text-muted text-truncate d-block">@{{ u.username }} &bull; ID #{{ u.id }}</small>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <h5 class="offcanvas-title fw-bold text-dark m-0 text-truncate">{{ u.get_full_name|default:u.username }}</h5>
+                        {% if u.is_active %}
+                            <span class="badge bg-success text-white rounded-pill px-2.5 py-1 small fw-semibold">Activo</span>
+                        {% else %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 small fw-semibold">Inactivo</span>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted text-truncate d-block mt-0.5">
+                        @{{ u.username }} &bull; ID #{{ u.id }} &bull; {{ u.get_rol_display }}
+                    </small>
                 </div>
             </div>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
-        <div class="offcanvas-body p-0">
 
-            <!-- Badges de Estado y Rol -->
-            <div class="d-flex justify-content-between align-items-center p-4 pb-0">
-                {% if u.rol == 1 %}
-                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 fw-semibold">
-                        <i class="bi bi-shield-lock-fill me-1"></i> Administrador
-                    </span>
-                {% elif u.rol == 3 %}
-                    <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-25 rounded-pill px-3 py-2 fw-semibold">
-                        <i class="bi bi-compass-fill me-1"></i> Guía Turístico
-                    </span>
-                {% else %}
-                    <span class="badge bg-info bg-opacity-10 text-dark border border-info border-opacity-25 rounded-pill px-3 py-2 fw-semibold">
-                        <i class="bi bi-person-walking me-1"></i> Cliente / Turista
-                    </span>
-                {% endif %}
-                {% if u.is_active %}
-                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2 fw-semibold">
-                        <i class="bi bi-check-circle-fill me-1"></i> Activo
-                    </span>
-                {% else %}
-                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-3 py-2 fw-semibold">
-                        <i class="bi bi-x-circle-fill me-1"></i> Inactivo
-                    </span>
-                {% endif %}
+        <div class="offcanvas-body p-0 d-flex flex-column">
+
+            <!-- ── A. Resumen Ejecutivo KPI del Usuario ── -->
+            <div class="p-3.5 bg-light border-bottom">
+                <div class="row g-2">
+                    <div class="col-6 col-sm-3">
+                        <div class="bg-white rounded-3 p-2.5 border shadow-sm h-100">
+                            <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.68rem;">Paquetes / Reservas</small>
+                            <div class="fw-bold text-dark fs-5 mb-0">{{ u.total_reservas_count }}</div>
+                            <small class="text-success fw-semibold" style="font-size: 0.72rem;">
+                                <i class="bi bi-check2-circle me-0.5"></i>{{ u.paquetes_comprados_count }} confirmada{{ u.paquetes_comprados_count|pluralize:"s" }}
+                            </small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="bg-white rounded-3 p-2.5 border shadow-sm h-100">
+                            <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.68rem;">Total Comprado</small>
+                            <div class="fw-bold text-success fs-6 mb-0 text-truncate" title="COP ${{ u.total_invertido|floatformat:0|intcomma }}">
+                                COP ${{ u.total_invertido|floatformat:0|intcomma }}
+                            </div>
+                            {% if u.saldo_favor and u.saldo_favor > 0 %}
+                                <small class="text-primary fw-semibold d-block text-truncate" style="font-size: 0.7rem;" title="Saldo a favor disponible">
+                                    Saldo: ${{ u.saldo_favor|floatformat:0|intcomma }}
+                                </small>
+                            {% else %}
+                                <small class="text-muted" style="font-size: 0.72rem;">Pagos aprobados</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="bg-white rounded-3 p-2.5 border shadow-sm h-100">
+                            <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.68rem;">Bitácora</small>
+                            <div class="fw-bold text-primary fs-5 mb-0">{{ u.total_acciones_bitacora }}</div>
+                            <small class="text-muted" style="font-size: 0.72rem;">Acciones registradas</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="bg-white rounded-3 p-2.5 border shadow-sm h-100">
+                            <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.68rem;">Última Conexión</small>
+                            <div class="fw-bold text-dark small mb-0 mt-1">
+                                {% if u.last_login %}{{ u.last_login|date:"d/m/Y" }}{% else %}Sin acceso{% endif %}
+                            </div>
+                            <small class="text-muted" style="font-size: 0.72rem;">
+                                {% if u.last_login %}{{ u.last_login|date:"H:i" }} hrs{% else %}Reg: {{ u.date_joined|date:"d/m/Y" }}{% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Datos Personales -->
-            <div class="p-4">
-                <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">
-                    <i class="bi bi-person-vcard me-2 text-success"></i>Datos Personales
-                </h6>
-                <div class="row g-3 mb-4">
-                    <div class="col-6">
-                        <div class="bg-light rounded-3 p-3">
-                            <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Nombres</small>
-                            <span class="fw-bold text-dark">{{ u.first_name|default:"—" }}</span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="bg-light rounded-3 p-3">
-                            <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Apellidos</small>
-                            <span class="fw-bold text-dark">{{ u.last_name|default:"—" }}</span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="bg-light rounded-3 p-3">
-                            <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Tipo Documento</small>
-                            <span class="fw-bold text-dark">{{ u.tipo_documento|default:"—" }}</span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="bg-light rounded-3 p-3">
-                            <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Nro. Documento</small>
-                            <span class="fw-bold text-dark font-monospace">{{ u.numero_documento|default:"—" }}</span>
-                        </div>
-                    </div>
-                </div>
+            <!-- ── B. Pestañas de Navegación del Expediente ── -->
+            <div class="px-3.5 pt-3 pb-2 bg-white border-bottom sticky-top" style="z-index: 5;">
+                <ul class="nav nav-pills nav-fill gap-1.5 small" id="tabsExpedienteUsuario{{ u.id }}" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active rounded-pill py-1.5 px-2.5 fw-semibold d-inline-flex align-items-center justify-content-center gap-1"
+                                id="tab-btn-perfil-{{ u.id }}"
+                                data-bs-toggle="pill"
+                                data-bs-target="#pane-perfil-{{ u.id }}"
+                                type="button"
+                                role="tab">
+                            <i class="bi bi-person-vcard"></i>
+                            <span>Perfil</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill py-1.5 px-2.5 fw-semibold d-inline-flex align-items-center justify-content-center gap-1"
+                                id="tab-btn-paquetes-{{ u.id }}"
+                                data-bs-toggle="pill"
+                                data-bs-target="#pane-paquetes-{{ u.id }}"
+                                type="button"
+                                role="tab">
+                            <i class="bi bi-bag-check-fill"></i>
+                            <span>Paquetes ({{ u.total_reservas_count }})</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill py-1.5 px-2.5 fw-semibold d-inline-flex align-items-center justify-content-center gap-1"
+                                id="tab-btn-bitacora-{{ u.id }}"
+                                data-bs-toggle="pill"
+                                data-bs-target="#pane-bitacora-{{ u.id }}"
+                                type="button"
+                                role="tab">
+                            <i class="bi bi-journal-text"></i>
+                            <span>Bitácora ({{ u.total_acciones_bitacora }})</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill py-1.5 px-2.5 fw-semibold d-inline-flex align-items-center justify-content-center gap-1"
+                                id="tab-btn-actividad-{{ u.id }}"
+                                data-bs-toggle="pill"
+                                data-bs-target="#pane-actividad-{{ u.id }}"
+                                type="button"
+                                role="tab">
+                            <i class="bi bi-receipt-cutoff"></i>
+                            <span>Pagos y Más</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
 
-                <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">
-                    <i class="bi bi-telephone me-2 text-success"></i>Contacto y Ubicación
-                </h6>
-                <div class="list-group list-group-flush mb-4">
-                    <div class="list-group-item bg-transparent px-0 d-flex align-items-center gap-3 border-bottom">
-                        <div class="bg-success bg-opacity-10 text-success rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
-                            <i class="bi bi-envelope-fill"></i>
-                        </div>
-                        <div class="text-truncate">
-                            <small class="text-muted d-block">Correo Electrónico</small>
-                            <span class="fw-semibold text-dark text-truncate d-block">{{ u.email|default:"—" }}</span>
-                        </div>
-                    </div>
-                    <div class="list-group-item bg-transparent px-0 d-flex align-items-center gap-3 border-bottom">
-                        <div class="bg-success bg-opacity-10 text-success rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
-                            <i class="bi bi-telephone-fill"></i>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Teléfono</small>
-                            <span class="fw-semibold text-dark">{{ u.telefono|default:"—" }}</span>
-                        </div>
-                    </div>
-                    <div class="list-group-item bg-transparent px-0 d-flex align-items-center gap-3">
-                        <div class="bg-success bg-opacity-10 text-success rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
-                            <i class="bi bi-geo-alt-fill"></i>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Residencia Local</small>
-                            <span class="fw-semibold text-dark">{{ u.residencia|default:"—" }}</span>
-                        </div>
-                    </div>
-                </div>
+            <!-- ── C. Contenido de las Pestañas ── -->
+            <div class="tab-content p-3.5 p-md-4 flex-grow-1">
 
-                <!-- Perfil Específico por Rol -->
-                {% if u.rol == 3 %}
-                <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">
-                    <i class="bi bi-award me-2 text-warning"></i>Perfil de Guía Turístico
-                </h6>
-                <div class="bg-warning bg-opacity-10 rounded-4 p-3 border border-warning border-opacity-25 mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-warning border-opacity-25 pb-2">
-                        <div>
-                            <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.72rem;">Tarjeta Profesional</small>
-                            <span class="fw-bold text-dark fs-5 font-monospace">{{ u.numero_tarjeta_profesional|default:"—" }}</span>
+                <!-- ========================================== -->
+                <!-- PESTAÑA 1: PERFIL Y DATOS PERSONALES       -->
+                <!-- ========================================== -->
+                <div class="tab-pane fade show active" id="pane-perfil-{{ u.id }}" role="tabpanel">
+                    <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">
+                        <i class="bi bi-person-vcard me-2 text-success"></i>Datos Personales
+                    </h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="bg-light rounded-3 p-3 border">
+                                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Nombres</small>
+                                <span class="fw-bold text-dark">{{ u.first_name|default:"—" }}</span>
+                            </div>
                         </div>
-                        <div class="text-end">
-                            <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.72rem;">Experiencia</small>
-                            <span class="fw-bold text-success fs-5">{{ u.experiencia_anos|default:0 }} <small class="text-muted fw-normal">años</small></span>
+                        <div class="col-6">
+                            <div class="bg-light rounded-3 p-3 border">
+                                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Apellidos</small>
+                                <span class="fw-bold text-dark">{{ u.last_name|default:"—" }}</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="bg-light rounded-3 p-3 border">
+                                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Tipo Documento</small>
+                                <span class="fw-bold text-dark">{{ u.tipo_documento|default:"—" }}</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="bg-light rounded-3 p-3 border">
+                                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Nro. Documento</small>
+                                <span class="fw-bold text-dark font-monospace">{{ u.numero_documento|default:"—" }}</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="bg-light rounded-3 p-3 border">
+                                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Fecha de Registro</small>
+                                <span class="fw-semibold text-dark small"><i class="bi bi-calendar-plus text-success me-1"></i>{{ u.date_joined|date:"d/m/Y H:i"|default:"—" }}</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="bg-light rounded-3 p-3 border">
+                                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Último Inicio de Sesión</small>
+                                <span class="fw-semibold text-dark small"><i class="bi bi-clock-history text-info me-1"></i>{{ u.last_login|date:"d/m/Y H:i"|default:"Sin acceso registrado" }}</span>
+                            </div>
                         </div>
                     </div>
-                    {% if u.entidad_salud %}
-                    <div class="mb-2">
-                        <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.72rem;">Entidad de Salud / EPS</small>
-                        <span class="fw-semibold text-dark small">{{ u.entidad_salud }}</span>
+
+                    <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">
+                        <i class="bi bi-telephone me-2 text-success"></i>Contacto y Ubicación
+                    </h6>
+                    <div class="list-group list-group-flush mb-4">
+                        <div class="list-group-item bg-transparent px-0 d-flex align-items-center gap-3 border-bottom">
+                            <div class="bg-success bg-opacity-10 text-success rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
+                                <i class="bi bi-envelope-fill"></i>
+                            </div>
+                            <div class="text-truncate">
+                                <small class="text-muted d-block">Correo Electrónico</small>
+                                <span class="fw-semibold text-dark text-truncate d-block">{{ u.email|default:"—" }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent px-0 d-flex align-items-center gap-3 border-bottom">
+                            <div class="bg-success bg-opacity-10 text-success rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
+                                <i class="bi bi-telephone-fill"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Teléfono</small>
+                                <span class="fw-semibold text-dark">{{ u.telefono|default:"—" }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent px-0 d-flex align-items-center gap-3">
+                            <div class="bg-success bg-opacity-10 text-success rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
+                                <i class="bi bi-geo-alt-fill"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Residencia Local</small>
+                                <span class="fw-semibold text-dark">{{ u.residencia|default:"—" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Perfil Específico por Rol -->
+                    {% if u.rol == 3 %}
+                    <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">
+                        <i class="bi bi-award me-2 text-warning"></i>Perfil de Guía Turístico
+                    </h6>
+                    <div class="bg-warning bg-opacity-10 rounded-4 p-3 border border-warning border-opacity-25 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-warning border-opacity-25 pb-2">
+                            <div>
+                                <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.72rem;">Tarjeta Profesional</small>
+                                <span class="fw-bold text-dark fs-5 font-monospace">{{ u.numero_tarjeta_profesional|default:"—" }}</span>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.72rem;">Experiencia</small>
+                                <span class="fw-bold text-success fs-5">{{ u.experiencia_anos|default:0 }} <small class="text-muted fw-normal">años</small></span>
+                            </div>
+                        </div>
+                        {% if u.entidad_salud %}
+                        <div class="mb-2">
+                            <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.72rem;">Entidad de Salud / EPS</small>
+                            <span class="fw-semibold text-dark small">{{ u.entidad_salud }}</span>
+                        </div>
+                        {% endif %}
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Biografía Profesional</small>
+                        <div class="bg-white rounded-3 p-3 border">
+                            <p class="text-dark small mb-0 lh-lg">{{ u.descripcion_experiencia|default:"Sin biografía registrada." }}</p>
+                        </div>
+                    </div>
+                    {% elif u.rol == 2 %}
+                    <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">
+                        <i class="bi bi-airplane me-2 text-info"></i>Origen y Procedencia
+                    </h6>
+                    <div class="bg-info bg-opacity-10 rounded-4 p-3 border border-info border-opacity-25 mb-3">
+                        <div class="row g-3">
+                            <div class="col-4">
+                                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">País</small>
+                                <div class="d-flex align-items-center gap-1">
+                                    <i class="bi bi-globe-americas text-info"></i>
+                                    <span class="fw-bold text-dark small">{{ u.nombre_pais|default:u.pais|default:"—" }}</span>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Departamento</small>
+                                <div class="d-flex align-items-center gap-1">
+                                    <i class="bi bi-map text-info"></i>
+                                    <span class="fw-bold text-dark small">{{ u.nombre_departamento|default:u.departamento|default:"—" }}</span>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Ciudad/Mun.</small>
+                                <div class="d-flex align-items-center gap-1">
+                                    <i class="bi bi-building text-info"></i>
+                                    <span class="fw-bold text-dark small">{{ u.nombre_ciudad|default:u.ciudad|default:"—" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% elif u.rol == 1 %}
+                    <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">
+                        <i class="bi bi-shield-lock me-2 text-primary"></i>Privilegios
+                    </h6>
+                    <div class="bg-primary bg-opacity-10 rounded-4 p-4 border border-primary border-opacity-25 text-center">
+                        <i class="bi bi-shield-lock-fill text-primary fs-1 mb-2 d-block"></i>
+                        <p class="text-muted small mb-0">Este usuario cuenta con permisos administrativos para gestionar reservas, usuarios, pagos y reportes en Monagua.</p>
                     </div>
                     {% endif %}
-                    <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Biografía Profesional</small>
-                    <div class="bg-white rounded-3 p-3 border">
-                        <p class="text-dark small mb-0 lh-lg">{{ u.descripcion_experiencia|default:"Sin biografía registrada." }}</p>
-                    </div>
                 </div>
-                {% elif u.rol == 2 %}
-                <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">
-                    <i class="bi bi-airplane me-2 text-info"></i>Origen y Procedencia
-                </h6>
-                <div class="bg-info bg-opacity-10 rounded-4 p-3 border border-info border-opacity-25 mb-3">
-                    <div class="row g-3">
-                        <div class="col-4">
-                            <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">País</small>
-                            <div class="d-flex align-items-center gap-1">
-                                <i class="bi bi-globe-americas text-info"></i>
-                                <span class="fw-bold text-dark small">{{ u.nombre_pais|default:u.pais|default:"—" }}</span>
-                            </div>
+
+                <!-- ========================================== -->
+                <!-- PESTAÑA 2: PAQUETES COMPRADOS Y RESERVAS   -->
+                <!-- ========================================== -->
+                <div class="tab-pane fade" id="pane-paquetes-{{ u.id }}" role="tabpanel">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom">
+                        <div>
+                            <h6 class="fw-bold text-dark mb-0">
+                                <i class="bi bi-bag-check-fill text-success me-1.5"></i>Paquetes Comprados y Reservados
+                            </h6>
+                            <small class="text-muted">Historial completo de tours adquiridos por @{{ u.username }}</small>
                         </div>
-                        <div class="col-4">
-                            <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Departamento</small>
-                            <div class="d-flex align-items-center gap-1">
-                                <i class="bi bi-map text-info"></i>
-                                <span class="fw-bold text-dark small">{{ u.nombre_departamento|default:u.departamento|default:"—" }}</span>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Ciudad/Mun.</small>
-                            <div class="d-flex align-items-center gap-1">
-                                <i class="bi bi-building text-info"></i>
-                                <span class="fw-bold text-dark small">{{ u.nombre_ciudad|default:u.ciudad|default:"—" }}</span>
-                            </div>
+                        <div class="d-flex gap-1.5 flex-wrap">
+                            <span class="badge bg-success text-white rounded-pill px-2.5 py-1 small">{{ u.paquetes_comprados_count }} Confirmados</span>
+                            {% if u.reservas_pendientes_count > 0 %}
+                                <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1 small">{{ u.reservas_pendientes_count }} Pendientes</span>
+                            {% endif %}
+                            {% if u.reservas_canceladas_count > 0 %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 small">{{ u.reservas_canceladas_count }} Cancelados</span>
+                            {% endif %}
                         </div>
                     </div>
+
+                    {% if u.reservas_list %}
+                        <div class="d-flex flex-column gap-3">
+                            {% for r in u.reservas_list %}
+                                <div class="card border rounded-4 shadow-sm overflow-hidden bg-white">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                            <div class="d-flex align-items-center gap-2.5 min-w-0">
+                                                {% if r.paquete and r.paquete.imagen %}
+                                                    <img src="{{ r.paquete.imagen.url }}" alt="{{ r.paquete.nombre }}" class="rounded-3 border object-fit-cover flex-shrink-0" style="width: 52px; height: 52px;">
+                                                {% else %}
+                                                    <div class="rounded-3 bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center flex-shrink-0" style="width: 52px; height: 52px;">
+                                                        <i class="bi bi-compass fs-4"></i>
+                                                    </div>
+                                                {% endif %}
+                                                <div class="min-w-0">
+                                                    <h6 class="fw-bold text-dark mb-0 text-truncate" title="{{ r.paquete.nombre|default:'Paquete Turístico' }}">
+                                                        {{ r.paquete.nombre|default:"Paquete Turístico" }}
+                                                    </h6>
+                                                    <small class="text-muted d-block">
+                                                        <span class="fw-semibold text-dark">Reserva #{{ r.id }}</span> &bull; Registrada el {{ r.fecha_registro|date:"d/m/Y H:i" }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="text-end flex-shrink-0">
+                                                {% if r.estado_reserva == 'confirmada' %}
+                                                    <span class="badge bg-success text-white rounded-pill px-2.5 py-1 small fw-semibold">
+                                                        <i class="bi bi-check-circle-fill me-1"></i>Confirmada
+                                                    </span>
+                                                {% elif r.estado_reserva == 'pendiente' %}
+                                                    <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1 small fw-semibold">
+                                                        <i class="bi bi-hourglass-split me-1"></i>Pendiente
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-danger text-white rounded-pill px-2.5 py-1 small fw-semibold">
+                                                        <i class="bi bi-x-circle-fill me-1"></i>Cancelada
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Resumen de Viaje, Pasajeros y Monto -->
+                                        <div class="row g-2 my-2">
+                                            <div class="col-4">
+                                                <div class="bg-light rounded-3 p-2 border">
+                                                    <small class="text-muted d-block" style="font-size: 0.7rem;">Fecha de Viaje</small>
+                                                    <span class="fw-bold text-dark small"><i class="bi bi-calendar-event text-success me-1"></i>{{ r.fecha_inicio|date:"d/m/Y"|default:"Por definir" }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="bg-light rounded-3 p-2 border">
+                                                    <small class="text-muted d-block" style="font-size: 0.7rem;">Pasajeros</small>
+                                                    <span class="fw-bold text-dark small"><i class="bi bi-people text-success me-1"></i>{{ r.numero_adultos }} Ad. / {{ r.numero_menores }} Men.</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3 p-2">
+                                                    <small class="text-secondary d-block fw-semibold" style="font-size: 0.7rem;">Valor Total</small>
+                                                    <span class="fw-bold text-success small">COP ${{ r.monto_total|floatformat:0|intcomma }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Estado de Pago y Acciones Directas -->
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-2 border-top mt-2">
+                                            <div class="small">
+                                                {% if r.pago %}
+                                                    <span class="text-muted">Pago:</span>
+                                                    {% if r.pago.estado_transaccion == 'aprobado' %}
+                                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-0.5 fw-semibold">
+                                                            Aprobado ({{ r.pago.banco_origen }} &bull; Ref: {{ r.pago.referencia }})
+                                                        </span>
+                                                    {% elif r.pago.estado_transaccion == 'pendiente' %}
+                                                        <span class="badge bg-warning bg-opacity-10 text-dark border border-warning rounded-pill px-2 py-0.5 fw-semibold">
+                                                            En revisión ({{ r.pago.banco_origen }})
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2 py-0.5 fw-semibold">
+                                                            Rechazado
+                                                        </span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="text-muted fst-italic"><i class="bi bi-clock me-1"></i>Sin comprobante de pago enviado</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1.5">
+                                                {% if r.estado_reserva == 'confirmada' and r.pago and r.pago.estado_transaccion == 'aprobado' %}
+                                                    <a href="{% url 'ver_factura' r.id %}" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-2.5 py-1 fw-semibold" title="Ver Factura Oficial">
+                                                        <i class="bi bi-file-earmark-ruled me-1"></i>Factura
+                                                    </a>
+                                                {% endif %}
+                                                {% if r.pago %}
+                                                    <a href="{% url 'admin_revisar_comprobante' r.pago.pk %}" class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fw-semibold" title="Auditar comprobante de pago">
+                                                        <i class="bi bi-receipt me-1"></i>Comprobante
+                                                    </a>
+                                                {% endif %}
+                                                <a href="{% url 'editar_reserva' r.id %}" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 fw-semibold" title="Gestionar reserva">
+                                                    <i class="bi bi-pencil-square me-1"></i>Reserva
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 bg-light rounded-4 border">
+                            <i class="bi bi-bag-x fs-1 text-secondary opacity-50 d-block mb-2"></i>
+                            <h6 class="fw-bold text-dark mb-1">Sin paquetes comprados</h6>
+                            <p class="text-muted small mb-0">Este usuario aún no ha realizado reservas ni compras de paquetes turísticos.</p>
+                        </div>
+                    {% endif %}
+
+                    {% if u.planes_guia_list %}
+                        <h6 class="fw-bold text-dark mt-4 mb-3 border-bottom pb-2">
+                            <i class="bi bi-compass-fill text-warning me-1.5"></i>Paquetes Asignados como Guía ({{ u.planes_guia_list|length }})
+                        </h6>
+                        <div class="d-flex flex-column gap-2">
+                            {% for pg in u.planes_guia_list %}
+                                <div class="p-3 rounded-3 border bg-light d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <div>
+                                        <span class="fw-bold text-dark d-block">{{ pg.paquete.nombre }}</span>
+                                        <small class="text-muted">Idioma: {{ pg.idioma_servicio }} &bull; {{ pg.fecha_inicio_plan|date:"d/m/Y" }} al {{ pg.fecha_fin_plan|date:"d/m/Y" }}</small>
+                                    </div>
+                                    {% if pg.estado %}
+                                        <span class="badge bg-success text-white rounded-pill px-2.5 py-1 small">Activo</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary text-white rounded-pill px-2.5 py-1 small">Inactivo</span>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
-                {% elif u.rol == 1 %}
-                <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">
-                    <i class="bi bi-shield-lock me-2 text-primary"></i>Privilegios
-                </h6>
-                <div class="bg-primary bg-opacity-10 rounded-4 p-4 border border-primary border-opacity-25 text-center">
-                    <i class="bi bi-shield-lock-fill text-primary fs-1 mb-2 d-block"></i>
-                    <p class="text-muted small mb-0">Este usuario cuenta con permisos administrativos para gestionar reservas, usuarios, pagos y reportes en Monagua.</p>
+
+                <!-- ========================================== -->
+                <!-- PESTAÑA 3: BITÁCORA DE ACCIONES            -->
+                <!-- ========================================== -->
+                <div class="tab-pane fade" id="pane-bitacora-{{ u.id }}" role="tabpanel">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                        <div>
+                            <h6 class="fw-bold text-dark mb-0">
+                                <i class="bi bi-journal-text text-success me-1.5"></i>Bitácora de Acciones del Usuario
+                            </h6>
+                            <small class="text-muted">Trazabilidad cronológica de actividades, compras y eventos</small>
+                        </div>
+                        <span class="badge bg-dark text-white rounded-pill px-3 py-1.5 small">
+                            {{ u.total_acciones_bitacora }} evento{{ u.total_acciones_bitacora|pluralize:"s" }}
+                        </span>
+                    </div>
+
+                    <!-- Buscador en vivo dentro de la bitácora del usuario -->
+                    <div class="input-group input-group-sm mb-3 shadow-sm rounded-pill overflow-hidden border bg-light">
+                        <span class="input-group-text bg-transparent border-0 text-success ps-3">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text"
+                               class="form-control border-0 bg-transparent shadow-none"
+                               placeholder="Filtrar acciones por módulo, paquete, pago o descripción..."
+                               oninput="filtrarBitacoraUsuario(this, '{{ u.id }}')">
+                    </div>
+
+                    {% if u.bitacora_list %}
+                        <div class="d-flex flex-column gap-2.5" id="bitacora-lista-{{ u.id }}">
+                            {% for ev in u.bitacora_list %}
+                                <div class="p-3 rounded-4 border bg-white shadow-sm bitacora-item-row transition-all">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="rounded-circle bg-{{ ev.badge_color }} bg-opacity-10 text-{{ ev.badge_color }} border border-{{ ev.badge_color }} border-opacity-25 d-flex align-items-center justify-content-center flex-shrink-0 mt-0.5" style="width: 38px; height: 38px;">
+                                            <i class="bi {{ ev.icono }} fs-6"></i>
+                                        </div>
+                                        <div class="flex-grow-1 min-w-0">
+                                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-1 mb-1">
+                                                <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                                                    <span class="badge bg-{{ ev.badge_color }} {% if ev.badge_color == 'warning' or ev.badge_color == 'info' %}text-dark{% else %}text-white{% endif %} rounded-pill px-2.5 py-0.5 small fw-semibold">
+                                                        {{ ev.accion_label }}
+                                                    </span>
+                                                    <span class="badge bg-light text-secondary border rounded-pill px-2 py-0.5 small">
+                                                        <i class="bi bi-layers me-1"></i>{{ ev.modulo }}
+                                                    </span>
+                                                </div>
+                                                <small class="text-muted fw-semibold" style="font-size: 0.75rem;">
+                                                    <i class="bi bi-clock me-1"></i>{{ ev.fecha|date:"d/m/Y H:i:s" }}
+                                                </small>
+                                            </div>
+                                            <p class="text-dark small mb-1 lh-base">{{ ev.descripcion }}</p>
+                                            {% if ev.ip_origen or ev.registro_id %}
+                                                <div class="d-flex align-items-center gap-3 text-muted" style="font-size: 0.72rem;">
+                                                    {% if ev.registro_id %}
+                                                        <span><i class="bi bi-hash"></i>ID Registro: {{ ev.registro_id }}</span>
+                                                    {% endif %}
+                                                    {% if ev.ip_origen %}
+                                                        <span><i class="bi bi-hdd-network me-1"></i>IP: {{ ev.ip_origen }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 bg-light rounded-4 border">
+                            <i class="bi bi-journal-x fs-1 text-secondary opacity-50 d-block mb-2"></i>
+                            <h6 class="fw-bold text-dark mb-1">Sin registros en bitácora</h6>
+                            <p class="text-muted small mb-0">No se encontraron eventos registrados para este usuario.</p>
+                        </div>
+                    {% endif %}
                 </div>
-                {% endif %}
+
+                <!-- ========================================== -->
+                <!-- PESTAÑA 4: PAGOS, PQRS Y CALIFICACIONES    -->
+                <!-- ========================================== -->
+                <div class="tab-pane fade" id="pane-actividad-{{ u.id }}" role="tabpanel">
+                    
+                    <!-- 1. Historial de Comprobantes de Pago -->
+                    <h6 class="fw-bold text-dark mb-2.5 border-bottom pb-2">
+                        <i class="bi bi-receipt-cutoff text-success me-1.5"></i>Comprobantes de Pago Enviados ({{ u.pagos_list|length }})
+                    </h6>
+                    {% if u.pagos_list %}
+                        <div class="d-flex flex-column gap-2 mb-4">
+                            {% for p in u.pagos_list %}
+                                <div class="p-3 rounded-3 border bg-light d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <div>
+                                        <div class="fw-bold text-dark small">
+                                            Pago #{{ p.id }} &bull; {{ p.reserva.paquete.nombre|default:"Reserva" }} (Reserva #{{ p.reserva_id }})
+                                        </div>
+                                        <small class="text-muted d-block">
+                                            {{ p.banco_origen }} ({{ p.metodo_pago }}) &bull; Ref: <span class="font-monospace">{{ p.referencia }}</span> &bull; {{ p.fecha_envio|date:"d/m/Y H:i" }}
+                                        </small>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="fw-bold text-success small">COP ${{ p.monto|floatformat:0|intcomma }}</span>
+                                        <a href="{% url 'admin_revisar_comprobante' p.pk %}" class="btn btn-sm btn-outline-success rounded-pill px-2.5 py-0.5 small fw-semibold" title="Revisar comprobante">
+                                            Ver
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted small fst-italic mb-4">No ha enviado comprobantes de pago.</p>
+                    {% endif %}
+
+                    <!-- 2. Solicitudes PQRS -->
+                    <h6 class="fw-bold text-dark mb-2.5 border-bottom pb-2">
+                        <i class="bi bi-chat-left-dots-fill text-warning me-1.5"></i>Solicitudes PQRS Radicadas ({{ u.pqrs_list|length }})
+                    </h6>
+                    {% if u.pqrs_list %}
+                        <div class="d-flex flex-column gap-2 mb-4">
+                            {% for pq in u.pqrs_list %}
+                                <div class="p-3 rounded-3 border bg-light d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <div>
+                                        <span class="badge bg-secondary text-white rounded-pill px-2 py-0.5 small me-1">{{ pq.get_tipo_display }}</span>
+                                        <strong class="text-dark small">{{ pq.radicado }} — {{ pq.asunto }}</strong>
+                                        <small class="text-muted d-block mt-0.5">{{ pq.descripcion|truncatechars:100 }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge {% if pq.estado == 'cerrado' %}bg-success text-white{% elif pq.estado == 'en_proceso' %}bg-warning text-dark{% else %}bg-danger text-white{% endif %} rounded-pill px-2.5 py-1 small">
+                                            {{ pq.get_estado_display }}
+                                        </span>
+                                        <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">{{ pq.fecha|date:"d/m/Y" }}</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted small fst-italic mb-4">No ha radicado solicitudes PQRS.</p>
+                    {% endif %}
+
+                    <!-- 3. Calificaciones y Reseñas -->
+                    <h6 class="fw-bold text-dark mb-2.5 border-bottom pb-2">
+                        <i class="bi bi-star-fill text-warning me-1.5"></i>Calificaciones y Reseñas ({{ u.calificaciones_list|length }})
+                    </h6>
+                    {% if u.calificaciones_list %}
+                        <div class="d-flex flex-column gap-2 mb-2">
+                            {% for cal in u.calificaciones_list %}
+                                <div class="p-3 rounded-3 border bg-light">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong class="text-dark small">{{ cal.titulo }}</strong>
+                                        <span class="text-warning small fw-bold">
+                                            <i class="bi bi-star-fill me-1"></i>{{ cal.puntaje_estrellas }}/5
+                                        </span>
+                                    </div>
+                                    <p class="text-muted small mb-1">{{ cal.comentario }}</p>
+                                    <small class="text-secondary" style="font-size: 0.72rem;">
+                                        Paquete: {{ cal.reserva.paquete.nombre|default:"General" }} &bull; {{ cal.fecha_calificacion|date:"d/m/Y" }}
+                                    </small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted small fst-italic mb-2">No ha publicado reseñas o calificaciones.</p>
+                    {% endif %}
+
+                </div>
+
             </div>
 
             <!-- Acciones del Pie -->
-            <div class="p-4 pt-0 d-grid gap-2">
-                <button type="button" class="btn btn-outline-primary fw-semibold py-2 rounded-pill shadow-sm" data-bs-dismiss="offcanvas" data-bs-toggle="offcanvas" data-bs-target="#offcanvasEditarUsuario{{ u.id }}">
-                    <i class="bi bi-pencil-square me-2"></i>Editar este Usuario
-                </button>
-                <button type="button" class="btn btn-outline-secondary fw-semibold py-2 rounded-pill" data-bs-dismiss="offcanvas">
+            <div class="p-3.5 border-top bg-light d-flex flex-wrap gap-2 justify-content-between align-items-center mt-auto">
+                <button type="button" class="btn btn-outline-secondary fw-semibold py-2 px-4 rounded-pill" data-bs-dismiss="offcanvas">
                     Cerrar
                 </button>
             </div>
@@ -812,4 +1236,32 @@
 
 {% block scripts %}
 <script src="{% static 'js/tconf/tconf-tablaUsuarios.js' %}"></script>
+<script>
+    function activarTabExpedienteUsuario(userId, tabKey) {
+        setTimeout(function() {
+            var btn = document.getElementById('tab-btn-' + tabKey + '-' + userId);
+            if (btn && window.bootstrap && bootstrap.Tab) {
+                var tab = bootstrap.Tab.getOrCreateInstance(btn);
+                tab.show();
+            } else if (btn) {
+                btn.click();
+            }
+        }, 80);
+    }
+
+    function filtrarBitacoraUsuario(inputEl, userId) {
+        var term = (inputEl.value || '').toLowerCase().trim();
+        var container = document.getElementById('bitacora-lista-' + userId);
+        if (!container) return;
+        var items = container.querySelectorAll('.bitacora-item-row');
+        items.forEach(function(item) {
+            var text = (item.textContent || '').toLowerCase();
+            if (!term || text.indexOf(term) !== -1) {
+                item.classList.remove('d-none');
+            } else {
+                item.classList.add('d-none');
+            }
+        });
+    }
+</script>
 {% endblock %}

@@ -1758,6 +1758,45 @@ class FlujoReservaPagoFacturaRigurosoTests(TestCase):
         notif = Notificacion.objects.filter(usuario=self.turista, reserva=reserva).order_by('-id').first()
         self.assertIn('confirmada exitosamente', notif.mensaje)
 
+    def test_13b_admin_no_puede_modificar_ni_eliminar_comprobante_ya_aprobado(self):
+        """Verifica que una vez aprobado el comprobante por el administrador, la acción quede bloqueada y no se pueda modificar ni eliminar."""
+        reserva = self._crear_reserva_base(dias=13)
+        pago = Pago.objects.create(
+            reserva=reserva,
+            referencia='REF-APROBADO-LOCKED',
+            banco_origen='Bancolombia',
+            metodo_pago='Transferencia Bancaria',
+            monto=reserva.monto_total,
+            imagen_comprobante=self._crear_imagen_valida('recibo_aprobado.jpg'),
+            estado_transaccion='aprobado',
+            nota_admin='Comprobante original verificado'
+        )
+        reserva.estado_reserva = 'confirmada'
+        reserva.save()
+
+        self.client.force_login(self.admin)
+
+        # 1. Intento indebido de cambiar a 'rechazado' o 'pendiente'
+        res_edit = self.client.post(reverse('admin_revisar_comprobante', args=[pago.id]), {
+            'estado_transaccion': 'rechazado',
+            'banco_origen': 'Bancolombia',
+            'monto': str(reserva.monto_total),
+            'nota_admin': 'Intento de modificar comprobante ya aprobado'
+        })
+        self.assertRedirects(res_edit, reverse('admin_comprobantes'))
+
+        # Comprobar que en base de datos NO se modificó
+        pago.refresh_from_db()
+        self.assertEqual(pago.estado_transaccion, 'aprobado')
+        self.assertEqual(pago.nota_admin, 'Comprobante original verificado')
+
+        # 2. Intento indebido de eliminar el comprobante ya aprobado
+        res_del = self.client.post(reverse('admin_eliminar_comprobante', args=[pago.id]))
+        self.assertRedirects(res_del, reverse('admin_comprobantes'))
+
+        # Comprobar que sigue existiendo
+        self.assertTrue(Pago.objects.filter(id=pago.id).exists())
+
     # --------------------------------------------------------------------------
     # 3. PRUEBAS DE FACTURACIÓN Y DESCARGA PDF
     # --------------------------------------------------------------------------

@@ -1,5 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.core import mail
+from django.core.cache import cache
 from App.models import Usuario
 from autenticacion.forms import RegistroForm
 from autenticacion.views.geografia import (
@@ -137,4 +139,65 @@ class RecuperacionClaveTestCase(TestCase):
         self.assertRedirects(resp, reverse('verificar_otp_clave'))
         self.assertEqual(self.client.session.get('reset_email'), 'test_recuperar@monagua.com')
         self.assertEqual(self.client.session.get('reset_user_id'), self.usuario.id)
+
+
+class RegistroOtpDeduplicacionTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        cache.clear()
+        mail.outbox.clear()
+        self.datos_registro = {
+            'first_name': 'Carlos',
+            'last_name': 'Mendoza',
+            'username': 'carlos_viajero',
+            'email': 'carlos.mendoza@monagua.test',
+            'tipo_documento': 'CC',
+            'numero_documento': '1098765432',
+            'telefono': '3123456789',
+            'password': 'Password123!',
+            'confirmar_password': 'Password123!',
+            'pais': 'COL',
+            'departamento': 100,
+            'ciudad': 200,
+        }
+
+    def test_registro_multiple_envio_un_solo_correo(self):
+        """Verifica que múltiples clics o envíos repetidos generen y envíen solo 1 correo con OTP."""
+        # Primer envío (clic 1 en "Crear Cuenta")
+        resp1 = self.client.post(reverse('registro'), self.datos_registro)
+        self.assertRedirects(resp1, reverse('verificar_otp_registro'))
+        self.assertEqual(len(mail.outbox), 1)
+
+        otp_inicial = self.client.session.get('registro_otp')
+        self.assertIsNotNone(otp_inicial)
+        self.assertEqual(len(otp_inicial), 6)
+
+        # Segundo envío inmediato (clic 2 o ráfaga de clics en "Crear Cuenta")
+        resp2 = self.client.post(reverse('registro'), self.datos_registro)
+        self.assertRedirects(resp2, reverse('verificar_otp_registro'))
+
+        # Debe mantenerse exactamente 1 correo enviado (sin duplicados)
+        self.assertEqual(len(mail.outbox), 1)
+        # El OTP en sesión debe ser el mismo que se envió por correo
+        self.assertEqual(self.client.session.get('registro_otp'), otp_inicial)
+
+        # Tercer envío con otro cliente/petición concurrente para el mismo correo
+        otro_cliente = Client()
+        resp3 = otro_cliente.post(reverse('registro'), self.datos_registro)
+        self.assertRedirects(resp3, reverse('verificar_otp_registro'))
+        # Sigue siendo 1 solo correo gracias a la caché atómica
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_reenviar_otp_cooldown(self):
+        """Verifica que el reenvío de OTP respete la ventana de enfriamiento de 60 segundos."""
+        # Registro inicial
+        self.client.post(reverse('registro'), self.datos_registro)
+        self.assertEqual(len(mail.outbox), 1)
+
+        # Intento de reenvío inmediato sin esperar los 60s
+        resp_reenvio = self.client.get(reverse('reenviar_otp_registro'))
+        self.assertRedirects(resp_reenvio, reverse('verificar_otp_registro'))
+        # No debe enviarse correo adicional
+        self.assertEqual(len(mail.outbox), 1)
+
 

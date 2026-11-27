@@ -24,11 +24,11 @@
                 Revisión, aprobación y validación de transferencias y comprobantes en el sistema.
             </p>
         </div>
-        <div class="d-flex align-items-center gap-2 flex-wrap me-lg-5 pe-lg-2">
+        <div class="d-flex align-items-center gap-2 flex-wrap me-lg-5 pe-lg-2" id="admin-comprobantes-topbar-actions">
             <a href="{% url 'dashboard_admin' %}" class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 shadow-sm" title="Ir al Panel de Control de administración" aria-label="Ir al Panel de Control de administración">
                 <i class="bi bi-grid-1x2"></i> Panel de Control
             </a>
-            <a href="{% url 'gestion_reservas' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 shadow-sm">
+            <a href="{% url 'gestion_reservas' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 shadow-sm" title="Ir a Gestión de Reservas">
                 <i class="bi bi-calendar2-check-fill"></i> Reservas
             </a>
             {% if total_pendientes > 0 %}
@@ -41,7 +41,7 @@
                 <i class="bi bi-calendar3 text-success"></i>
                 <span id="currentDate">{% now "D, j \d\e M. Y" %}</span>
             </span>
-            <a href="{% url 'admin_pagos_rechazados' %}" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-2 d-inline-flex align-items-center gap-1 shadow-sm fw-semibold">
+            <a href="{% url 'admin_pagos_rechazados' %}" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-2 d-inline-flex align-items-center gap-1 shadow-sm fw-semibold" title="Ver y gestionar pagos rechazados">
                 <i class="bi bi-x-octagon me-1"></i>Ver Pagos Rechazados
                 {% if total_rechazados > 0 %}
                     <span class="badge bg-danger text-white rounded-pill ms-1 px-2 py-0.5" style="font-size: 0.72rem;">{{ total_rechazados }}</span>
@@ -50,8 +50,14 @@
         </div>
     </div>
 
-    <!-- Contenedor dinámico HTMX para filtros y listado -->
-    <div id="admin-comprobantes-container">
+    <!-- Contenedor dinámico HTMX: solo actualiza el DOM si realmente hubo cambios en BD (204 No Content si no cambió nada) -->
+    <div id="admin-comprobantes-container"
+         hx-get="{% url 'admin_comprobantes' %}?{% if estado_filtro %}estado={{ estado_filtro }}&{% endif %}last_hash={{ comprobantes_hash }}"
+         hx-trigger="every 5s[document.visibilityState === 'visible' && !document.querySelector('.dropdown-menu.show') && !document.querySelector('.modal.show') && !(document.activeElement && document.activeElement.closest('#tablaComprobantes_filter'))]"
+         hx-target="#admin-comprobantes-container"
+         hx-select="#admin-comprobantes-container"
+         hx-select-oob="#admin-comprobantes-topbar-actions"
+         hx-swap="outerHTML">
     <!-- 2. Tarjetas de Estadísticas (Estilo Estadísticas Admin con hover-lift) -->
     <div class="row g-4 mb-4">
         <!-- Total Recibidos -->
@@ -398,35 +404,57 @@
                         <!-- Acciones -->
                         <td class="text-center text-nowrap">
                             <div class="d-inline-flex align-items-center gap-1">
-                                <!-- 1. Factura -->
-                                {% if c.estado_transaccion == 'aprobado' and c.reserva %}
-                                    <a href="{% url 'ver_factura' c.reserva.id %}"
-                                       class="btn btn-sm btn-outline-success shadow-sm"
-                                       target="_blank"
-                                       title="Ver Factura Oficial">
-                                        <i class="bi bi-file-earmark-text"></i>
+                                {% if c.estado_transaccion == 'aprobado' %}
+                                    <!-- 1. Factura Oficial -->
+                                    {% if c.reserva %}
+                                        <a href="{% url 'ver_factura' c.reserva.id %}"
+                                           class="btn btn-sm btn-outline-success shadow-sm"
+                                           target="_blank"
+                                           title="Ver Factura Oficial">
+                                            <i class="bi bi-file-earmark-text"></i>
+                                        </a>
+                                    {% endif %}
+
+                                    <!-- 2. Ver Detalle (Solo Lectura) -->
+                                    <a href="{% url 'admin_revisar_comprobante' c.pk %}"
+                                       class="btn btn-sm btn-outline-secondary shadow-sm"
+                                       title="Ver Detalle (Comprobante Aprobado - No Modificable)">
+                                        <i class="bi bi-eye"></i>
                                     </a>
-                                {% endif %}
 
-                                <!-- 2. Revisar -->
-                                <a href="{% url 'admin_revisar_comprobante' c.pk %}"
-                                   class="btn btn-sm btn-outline-secondary shadow-sm"
-                                   title="Revisar Comprobante">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-
-                                <!-- 3. Eliminar -->
-                                <form action="{% url 'admin_eliminar_comprobante' c.pk %}"
-                                      method="post"
-                                      onsubmit="return confirm('¿Eliminar este comprobante? Esta acción no se puede deshacer.')"
-                                      class="d-inline m-0">
-                                    {% csrf_token %}
-                                    <button type="submit"
-                                            class="btn btn-sm btn-outline-danger shadow-sm"
-                                            title="Eliminar Comprobante">
-                                        <i class="bi bi-trash"></i>
+                                    <!-- 3. Indicador Bloqueado / No Modificable -->
+                                    <button type="button"
+                                            class="btn btn-sm btn-light border text-muted shadow-sm pe-none opacity-50"
+                                            title="Comprobante ya aprobado (Acción definitiva no modificable)"
+                                            disabled>
+                                        <i class="bi bi-lock-fill text-secondary"></i>
                                     </button>
-                                </form>
+                                {% else %}
+                                    <!-- 1. Revisar / Decidir -->
+                                    <a href="{% url 'admin_revisar_comprobante' c.pk %}"
+                                       class="btn btn-sm btn-outline-secondary shadow-sm"
+                                       title="Revisar y Decidir Comprobante">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+
+                                    <!-- 2. Eliminar -->
+                                    <form action="{% url 'admin_eliminar_comprobante' c.pk %}"
+                                          method="post"
+                                          hx-post="{% url 'admin_eliminar_comprobante' c.pk %}"
+                                          hx-target="#admin-comprobantes-container"
+                                          hx-select="#admin-comprobantes-container"
+                                          hx-select-oob="#admin-comprobantes-topbar-actions"
+                                          hx-swap="outerHTML"
+                                          onsubmit="return confirm('¿Eliminar este comprobante? Esta acción no se puede deshacer.')"
+                                          class="d-inline m-0">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger shadow-sm"
+                                                title="Eliminar Comprobante">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -534,24 +562,46 @@
                                 {% endif %}
                             </div>
                             <div class="col-4">
-                                <a href="{% url 'admin_revisar_comprobante' c.pk %}"
-                                   class="btn btn-sm btn-outline-secondary w-100 fw-semibold rounded-pill py-2 text-nowrap"
-                                   title="Revisar Comprobante">
-                                    <i class="bi bi-pencil me-1"></i>Revisar
-                                </a>
+                                {% if c.estado_transaccion == 'aprobado' %}
+                                    <a href="{% url 'admin_revisar_comprobante' c.pk %}"
+                                       class="btn btn-sm btn-outline-secondary w-100 fw-semibold rounded-pill py-2 text-nowrap"
+                                       title="Ver Detalle (Aprobado - Solo Lectura)">
+                                        <i class="bi bi-eye me-1"></i>Detalle
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'admin_revisar_comprobante' c.pk %}"
+                                       class="btn btn-sm btn-outline-secondary w-100 fw-semibold rounded-pill py-2 text-nowrap"
+                                       title="Revisar Comprobante">
+                                        <i class="bi bi-pencil me-1"></i>Revisar
+                                    </a>
+                                {% endif %}
                             </div>
                             <div class="col-4">
-                                <form action="{% url 'admin_eliminar_comprobante' c.pk %}"
-                                      method="post"
-                                      onsubmit="return confirm('¿Eliminar este comprobante? Esta acción no se puede deshacer.')"
-                                      class="m-0 w-100">
-                                    {% csrf_token %}
-                                    <button type="submit"
-                                            class="btn btn-sm btn-outline-danger w-100 fw-semibold rounded-pill py-2 text-nowrap"
-                                            title="Eliminar Comprobante">
-                                        <i class="bi bi-trash me-1"></i>Eliminar
+                                {% if c.estado_transaccion == 'aprobado' %}
+                                    <button type="button"
+                                            class="btn btn-sm btn-light text-muted border w-100 fw-semibold rounded-pill py-2 text-nowrap opacity-50"
+                                            disabled
+                                            title="Comprobante ya aprobado (Acción definitiva no modificable)">
+                                        <i class="bi bi-lock-fill me-1"></i>Bloqueado
                                     </button>
-                                </form>
+                                {% else %}
+                                    <form action="{% url 'admin_eliminar_comprobante' c.pk %}"
+                                          method="post"
+                                          hx-post="{% url 'admin_eliminar_comprobante' c.pk %}"
+                                          hx-target="#admin-comprobantes-container"
+                                          hx-select="#admin-comprobantes-container"
+                                          hx-select-oob="#admin-comprobantes-topbar-actions"
+                                          hx-swap="outerHTML"
+                                          onsubmit="return confirm('¿Eliminar este comprobante? Esta acción no se puede deshacer.')"
+                                          class="m-0 w-100">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger w-100 fw-semibold rounded-pill py-2 text-nowrap"
+                                                title="Eliminar Comprobante">
+                                            <i class="bi bi-trash me-1"></i>Eliminar
+                                        </button>
+                                    </form>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -651,15 +701,22 @@
                                     </dd>
                                 </dl>
                                 <div class="d-flex flex-column gap-2 mt-3 pt-3 border-top">
-                                    <a href="{% url 'admin_revisar_comprobante' c.pk %}"
-                                       class="btn btn-primary btn-sm w-100 rounded-pill fw-semibold">
-                                        <i class="bi bi-pencil-square me-1"></i>Revisar / Gestionar
-                                    </a>
-                                    {% if c.estado_transaccion == 'aprobado' and c.reserva %}
-                                        <a href="{% url 'ver_factura' c.reserva.id %}"
-                                           target="_blank"
-                                           class="btn btn-outline-success btn-sm w-100 rounded-pill fw-semibold">
-                                            <i class="bi bi-file-earmark-text me-1"></i>Ver Factura
+                                    {% if c.estado_transaccion == 'aprobado' %}
+                                        <a href="{% url 'admin_revisar_comprobante' c.pk %}"
+                                           class="btn btn-outline-secondary btn-sm w-100 rounded-pill fw-semibold">
+                                            <i class="bi bi-eye me-1"></i>Ver Detalle (Aprobado)
+                                        </a>
+                                        {% if c.reserva %}
+                                            <a href="{% url 'ver_factura' c.reserva.id %}"
+                                               target="_blank"
+                                               class="btn btn-success text-white btn-sm w-100 rounded-pill fw-semibold">
+                                                <i class="bi bi-file-earmark-text me-1 text-white"></i>Ver Factura Oficial
+                                            </a>
+                                        {% endif %}
+                                    {% else %}
+                                        <a href="{% url 'admin_revisar_comprobante' c.pk %}"
+                                           class="btn btn-primary btn-sm w-100 rounded-pill fw-semibold">
+                                            <i class="bi bi-pencil-square me-1"></i>Revisar / Gestionar
                                         </a>
                                     {% endif %}
                                 </div>
