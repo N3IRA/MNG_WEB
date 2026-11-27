@@ -97,7 +97,7 @@ def enviar_comprobante(request):
                     prioridad="alta"
                 )
 
-            messages.success(request, "¡Tu comprobante de pago ha sido enviado exitosamente y será revisado en breve!")
+            messages.success(request, "¡Tu comprobante de pago ha sido enviado exitosamente y será revisado en breve!", extra_tags='comprobante')
             return redirect('mis_comprobantes')
         else:
             errores_txt = [str(err[0]) for err in form.errors.values()]

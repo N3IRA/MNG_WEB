@@ -68,6 +68,14 @@
         icono: 'bi-clipboard-check-fill',
         colorBarra: '#7c3aed'
       },
+      guia: {
+        titulo: '¡Gestión de Guía!',
+        colorTexto: '#9a3412',
+        colorFondoIcono: 'rgba(234, 88, 12, 0.14)',
+        colorIcono: '#ea580c',
+        icono: 'bi-person-badge-fill',
+        colorBarra: '#ea580c'
+      },
       usuario: {
         titulo: '¡Gestión de Usuario!',
         colorTexto: '#0e7490',
@@ -131,6 +139,30 @@
         colorIcono: '#0284c7',
         icono: 'bi-calendar3-range-fill',
         colorBarra: '#0284c7'
+      },
+      blog: {
+        titulo: '¡Gestión de Blog!',
+        colorTexto: '#3730a3',
+        colorFondoIcono: 'rgba(79, 70, 229, 0.14)',
+        colorIcono: '#4f46e5',
+        icono: 'bi-journal-richtext',
+        colorBarra: '#4f46e5'
+      },
+      promocion: {
+        titulo: '¡Gestión de Promoción!',
+        colorTexto: '#6b21a8',
+        colorFondoIcono: 'rgba(168, 85, 247, 0.14)',
+        colorIcono: '#9333ea',
+        icono: 'bi-megaphone-fill',
+        colorBarra: '#9333ea'
+      },
+      calificacion: {
+        titulo: '¡Opinión y Calificación!',
+        colorTexto: '#b45309',
+        colorFondoIcono: 'rgba(245, 158, 11, 0.14)',
+        colorIcono: '#d97706',
+        icono: 'bi-star-fill',
+        colorBarra: '#d97706'
       },
       pqrs: {
         titulo: '¡Atención y PQRS!',

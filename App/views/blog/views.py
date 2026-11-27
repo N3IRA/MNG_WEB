@@ -96,7 +96,7 @@ class BlogCreateView(StaffRequiredMixin, CreateView):
             tipo='Blog',
             prioridad='media'
         )
-        messages.success(self.request, f"El artículo '{self.object.titulo}' ha sido creado exitosamente.")
+        messages.success(self.request, f"El artículo '{self.object.titulo}' ha sido creado exitosamente.", extra_tags='blog')
         return response
 
 
@@ -119,7 +119,7 @@ class BlogUpdateView(StaffRequiredMixin, UpdateView):
             tipo='Blog',
             prioridad='media'
         )
-        messages.success(self.request, f"El artículo '{self.object.titulo}' ha sido actualizado correctamente.")
+        messages.success(self.request, f"El artículo '{self.object.titulo}' ha sido actualizado correctamente.", extra_tags='blog')
         return response
 
 
@@ -143,5 +143,5 @@ class BlogDeleteView(StaffRequiredMixin, DeleteView):
             tipo='Blog',
             prioridad='media'
         )
-        messages.success(self.request, f"El artículo '{titulo_blog}' ha sido eliminado exitosamente.")
+        messages.success(self.request, f"El artículo '{titulo_blog}' ha sido eliminado exitosamente.", extra_tags='blog')
         return response

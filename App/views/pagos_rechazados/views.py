@@ -77,7 +77,7 @@ def admin_reconsiderar_pago(request, pk):
                 prioridad="alta"
             )
         enviar_correo_pago_aprobado(pago, request=request)
-        messages.success(request, f"¡Pago #{pago.pk} reconsiderado y aprobado con éxito! La reserva ha sido confirmada.")
+        messages.success(request, f"¡Pago #{pago.pk} reconsiderado y aprobado con éxito! La reserva ha sido confirmada.", extra_tags='pago')
     return redirect('admin_pagos_rechazados')
 
 
@@ -103,7 +103,7 @@ def admin_reabrir_pago(request, pk):
                 tipo="Comprobante de Pago",
                 prioridad="media"
             )
-        messages.info(request, f"El pago #{pago.pk} ha sido retornado a estado 'Pendiente' para su re-evaluación.")
+        messages.info(request, f"El pago #{pago.pk} ha sido retornado a estado 'Pendiente' para su re-evaluación.", extra_tags='pago')
     return redirect('admin_pagos_rechazados')
 
 
@@ -131,7 +131,7 @@ def admin_actualizar_nota_rechazo(request, pk):
                     tipo="Comprobante de Pago",
                     prioridad="media"
                 )
-            messages.success(request, f"Motivo de rechazo del comprobante #{pago.pk} actualizado correctamente.")
+            messages.success(request, f"Motivo de rechazo del comprobante #{pago.pk} actualizado correctamente.", extra_tags='pago')
     return redirect('admin_pagos_rechazados')
 
 
@@ -159,7 +159,7 @@ def admin_cancelar_reserva_rechazada(request, pk):
                     tipo="Reserva",
                     prioridad="alta"
                 )
-            messages.warning(request, f"La reserva #{reserva.id} ha sido marcada como 'Cancelada' definitivamente.")
+            messages.warning(request, f"La reserva #{reserva.id} ha sido marcada como 'Cancelada' definitivamente.", extra_tags='reserva')
         else:
             messages.error(request, "El comprobante no tiene una reserva asociada.")
     return redirect('admin_pagos_rechazados')

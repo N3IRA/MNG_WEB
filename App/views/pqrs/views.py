@@ -134,7 +134,7 @@ def contestar_pqrs(request, pqrs_id):
             
             
             
-            messages.success(request, "Respuesta enviada y solicitud cerrada con éxito.")
+            messages.success(request, "Respuesta enviada y solicitud cerrada con éxito.", extra_tags='pqrs')
             return redirect('listar_pqrs')
 
     reservas_cliente = Reserva.objects.filter(usuario=pqr.usuario) if pqr.usuario else Reserva.objects.none()
@@ -189,7 +189,7 @@ def guardar_pqrs(request):
 
             # 6. Mensaje de confirmación
             reserva_txt = f" para la Reserva #{reserva_seleccionada.id}" if reserva_seleccionada else ""
-            messages.success(request, f"Tu PQRS ha sido radicada con éxito{reserva_txt}.")
+            messages.success(request, f"Tu PQRS ha sido radicada con éxito{reserva_txt}.", extra_tags='pqrs')
             if user:
                 return redirect('mis_pqrs')
             return redirect('pqrs')

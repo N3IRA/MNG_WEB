@@ -79,7 +79,7 @@ def toggle_visible_calificacion(request, pk):
         calificacion.visible = not calificacion.visible
         calificacion.save()
         estado_texto = "visible al público" if calificacion.visible else "oculta"
-        messages.success(request, f'La calificación #{calificacion.id} ahora está {estado_texto}.')
+        messages.success(request, f'La calificación #{calificacion.id} ahora está {estado_texto}.', extra_tags='calificacion')
     
     return redirect('listar_calificaciones')
 
@@ -96,7 +96,7 @@ def responder_calificacion(request, pk):
         respuesta = request.POST.get('admin_respuesta', '').strip()
         calificacion.admin_respuesta = respuesta
         calificacion.save()
-        messages.success(request, f'Respuesta a la calificación #{calificacion.id} guardada exitosamente.')
+        messages.success(request, f'Respuesta a la calificación #{calificacion.id} guardada exitosamente.', extra_tags='calificacion')
         
     return redirect('listar_calificaciones')
 
@@ -174,7 +174,7 @@ def mis_calificaciones(request):
             visible=True
         )
 
-        messages.success(request, '¡Gracias por tu calificación! Ha sido registrada exitosamente.')
+        messages.success(request, '¡Gracias por tu calificación! Ha sido registrada exitosamente.', extra_tags='calificacion')
         return redirect('mis_calificaciones')
 
     # GET: Listado de calificaciones del usuario y de la comunidad

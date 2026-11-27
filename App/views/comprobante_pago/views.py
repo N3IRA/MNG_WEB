@@ -105,7 +105,8 @@ def admin_revisar_comprobante(request, pk):
     if comprobante.estado_transaccion == 'aprobado' and request.method == 'POST':
         messages.warning(
             request,
-            f"El comprobante #{comprobante.pk} ya fue revisado y aprobado anteriormente. Esta acción no puede ser modificada."
+            f"El comprobante #{comprobante.pk} ya fue revisado y aprobado anteriormente. Esta acción no puede ser modificada.",
+            extra_tags='comprobante'
         )
         destino_url = reverse('admin_comprobantes')
         if request.headers.get('HX-Request'):
@@ -202,7 +203,7 @@ def admin_revisar_comprobante(request, pk):
                         prioridad="alta"
                     )
 
-                    messages.success(request, f"Comprobante #{comprobante.pk} actualizado como '{estado_transaccion.capitalize()}' exitosamente.")
+                    messages.success(request, f"Comprobante #{comprobante.pk} actualizado como '{estado_transaccion.capitalize()}' exitosamente.", extra_tags='comprobante')
                     destino_url = reverse('admin_comprobantes')
 
                     if request.headers.get('HX-Request'):
@@ -267,8 +268,13 @@ def admin_eliminar_comprobante(request, pk):
         )
 
         comprobante.delete()
-        messages.success(request, f"El comprobante #{pago_id} ha sido eliminado correctamente.")
-    return redirect('admin_comprobantes')
+        messages.success(request, f"El comprobante #{pago_id} ha sido eliminado correctamente.", extra_tags='comprobante')
+        destino_url = reverse('admin_comprobantes')
+        if request.headers.get('HX-Request'):
+            response = HttpResponse(status=200)
+            response['HX-Redirect'] = destino_url
+            return response
+        return redirect(destino_url)
 
 
 # Retrocompatibilidad: Re-exportar vistas desde su nuevo módulo dedicado 'pagos_rechazados'

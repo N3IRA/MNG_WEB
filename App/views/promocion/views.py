@@ -150,7 +150,7 @@ class PromocionCreateView(StaffRequiredMixin, CreateView):
             prioridad="media"
         )
 
-        messages.success(self.request, f"Promoción '{promocion.nombre}' registrada correctamente.")
+        messages.success(self.request, f"Promoción '{promocion.nombre}' registrada correctamente.", extra_tags='promocion')
         return response
 
 
@@ -216,7 +216,7 @@ class PromocionUpdateView(StaffRequiredMixin, UpdateView):
             
         )
 
-        messages.success(self.request, f"Promoción '{promocion.nombre}' actualizada correctamente.")
+        messages.success(self.request, f"Promoción '{promocion.nombre}' actualizada correctamente.", extra_tags='promocion')
         return response
 
 
@@ -243,7 +243,7 @@ class PromocionDeleteView(StaffRequiredMixin, DeleteView):
             prioridad="media"
         )
 
-        messages.success(self.request, f"La promoción '{nombre_promo}' fue eliminada del sistema.")
+        messages.success(self.request, f"La promoción '{nombre_promo}' fue eliminada del sistema.", extra_tags='promocion')
         return response
 
 
@@ -277,7 +277,7 @@ def toggle_estado_promocion(request, pk):
             'label': nuevo_estado_str
         })
 
-    messages.info(request, f"La promoción '{promocion.nombre}' ahora está {nuevo_estado_str}.")
+    messages.info(request, f"La promoción '{promocion.nombre}' ahora está {nuevo_estado_str}.", extra_tags='promocion')
     return redirect('gestion_promociones')
 
 

@@ -129,7 +129,7 @@ def guias_guardar(request):
                 tipo="Guía Turístico",
                 prioridad="media"
             )
-            messages.success(request, f"Guía '{user_obj.get_full_name() or user_obj.username}' actualizado correctamente.")
+            messages.success(request, f"Guía '{user_obj.get_full_name() or user_obj.username}' actualizado correctamente.", extra_tags='guia')
         else:
             # Nuevo Registro
             username = request.POST.get('username', '').strip()
@@ -175,7 +175,7 @@ def guias_guardar(request):
                 tipo="Guía Turístico",
                 prioridad="media"
             )
-            messages.success(request, f"Guía '{user_obj.get_full_name() or user_obj.username}' registrado exitosamente.")
+            messages.success(request, f"Guía '{user_obj.get_full_name() or user_obj.username}' registrado exitosamente.", extra_tags='guia')
 
     return redirect('gestion_guias')
 
@@ -199,7 +199,7 @@ def guias_toggle_estado(request, id):
             tipo="Guía Turístico",
             prioridad="media"
         )
-        messages.success(request, f"La cuenta del guía '{user_obj.username}' ha sido {estado_txt}.")
+        messages.success(request, f"La cuenta del guía '{user_obj.username}' ha sido {estado_txt}.", extra_tags='guia')
 
     return redirect('gestion_guias')
 
@@ -230,6 +230,6 @@ def asignar_rol_guia(request, id):
             tipo="Guía Turístico",
             prioridad="media"
         )
-        messages.success(request, msg)
+        messages.success(request, msg, extra_tags='guia')
 
     return redirect('gestion_guias')

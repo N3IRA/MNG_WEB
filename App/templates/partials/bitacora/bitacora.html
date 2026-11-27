@@ -32,7 +32,11 @@
             {% elif 'cancelacion' in tag %}background-color: rgba(220, 53, 69, 0.14); color: #dc3545;
             {% elif 'exportar' in tag or 'descarga' in tag %}background-color: rgba(2, 132, 199, 0.14); color: #0284c7;
             {% elif 'copiar' in tag %}background-color: rgba(124, 58, 237, 0.14); color: #7c3aed;
+            {% elif 'guia' in tag %}background-color: rgba(234, 88, 12, 0.14); color: #ea580c;
             {% elif 'usuario' in tag or 'perfil' in tag %}background-color: rgba(8, 145, 178, 0.14); color: #0891b2;
+            {% elif 'blog' in tag %}background-color: rgba(79, 70, 229, 0.14); color: #4f46e5;
+            {% elif 'promocion' in tag %}background-color: rgba(168, 85, 247, 0.14); color: #9333ea;
+            {% elif 'calificacion' in tag %}background-color: rgba(245, 158, 11, 0.14); color: #d97706;
             {% elif 'pqrs' in tag %}background-color: rgba(225, 29, 72, 0.14); color: #e11d48;
             {% elif 'success' in tag %}background-color: rgba(44, 110, 60, 0.12); color: #2c6e3c;
             {% elif 'error' in tag or 'danger' in tag %}background-color: rgba(220, 53, 69, 0.12); color: #dc3545;
@@ -63,8 +67,16 @@
               <i class="bi bi-cloud-arrow-down-fill fs-5"></i>
             {% elif 'copiar' in tag %}
               <i class="bi bi-clipboard-check-fill fs-5"></i>
+            {% elif 'guia' in tag %}
+              <i class="bi bi-person-badge-fill fs-5"></i>
             {% elif 'usuario' in tag or 'perfil' in tag %}
               <i class="bi bi-person-check-fill fs-5"></i>
+            {% elif 'blog' in tag %}
+              <i class="bi bi-journal-richtext fs-5"></i>
+            {% elif 'promocion' in tag %}
+              <i class="bi bi-megaphone-fill fs-5"></i>
+            {% elif 'calificacion' in tag %}
+              <i class="bi bi-star-fill fs-5"></i>
             {% elif 'pqrs' in tag %}
               <i class="bi bi-chat-heart-fill fs-5"></i>
             {% elif 'success' in tag %}
@@ -92,7 +104,11 @@
               {% elif 'cancelacion' in tag or 'error' in tag or 'danger' in tag %}color: #991b1b;
               {% elif 'exportar' in tag or 'descarga' in tag %}color: #0369a1;
               {% elif 'copiar' in tag %}color: #6d28d9;
+              {% elif 'guia' in tag %}color: #9a3412;
               {% elif 'usuario' in tag or 'perfil' in tag %}color: #0e7490;
+              {% elif 'blog' in tag %}color: #3730a3;
+              {% elif 'promocion' in tag %}color: #6b21a8;
+              {% elif 'calificacion' in tag %}color: #b45309;
               {% elif 'pqrs' in tag %}color: #be123c;
               {% else %}color: #075985;{% endif %}">
               {% if 'reserva' in tag %}¡Acción de Reserva!
@@ -107,7 +123,11 @@
               {% elif 'cancelacion' in tag %}¡Cancelación de Reserva!
               {% elif 'exportar' in tag or 'descarga' in tag %}¡Exportación de Datos!
               {% elif 'copiar' in tag %}¡Copiado al Portapapeles!
+              {% elif 'guia' in tag %}¡Gestión de Guía!
               {% elif 'usuario' in tag or 'perfil' in tag %}¡Gestión de Usuario!
+              {% elif 'blog' in tag %}¡Gestión de Blog!
+              {% elif 'promocion' in tag %}¡Gestión de Promoción!
+              {% elif 'calificacion' in tag %}¡Opinión y Calificación!
               {% elif 'pqrs' in tag %}¡Atención y PQRS!
               {% elif 'success' in tag %}¡Operación Exitosa!
               {% elif 'error' in tag or 'danger' in tag %}¡Atención - Error!
@@ -136,7 +156,11 @@
             {% elif 'warning' in tag %}background-color: #f59e0b;
             {% elif 'exportar' in tag or 'descarga' in tag %}background-color: #0284c7;
             {% elif 'copiar' in tag %}background-color: #7c3aed;
+            {% elif 'guia' in tag %}background-color: #ea580c;
             {% elif 'usuario' in tag or 'perfil' in tag %}background-color: #0891b2;
+            {% elif 'blog' in tag %}background-color: #4f46e5;
+            {% elif 'promocion' in tag %}background-color: #9333ea;
+            {% elif 'calificacion' in tag %}background-color: #d97706;
             {% elif 'pqrs' in tag %}background-color: #e11d48;
             {% else %}background-color: #0284c7;{% endif %}">
           </div>

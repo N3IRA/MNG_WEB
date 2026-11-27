@@ -126,12 +126,11 @@ class GestionReservasListView(ListView):
 
 
 @method_decorator(requiere_administrador, name='dispatch')
-class CrearReservaAdminView(SuccessMessageMixin, CreateView):
+class CrearReservaAdminView(CreateView):
     model = Reserva
     form_class = ReservaForm
     template_name = 'admin/reserva/agregar_reserva.html'
     success_url = reverse_lazy('gestion_reservas')
-    success_message = "¡La reserva ha sido creada con éxito!"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -258,6 +257,7 @@ class CrearReservaAdminView(SuccessMessageMixin, CreateView):
             except Exception as e:
                 logger.error(f"Error enviando correo de reserva creada (admin): {e}")
 
+        messages.success(self.request, f"Reserva #{self.object.id} para '{self.object.paquete.nombre}' creada con éxito.", extra_tags='reserva')
         return response
 
 
@@ -386,6 +386,7 @@ class EditarReservaAdminView(UpdateView):
                     except Exception as e:
                         print(f"Error enviando correo de actualización de reserva: {e}")
                 
+        messages.success(self.request, f"Reserva #{reserva.id} para '{reserva.paquete.nombre}' actualizada exitosamente.", extra_tags='reserva')
         return response
 
 @method_decorator(requiere_administrador, name='dispatch')
@@ -413,6 +414,7 @@ class EliminarReservaAdminView(DeleteView):
                 prioridad="alta"
             )
 
+        messages.success(self.request, f"La reserva #{reserva_id} fue eliminada exitosamente.", extra_tags='reserva')
         return super().form_valid(form)
 
 
@@ -608,7 +610,8 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
 
         messages.success(
             request,
-            f"La reserva #{reserva.id} ha sido cancelada exitosamente sin ninguna penalidad."
+            f"La reserva #{reserva.id} ha sido cancelada exitosamente sin ninguna penalidad.",
+            extra_tags='reserva'
         )
         return redirect('mis_cancelaciones')
 
@@ -727,7 +730,7 @@ def cancelar_reserva_usuario(request, reserva_id=None, pk=None):
         })
         return response
 
-    messages.success(request, f"Tu solicitud de cancelación para la reserva #{reserva.id} fue enviada para revisión administrativa.")
+    messages.success(request, f"Tu solicitud de cancelación para la reserva #{reserva.id} fue enviada para revisión administrativa.", extra_tags='reserva')
     return redirect('mis_cancelaciones')
 
 @login_required(login_url='login')
@@ -982,7 +985,7 @@ def guardar_reserva(request, paquete_id):
         ).start()
 
         messages.success(
-            request, "¡Tu reserva ha sido creada exitosamente! Se ha enviado una confirmación a tu correo.")
+            request, "¡Tu reserva ha sido creada exitosamente! Se ha enviado una confirmación a tu correo.", extra_tags='reserva')
         return redirect('mis_reservas_usuario')
 
     return redirect('reservas')
@@ -1521,7 +1524,7 @@ def modificar_personas_reserva(request, reserva_id):
             realizado_por_admin=False
         )
 
-    messages.success(request, 'La cantidad de personas fue modificada correctamente.')
+    messages.success(request, 'La cantidad de personas fue modificada correctamente.', extra_tags='reserva')
     return redirect('mis_reservas_usuario')
 
 
@@ -1669,7 +1672,8 @@ def reducir_personas_reserva_pagada(request, reserva_id):
 
     messages.success(
         request,
-        f"Reserva actualizada a {adultos} adulto(s) y {menores} menor(es). Se liberaron {cupos_liberados} cupo(s) y se generó la Nota de Crédito {nota_credito.codigo}. {detalle_dinero}"
+        f"Reserva actualizada a {adultos} adulto(s) y {menores} menor(es). Se liberaron {cupos_liberados} cupo(s) y se generó la Nota de Crédito {nota_credito.codigo}. {detalle_dinero}",
+        extra_tags='reserva'
     )
     return redirect('mis_reservas_usuario')
 

@@ -92,7 +92,7 @@ def perfil_turista_view(request):
         form = form_class(request.POST, request.FILES, instance=user)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Tu perfil ha sido actualizado correctamente.')
+            messages.success(request, 'Tu perfil ha sido actualizado correctamente.', extra_tags='usuario')
             return redirect(request.path)
         else:
             errores_txt = [str(err[0]) for err in form.errors.values()]
@@ -196,7 +196,7 @@ def configuracion_usuario_view(request):
                 user.save()
                 from django.contrib.auth import update_session_auth_hash
                 update_session_auth_hash(request, user)
-                messages.success(request, '¡Tu contraseña ha sido actualizada con éxito!')
+                messages.success(request, '¡Tu contraseña ha sido actualizada con éxito!', extra_tags='usuario')
             else:
                 errores_txt = [str(err[0]) for err in form_clave.errors.values()]
                 messages.error(request, f"Error al actualizar la contraseña: {' '.join(errores_txt)}")
@@ -222,7 +222,7 @@ def configuracion_usuario_view(request):
             request.session['pref_tema_visual'] = tema_visual
             request.session['pref_idioma'] = idioma_pref
 
-            messages.success(request, 'Preferencias del sistema y notificaciones actualizadas correctamente.')
+            messages.success(request, 'Preferencias del sistema y notificaciones actualizadas correctamente.', extra_tags='usuario')
             return redirect('configuracion_usuario')
 
         # 3. Actualizar Contacto Rápido
@@ -242,14 +242,14 @@ def configuracion_usuario_view(request):
                 user.residencia = residencia
 
             user.save()
-            messages.success(request, 'Información de contacto y datos personales actualizados.')
+            messages.success(request, 'Información de contacto y datos personales actualizados.', extra_tags='usuario')
             return redirect('configuracion_usuario')
 
         # 4. Cerrar Otras Sesiones
         elif accion == 'cerrar_otras_sesiones':
             from django.contrib.auth import update_session_auth_hash
             update_session_auth_hash(request, user)
-            messages.success(request, 'Se han revocado las credenciales en otros dispositivos.')
+            messages.success(request, 'Se han revocado las credenciales en otros dispositivos.', extra_tags='usuario')
             return redirect('configuracion_usuario')
 
     # Preferencias actuales de la sesión (o defaults)
@@ -691,7 +691,7 @@ def usuarios_guardar(request):
                 tipo="Usuario",
                 prioridad="media"
             )
-            messages.success(request, f"Usuario '{user_obj.username}' actualizado correctamente.")
+            messages.success(request, f"Usuario '{user_obj.username}' actualizado correctamente.", extra_tags='usuario')
         else:
             username = request.POST.get('username', '').strip()
             if not username:
@@ -736,7 +736,7 @@ def usuarios_guardar(request):
                 tipo="Usuario",
                 prioridad="media"
             )
-            messages.success(request, f"Usuario '{user_obj.username}' creado exitosamente.")
+            messages.success(request, f"Usuario '{user_obj.username}' creado exitosamente.", extra_tags='usuario')
 
     return redirect('gestion_usuarios')
 
@@ -760,6 +760,6 @@ def usuarios_toggle_estado(request, id):
             tipo="Usuario",
             prioridad="media"
         )
-        messages.success(request, f"La cuenta de '{user_obj.username}' ha sido {estado_txt}.")
+        messages.success(request, f"La cuenta de '{user_obj.username}' ha sido {estado_txt}.", extra_tags='usuario')
 
     return redirect('gestion_usuarios')
