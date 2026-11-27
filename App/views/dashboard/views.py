@@ -375,6 +375,9 @@ def perfil_admin(request):
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
         telefono = request.POST.get('telefono', '').strip()
+        pais = request.POST.get('pais', '').strip()
+        departamento = request.POST.get('departamento', '').strip()
+        ciudad = request.POST.get('ciudad', '').strip()
         residencia = request.POST.get('residencia', '').strip()
         imagen_perfil = request.FILES.get('imagen_perfil')
 
@@ -384,6 +387,18 @@ def perfil_admin(request):
             user.last_name = last_name
         if telefono:
             user.telefono = telefono
+        if pais:
+            user.pais = pais
+        if departamento:
+            try:
+                user.departamento = int(departamento)
+            except (ValueError, TypeError):
+                user.departamento = None
+        if ciudad:
+            try:
+                user.ciudad = int(ciudad)
+            except (ValueError, TypeError):
+                user.ciudad = None
         if residencia:
             user.residencia = residencia
         if imagen_perfil:
@@ -397,4 +412,15 @@ def perfil_admin(request):
         messages.success(request, 'Perfil actualizado correctamente.')
         return redirect('admin_perfil')
 
-    return render(request, 'usuario/perfil/perfil.html', {'user': user})
+    from App.models import Reserva, PQRS, Paquete
+    stats_admin = {
+        'total_reservas': Reserva.objects.count(),
+        'reservas_pendientes': Reserva.objects.filter(estado_reserva__in=['pendiente', 'PENDIENTE']).count(),
+        'total_paquetes': Paquete.objects.filter(estado=True).count(),
+        'total_pqrs_pendientes': PQRS.objects.exclude(estado__in=['cerrado', 'cerrada', 'resuelto']).count(),
+    }
+
+    return render(request, 'usuario/perfil/perfil.html', {
+        'user': user,
+        'stats_admin': stats_admin,
+    })

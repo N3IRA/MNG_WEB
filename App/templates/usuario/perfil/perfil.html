@@ -56,9 +56,12 @@
             />
             <label
               for="id_imagen_perfil"
+              id="label_cambiar_avatar"
               class="position-absolute bottom-0 end-0 p-2 bg-light border border-2 border-white rounded-circle shadow-sm"
               title="Cambiar foto de perfil"
-              style="cursor: pointer"
+              style="cursor: pointer; transition: all 0.2s ease;"
+              onmouseover="this.classList.add('bg-white', 'shadow')"
+              onmouseout="this.classList.remove('bg-white', 'shadow')"
             >
               <i class="bi bi-camera-fill text-dark fs-6"></i>
             </label>
@@ -110,14 +113,6 @@
 
         <!-- Botones de Acción de Cabecera -->
         <div class="d-flex align-items-center gap-2 mb-md-2">
-          <button
-            type="submit"
-            form="form_perfil_principal"
-            class="btn btn-success rounded-3 px-4 py-2 fw-semibold shadow-sm d-inline-flex align-items-center gap-2"
-          >
-            <i class="bi bi-check2-circle fs-5"></i>
-            <span>Guardar Cambios</span>
-          </button>
           {% if user.es_turista %}
           <a
             href="{% url 'dashboard_turista' %}"
@@ -141,7 +136,6 @@
           {% endif %}
         </div>
       </div>
-
       <!-- Barra de Pestañas estilo Facebook -->
       <hr class="my-3 opacity-25" />
       <ul class="nav nav-pills gap-2 small fw-semibold">
@@ -149,6 +143,7 @@
           <a
             class="nav-link active rounded-pill px-4 py-2 bg-success text-white"
             href="#seccion-info"
+            title="Ver sección de información general"
           >
             <i class="bi bi-person-lines-fill me-1"></i> Información General
           </a>
@@ -158,6 +153,7 @@
           <a
             class="nav-link rounded-pill px-4 py-2 text-dark bg-light"
             href="{% url 'mis_reservas_usuario' %}"
+            title="Consultar mis reservas y viajes"
           >
             <i class="bi bi-calendar2-check me-1 text-success"></i> Mis Viajes
           </a>
@@ -166,6 +162,7 @@
           <a
             class="nav-link rounded-pill px-4 py-2 text-dark bg-light"
             href="{% url 'mis_comprobantes' %}"
+            title="Consultar mis comprobantes y pagos"
           >
             <i class="bi bi-wallet2 me-1 text-success"></i> Pagos
           </a>
@@ -175,6 +172,7 @@
           <a
             class="nav-link rounded-pill px-4 py-2 text-dark bg-light"
             href="{% url 'gestion_usuarios' %}"
+            title="Ir a gestión de usuarios del sistema"
           >
             <i class="bi bi-people me-1 text-dark"></i> Usuarios
           </a>
@@ -183,6 +181,7 @@
           <a
             class="nav-link rounded-pill px-4 py-2 text-dark bg-light"
             href="{% url 'gestion_reservas' %}"
+            title="Ir a gestión de reservas del sistema"
           >
             <i class="bi bi-calendar-check me-1 text-dark"></i> Reservas
           </a>
@@ -201,6 +200,66 @@
       <!-- Card Detalles -->
       <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
         <h5 class="fw-bold text-dark mb-3">Detalles</h5>
+
+        {% if user.es_turista and stats_turista %}
+        <!-- Resumen de Viajes y Reservas (Estilo moderno de plataformas de reserva) -->
+        <div class="row g-2 mb-3 pb-3 border-bottom text-center">
+          <div class="col-4">
+            <div class="p-2 bg-light rounded-3 border">
+              <span class="d-block fw-bold fs-5 text-dark">{{ stats_turista.total_reservas|default:0 }}</span>
+              <small class="text-muted" style="font-size: 0.75rem;">Reservas</small>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2 bg-light rounded-3 border">
+              <span class="d-block fw-bold fs-5 text-success">{{ stats_turista.reservas_confirmadas|default:0 }}</span>
+              <small class="text-muted" style="font-size: 0.75rem;">Confirmadas</small>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2 bg-light rounded-3 border">
+              <span class="d-block fw-bold fs-5 text-warning">{{ stats_turista.reservas_pendientes|default:0 }}</span>
+              <small class="text-muted" style="font-size: 0.75rem;">Pendientes</small>
+            </div>
+          </div>
+          {% if stats_turista.saldo_favor and stats_turista.saldo_favor > 0 %}
+          <div class="col-12 mt-2">
+            <div class="p-2 bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3 d-flex align-items-center justify-content-between px-3">
+              <span class="small fw-semibold text-success"><i class="bi bi-wallet2 me-1"></i>Saldo a Favor:</span>
+              <span class="fw-bold text-success">COP ${{ stats_turista.saldo_favor|floatformat:0 }}</span>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        {% elif user.es_admin and stats_admin %}
+        <!-- Resumen de Métricas de Administración -->
+        <div class="row g-2 mb-3 pb-3 border-bottom text-center">
+          <div class="col-6">
+            <div class="p-2 bg-light rounded-3 border">
+              <span class="d-block fw-bold fs-5 text-success">{{ stats_admin.total_reservas|default:0 }}</span>
+              <small class="text-muted" style="font-size: 0.75rem;">Total Reservas</small>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-2 bg-light rounded-3 border">
+              <span class="d-block fw-bold fs-5 text-warning">{{ stats_admin.reservas_pendientes|default:0 }}</span>
+              <small class="text-muted" style="font-size: 0.75rem;">Por Gestionar</small>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-2 bg-light rounded-3 border">
+              <span class="d-block fw-bold fs-5 text-primary">{{ stats_admin.total_paquetes|default:0 }}</span>
+              <small class="text-muted" style="font-size: 0.75rem;">Tours Activos</small>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-2 bg-light rounded-3 border">
+              <span class="d-block fw-bold fs-5 text-danger">{{ stats_admin.total_pqrs_pendientes|default:0 }}</span>
+              <small class="text-muted" style="font-size: 0.75rem;">PQRS Pendientes</small>
+            </div>
+          </div>
+        </div>
+        {% endif %}
 
         <div class="d-flex flex-column gap-3 text-secondary small">
           <div class="d-flex align-items-center gap-3">
@@ -341,30 +400,59 @@
           <a
             href="{% url 'panel_rapido' %}"
             class="btn btn-outline-dark btn-sm rounded-pill d-inline-flex align-items-center gap-1"
+            title="Ir al Panel Rápido"
           >
             <i class="bi bi-house-door-fill"></i> Panel Rápido
           </a>
           <a
             href="{% url 'mis_reservas_usuario' %}"
             class="btn btn-outline-primary btn-sm rounded-pill d-inline-flex align-items-center gap-1"
+            title="Ver mis reservas de viajes"
           >
             <i class="bi bi-calendar2-check-fill"></i> Reservas
           </a>
           <a
             href="{% url 'mis_comprobantes' %}"
             class="btn btn-outline-secondary btn-sm rounded-pill d-inline-flex align-items-center gap-1"
+            title="Ver mis comprobantes de pago"
           >
             <i class="bi bi-wallet2"></i> Comprobantes
           </a>
           <a
             href="{% url 'mis_pqrs' %}"
             class="btn btn-outline-danger btn-sm rounded-pill d-inline-flex align-items-center gap-1"
+            title="Consultar y radicar solicitudes PQRS"
           >
             <i class="bi bi-envelope-check-fill"></i> PQRS
           </a>
           {% endif %}
         </div>
       </div>
+
+      {% if user.es_turista and reservas_recientes %}
+      <!-- Card Próximas Reservas / Actividad Reciente (Estilo Booking/Airbnb) -->
+      <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mt-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h6 class="fw-bold text-dark mb-0">Mis Viajes Recientes</h6>
+          <a href="{% url 'mis_reservas_usuario' %}" class="small text-success text-decoration-none fw-semibold" title="Ver todas mis reservas">
+            Ver todas <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+        <div class="d-flex flex-column gap-2">
+          {% for r in reservas_recientes %}
+          <div class="p-2.5 rounded-3 bg-light border d-flex align-items-center justify-content-between gap-2">
+            <div class="text-truncate">
+              <strong class="d-block text-dark small text-truncate">{{ r.paquete.nombre }}</strong>
+              <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ r.fecha_inicio|date:"d M Y" }}</small>
+            </div>
+            <span class="badge rounded-pill {% if r.estado_reserva == 'confirmada' or r.estado_reserva == 'completada' %}bg-success{% elif r.estado_reserva == 'pendiente' %}bg-warning text-dark{% else %}bg-secondary{% endif %} small text-capitalize flex-shrink-0">
+              {{ r.estado_reserva }}
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
     </div>
 
     <!-- Columna Derecha: Tarjeta de Edición de Perfil -->
@@ -380,9 +468,10 @@
             </p>
           </div>
           <span
-            class="badge bg-light text-dark border rounded-pill px-3 py-2 small fw-semibold"
+            id="badge_modo_perfil"
+            class="badge bg-light text-secondary border rounded-pill px-3 py-2 small fw-semibold"
           >
-            <i class="bi bi-pencil-fill text-success me-1"></i> Modo Edición
+            <i class="bi bi-lock-fill text-muted me-1"></i> Modo Solo Lectura
           </span>
         </div>
 
@@ -390,6 +479,9 @@
           method="POST"
           enctype="multipart/form-data"
           id="form_perfil_principal"
+          data-confirm-title="¿Confirmar Acción?"
+          data-confirm-message="¿Estás seguro de que deseas guardar los cambios en tu perfil?"
+          data-confirm-btn="Sí, guardar cambios"
         >
           {% csrf_token %}
           <input type="hidden" name="editar_perfil" value="1" />
@@ -409,7 +501,9 @@
                     id="first_name"
                     value="{{ user.first_name }}"
                     placeholder="Nombres"
+                    title="Ingresa tus nombres"
                     required
+                    disabled
                   />
                   <label for="first_name">Nombres</label>
                 </div>
@@ -423,7 +517,9 @@
                     id="last_name"
                     value="{{ user.last_name }}"
                     placeholder="Apellidos"
+                    title="Ingresa tus apellidos"
                     required
+                    disabled
                   />
                   <label for="last_name">Apellidos</label>
                 </div>
@@ -492,41 +588,78 @@
             </div>
           </div>
 
-          <!-- Celular y Residencia -->
+          <!-- Contacto (Celular) -->
           <div class="mb-3">
+            <label
+              for="telefono"
+              class="form-label small fw-semibold text-secondary mb-1"
+              >Número de Celular</label
+            >
+            <input
+              type="tel"
+              name="telefono"
+              class="form-control rounded-3 py-2.5"
+              id="telefono"
+              value="{{ user.telefono }}"
+              placeholder="3001234567"
+              title="Ingresa tu número de teléfono celular"
+              required
+              disabled
+            />
+          </div>
+
+          <!-- Sección: Ubicación Geográfica (Selectores en cascada) -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-secondary mb-1"
+              >Lugar de origen o residencia</label
+            >
             <div class="row g-2">
-              <div class="col-sm-6">
-                <label
-                  for="telefono"
-                  class="form-label small fw-semibold text-secondary mb-1"
-                  >Número de Celular</label
-                >
-                <input
-                  type="tel"
-                  name="telefono"
-                  class="form-control rounded-3 py-2.5"
-                  id="telefono"
-                  value="{{ user.telefono }}"
-                  placeholder="3001234567"
+              <div class="col-md-4">
+                <select
+                  name="pais"
+                  id="id_pais"
+                  class="form-select rounded-3 py-2.5 px-3 text-secondary"
+                  data-prev="{{ user.pais|default:'' }}"
+                  title="Selecciona tu país de origen o residencia"
                   required
-                />
-              </div>
-              <div class="col-sm-6">
-                <label
-                  for="residencia"
-                  class="form-label small fw-semibold text-secondary mb-1"
-                  >Ciudad / Residencia</label
+                  disabled
                 >
-                <input
-                  type="text"
-                  name="residencia"
-                  class="form-control rounded-3 py-2.5"
-                  id="residencia"
-                  value="{{ user.residencia }}"
-                  placeholder="Mongua, Boyacá"
-                />
+                  <option value="" selected disabled>País...</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <select
+                  name="departamento"
+                  id="id_departamento"
+                  class="form-select rounded-3 py-2.5 px-3 text-secondary"
+                  data-prev="{{ user.departamento|default:'' }}"
+                  title="Selecciona tu departamento o estado"
+                  required
+                  disabled
+                >
+                  <option value="" selected disabled>Departamento...</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <select
+                  name="ciudad"
+                  id="id_ciudad"
+                  class="form-select rounded-3 py-2.5 px-3 text-secondary"
+                  data-prev="{{ user.ciudad|default:'' }}"
+                  title="Selecciona tu municipio o ciudad"
+                  required
+                  disabled
+                >
+                  <option value="" selected disabled>Municipio...</option>
+                </select>
               </div>
             </div>
+            <input
+              type="hidden"
+              name="residencia"
+              id="id_residencia"
+              value="{{ user.residencia|default:'' }}"
+            />
           </div>
 
           {% if user.es_guia %}
@@ -549,6 +682,8 @@
                   id="licencia"
                   value="{{ user.numero_tarjeta_profesional|default:'' }}"
                   placeholder="Tarjeta Profesional / RNT"
+                  title="Ingresa tu número de tarjeta profesional o RNT"
+                  disabled
                 />
               </div>
               <div class="col-sm-6">
@@ -564,20 +699,36 @@
                   id="salud"
                   value="{{ user.entidad_salud|default:'' }}"
                   placeholder="EPS o Entidad de Salud"
+                  title="Ingresa tu EPS o entidad de salud"
+                  disabled
                 />
               </div>
             </div>
           </div>
           {% endif %}
 
-          <!-- Botón de Guardado -->
-          <div class="d-flex justify-content-end pt-3 border-top">
+          <!-- Botones de Acción (Guardar y Cancelar) -->
+          <div class="d-flex justify-content-end align-items-center pt-3 border-top gap-2">
             <button
-              type="submit"
-              class="btn btn-success rounded-3 px-5 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2"
+              type="button"
+              id="btn_cancelar_edicion"
+              class="btn btn-outline-secondary rounded-3 px-4 py-2.5 fw-semibold shadow-sm d-none align-items-center gap-2"
+              title="Cancelar edición y descartar cambios"
             >
-              <i class="bi bi-check-circle-fill"></i>
-              <span>Guardar Cambios</span>
+              <i class="bi bi-x-circle"></i>
+              <span>Cancelar</span>
+            </button>
+            <button
+              type="button"
+              id="btn_toggle_editar_bottom"
+              class="btn btn-outline-success rounded-3 px-5 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2"
+              title="Habilitar edición del perfil"
+              data-confirm-title="¿Confirmar Acción?"
+              data-confirm-message="¿Estás seguro de que deseas guardar los cambios en tu perfil?"
+              data-confirm-btn="Sí, guardar cambios"
+            >
+              <i class="bi bi-pencil-square"></i>
+              <span class="btn-text">Editar</span>
             </button>
           </div>
         </form>
@@ -586,6 +737,7 @@
   </div>
 </div>
 
+<script src="{% static 'js/auth/paises_ciudades.js' %}"></script>
 <script>
   function previewAvatar(input) {
     if (input.files && input.files[0]) {
@@ -597,7 +749,184 @@
         }
       };
       reader.readAsDataURL(input.files[0]);
+
+      // Activar automáticamente el modo de edición y botón de guardado
+      if (typeof window.activarModoEdicionPerfil === "function") {
+        window.activarModoEdicionPerfil();
+      }
     }
   }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    let modoEdicionActivo = false;
+    const form = document.getElementById("form_perfil_principal");
+    const btnTop = document.getElementById("btn_toggle_editar_top");
+    const btnBottom = document.getElementById("btn_toggle_editar_bottom");
+    const btnCancelar = document.getElementById("btn_cancelar_edicion");
+    const badgeModo = document.getElementById("badge_modo_perfil");
+    const avatarInput = document.getElementById("id_imagen_perfil");
+    const avatarLabel = document.getElementById("label_cambiar_avatar");
+    const avatarImg = document.getElementById("avatar-preview-img");
+    const avatarOriginalSrc = avatarImg ? avatarImg.src : "";
+
+    function activarModoEdicion() {
+      if (modoEdicionActivo) return;
+      modoEdicionActivo = true;
+
+      // Habilitar campos del formulario
+      if (form) {
+        const campos = form.querySelectorAll("input:not([type='hidden']), select, textarea");
+        campos.forEach(function (campo) {
+          campo.removeAttribute("disabled");
+          campo.disabled = false;
+        });
+      }
+
+      // Desbloquear selectores de país, departamento y ciudad
+      if (typeof window.habilitarSelectoresGeografia === "function") {
+        window.habilitarSelectoresGeografia();
+      } else {
+        const selectPais = document.getElementById("id_pais");
+        if (selectPais) {
+          selectPais.removeAttribute("disabled");
+          selectPais.disabled = false;
+        }
+      }
+
+      // Asegurar avatar activo
+      if (avatarInput) {
+        avatarInput.removeAttribute("disabled");
+        avatarInput.disabled = false;
+      }
+
+      // Actualizar badge de estado
+      if (badgeModo) {
+        badgeModo.className = "badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2 small fw-semibold";
+        badgeModo.innerHTML = '<i class="bi bi-pencil-fill me-1"></i> Modo Edición Activo';
+      }
+
+      // Mostrar botón Cancelar
+      if (btnCancelar) {
+        btnCancelar.classList.remove("d-none");
+        btnCancelar.classList.add("d-inline-flex");
+      }
+
+      // Actualizar botón superior si existe
+      if (btnTop) {
+        btnTop.type = "button";
+        btnTop.className = "btn btn-success rounded-3 px-4 py-2 fw-semibold shadow-sm d-inline-flex align-items-center gap-2";
+        btnTop.title = "Guardar los cambios en el perfil";
+        btnTop.innerHTML = '<i class="bi bi-check2-circle fs-5"></i> <span class="btn-text">Guardar Cambios</span>';
+      }
+
+      // Actualizar botón inferior
+      if (btnBottom) {
+        btnBottom.type = "submit";
+        btnBottom.className = "btn btn-success rounded-3 px-5 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2";
+        btnBottom.title = "Guardar los cambios en el perfil";
+        btnBottom.innerHTML = '<i class="bi bi-check-circle-fill"></i> <span class="btn-text">Guardar Cambios</span>';
+      }
+
+      // Focalizar el primer campo editable
+      const firstInput = document.getElementById("first_name");
+      if (firstInput) {
+        firstInput.focus();
+      }
+    }
+
+    function cancelarModoEdicion() {
+      if (!modoEdicionActivo) return;
+      modoEdicionActivo = false;
+
+      // Restaurar formulario a su estado original
+      if (form) {
+        form.reset();
+        const campos = form.querySelectorAll("input:not([type='hidden']), select, textarea");
+        campos.forEach(function (campo) {
+          campo.setAttribute("disabled", "disabled");
+          campo.disabled = true;
+        });
+      }
+
+      // Restaurar avatar previsualizado si fue cambiado
+      if (avatarInput) {
+        avatarInput.value = "";
+      }
+      if (avatarImg && avatarOriginalSrc) {
+        avatarImg.src = avatarOriginalSrc;
+      }
+
+      // Ocultar botón Cancelar
+      if (btnCancelar) {
+        btnCancelar.classList.add("d-none");
+        btnCancelar.classList.remove("d-inline-flex");
+      }
+
+      // Restaurar badge de estado
+      if (badgeModo) {
+        badgeModo.className = "badge bg-light text-secondary border rounded-pill px-3 py-2 small fw-semibold";
+        badgeModo.innerHTML = '<i class="bi bi-lock-fill text-muted me-1"></i> Modo Solo Lectura';
+      }
+
+      // Restaurar botón superior si existe
+      if (btnTop) {
+        btnTop.type = "button";
+        btnTop.className = "btn btn-outline-success rounded-3 px-4 py-2 fw-semibold shadow-sm d-inline-flex align-items-center gap-2";
+        btnTop.title = "Habilitar edición del perfil";
+        btnTop.innerHTML = '<i class="bi bi-pencil-square fs-5"></i> <span class="btn-text">Editar</span>';
+      }
+
+      // Restaurar botón inferior
+      if (btnBottom) {
+        btnBottom.type = "button";
+        btnBottom.className = "btn btn-outline-success rounded-3 px-5 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2";
+        btnBottom.title = "Habilitar edición del perfil";
+        btnBottom.innerHTML = '<i class="bi bi-pencil-square"></i> <span class="btn-text">Editar</span>';
+      }
+    }
+
+    // Exponer función globalmente para previewAvatar
+    window.activarModoEdicionPerfil = activarModoEdicion;
+
+    // Si el usuario hace clic directamente en el label de avatar, activar también modo de edición
+    if (avatarLabel) {
+      avatarLabel.addEventListener("click", function () {
+        activarModoEdicion();
+      });
+    }
+
+    if (btnCancelar) {
+      btnCancelar.addEventListener("click", function (e) {
+        e.preventDefault();
+        cancelarModoEdicion();
+      });
+    }
+
+    if (btnTop) {
+      btnTop.addEventListener("click", function (e) {
+        if (!modoEdicionActivo) {
+          e.preventDefault();
+          activarModoEdicion();
+        } else if (form) {
+          e.preventDefault();
+          if (form.checkValidity()) {
+            form.requestSubmit(btnTop);
+          } else {
+            form.reportValidity();
+          }
+        }
+      });
+    }
+
+    if (btnBottom) {
+      btnBottom.addEventListener("click", function (e) {
+        if (!modoEdicionActivo) {
+          e.preventDefault();
+          activarModoEdicion();
+        }
+        // Si ya está activo, el type="submit" dispara naturalmente el submit y el modal de confirmación
+      });
+    }
+  });
 </script>
 {% endblock %}

@@ -252,4 +252,20 @@ document.addEventListener("DOMContentLoaded", function () {
         window.updatePrice();
     };
 
+    // 3. Manejo de envío inmediato del formulario de reserva
+    const formReserva = document.getElementById('form-reserva-tour');
+    if (formReserva) {
+        formReserva.addEventListener('submit', function (e) {
+            const submitBtn = document.getElementById('submit_reserva_btn');
+            if (submitBtn) {
+                // Dar retroalimentación visual inmediata antes de la redirección
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <span>Confirmando reserva...</span>
+                `;
+            }
+        });
+    }
+
 });

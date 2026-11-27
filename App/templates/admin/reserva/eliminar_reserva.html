@@ -28,10 +28,10 @@
                     <form method="POST">
                         {% csrf_token %}
                         <div class="d-grid gap-2 d-md-block">
-                            <button type="submit" class="btn btn-danger px-4">
+                            <button type="submit" class="btn btn-danger px-4" title="Confirmar eliminación permanente de la reserva">
                                 <i class="bi bi-trash"></i> Sí, eliminar permanentemente
                             </button>
-                            <a href="{% url 'gestion_reservas' %}" class="btn btn-secondary px-4">
+                            <a href="{% url 'gestion_reservas' %}" class="btn btn-secondary px-4" title="Cancelar y volver a la gestión de reservas">
                                 Cancelar
                             </a>
                         </div>

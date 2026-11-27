@@ -192,6 +192,7 @@
             action="{% if paquete %}{% url 'guardar_reserva' paquete.id %}{% else %}#{% endif %}"
             method="POST"
             id="form-reserva-tour"
+            data-no-confirm="true"
           >
             {% csrf_token %}
 
@@ -348,6 +349,7 @@
                 type="submit"
                 data-auth="{% if user.is_authenticated %}true{% else %}false{% endif %}"
                 {% if not user.is_authenticated %}disabled{% endif %}
+                title="Confirmar y registrar mi reserva en el sistema"
               >
                 <span>Confirmar Reserva</span>
               </button>

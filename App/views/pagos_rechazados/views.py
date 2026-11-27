@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.db.models import Sum
 from django.utils import timezone
 from App.models import Pago, Reserva, Usuario
-from App.utils import crear_notificacion_sistema
+from App.utils import crear_notificacion_sistema, enviar_correo_pago_aprobado
 
 
 def es_admin(user):
@@ -76,6 +76,7 @@ def admin_reconsiderar_pago(request, pk):
                 tipo="Comprobante de Pago",
                 prioridad="alta"
             )
+        enviar_correo_pago_aprobado(pago, request=request)
         messages.success(request, f"¡Pago #{pago.pk} reconsiderado y aprobado con éxito! La reserva ha sido confirmada.")
     return redirect('admin_pagos_rechazados')
 

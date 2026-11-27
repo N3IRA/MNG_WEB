@@ -1,6 +1,7 @@
 import hashlib
 import json
 import re
+import threading
 from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 import logging
@@ -828,6 +829,7 @@ def comprobante_multiple(request):
 
 @login_required
 @solo_turistas_requerido
+@login_required(login_url='login')
 def guardar_reserva(request, paquete_id):
     if request.method == 'POST':
         paquete = get_object_or_404(Paquete, id=paquete_id)
@@ -972,15 +974,15 @@ def guardar_reserva(request, paquete_id):
             url_mis_reservas=url_mis_reservas
         )
         
-        correo_enviado = enviar_correo_html_monagua(
-            asunto, mensaje_texto, request.user.email, html_bonito)
+        # Enviar correo de confirmación en hilo en segundo plano para redirección inmediata
+        threading.Thread(
+            target=enviar_correo_html_monagua,
+            args=(asunto, mensaje_texto, request.user.email, html_bonito),
+            daemon=True
+        ).start()
 
-        if correo_enviado:
-            messages.success(
-                request, "¡Tu reserva ha sido creada exitosamente! Se ha enviado una confirmación a tu correo.")
-        else:
-            messages.success(
-                request, "¡Tu reserva ha sido registrada con éxito en el sistema!")
+        messages.success(
+            request, "¡Tu reserva ha sido creada exitosamente! Se ha enviado una confirmación a tu correo.")
         return redirect('mis_reservas_usuario')
 
     return redirect('reservas')

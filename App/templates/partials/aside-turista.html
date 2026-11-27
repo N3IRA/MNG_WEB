@@ -14,8 +14,6 @@
       <a
         href="/"
         class="text-decoration-none"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Monagua — Inicio"
       >
         <img
@@ -28,8 +26,6 @@
       <button
         class="btn btn-sm btn-outline-secondary border-0 text-white-50 p-1 toggle-sidebar-btn"
         type="button"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Desplegar menú lateral"
       >
         <i class="bi bi-layout-sidebar fs-5"></i>
@@ -44,8 +40,6 @@
         href="/"
         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 text-white-50 text-white-hover"
         style="width: 44px; height: 44px"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Página Principal"
       >
         <i class="bi bi-house fs-5"></i>
@@ -55,8 +49,6 @@
         href="{% url 'dashboard_turista' %}"
         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'dashboard_turista' %}bg-success text-white shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
         style="width: 44px; height: 44px"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Panel de Control"
         aria-label="Panel de Control"
       >
@@ -67,8 +59,6 @@
         href="{% url 'perfil_detalles' %}"
         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 {% if request.resolver_match.url_name == 'perfil_detalles' %}bg-success text-white shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
         style="width: 44px; height: 44px"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Mi Perfil"
       >
         <i class="bi bi-person-gear fs-5"></i>
@@ -82,8 +72,6 @@
         style="width: 44px; height: 44px"
         type="button"
         data-expand-sidebar-target="#menuTuristaViajes"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Mis Viajes"
       >
         <i class="bi bi-compass fs-5"></i>
@@ -95,8 +83,6 @@
         style="width: 44px; height: 44px"
         type="button"
         data-expand-sidebar-target="#menuTuristaComunidad"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Comunidad"
       >
         <i class="bi bi-chat-left-heart fs-5"></i>
@@ -106,8 +92,6 @@
         href="{% url 'listar_notificaciones' %}"
         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 text-white-50 text-white-hover"
         style="width: 44px; height: 44px"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Notificaciones"
       >
         <i class="bi bi-bell fs-5"></i>
@@ -117,8 +101,6 @@
         href="{% url 'configuracion_usuario' %}"
         class="d-flex align-items-center justify-content-center text-decoration-none rounded-3 text-white-50 text-white-hover"
         style="width: 44px; height: 44px"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="Configuración"
       >
         <i class="bi bi-gear fs-5"></i>
@@ -132,8 +114,6 @@
       <a
         href="{% url 'perfil_detalles' %}"
         class="position-relative d-inline-block text-decoration-none"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         title="{{ user.first_name|default:user.username }} (Viajero)"
       >
         <img
@@ -153,8 +133,6 @@
         <button
           type="submit"
           class="btn btn-sm btn-outline-danger border-0 p-2 text-white-50 text-white-hover rounded-2"
-          data-bs-toggle="tooltip"
-          data-bs-placement="right"
           title="Cerrar Sesión"
         >
           <i class="bi bi-power fs-5"></i>
@@ -177,6 +155,7 @@
       <a
         href="/"
         class="d-flex align-items-center gap-2 text-white text-decoration-none overflow-hidden"
+        title="Monagua — Ir a página principal"
       >
         <img
           src="{% static 'img/logo_monagua.webp' %}"
@@ -201,8 +180,6 @@
         class="btn btn-sm btn-outline-secondary border-0 text-white-50 toggle-sidebar-btn rounded-2 p-1"
         type="button"
         aria-label="Contraer menú"
-        data-bs-toggle="tooltip"
-        data-bs-placement="bottom"
         title="Contraer menú"
       >
         <i class="bi bi-layout-sidebar-inset fs-5"></i>
@@ -221,6 +198,7 @@
       <a
         href="/"
         class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none text-white-50 text-white-hover"
+        title="Ir a la Página Principal"
       >
         <i class="bi bi-house fs-6" style="width: 20px"></i>
         <span class="small">Página Principal</span>
@@ -229,7 +207,7 @@
       <a
         href="{% url 'dashboard_turista' %}"
         class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'dashboard_turista' %}bg-success text-white fw-semibold shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
-        title="Ir al Panel de Control"
+        title="Ir al Panel de Control de viajero"
         aria-label="Ir al Panel de Control"
       >
         <i class="bi bi-grid-1x2 fs-6" style="width: 20px"></i>
@@ -239,6 +217,7 @@
       <a
         href="{% url 'perfil_detalles' %}"
         class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'perfil_detalles' %}bg-success text-white fw-semibold shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
+        title="Ver y editar mi perfil de viajero"
       >
         <i class="bi bi-person-gear fs-6" style="width: 20px"></i>
         <span class="small">Mi Perfil</span>
@@ -259,6 +238,7 @@
           data-bs-toggle="collapse"
           data-bs-target="#menuTuristaViajes"
           aria-expanded="{% if request.resolver_match.url_name in 'mis_reservas_usuario mis_cancelaciones mis_reembolsos_usuario mis_comprobantes mis_facturas' %}true{% else %}false{% endif %}"
+          title="Desplegar menú de Mis Viajes"
         >
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-compass fs-6" style="width: 20px"></i>
@@ -277,6 +257,7 @@
               <a
                 href="{% url 'mis_reservas_usuario' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'mis_reservas_usuario' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Ver mis reservas de viajes"
                 ><i class="bi bi-calendar-check"></i> Mis Reservas</a
               >
             </li>
@@ -284,6 +265,7 @@
               <a
                 href="{% url 'mis_cancelaciones' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'mis_cancelaciones' %}bg-danger text-white fw-bold shadow-sm{% else %}text-danger text-white-hover{% endif %}"
+                title="Ver mis solicitudes de cancelación"
                 ><i class="bi bi-x-octagon"></i> Mis Cancelaciones</a
               >
             </li>
@@ -291,6 +273,7 @@
               <a
                 href="{% url 'mis_reembolsos_usuario' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'mis_reembolsos_usuario' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Consultar estado de mis reembolsos"
                 ><i class="bi bi-cash-stack"></i> Mis Reembolsos</a
               >
             </li>
@@ -298,6 +281,7 @@
               <a
                 href="{% url 'mis_comprobantes' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'mis_comprobantes' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Consultar mis comprobantes de pago"
                 ><i class="bi bi-wallet2"></i> Mis Comprobantes</a
               >
             </li>
@@ -305,6 +289,7 @@
               <a
                 href="{% url 'mis_facturas' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'mis_facturas' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Descargar y consultar mis facturas"
                 ><i class="bi bi-file-earmark-ruled"></i> Mis Facturas</a
               >
             </li>
@@ -327,6 +312,7 @@
           data-bs-toggle="collapse"
           data-bs-target="#menuTuristaComunidad"
           aria-expanded="{% if request.resolver_match.url_name in 'mis_calificaciones blog mis_pqrs' %}true{% else %}false{% endif %}"
+          title="Desplegar menú de Comunidad"
         >
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-chat-left-heart fs-6" style="width: 20px"></i>
@@ -345,6 +331,7 @@
               <a
                 href="{% url 'mis_calificaciones' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'mis_calificaciones' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Ver mis calificaciones y reseñas"
                 ><i class="bi bi-star"></i> Mis Calificaciones</a
               >
             </li>
@@ -352,6 +339,7 @@
               <a
                 href="{% url 'blog' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'blog' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Leer artículos de aventura en el Blog"
                 ><i class="bi bi-journal-text"></i> Blog</a
               >
             </li>
@@ -359,6 +347,7 @@
               <a
                 href="{% url 'mis_pqrs' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'mis_pqrs' %}bg-success text-white fw-bold shadow-sm{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Radicar y consultar mis PQRS"
                 ><i class="bi bi-envelope"></i> Mis PQRS</a
               >
             </li>
@@ -377,6 +366,7 @@
       <a
         href="{% url 'listar_notificaciones' %}"
         class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'listar_notificaciones' %}bg-success text-white fw-semibold shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
+        title="Ver notificaciones del sistema"
       >
         <i class="bi bi-bell fs-6" style="width: 20px"></i>
         <span class="small">Notificaciones</span>
@@ -385,6 +375,7 @@
       <a
         href="{% url 'configuracion_usuario' %}"
         class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'configuracion_usuario' %}bg-success text-white fw-semibold shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
+        title="Configuración de la cuenta"
       >
         <i class="bi bi-gear fs-6" style="width: 20px"></i>
         <span class="small">Configuración</span>
@@ -393,6 +384,7 @@
       <a
         href="{% url 'manual_usuario' %}"
         class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'manual_usuario' %}bg-success text-white fw-semibold shadow-sm border-start border-3 border-success{% else %}text-white-50 text-white-hover{% endif %}"
+        title="Ver y descargar manual de usuario"
       >
         <i class="bi bi-book-half fs-6" style="width: 20px"></i>
         <span class="small">Manual de Usuario</span>
@@ -406,6 +398,8 @@
       <a
         href="{% url 'perfil_detalles' %}"
         class="d-flex align-items-center gap-2 text-decoration-none p-1 rounded-2 text-white-hover"
+        title="{{ user.first_name|default:user.username }} — Ver mi perfil"
+      >
       >
         <img
           src="{% if user.imagen_perfil %}{{ user.imagen_perfil.url }}{% else %}{% static 'img/avatar_pred.webp' %}{% endif %}"

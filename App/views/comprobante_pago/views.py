@@ -9,7 +9,12 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Sum
 from django.utils import timezone
 from App.models import Pago, Reserva, Usuario
-from App.utils import crear_notificacion_sistema, registrar_bitacora
+from App.utils import (
+    crear_notificacion_sistema,
+    registrar_bitacora,
+    enviar_correo_pago_aprobado,
+    enviar_correo_pago_rechazado,
+)
 
 
 def es_admin(user):
@@ -134,12 +139,14 @@ def admin_revisar_comprobante(request, pk):
                         ip_origen=request.META.get('REMOTE_ADDR')
                     )
 
-                    # Registrar notificación en el sistema
+                    # Registrar notificación en el sistema y enviar correos de estado
                     cliente = comprobante.reserva.usuario if comprobante.reserva else None
                     if estado_transaccion == 'aprobado':
                         msg_notif = f"Tu comprobante de pago #{comprobante.pk} fue aprobado y tu reserva #{comprobante.reserva.id if comprobante.reserva else ''} ha sido confirmada exitosamente."
+                        enviar_correo_pago_aprobado(comprobante, request=request)
                     elif estado_transaccion == 'rechazado':
                         msg_notif = f"Tu comprobante #{comprobante.pk} fue rechazado. Motivo: {nota_admin}"
+                        enviar_correo_pago_rechazado(comprobante, request=request)
                     else:
                         msg_notif = f"El comprobante #{comprobante.pk} fue actualizado a '{estado_transaccion}'."
 

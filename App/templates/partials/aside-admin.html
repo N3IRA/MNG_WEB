@@ -204,6 +204,7 @@
       <a
         href="/"
         class="d-flex align-items-center gap-2 text-white text-decoration-none overflow-hidden"
+        title="Monagua — Ir a página principal"
       >
         <img
           src="{% static 'img/logo_monagua.webp' %}"
@@ -247,6 +248,7 @@
       <a
         href="/"
         class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none text-white-50 text-white-hover"
+        title="Ir a la Página Principal"
       >
         <i class="bi bi-house fs-6" style="width: 20px"></i>
         <span class="small">Página Principal</span>
@@ -255,7 +257,7 @@
       <a
         href="{% url 'dashboard_admin' %}"
         class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'dashboard_admin' %}bg-transparent text-white fw-semibold{% else %}text-white-50 text-white-hover{% endif %}"
-        title="Ir al Panel de Control"
+        title="Ir al Panel de Control de administración"
         aria-label="Ir al Panel de Control"
       >
         <i class="bi bi-grid-1x2 fs-6" style="width: 20px"></i>
@@ -265,6 +267,7 @@
       <a
         href="{% url 'estadisticas_admin' %}"
         class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'estadisticas_admin' %}bg-transparent text-white fw-semibold{% else %}text-white-50 text-white-hover{% endif %}"
+        title="Ver métricas y estadísticas del sistema"
       >
         <i class="bi bi-graph-up-arrow fs-6" style="width: 20px"></i>
         <span class="small">Estadísticas</span>
@@ -273,6 +276,7 @@
       <a
         href="{% url 'admin_perfil' %}"
         class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'admin_perfil' %}bg-transparent text-white fw-semibold{% else %}text-white-50 text-white-hover{% endif %}"
+        title="Ver y editar mi perfil de administrador"
       >
         <i class="bi bi-person-vcard fs-6" style="width: 20px"></i>
         <span class="small">Mi Perfil</span>
@@ -281,12 +285,13 @@
       <a
         href="{% url 'listar_calificaciones' %}"
         class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'listar_calificaciones' %}bg-transparent text-white fw-semibold{% else %}text-white-50 text-white-hover{% endif %}"
+        title="Ver calificaciones y opiniones de turistas"
       >
         <i class="bi bi-star fs-6" style="width: 20px"></i>
         <span class="small">Calificaciones</span>
       </a>
 
-      <a href="{% url 'backup' %}" class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'backup' %}bg-transparent text-white fw-semibold{% else %}text-white-50 text-white-hover{% endif %}">
+      <a href="{% url 'backup' %}" class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'backup' %}bg-transparent text-white fw-semibold{% else %}text-white-50 text-white-hover{% endif %}" title="Gestionar respaldos de la base de datos">
         <i class="bi bi-database fs-6" style="width: 20px;"></i>
         <span class="small">Respaldo BD</span>
       </a>
@@ -307,6 +312,7 @@
           data-bs-toggle="collapse"
           data-bs-target="#menuWidePaquetes"
           aria-expanded="{% if request.resolver_match.url_name in 'listar_paquetes listar_actividades listar_tarifas listar_temporadas listar_categorias' %}true{% else %}false{% endif %}"
+          title="Desplegar catálogo de paquetes turísticos"
         >
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-box-seam fs-6" style="width: 20px"></i>
@@ -325,6 +331,7 @@
               <a
                 href="{% url 'listar_categorias' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'listar_categorias' %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Gestionar categorías de paquetes"
                 ><i class="bi bi-bookmark"></i> 1. Categorías</a
               >
             </li>
@@ -332,6 +339,7 @@
               <a
                 href="{% url 'listar_temporadas' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'listar_temporadas' %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Gestionar temporadas turísticas"
                 ><i class="bi bi-calendar-range"></i> 2. Temporadas</a
               >
             </li>
@@ -339,6 +347,7 @@
               <a
                 href="{% url 'listar_actividades' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'listar_actividades' %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Gestionar catálogo de actividades"
                 ><i class="bi bi-activity"></i> 3. Actividades</a
               >
             </li>
@@ -346,6 +355,7 @@
               <a
                 href="{% url 'listar_paquetes' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'listar_paquetes' %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Gestionar paquetes turísticos de Mongua"
                 ><i class="bi bi-box"></i> 4. Paquetes</a
               >
             </li>
@@ -353,6 +363,7 @@
               <a
                 href="{% url 'listar_tarifas' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'listar_tarifas' %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Gestionar tarifas de paquetes"
                 ><i class="bi bi-tag"></i> 5. Tarifas</a
               >
             </li>
@@ -368,6 +379,7 @@
           data-bs-toggle="collapse"
           data-bs-target="#menuWideReservas"
           aria-expanded="{% if request.resolver_match.url_name in 'gestion_reservas listar_cancelaciones admin_comprobantes listar_reembolsos_admin registrar_reembolso_admin' or 'reembolso' in request.resolver_match.url_name %}true{% else %}false{% endif %}"
+          title="Desplegar gestión de reservas y pagos"
         >
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-calendar2-check fs-6" style="width: 20px"></i>
@@ -386,6 +398,7 @@
               <a
                 href="{% url 'gestion_reservas' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'gestion_reservas' %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Gestionar reservas del sistema"
                 ><i class="bi bi-calendar2-check"></i> Reservas</a
               >
             </li>
@@ -393,6 +406,7 @@
               <a
                 href="{% url 'listar_cancelaciones' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'listar_cancelaciones' %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Gestionar solicitudes de cancelación"
                 ><i class="bi bi-x-circle"></i> Cancelaciones</a
               >
             </li>
@@ -400,6 +414,7 @@
               <a
                 href="{% url 'listar_reembolsos_admin' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name in 'listar_reembolsos_admin registrar_reembolso_admin' %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Gestionar reembolsos a viajeros"
                 ><i class="bi bi-cash-stack text-white"></i> Reembolsos</a
               >
             </li>
@@ -407,6 +422,7 @@
               <a
                 href="{% url 'admin_comprobantes' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'admin_comprobantes' %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Revisar comprobantes de pago recibidos"
                 ><i class="bi bi-receipt"></i> Comprobantes</a
               >
             </li>
@@ -414,6 +430,7 @@
               <a
                 href="{% url 'admin_pagos_rechazados' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'admin_pagos_rechazados' %}bg-danger text-white fw-bold shadow-sm rounded-pill px-3{% else %}text-danger text-white-hover{% endif %}"
+                title="Consultar pagos rechazados"
                 ><i class="bi bi-x-octagon"></i> Pagos Rechazados</a
               >
             </li>
@@ -429,6 +446,7 @@
           data-bs-toggle="collapse"
           data-bs-target="#menuWideUsuarios"
           aria-expanded="{% if 'gestion_usuarios' in request.resolver_match.url_name or 'gestion_guias' in request.resolver_match.url_name %}true{% else %}false{% endif %}"
+          title="Desplegar gestión de usuarios y guías"
         >
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-people fs-6" style="width: 20px"></i>
@@ -447,6 +465,7 @@
               <a
                 href="{% url 'gestion_usuarios' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'gestion_usuarios' %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Gestionar usuarios del sistema"
                 ><i class="bi bi-person"></i> Gestionar Usuarios</a
               >
             </li>
@@ -454,6 +473,7 @@
               <a
                 href="{% url 'gestion_guias' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if 'gestion_guias' in request.resolver_match.url_name %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Gestionar guías oficiales"
                 ><i class="bi bi-person-badge"></i> Gestionar Guías</a
               >
             </li>
@@ -476,6 +496,7 @@
           data-bs-toggle="collapse"
           data-bs-target="#menuWideContenido"
           aria-expanded="{% if 'blog' in request.resolver_match.url_name or 'pqrs' in request.resolver_match.url_name or 'promocion' in request.resolver_match.url_name %}true{% else %}false{% endif %}"
+          title="Desplegar gestión de contenido y atención"
         >
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-journal-richtext fs-6" style="width: 20px"></i>
@@ -494,6 +515,7 @@
               <a
                 href="{% url 'listar_blog' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if 'blog' in request.resolver_match.url_name %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Gestionar artículos del blog"
                 ><i class="bi bi-journal-text"></i> Blog</a
               >
             </li>
@@ -501,6 +523,7 @@
               <a
                 href="{% url 'listar_pqrs' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if request.resolver_match.url_name == 'listar_pqrs' %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Atender solicitudes y PQRS de usuarios"
                 ><i class="bi bi-envelope-paper"></i> PQRS</a
               >
             </li>
@@ -508,6 +531,7 @@
               <a
                 href="{% url 'gestion_promociones' %}"
                 class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 small text-decoration-none {% if 'promocion' in request.resolver_match.url_name %}bg-transparent text-white fw-bold{% else %}text-white-50 text-white-hover{% endif %}"
+                title="Gestionar promociones y descuentos"
                 ><i class="bi bi-megaphone"></i> Promociones</a
               >
             </li>
@@ -526,6 +550,7 @@
       <a
         href="{% url 'listar_notificaciones' %}"
         class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'listar_notificaciones' %}bg-transparent text-white fw-semibold{% else %}text-white-50 text-white-hover{% endif %}"
+        title="Ver notificaciones del sistema"
       >
         <i class="bi bi-bell fs-6" style="width: 20px"></i>
         <span class="small">Notificaciones</span>
@@ -534,6 +559,7 @@
       <a
         href="{% url 'configuracion_usuario' %}"
         class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'configuracion_usuario' %}bg-transparent text-white fw-semibold{% else %}text-white-50 text-white-hover{% endif %}"
+        title="Configuración de la cuenta"
       >
         <i class="bi bi-gear fs-6" style="width: 20px"></i>
         <span class="small">Configuración</span>
@@ -542,6 +568,7 @@
       <a
         href="{% url 'manual_usuario' %}"
         class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none position-relative {% if request.resolver_match.url_name == 'manual_usuario' %}bg-transparent text-white fw-semibold{% else %}text-white-50 text-white-hover{% endif %}"
+        title="Ver y descargar manual de usuario"
       >
         <i class="bi bi-book-half fs-6" style="width: 20px"></i>
         <span class="small">Manual de Usuario</span>
@@ -555,6 +582,8 @@
       <a
         href="{% url 'admin_perfil' %}"
         class="d-flex align-items-center gap-2 text-decoration-none p-1 rounded-2 text-white-hover"
+        title="{{ user.first_name|default:'Administrador' }} — Ver perfil"
+      >
       >
         <img
           src="{% if user.imagen_perfil %}{{ user.imagen_perfil.url }}{% else %}{% static 'img/avatar_pred.webp' %}{% endif %}"

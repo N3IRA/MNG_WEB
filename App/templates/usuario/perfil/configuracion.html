@@ -52,68 +52,10 @@
           </div>
         </div>
 
-        <!-- Barra de Nivel de Seguridad de la Cuenta -->
-        <div class="col-lg-5">
-          <div class="bg-black bg-opacity-25 rounded-4 p-3 border border-secondary border-opacity-25">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <span class="text-white-50 small fw-semibold">Nivel de Seguridad de la Cuenta</span>
-              <span class="text-success fw-bold small">{{ score_seguridad }}%</span>
-            </div>
-            <div class="progress bg-dark" style="height: 8px;">
-              <div class="progress-bar bg-success rounded-pill" role="progressbar" style="width: {{ score_seguridad }}%;" aria-valuenow="{{ score_seguridad }}" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-            <div class="d-flex justify-content-between align-items-center mt-2">
-              <small class="text-white-50 fs-8">
-                {% if score_seguridad >= 100 %}
-                  <i class="bi bi-shield-fill-check text-success me-1"></i>Cuenta con protección completa
-                {% else %}
-                  <i class="bi bi-shield-exclamation text-warning me-1"></i>Completa tu teléfono y documento
-                {% endif %}
-              </small>
-              <a href="{% url 'perfil_detalles' %}" class="text-success small fw-bold text-decoration-none">Ver Perfil &rarr;</a>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
 
-    <!-- Pestañas Horizontales Estilo Nav Pill -->
-    <div class="card-body px-4 py-3 bg-light border-top">
-      <ul class="nav nav-pills gap-2 small fw-semibold flex-nowrap overflow-x-auto pb-1" id="configTabNav" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active rounded-pill px-4 py-2 d-inline-flex align-items-center gap-2" id="nav-seguridad-tab" data-bs-toggle="pill" data-bs-target="#panel-seguridad" type="button" role="tab">
-            <i class="bi bi-shield-lock-fill text-primary"></i>
-            <span>Seguridad y Clave</span>
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link rounded-pill px-4 py-2 text-dark bg-white border d-inline-flex align-items-center gap-2" id="nav-notif-tab" data-bs-toggle="pill" data-bs-target="#panel-notif" type="button" role="tab">
-            <i class="bi bi-bell-fill text-success"></i>
-            <span>Notificaciones</span>
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link rounded-pill px-4 py-2 text-dark bg-white border d-inline-flex align-items-center gap-2" id="nav-contacto-tab" data-bs-toggle="pill" data-bs-target="#panel-contacto" type="button" role="tab">
-            <i class="bi bi-person-lines-fill text-warning"></i>
-            <span>Datos y Contacto</span>
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link rounded-pill px-4 py-2 text-dark bg-white border d-inline-flex align-items-center gap-2" id="nav-interfaz-tab" data-bs-toggle="pill" data-bs-target="#panel-interfaz" type="button" role="tab">
-            <i class="bi bi-sliders text-info"></i>
-            <span>Interfaz y Preferencias</span>
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link rounded-pill px-4 py-2 text-dark bg-white border d-inline-flex align-items-center gap-2" id="nav-privacidad-tab" data-bs-toggle="pill" data-bs-target="#panel-privacidad" type="button" role="tab">
-            <i class="bi bi-download text-secondary"></i>
-            <span>Privacidad y Datos</span>
-          </button>
-        </li>
-      </ul>
-    </div>
-  </div>
+  
 
   <!-- ══════════════════════════════════════════════════════════════ -->
   <!-- 2. PANELES DE CONFIGURACIÓN -->

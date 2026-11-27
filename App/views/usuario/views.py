@@ -97,7 +97,35 @@ def perfil_turista_view(request):
             errores_txt = [str(err[0]) for err in form.errors.values()]
             messages.error(request, f"Error al actualizar perfil: {' '.join(errores_txt)}")
 
-    return render(request, 'usuario/perfil/perfil.html', {'user': user})
+    reservas_recientes = []
+    stats_turista = {}
+    stats_admin = {}
+
+    if getattr(user, 'es_admin', False) or user.is_staff or user.is_superuser:
+        from App.models import Reserva, Pago, PQRS, Paquete
+        stats_admin = {
+            'total_reservas': Reserva.objects.count(),
+            'reservas_pendientes': Reserva.objects.filter(estado_reserva__in=['pendiente', 'PENDIENTE']).count(),
+            'total_paquetes': Paquete.objects.filter(estado=True).count(),
+            'total_pqrs_pendientes': PQRS.objects.exclude(estado__in=['cerrado', 'cerrada', 'resuelto']).count(),
+        }
+    else:
+        from App.models import Reserva, Pago
+        reservas_qs = Reserva.objects.filter(usuario=user).select_related('paquete').order_by('-fecha_registro', '-id')
+        reservas_recientes = list(reservas_qs[:3])
+        stats_turista = {
+            'total_reservas': reservas_qs.count(),
+            'reservas_confirmadas': reservas_qs.filter(estado_reserva__in=['confirmada', 'CONFIRMADA', 'completada']).count(),
+            'reservas_pendientes': reservas_qs.filter(estado_reserva__in=['pendiente', 'PENDIENTE']).count(),
+            'saldo_favor': getattr(user, 'saldo_favor', 0),
+        }
+
+    return render(request, 'usuario/perfil/perfil.html', {
+        'user': user,
+        'reservas_recientes': reservas_recientes,
+        'stats_turista': stats_turista,
+        'stats_admin': stats_admin,
+    })
  
  
 @login_required

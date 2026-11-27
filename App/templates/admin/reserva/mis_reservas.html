@@ -76,11 +76,11 @@
                         <div class="row g-0 align-items-stretch">
                             
                             <!-- Foto del Paquete -->
-                            <div class="col-md-3 position-relative u-style-47f2ed6c" style="min-height: 180px;">
+                            <div class="col-md-3 position-relative overflow-hidden" style="min-height: 200px;">
                                 {% if reserva.paquete.imagen %}
-                                    <img src="{{ reserva.paquete.imagen.url }}" class="w-100 h-100 position-absolute start-0 top-0" style="object-fit: cover;" alt="{{ reserva.paquete.nombre }}">
+                                    <img src="{{ reserva.paquete.imagen.url }}" class="w-100 h-100 position-absolute start-0 top-0" style="object-fit: cover; object-position: center;" alt="{{ reserva.paquete.nombre }}" title="{{ reserva.paquete.nombre }}">
                                 {% else %}
-                                    <img src="{% static 'img/Fondo.webp' %}" class="w-100 h-100 position-absolute start-0 top-0" style="object-fit: cover;" alt="Imagen por defecto">
+                                    <img src="{% static 'img/Fondo.webp' %}" class="w-100 h-100 position-absolute start-0 top-0" style="object-fit: cover; object-position: center;" alt="Imagen por defecto" title="Monagua - Experiencia Turística">
                                 {% endif %}
                             </div>
 
@@ -214,14 +214,15 @@
                                     <div class="mb-3">
                                         <div class="d-flex flex-wrap align-items-center gap-2">
                                             {% if reserva.puede_modificar_personas %}
-                                                <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-2 fw-semibold"
+                                                <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-2 fw-semibold w-100 w-sm-auto"
+                                                        title="Modificar número de adultos y menores antes de pagar"
                                                         onclick="document.getElementById('personas-panel-{{ reserva.id }}').classList.toggle('d-none');">
                                                     <i class="bi bi-people-fill me-1"></i> Modificar personas
                                                 </button>
                                             {% endif %}
 
                                             {% if reserva.puede_reducir_personas_pagada %}
-                                                <button type="button" class="btn btn-outline-primary rounded-pill px-3 py-2 fw-semibold"
+                                                <button type="button" class="btn btn-outline-primary rounded-pill px-3 py-2 fw-semibold w-100 w-sm-auto"
                                                         title="Reduce el número de participantes sin cancelar toda tu reserva"
                                                         onclick="document.getElementById('reducir-panel-{{ reserva.id }}').classList.toggle('d-none');">
                                                     <i class="bi bi-person-dash-fill me-1"></i> Reducir personas (Cancelación parcial)
@@ -231,24 +232,35 @@
 
                                         <!-- Panel de Modificación de personas (antes del pago, máximo 10) -->
                                         {% if reserva.puede_modificar_personas %}
-                                            <div id="personas-panel-{{ reserva.id }}" class="d-none mt-3 p-3 bg-white rounded-4 border">
-                                                <div class="small text-muted mb-2">
-                                                    Máximo 10 adultos y máximo 10 menores. Debes realizar el cambio como mínimo 48 horas antes del viaje.
+                                            <div id="personas-panel-{{ reserva.id }}" class="d-none mt-3 p-3 bg-light rounded-4 border">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span class="small fw-bold text-dark">
+                                                        <i class="bi bi-people-fill text-success me-1"></i> Modificar cantidad de personas
+                                                    </span>
+                                                    <button type="button" class="btn-close btn-sm" onclick="document.getElementById('personas-panel-{{ reserva.id }}').classList.add('d-none');" aria-label="Cerrar" title="Cerrar panel"></button>
                                                 </div>
+                                                <p class="small text-muted mb-3">
+                                                    Máximo 10 adultos y 10 menores. Debes realizar el cambio como mínimo 48 horas antes del viaje.
+                                                </p>
                                                 <form method="POST" action="{% url 'modificar_personas_reserva' reserva.id %}">
                                                     {% csrf_token %}
                                                     <div class="row g-2 align-items-end">
-                                                        <div class="col-5">
-                                                            <label class="form-label small fw-bold">Adultos</label>
-                                                            <input type="number" name="adultos" class="form-control" min="1" max="10" value="{{ reserva.numero_adultos }}" required>
+                                                        <div class="col-6 col-md-4">
+                                                            <label class="form-label small fw-bold text-dark mb-1">
+                                                                <i class="bi bi-person me-1 text-success"></i>Adultos
+                                                            </label>
+                                                            <input type="number" name="adultos" class="form-control rounded-3" min="1" max="10" value="{{ reserva.numero_adultos }}" required title="Cantidad de adultos (mínimo 1, máximo 10)">
                                                         </div>
-                                                        <div class="col-5">
-                                                            <label class="form-label small fw-bold">Menores</label>
-                                                            <input type="number" name="menores" class="form-control" min="0" max="10" value="{{ reserva.numero_menores }}" required>
+                                                        <div class="col-6 col-md-4">
+                                                            <label class="form-label small fw-bold text-dark mb-1">
+                                                                <i class="bi bi-person-heart me-1 text-success"></i>Menores
+                                                            </label>
+                                                            <input type="number" name="menores" class="form-control rounded-3" min="0" max="10" value="{{ reserva.numero_menores }}" required title="Cantidad de menores (mínimo 0, máximo 10)">
                                                         </div>
-                                                        <div class="col-2">
-                                                            <button type="submit" class="btn btn-dark w-100 fw-semibold" title="Guardar cantidad de personas">
-                                                                <i class="bi bi-check-circle me-1"></i> Guardar
+                                                        <div class="col-12 col-md-4 mt-2 mt-md-0">
+                                                            <button type="submit" class="btn btn-dark w-100 rounded-3 py-2 fw-semibold shadow-sm d-flex align-items-center justify-content-center gap-1.5" title="Guardar cambios de personas en la reserva">
+                                                                <i class="bi  text-success"></i>
+                                                                <span>Guardar cambios</span>
                                                             </button>
                                                         </div>
                                                     </div>
@@ -308,9 +320,9 @@
                                                         <input type="text" name="motivo" class="form-control form-control-sm" maxlength="200" placeholder="Ej: Dos acompañantes no podrán viajar">
                                                     </div>
 
-                                                    <div class="d-flex justify-content-end gap-2">
-                                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="document.getElementById('reducir-panel-{{ reserva.id }}').classList.add('d-none');">Cancelar</button>
-                                                        <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold" title="Confirmar reducción y generar nota de crédito">
+                                                    <div class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2">
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-2 py-sm-1 w-100 w-sm-auto" onclick="document.getElementById('reducir-panel-{{ reserva.id }}').classList.add('d-none');" title="Cancelar operación">Cancelar</button>
+                                                        <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 py-2 py-sm-1 fw-semibold w-100 w-sm-auto shadow-sm" title="Confirmar reducción y generar nota de crédito">
                                                             <i class="bi bi-check2-circle me-1"></i> Confirmar reducción
                                                         </button>
                                                     </div>
@@ -387,11 +399,11 @@
                                                 <textarea name="motivo_cancelacion" id="motivo_{{ reserva.id }}" class="form-control rounded-3" rows="2" placeholder="Cuéntanos brevemente la razón de la cancelación..." required></textarea>
                                             </div>
 
-                                            <div class="d-flex justify-content-end gap-2">
-                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="document.getElementById('cancelar-panel-{{ reserva.id }}').classList.add('d-none');">
+                                            <div class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-2 py-sm-1 w-100 w-sm-auto" onclick="document.getElementById('cancelar-panel-{{ reserva.id }}').classList.add('d-none');" title="Descartar cancelación">
                                                     Descartar
                                                 </button>
-                                                <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3.5 fw-semibold shadow-sm">
+                                                <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3.5 py-2 py-sm-1 fw-semibold shadow-sm w-100 w-sm-auto" title="Confirmar cancelación de la reserva">
                                                     <i class="bi bi-trash3-fill me-1"></i> Confirmar Cancelación
                                                 </button>
                                             </div>
@@ -400,18 +412,19 @@
 
                                     <!-- Acciones y Botones Principales -->
                                     <div class="mt-auto d-flex gap-2 flex-wrap pt-3 border-top align-items-center justify-content-between">
-                                        <div class="d-flex gap-2 flex-wrap align-items-center">
+                                        <div class="d-flex gap-2 flex-wrap align-items-center w-100 w-sm-auto">
                                             {% with estado=reserva.estado_reserva %}
 
                                                 <!-- CASO 1: SIN PAGO O CON PAGO RECHAZADO -->
                                                 {% if not reserva.pago or reserva.pago.estado_transaccion == 'rechazado' %}
                                                     {% if estado == 'pendiente' %}
-                                                        <a href="{% url 'enviar_comprobante' %}?reserva_id={{ reserva.id }}&tipo=reserva" class="btn btn-success rounded-pill px-4 py-2 shadow-sm fw-semibold">
+                                                        <a href="{% url 'enviar_comprobante' %}?reserva_id={{ reserva.id }}&tipo=reserva" class="btn btn-success rounded-pill px-4 py-2 shadow-sm fw-semibold w-100 w-sm-auto text-center" title="Enviar comprobante de pago para esta reserva">
                                                             <i class="bi bi-wallet2 me-1"></i> {% if reserva.pago.estado_transaccion == 'rechazado' %}Corregir pago{% else %}Pagar reserva{% endif %}
                                                         </a>
                                                         
                                                         <button type="button" 
-                                                                class="btn btn-outline-danger rounded-pill px-4 py-2 shadow-sm fw-semibold"
+                                                                class="btn btn-outline-danger rounded-pill px-4 py-2 shadow-sm fw-semibold w-100 w-sm-auto"
+                                                                title="Cancelar esta reserva"
                                                                 onclick="var p = document.getElementById('cancelar-panel-{{ reserva.id }}'); p.classList.toggle('d-none');">
                                                             <i class="bi bi-x-circle me-1"></i> Cancelar reserva
                                                         </button>
@@ -422,7 +435,8 @@
                                                     {% if estado == 'pendiente' or estado == 'confirmada' or reserva.estado_cancelacion == 'pendiente' %}
                                                         {% if reserva.estado_cancelacion != 'pendiente' %}
                                                             <button type="button" 
-                                                                    class="btn btn-danger rounded-pill px-4 py-2 shadow-sm fw-semibold"
+                                                                    class="btn btn-danger rounded-pill px-4 py-2 shadow-sm fw-semibold w-100 w-sm-auto"
+                                                                    title="Cancelar esta reserva"
                                                                     onclick="var p = document.getElementById('cancelar-panel-{{ reserva.id }}'); p.classList.toggle('d-none');">
                                                                 <i class="bi bi-x-circle me-1"></i> Cancelar reserva
                                                             </button>
@@ -430,7 +444,7 @@
                                                             <span class="badge bg-warning text-dark border border-warning rounded-pill px-3 py-2 fw-semibold">
                                                                 <i class="bi bi-clock-history me-1"></i> Cancelación en revisión
                                                             </span>
-                                                            <a href="{% url 'mis_cancelaciones' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1.5 fw-semibold">
+                                                            <a href="{% url 'mis_cancelaciones' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1.5 fw-semibold" title="Ir a Mis Cancelaciones">
                                                                 <i class="bi bi-eye me-1"></i> Ver en Mis Cancelaciones
                                                             </a>
                                                         {% endif %}
@@ -438,7 +452,7 @@
 
                                                     <!-- FACTURA SI YA ESTÁ CONFIRMADA -->
                                                     {% if estado == 'confirmada' and reserva.pago and reserva.pago.estado_transaccion == 'aprobado' %}
-                                                        <a href="{% url 'ver_factura' reserva.id %}" target="_blank" class="btn btn-success rounded-pill px-4 py-2 shadow-sm fw-semibold">
+                                                        <a href="{% url 'ver_factura' reserva.id %}" target="_blank" class="btn btn-success rounded-pill px-4 py-2 shadow-sm fw-semibold w-100 w-sm-auto text-center" title="Abrir y visualizar factura">
                                                             <i class="bi bi-file-earmark-ruled me-1"></i> Ver Factura
                                                         </a>
                                                     {% endif %}
@@ -447,7 +461,7 @@
                                             {% endwith %}
                                         </div>
 
-                                        <div class="text-muted small">
+                                        <div class="text-muted small mt-2 mt-sm-0">
                                             <i class="bi bi-clock me-1"></i> Registrada el {{ reserva.fecha_registro|date:"d/m/Y H:i" }}
                                         </div>
                                     </div>

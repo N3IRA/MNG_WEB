@@ -252,6 +252,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!selectPais.hasAttribute('disabled') || !selectCiudad.hasAttribute('disabled')) {
           selectCiudad.disabled = false;
         }
+
+        sincronizarResidencia(false);
       })
       .catch(function (error) {
         console.error('Error al cargar ciudades:', error);
@@ -259,16 +261,58 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   }
 
+  function sincronizarResidencia(forzar = true) {
+    const inputResidencia = document.querySelector('input[name="residencia"]') || document.getElementById('residencia') || document.getElementById('id_residencia');
+    if (!inputResidencia) return;
+
+    if (!forzar && inputResidencia.value.trim()) {
+      return; // No sobreescribir si ya tiene valor inicial
+    }
+
+    const paisOpt = selectPais.options[selectPais.selectedIndex];
+    const depOpt = selectDep.options[selectDep.selectedIndex];
+    const ciuOpt = selectCiudad.options[selectCiudad.selectedIndex];
+
+    const ciudadNombre = (ciuOpt && ciuOpt.value) ? ciuOpt.textContent.trim() : '';
+    const depNombre = (depOpt && depOpt.value) ? depOpt.textContent.trim() : '';
+    const paisNombre = (paisOpt && paisOpt.value) ? paisOpt.textContent.trim().replace(/^[\uD800-\uDBFF\uDC00-\uDFFF\s]+/, '').trim() : '';
+
+    const partes = [ciudadNombre, depNombre, paisNombre].filter(Boolean);
+    if (partes.length > 0) {
+      inputResidencia.value = partes.join(', ');
+    }
+  }
+
   // Event Listeners para interacción de usuario
   selectPais.addEventListener('change', function () {
     const selectedVal = this.value;
     cargarDepartamentos(selectedVal, null);
+    sincronizarResidencia(true);
   });
 
   selectDep.addEventListener('change', function () {
     const selectedDepId = this.value;
     cargarCiudades(selectedDepId, null);
+    sincronizarResidencia(true);
   });
+
+  selectCiudad.addEventListener('change', function () {
+    sincronizarResidencia(true);
+  });
+
+  // Función global para desbloquear desde vista de edición de perfil
+  window.habilitarSelectoresGeografia = function () {
+    selectPais.disabled = false;
+    selectPais.removeAttribute('disabled');
+    if (selectPais.value) {
+      selectDep.disabled = false;
+      selectDep.removeAttribute('disabled');
+    }
+    if (selectDep.value) {
+      selectCiudad.disabled = false;
+      selectCiudad.removeAttribute('disabled');
+    }
+  };
 
   // Iniciar la carga inicial
   cargarPaises();

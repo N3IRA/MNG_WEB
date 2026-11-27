@@ -17,17 +17,17 @@
             <p class="text-muted mb-0 small">{{ analitica_subtitulo|default:'Consolidado métrico avanzado e histórico de comportamiento de viajes, transacciones y soporte en Monagua.' }}</p>
         </div>
         <div class="d-flex align-items-center gap-2 flex-wrap me-lg-5 pe-lg-2">
-            <a href="{% url 'gestion_promociones' %}" class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1">
+            <a href="{% url 'gestion_promociones' %}" class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1" title="Gestionar promociones y descuentos">
                 <i class="bi bi-megaphone-fill"></i> Promociones
             </a>
-            <a href="{% url 'gestion_reservas' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1">
+            <a href="{% url 'gestion_reservas' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1" title="Gestionar reservas del sistema">
                 <i class="bi bi-calendar2-check-fill"></i> Reservas
             </a>
             <span class="badge bg-white text-secondary border d-none d-md-inline-flex align-items-center gap-1 px-3 py-2 shadow-sm" title="Fecha actual">
                 <i class="bi bi-calendar3 text-success"></i>
                 <span id="currentDate">{% now "D, j \d\e M. Y" %}</span>
             </span>
-            <button class="btn btn-success text-white btn-sm d-flex align-items-center gap-1" id="btnExportPdf">
+            <button class="btn btn-success text-white btn-sm d-flex align-items-center gap-1" id="btnExportPdf" title="Exportar informe de estadísticas a documento PDF">
                 <i class="bi bi-file-earmark-pdf-fill text-white"></i>
                 <span id="exportLabel" class="text-white">Exportar PDF</span>
             </button>
@@ -368,37 +368,37 @@
         <ul class="nav nav-pills bg-light p-2 rounded-3 mb-4 gap-2 flex-wrap" id="vistasMatrizTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active rounded-3 fw-medium" id="tab-mensual" data-bs-toggle="tab" data-bs-target="#panel-mensual"
-                    type="button" role="tab">
+                    type="button" role="tab" title="Ver reporte mensual de reservas e ingresos">
                     <i class="bi bi-calendar3 me-2"></i>Reporte Mensual
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link rounded-3 fw-medium" id="tab-anual" data-bs-toggle="tab" data-bs-target="#panel-anual"
-                    type="button" role="tab">
+                    type="button" role="tab" title="Ver consolidado anual de estadísticas">
                     <i class="bi bi-calendar-range me-2"></i>Reporte Anual
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link rounded-3 fw-medium" id="tab-destinos" data-bs-toggle="tab" data-bs-target="#panel-destinos"
-                    type="button" role="tab">
+                    type="button" role="tab" title="Analizar las rutas y destinos más frecuentes">
                     <i class="bi bi-compass me-2"></i>Análisis de Rutas Frecuentes
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link rounded-3 fw-medium" id="tab-soporte" data-bs-toggle="tab" data-bs-target="#panel-soporte"
-                    type="button" role="tab">
+                    type="button" role="tab" title="Revisar historial y trazabilidad de PQRS">
                     <i class="bi bi-headset me-2"></i>Trazabilidad de PQRS
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link rounded-3 fw-medium" id="tab-transacciones" data-bs-toggle="tab" data-bs-target="#panel-transacciones"
-                    type="button" role="tab">
+                    type="button" role="tab" title="Consultar historial de pagos y transacciones">
                     <i class="bi bi-credit-card me-2"></i>Historial de Pagos
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link rounded-3 fw-medium" id="tab-calificaciones" data-bs-toggle="tab" data-bs-target="#panel-calificaciones"
-                    type="button" role="tab">
+                    type="button" role="tab" title="Ver calificaciones y valoraciones registradas">
                     <i class="bi bi-star-fill me-2"></i>Calificaciones
                 </button>
             </li>

@@ -167,7 +167,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'monaguamongua@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'ccrolchemrlyhqqh').replace(' ', '')
 DEFAULT_FROM_EMAIL = f"Monagua <{EMAIL_HOST_USER}>"
-EMAIL_TIMEOUT = 10
+EMAIL_TIMEOUT = 25
 
 # ==========================================
 # CONFIGURACIONES DE SEGURIDAD (PRODUCCIÓN Y GLOBAL)

@@ -26,6 +26,9 @@ class PerfilTuristaForm(forms.ModelForm):
             'invalid_image': 'El archivo subido no es una imagen válida (formatos permitidos: JPG, PNG, WebP).'
         }
     )
+    pais = forms.CharField(required=False, max_length=3)
+    departamento = forms.IntegerField(required=False)
+    ciudad = forms.IntegerField(required=False)
 
     class Meta:
         model = Usuario
@@ -33,6 +36,9 @@ class PerfilTuristaForm(forms.ModelForm):
             'first_name',
             'last_name',
             'telefono',
+            'pais',
+            'departamento',
+            'ciudad',
             'residencia',
             'imagen_perfil'
         ]
@@ -88,6 +94,14 @@ class PerfilTuristaForm(forms.ModelForm):
         if foto:
             validar_foto_perfil(foto)
         return foto
+
+    def clean_departamento(self):
+        dep = self.cleaned_data.get('departamento')
+        return dep if dep else None
+
+    def clean_ciudad(self):
+        ciu = self.cleaned_data.get('ciudad')
+        return ciu if ciu else None
 
 
 class PerfilGuiaForm(PerfilTuristaForm):

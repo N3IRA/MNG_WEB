@@ -16,7 +16,7 @@
             <a href="{% url 'dashboard_admin' %}" class="btn btn-outline-success btn-sm rounded-pill d-none d-lg-inline-flex align-items-center gap-1 shadow-sm" title="Ir al Panel de Control de administración" aria-label="Ir al Panel de Control de administración">
                 <i class="bi bi-grid-1x2"></i> Panel de Control
             </a>
-            <a href="{% url 'gestion_reservas' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-none d-md-inline-flex align-items-center gap-1 shadow-sm">
+            <a href="{% url 'gestion_reservas' %}" class="btn btn-outline-secondary btn-sm rounded-pill d-none d-md-inline-flex align-items-center gap-1 shadow-sm" title="Ir a la Gestión de Reservas">
                 <i class="bi bi-calendar2-check-fill"></i> Reservas
             </a>
             <span class="badge bg-white text-secondary border d-none d-md-inline-flex align-items-center gap-1 px-3 py-2 shadow-sm" title="Fecha actual">
@@ -145,27 +145,28 @@
                         type="button" 
                         id="dropdownExportarCancelaciones" 
                         data-bs-toggle="dropdown" 
-                        aria-expanded="false">
+                        aria-expanded="false"
+                        title="Exportar cancelaciones en diferentes formatos">
                     <i class="bi bi-cloud-arrow-down-fill text-success"></i>
                     <span>Exportar</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 py-2 mt-1" aria-labelledby="dropdownExportarCancelaciones" style="min-width: 220px;">
                     <li><h6 class="dropdown-header text-uppercase small text-muted px-3 pb-1" style="font-size: 0.72rem; letter-spacing: 0.05em;">Descargar Datos</h6></li>
                     <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-excel-trigger">
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-excel-trigger" title="Descargar datos en formato Excel (.xlsx)">
                             <i class="bi bi-file-earmark-excel-fill text-success fs-6"></i>
                             <span class="small fw-semibold">Documento Excel (.xlsx)</span>
                         </button>
                     </li>
                     <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-pdf-trigger">
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-pdf-trigger" title="Descargar datos en formato PDF (.pdf)">
                             <i class="bi bi-file-earmark-pdf-fill text-danger fs-6"></i>
                             <span class="small fw-semibold">Documento PDF (.pdf)</span>
                         </button>
                     </li>
                     <li><hr class="dropdown-divider my-1"></li>
                     <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-print-trigger">
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-print-trigger" title="Imprimir listado de cancelaciones">
                             <i class="bi bi-printer-fill text-primary fs-6"></i>
                             <span class="small fw-semibold"> Imprimir tabla</span>
                         </button>

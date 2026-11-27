@@ -7,6 +7,7 @@ import base64
 import io
 import logging
 import os
+import threading
 from datetime import datetime, time
 from functools import wraps
 
@@ -31,18 +32,10 @@ MONAGUA_VERDE_OSCURO = '#1e4a2a'
 
 def _logo_monagua_html():
     """Genera el bloque HTML con el logo Monagua para incluirlo dentro de correos."""
-    logo_base64 = get_image_base64('static/img/logo_monagua.webp')
-    if logo_base64:
-        return (
-            '<img src="{logo_base64}" alt="logo_monagua" title="logo_monagua" '
-            'style="display:block; width:64px; height:64px; margin:0 auto 14px; border-radius:50%; '
-            'object-fit:cover; border:2px solid rgba(44,110,60,0.18); background:#ffffff; '
-            'box-shadow:0 8px 18px rgba(44,110,60,0.14);">'
-        ).format(logo_base64=logo_base64)
     return (
-        '<div style="width:64px; height:64px; line-height:64px; margin:0 auto 14px; text-align:center; '
-        'border-radius:50%; background-color:#2c6e3c; color:#ffffff; font-size:30px; font-weight:700; '
-        'font-family:Georgia, serif; box-shadow:0 8px 18px rgba(44,110,60,0.14);">M</div>'
+        '<div class="logo_monagua" id="logo_monagua" title="logo_monagua" style="width:68px; height:68px; line-height:68px; margin:0 auto 14px; text-align:center; '
+        'border-radius:50%; background: linear-gradient(135deg, #2c6e3c 0%, #1e4a2a 100%); color:#ffffff; font-size:32px; font-weight:800; '
+        'font-family:\'Poppins\', Arial, sans-serif; box-shadow:0 8px 18px rgba(44,110,60,0.22); letter-spacing:-1px;">M</div>'
     )
 
 
@@ -483,6 +476,343 @@ def enviar_correo_html_monagua(asunto, mensaje_texto, destinatario, html_conteni
     except Exception as e:
         logger.error("Error al enviar correo electrónico a %s: %s", destinatario, e)
         return False
+
+
+def plantilla_pago_aprobado_html(
+    nombre_cliente,
+    paquete,
+    reserva_id='',
+    monto_txt='$0 COP',
+    banco='',
+    referencia='',
+    fecha='',
+    adultos=1,
+    menores=0,
+    url_factura=None,
+    url_mis_reservas=None
+):
+    """Genera el contenido HTML para la notificación de pago aprobado y reserva confirmada."""
+    logo_html = _logo_monagua_html()
+
+    pasajeros_txt = f"{adultos} Adulto{'s' if adultos > 1 else ''}"
+    if menores > 0:
+        pasajeros_txt += f" • {menores} Menor{'es' if menores > 1 else ''}"
+
+    banco_fila = f"""
+    <tr style="border-bottom: 1px solid #edf2f0;">
+        <td style="padding: 10px 0; color: #718096;">Banco / Medio</td>
+        <td style="padding: 10px 0; text-align: right; color: #1a202c; font-weight: 500;">{banco or 'Verificado'}</td>
+    </tr>
+    """ if banco else ""
+
+    ref_fila = f"""
+    <tr style="border-bottom: 1px solid #edf2f0;">
+        <td style="padding: 10px 0; color: #718096;">Referencia de Pago</td>
+        <td style="padding: 10px 0; text-align: right; color: #1a202c; font-weight: 500;">{referencia}</td>
+    </tr>
+    """ if referencia else ""
+
+    botones_html = f"""
+    <div style="text-align: center; margin: 26px 0 10px 0;">
+        <a href="{url_mis_reservas or '/reservas/mis-reservas/'}" target="_blank" style="background-color: {MONAGUA_VERDE}; color: #ffffff; text-decoration: none; padding: 13px 28px; border-radius: 30px; font-weight: 700; font-size: 14px; display: inline-block; box-shadow: 0 4px 14px rgba(44, 110, 60, 0.25); margin: 5px;">
+            Ver Mis Reservas →
+        </a>
+    """
+    if url_factura:
+        botones_html += f"""
+        <a href="{url_factura}" target="_blank" style="background-color: #ffffff; color: {MONAGUA_VERDE}; border: 1.5px solid {MONAGUA_VERDE}; text-decoration: none; padding: 12px 26px; border-radius: 30px; font-weight: 700; font-size: 14px; display: inline-block; margin: 5px;">
+            📄 Ver Factura Oficial
+        </a>
+        """
+    botones_html += "</div>"
+
+    return f"""
+    <html>
+    <body style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; background-color: #f4f7f5; margin: 0; padding: 40px 15px;">
+        <div style="max-width: 580px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(44, 110, 60, 0.08); border: 1px solid #e2e8f0;">
+            <div style="background-color: {MONAGUA_VERDE}; text-align: center; padding: 36px 20px 28px 20px;">
+                {logo_html}
+                <div style="font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: 2px; margin-bottom: 4px;">MONAGUA</div>
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.85); font-weight: bold;">Experiencias Ecoturísticas</div>
+            </div>
+            <div style="padding: 35px 30px; color: #2d3748; line-height: 1.6;">
+                <div style="text-align: center; margin-bottom: 12px;">
+                    <span style="font-size: 12px; font-weight: bold; color: #ffffff; background-color: {MONAGUA_VERDE}; padding: 5px 16px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;">✓ Pago Aprobado</span>
+                </div>
+                <h2 style="font-size: 22px; color: {MONAGUA_VERDE}; margin-top: 0; margin-bottom: 8px; font-weight: 700; text-align: center;">¡Tu Pago fue Aprobado, {nombre_cliente}!</h2>
+                <p style="font-size: 14.5px; color: #4a5568; text-align: center; margin-bottom: 25px; line-height: 1.5;">
+                    Hemos verificado tu comprobante de pago exitosamente. Tus cupos están <strong>100% asegurados y confirmados</strong> para disfrutar esta gran experiencia.
+                </p>
+
+                <div style="background-color: #f4f8f5; border: 1px solid #2c6e3c40; border-radius: 12px; padding: 22px; margin-bottom: 20px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14.5px;">
+                        <tr style="border-bottom: 1px solid #edf2f0;">
+                            <td style="padding: 10px 0; color: #718096;">Número de Reserva</td>
+                            <td style="padding: 10px 0; text-align: right; font-weight: 700; color: #1a202c;">#{reserva_id}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #edf2f0;">
+                            <td style="padding: 10px 0; color: #718096;">Destino / Experiencia</td>
+                            <td style="padding: 10px 0; text-align: right; font-weight: 600; color: #1a202c;">{paquete}</td>
+                        </tr>
+                        {f'<tr style="border-bottom: 1px solid #edf2f0;"><td style="padding: 10px 0; color: #718096;">Fecha de Salida</td><td style="padding: 10px 0; text-align: right; color: #1a202c; font-weight: 500;">{fecha}</td></tr>' if fecha else ''}
+                        <tr style="border-bottom: 1px solid #edf2f0;">
+                            <td style="padding: 10px 0; color: #718096;">Pasajeros</td>
+                            <td style="padding: 10px 0; text-align: right; color: #1a202c; font-weight: 500;">{pasajeros_txt}</td>
+                        </tr>
+                        {banco_fila}
+                        {ref_fila}
+                        <tr style="border-top: 2px solid #edf2f0;">
+                            <td style="padding: 12px 0 6px 0; color: #2d3748; font-weight: 700; font-size: 15px;">Monto Verificado</td>
+                            <td style="padding: 12px 0 6px 0; text-align: right; font-weight: 800; color: {MONAGUA_VERDE}; font-size: 17px;">{monto_txt}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                {botones_html}
+
+                <table style="width: 100%; background-color: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1; margin-top: 20px;">
+                    <tr>
+                        <td style="padding: 14px; font-size: 12.5px; color: #475569; text-align: center; font-weight: 500; line-height: 1.5;">
+                            <strong>Importante:</strong> Puedes consultar tu factura legal y el itinerario detallado de tu viaje directamente desde tu panel de usuario.
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div style="background-color: #fafdfb; text-align: center; padding: 25px 20px; border-top: 1px solid #edf2f0;">
+                <p style="margin: 0; font-size: 13px; color: #718096; font-weight: 600;">Monagua Experiencias Ecoturísticas</p>
+                <p style="margin: 5px 0 0 0; font-size: 11.5px; color: #a0aec0;">Mongua, Boyacá, Colombia · Naturaleza, Cultura y Aventura</p>
+                <p style="margin: 12px 0 0 0; font-size: 12px; color: {MONAGUA_VERDE}; font-weight: bold;">© 2026 Monagua</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+
+def plantilla_pago_rechazado_html(
+    nombre_cliente,
+    paquete,
+    reserva_id='',
+    monto_txt='$0 COP',
+    motivo_rechazo='',
+    fecha='',
+    url_pago=None,
+    url_mis_reservas=None
+):
+    """Genera el contenido HTML para la notificación de comprobante de pago rechazado."""
+    logo_html = _logo_monagua_html()
+    url_subir = url_pago or f"/pagos/enviar-comprobante/?reserva_id={reserva_id}&tipo=reserva"
+
+    return f"""
+    <html>
+    <body style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; background-color: #f4f7f5; margin: 0; padding: 40px 15px;">
+        <div style="max-width: 580px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(220, 53, 69, 0.08); border: 1px solid #fed7d7;">
+            <div style="background-color: #c53030; text-align: center; padding: 36px 20px 28px 20px;">
+                {logo_html}
+                <div style="font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: 2px; margin-bottom: 4px;">MONAGUA</div>
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.85); font-weight: bold;">Atención Requerida</div>
+            </div>
+            <div style="padding: 35px 30px; color: #2d3748; line-height: 1.6;">
+                <div style="text-align: center; margin-bottom: 12px;">
+                    <span style="font-size: 12px; font-weight: bold; color: #ffffff; background-color: #c53030; padding: 5px 16px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;">Comprobante No Aprobado</span>
+                </div>
+                <h2 style="font-size: 22px; color: #c53030; margin-top: 0; margin-bottom: 8px; font-weight: 700; text-align: center;">Comprobante de Pago Rechazado</h2>
+                <p style="font-size: 14.5px; color: #4a5568; text-align: center; margin-bottom: 22px; line-height: 1.5;">
+                    Hola <strong>{nombre_cliente}</strong>, te informamos que el comprobante de pago enviado para tu reserva <strong>#{reserva_id}</strong> ({paquete}) no pudo ser validado por la administración.
+                </p>
+
+                <!-- Caja de Motivo del Rechazo -->
+                <div style="background-color: #fff5f5; border: 1px solid #feb2b2; border-left: 5px solid #e53e3e; border-radius: 10px; padding: 18px 20px; margin-bottom: 22px; text-align: left;">
+                    <div style="margin-bottom: 6px;">
+                        <strong style="color: #9b2c2c; font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.5px;">Motivo u Observación del Administrador:</strong>
+                    </div>
+                    <p style="margin: 0; font-size: 14px; color: #742a2a; line-height: 1.6; font-style: italic;">
+                        "{motivo_rechazo or 'El comprobante no es legible o los datos de la transferencia no coinciden con la cuenta bancaria.'}"
+                    </p>
+                </div>
+
+                <!-- Resumen de la Reserva -->
+                <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; margin-bottom: 25px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13.5px;">
+                        <tr style="border-bottom: 1px solid #edf2f7;">
+                            <td style="padding: 7px 0; color: #718096;">Reserva</td>
+                            <td style="padding: 7px 0; text-align: right; font-weight: 600; color: #1a202c;">#{reserva_id} - {paquete}</td>
+                        </tr>
+                        {f'<tr style="border-bottom: 1px solid #edf2f7;"><td style="padding: 7px 0; color: #718096;">Fecha de Salida</td><td style="padding: 7px 0; text-align: right; color: #1a202c;">{fecha}</td></tr>' if fecha else ''}
+                        <tr>
+                            <td style="padding: 7px 0; color: #718096;">Monto Requerido</td>
+                            <td style="padding: 7px 0; text-align: right; font-weight: 700; color: #c53030;">{monto_txt}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Instrucciones y Botón -->
+                <div style="text-align: center; margin: 25px 0 15px 0;">
+                    <p style="font-size: 14px; color: #4a5568; margin-bottom: 18px;">
+                        Para mantener activos tus cupos y confirmar tu viaje, por favor sube un nuevo comprobante corregido:
+                    </p>
+                    <a href="{url_subir}" target="_blank" style="background-color: {MONAGUA_VERDE}; color: #ffffff; text-decoration: none; padding: 14px 34px; border-radius: 30px; font-weight: 700; font-size: 14.5px; display: inline-block; box-shadow: 0 4px 14px rgba(44, 110, 60, 0.25);">
+                        📤 Subir Nuevo Comprobante →
+                    </a>
+                </div>
+
+                <div style="text-align: center; font-size: 12px; color: #718096; margin-top: 20px;">
+                    ¿Tienes dudas o ya realizaste la transferencia? Responde directamente a este correo para ayudarte.
+                </div>
+            </div>
+
+            <div style="background-color: #fafdfb; text-align: center; padding: 25px 20px; border-top: 1px solid #edf2f0;">
+                <p style="margin: 0; font-size: 13px; color: #718096; font-weight: 600;">Monagua Experiencias Ecoturísticas</p>
+                <p style="margin: 5px 0 0 0; font-size: 11.5px; color: #a0aec0;">Mongua, Boyacá, Colombia · Naturaleza, Cultura y Aventura</p>
+                <p style="margin: 12px 0 0 0; font-size: 12px; color: {MONAGUA_VERDE}; font-weight: bold;">© 2026 Monagua</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+
+def enviar_correo_pago_aprobado(pago, request=None):
+    """Envía el correo de notificación de pago aprobado y reserva confirmada en segundo plano."""
+    try:
+        reserva = getattr(pago, 'reserva', None)
+        if not reserva:
+            return
+
+        nombre_cliente = (
+            (reserva.usuario.get_full_name() or reserva.usuario.username)
+            if reserva.usuario
+            else (getattr(reserva, 'cliente_nombre', None) or getattr(reserva, 'nombre_cliente', None) or 'Cliente')
+        )
+        email_destinatario = (
+            reserva.usuario.email
+            if (reserva.usuario and reserva.usuario.email)
+            else (getattr(reserva, 'cliente_email', None) or getattr(reserva, 'email_cliente', None))
+        )
+
+        if not email_destinatario:
+            return
+
+        try:
+            monto_val = float(pago.monto)
+            monto_txt = f"${monto_val:,.0f} COP".replace(",", ".")
+        except (ValueError, TypeError):
+            monto_txt = f"${pago.monto} COP"
+
+        fecha_salida = reserva.fecha_inicio.strftime('%d/%m/%Y') if getattr(reserva, 'fecha_inicio', None) else ""
+        paquete_nombre = reserva.paquete.nombre if reserva.paquete else "Aventura Monagua"
+
+        if request:
+            url_mis_reservas = request.build_absolute_uri(reverse('mis_reservas_usuario'))
+            url_factura = request.build_absolute_uri(reverse('ver_factura', args=[reserva.id]))
+        else:
+            url_mis_reservas = reverse('mis_reservas_usuario')
+            url_factura = reverse('ver_factura', args=[reserva.id])
+
+        asunto = f"¡Tu pago fue aprobado y tu reserva #{reserva.id} está confirmada! | Monagua"
+        mensaje_texto = (
+            f"¡Hola {nombre_cliente}!\n\n"
+            f"Tu comprobante de pago #{pago.pk} por {monto_txt} para la experiencia '{paquete_nombre}' "
+            f"(Reserva #{reserva.id}) ha sido verificado y aprobado con éxito por nuestro equipo.\n\n"
+            f"Tus cupos están 100% asegurados y confirmados para el {fecha_salida}.\n\n"
+            f"Puedes ver los detalles de tu viaje y descargar tu factura oficial en:\n"
+            f"{url_factura}\n\n"
+            f"¡Gracias por viajar con Monagua Experiencias!"
+        )
+
+        html_contenido = plantilla_pago_aprobado_html(
+            nombre_cliente=nombre_cliente,
+            paquete=paquete_nombre,
+            reserva_id=reserva.id,
+            monto_txt=monto_txt,
+            banco=pago.banco_origen,
+            referencia=pago.referencia,
+            fecha=fecha_salida,
+            adultos=getattr(reserva, 'numero_adultos', 1),
+            menores=getattr(reserva, 'numero_menores', 0),
+            url_factura=url_factura,
+            url_mis_reservas=url_mis_reservas
+        )
+
+        threading.Thread(
+            target=enviar_correo_html_monagua,
+            args=(asunto, mensaje_texto, email_destinatario, html_contenido),
+            daemon=True
+        ).start()
+    except Exception as e:
+        logger.error(f"Error al enviar correo de pago aprobado (Pago #{getattr(pago, 'pk', None)}): {e}")
+
+
+def enviar_correo_pago_rechazado(pago, request=None):
+    """Envía el correo de notificación de pago rechazado con motivo y enlace de reintento en segundo plano."""
+    try:
+        reserva = getattr(pago, 'reserva', None)
+        if not reserva:
+            return
+
+        nombre_cliente = (
+            (reserva.usuario.get_full_name() or reserva.usuario.username)
+            if reserva.usuario
+            else (getattr(reserva, 'cliente_nombre', None) or getattr(reserva, 'nombre_cliente', None) or 'Cliente')
+        )
+        email_destinatario = (
+            reserva.usuario.email
+            if (reserva.usuario and reserva.usuario.email)
+            else (getattr(reserva, 'cliente_email', None) or getattr(reserva, 'email_cliente', None))
+        )
+
+        if not email_destinatario:
+            return
+
+        try:
+            monto_val = float(pago.monto)
+            monto_txt = f"${monto_val:,.0f} COP".replace(",", ".")
+        except (ValueError, TypeError):
+            monto_txt = f"${pago.monto} COP"
+
+        fecha_salida = reserva.fecha_inicio.strftime('%d/%m/%Y') if getattr(reserva, 'fecha_inicio', None) else ""
+        paquete_nombre = reserva.paquete.nombre if reserva.paquete else "Aventura Monagua"
+        motivo = pago.nota_admin or "El comprobante no es legible o los datos de la transferencia no coinciden."
+
+        if request:
+            url_pago = request.build_absolute_uri(f"{reverse('enviar_comprobante')}?reserva_id={reserva.id}&tipo=reserva")
+            url_mis_reservas = request.build_absolute_uri(reverse('mis_reservas_usuario'))
+        else:
+            url_pago = f"{reverse('enviar_comprobante')}?reserva_id={reserva.id}&tipo=reserva"
+            url_mis_reservas = reverse('mis_reservas_usuario')
+
+        asunto = f"Aviso importante: Tu comprobante de pago para la reserva #{reserva.id} fue rechazado | Monagua"
+        mensaje_texto = (
+            f"Hola {nombre_cliente},\n\n"
+            f"Te informamos que tu comprobante de pago #{pago.pk} para la reserva #{reserva.id} ('{paquete_nombre}') "
+            f"no pudo ser validado por la administración.\n\n"
+            f"MOTIVO DEL RECHAZO:\n"
+            f"\"{motivo}\"\n\n"
+            f"Para no perder tus cupos y confirmar tu viaje, por favor sube un nuevo comprobante corregido en el siguiente enlace:\n"
+            f"{url_pago}\n\n"
+            f"Si tienes dudas o necesitas asistencia, puedes responder directamente a este correo.\n"
+            f"Monagua Experiencias Ecoturísticas"
+        )
+
+        html_contenido = plantilla_pago_rechazado_html(
+            nombre_cliente=nombre_cliente,
+            paquete=paquete_nombre,
+            reserva_id=reserva.id,
+            monto_txt=monto_txt,
+            motivo_rechazo=motivo,
+            fecha=fecha_salida,
+            url_pago=url_pago,
+            url_mis_reservas=url_mis_reservas
+        )
+
+        threading.Thread(
+            target=enviar_correo_html_monagua,
+            args=(asunto, mensaje_texto, email_destinatario, html_contenido),
+            daemon=True
+        ).start()
+    except Exception as e:
+        logger.error(f"Error al enviar correo de pago rechazado (Pago #{getattr(pago, 'pk', None)}): {e}")
 
 
 # ==========================================

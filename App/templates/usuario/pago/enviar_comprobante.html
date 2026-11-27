@@ -4,124 +4,150 @@
 {% block title %}Enviar Comprobante | Monagua{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+{% include "partials/breadcrumbs.html" with current_title="Enviar Comprobante" current_icon="bi bi-receipt" %}
 
-    <div class="row align-items-center mb-4 g-3">
-        <div class="col-md-8">
-            <span class="badge bg-success bg-opacity-10 text-white px-3 py-2 rounded-pill mb-2 fw-bold">PROCESO DE PAGO</span>
-            <h2 class="display-6 fw-bold text-dark mb-1">
-                <i class="bi bi-receipt-cutoff text-success me-2"></i>Enviar Comprobante
-            </h2>
-            <p class="text-muted mb-0">Adjunta el recibo o captura de tu transferencia bancaria para verificar tu reserva.</p>
-        </div>
-        <div class="col-md-4 text-md-end text-start">
-            <a href="{% url 'mis_comprobantes' %}" class="btn btn-outline-success rounded-pill px-4 py-2 fw-bold shadow-sm">
-                <i class="bi bi-clock-history me-1"></i> Ver Historial
-            </a>
-        </div>
-    </div>
+<div class="container py-4 mx-auto">
 
-
-
-    <div class="row g-3 mb-4">
-        <div class="col-12 col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-white">
-                <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                    <div class="text-start">
-                        <span class="text-uppercase text-muted small fw-bold d-block mb-1">Pendientes</span>
-                        <h3 class="fw-bold text-warning mb-0">{{ total_pendientes }}</h3>
-                    </div>
-                    <div class="bg-warning bg-opacity-10 text-warning rounded-4 p-3 fs-3">
-                        <i class="bi bi-hourglass-split"></i>
-                    </div>
-                </div>
+    <!-- ── 1. Encabezado y Accesos Directos ── -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+        <div class="card-body p-3.5 p-md-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1.5 rounded-pill mb-2 fw-bold small">
+                    <i class="bi bi-wallet2 me-1"></i>PROCESO DE PAGO
+                </span>
+                <h2 class="fw-bold text-dark mb-1">
+                    <i class="bi bi-receipt-cutoff text-success me-2"></i>Enviar Comprobante de Pago
+                </h2>
+                <p class="text-muted mb-0 small">
+                    Adjunta el recibo o captura de tu transferencia bancaria para validar tu reserva de forma inmediata.
+                </p>
             </div>
-        </div>
-        <div class="col-12 col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-white">
-                <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                    <div class="text-start">
-                        <span class="text-uppercase text-muted small fw-bold d-block mb-1">Monto Aprobado</span>
-                        <h3 class="fw-bold text-success mb-0">COP ${{ total_aprobados|floatformat:0|intcomma }}</h3>
-                    </div>
-                    <div class="bg-success bg-opacity-10 text-success rounded-4 p-3 fs-3">
-                        <i class="bi bi-check-circle-fill"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-white">
-                <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                    <div class="text-start">
-                        <span class="text-uppercase text-muted small fw-bold d-block mb-1">Rechazados</span>
-                        <h3 class="fw-bold text-danger mb-0">{{ total_rechazados }}</h3>
-                    </div>
-                    <div class="bg-danger bg-opacity-10 text-danger rounded-4 p-3 fs-3">
-                        <i class="bi bi-x-circle-fill"></i>
-                    </div>
-                </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <a href="{% url 'mis_reservas_usuario' %}" class="btn btn-outline-secondary rounded-pill px-3.5 py-2 fw-semibold shadow-sm small" title="Volver al listado de Mis Reservas">
+                    <i class="bi bi-calendar-check me-1"></i> Mis Reservas
+                </a>
+                <a href="{% url 'mis_comprobantes' %}" class="btn btn-outline-success rounded-pill px-3.5 py-2 fw-semibold shadow-sm small" title="Ver historial de comprobantes enviados">
+                    <i class="bi bi-clock-history me-1"></i> Mis Comprobantes
+                </a>
             </div>
         </div>
     </div>
 
+    
+
+    <!-- ── 3. Tarjeta Principal del Formulario de Pago ── -->
     <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <div class="card border-0 shadow rounded-4 bg-white">
-                <div class="card-header bg-success bg-opacity-10 border-0 p-4 rounded-top-4">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-send-check text-success fs-3 me-3"></i>
+        <div class="col-lg-9 col-xl-8 mx-auto">
+            <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+                
+                <!-- Encabezado de la tarjeta -->
+                <div class="card-header bg-success bg-opacity-10 border-0 p-3.5 p-md-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class=" text-white rounded-circle p-2.5 d-flex align-items-center justify-content-center shadow-sm flex-shrink-0" style="width: 46px; height: 46px;">
+                            <i class="bi bi-send-check fs-4"></i>
+                        </div>
                         <div>
-                            <h5 class="mb-0 fw-bold text-white emphasis">Registrar Pago</h5>
-                            <p class="text-white small mb-0">Rellena el formulario con los detalles exactos de tu transacción.</p>
+                            <h5 class="mb-0 fw-bold text-white">Registrar y Validar Pago</h5>
+                            <p class="text-white small mb-0">Completa los datos de tu transferencia bancaria y adjunta el soporte digital.</p>
                         </div>
                     </div>
                 </div>
-                <div class="card-body p-4 p-md-5">
+
+                <div class="card-body p-3.5 p-md-4">
                     <form method="post" enctype="multipart/form-data" action="{% url 'enviar_comprobante' %}" id="formComprobante">
                         {% csrf_token %}
-                        <div class="row">
-                            <div class="form-group col-md-12 mb-3">
-                                <label id="id_reserva_label" for="id_reserva" class="form-label requiredField">
-                                    {% if selected_tipo == 'penalidad' %}Penalidad a Vincular{% else %}Reserva a Vincular{% endif %}
-                                    <span class="asteriskField">*</span>
-                                </label>
-                                <select name="reserva" id="id_reserva" class="form-select" required data-selected-tipo="{{ selected_tipo|default:'reserva' }}" data-selected-id="{{ selected_reserva_id|default:'' }}">
-                                    <option value="">— Selecciona la {% if selected_tipo == 'penalidad' %}penalidad{% else %}reserva{% endif %} —</option>
-                                    {% for r in reservas_elegibles %}
-                                        {% if r.estado_cancelacion == 'aprobada' and r.penalidad and r.penalidad > 0 %}
-                                            <option value="{{ r.id }}" data-tipo="penalidad" data-monto="COP ${{ r.penalidad|floatformat:0|intcomma }}" {% if selected_reserva_id|default:'' == r.id|stringformat:'s' or selected_tipo == 'penalidad' and not selected_reserva_id and forloop.counter0 == 0 %}selected{% endif %}>
-                                                [Multa] {{ r.paquete.nombre }} — Valor: COP ${{ r.penalidad|floatformat:0|intcomma }}
-                                            </option>
-                                        {% else %}
-                                            <option value="{{ r.id }}" data-tipo="reserva" data-monto="COP ${{ r.monto_total|floatformat:0|intcomma }}" {% if selected_reserva_id|default:'' == r.id|stringformat:'s' %}selected{% endif %}>
-                                                [Reserva] {{ r.paquete.nombre }} — Valor: COP ${{ r.monto_total|floatformat:0|intcomma }} (Fecha: {{ r.fecha_inicio|date:"d/m/Y" }})
-                                            </option>
-                                        {% endif %}
-                                    {% endfor %}
-                                </select>
+
+                        <!-- ── A. Apartado de Reserva y Visualización del Valor (Sin casilla de formulario) ── -->
+                        <div class="mb-4 pb-1">
+                            <div class="row g-3 g-lg-4 align-items-stretch">
+                                
+                                <!-- Selector de Reserva / Penalidad -->
+                                <div class="col-12 col-lg-7 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <label id="id_reserva_label" for="id_reserva" class="form-label fw-bold text-dark small mb-2">
+                                            <i class="bi bi-calendar-check text-success me-1"></i>{% if selected_tipo == 'penalidad' %}Penalidad a Vincular{% else %}Reserva a Vincular{% endif %} <span class="text-danger">*</span>
+                                        </label>
+                                        <select name="reserva" id="id_reserva" class="form-select rounded-3 py-2.5 shadow-sm" required data-selected-tipo="{{ selected_tipo|default:'reserva' }}" data-selected-id="{{ selected_reserva_id|default:'' }}" title="Selecciona la reserva o penalidad que deseas pagar">
+                                            <option value="">— Selecciona la {% if selected_tipo == 'penalidad' %}penalidad{% else %}reserva{% endif %} —</option>
+                                            {% for r in reservas_elegibles %}
+                                                {% if r.estado_cancelacion == 'aprobada' and r.penalidad and r.penalidad > 0 %}
+                                                    <option value="{{ r.id }}" data-tipo="penalidad" data-monto="COP ${{ r.penalidad|floatformat:0|intcomma }}" data-paquete="{{ r.paquete.nombre }}" data-detalle="Penalidad por cancelación parcial o total" {% if selected_reserva_id|default:'' == r.id|stringformat:'s' or selected_tipo == 'penalidad' and not selected_reserva_id and forloop.counter0 == 0 %}selected{% endif %}>
+                                                        [Multa] {{ r.paquete.nombre }} — Valor: COP ${{ r.penalidad|floatformat:0|intcomma }}
+                                                    </option>
+                                                {% else %}
+                                                    <option value="{{ r.id }}" data-tipo="reserva" data-monto="COP ${{ r.monto_total|floatformat:0|intcomma }}" data-paquete="{{ r.paquete.nombre }}" data-detalle="{{ r.numero_adultos }} adulto{{ r.numero_adultos|pluralize }}, {{ r.numero_menores }} menor{{ r.numero_menores|pluralize }} · Fecha: {{ r.fecha_inicio|date:'d M Y'|default:'Por definir' }}" {% if selected_reserva_id|default:'' == r.id|stringformat:'s' %}selected{% endif %}>
+                                                        [Reserva #{{ r.id }}] {{ r.paquete.nombre }} — COP ${{ r.monto_total|floatformat:0|intcomma }}
+                                                    </option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <small class="form-text text-muted d-block mt-2">
+                                        <i class="bi bi-info-circle text-success me-1"></i>Selecciona el viaje o la penalidad que transferiste para asociar tu pago.
+                                    </small>
+                                </div>
+
+                                <!-- Tarjeta Visual Destacada del Valor (NO es casilla de formulario) -->
+                                <div class="col-12 col-lg-5">
+                                    <div id="monto_card_display" class="border rounded-4 p-3.5 p-sm-4 bg-success bg-opacity-10 border-success border-opacity-25 h-100 d-flex flex-column justify-content-between shadow-sm position-relative">
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pb-2 border-bottom border-success border-opacity-20">
+                                            <span class="text-uppercase text-secondary small fw-bold" id="monto_badge_tipo">
+                                                {% if selected_tipo == 'penalidad' %}Monto de la Penalidad{% else %}Monto de la Reserva{% endif %}
+                                            </span>
+                                            <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1 small fw-semibold">
+                                                <i class="bi bi-shield-check me-1"></i>Verificado
+                                            </span>
+                                        </div>
+                                        <div class="my-3 py-1">
+                                            <div class="fs-2 fw-bold text-success mb-1 lh-1" id="monto_valor_texto">
+                                                COP $0
+                                            </div>
+                                            <small class="text-dark fw-medium small d-block mt-2 lh-sm" id="monto_detalle_texto">
+                                                Selecciona una reserva
+                                            </small>
+                                        </div>
+                                        <div class="pt-2 border-top border-success border-opacity-10 d-flex align-items-center justify-content-between flex-wrap gap-1">
+                                            <small class="text-secondary small d-flex align-items-center gap-1 opacity-80">
+                                                <i class="bi bi-check2-circle text-success"></i> Tarifa oficial fija
+                                            </small>
+                                            <small class="text-muted small">Sin recargos</small>
+                                        </div>
+                                    </div>
+                                    <!-- Input oculto para compatibilidad técnica sin romper scripts -->
+                                    <input type="hidden" id="id_monto_display" value="">
+                                </div>
+
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="form-group col-md-4 mb-3">
-                                <label for="id_referencia" class="form-label requiredField">
-                                    Nº de Referencia / Transacción<span class="asteriskField">*</span>
+
+                        <hr class="text-muted opacity-25 my-4">
+
+                        <!-- ── B. Datos de la Transacción Bancaria ── -->
+                        <div class="row g-3 g-md-4 mb-4">
+                            
+                            <!-- Referencia -->
+                            <div class="col-12 col-md-4">
+                                <label for="id_referencia" class="form-label fw-bold text-dark small mb-1">
+                                    <i class="bi bi-hash text-success me-1"></i>Nº de Referencia / CUS <span class="text-danger">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="referencia"
                                     maxlength="100"
-                                    class="textinput form-control"
+                                    class="form-control rounded-3 py-2 shadow-sm"
                                     required
                                     id="id_referencia"
-                                    placeholder="Ej. CUS-123456789"
+                                    placeholder="Ej. CUS-987654321"
+                                    title="Ingresa el número de comprobante, aprobación o CUS de la transferencia"
                                 >
                             </div>
-                            <div class="form-group col-md-4 mb-3">
-                                <label for="id_banco_origen" class="form-label requiredField">
-                                    Banco o Entidad<span class="asteriskField">*</span>
+
+                            <!-- Banco o Entidad Origen -->
+                            <div class="col-12 col-md-4">
+                                <label for="id_banco_origen" class="form-label fw-bold text-dark small mb-1">
+                                    <i class="bi bi-bank text-success me-1"></i>Banco / Entidad <span class="text-danger">*</span>
                                 </label>
-                                <select name="banco_origen" class="select form-select" required id="id_banco_origen">
+                                <select name="banco_origen" class="form-select rounded-3 py-2 shadow-sm" required id="id_banco_origen" title="Entidad financiera desde donde enviaste el dinero">
                                     <option value="" selected>— Selecciona la entidad —</option>
                                     <option value="Nequi">Nequi</option>
                                     <option value="Daviplata">Daviplata</option>
@@ -132,55 +158,81 @@
                                     <option value="Banco de Occidente">Banco de Occidente</option>
                                     <option value="Lulo Bank">Lulo Bank</option>
                                     <option value="RappiPay">RappiPay</option>
-                                    <option value="Otro">Otro (Especificar en descripción)</option>
+                                    <option value="Otro">Otro (Especificar en notas)</option>
                                 </select>
                             </div>
-                            <div class="form-group col-md-4 mb-3">
-                                <label for="id_metodo_pago" class="form-label requiredField">
-                                    Método de Pago<span class="asteriskField">*</span>
+
+                            <!-- Método de Pago -->
+                            <div class="col-12 col-md-4">
+                                <label for="id_metodo_pago" class="form-label fw-bold text-dark small mb-1">
+                                    <i class="bi bi-credit-card text-success me-1"></i>Canal de Pago <span class="text-danger">*</span>
                                 </label>
-                                <select name="metodo_pago" class="select form-select" required id="id_metodo_pago">
+                                <select name="metodo_pago" class="form-select rounded-3 py-2 shadow-sm" required id="id_metodo_pago" title="Método o canal utilizado para la operación">
                                     <option value="Transferencia Bancaria" selected>Transferencia Bancaria</option>
-                                    <option value="Billetera Digital">Billetera Digital</option>
+                                    <option value="Billetera Digital">Billetera Digital (Nequi/Daviplata)</option>
                                     <option value="Depósito en Corresponsal">Depósito en Corresponsal</option>
                                     <option value="PSE / Enlace de Pago">PSE / Enlace de Pago</option>
                                     <option value="Otro">Otro Método</option>
                                 </select>
                             </div>
+
                         </div>
-                        <div class="row">
-                            <div class="form-group col-md-6 mb-3">
-                                <label id="id_monto_label" for="id_monto_display" class="form-label text-muted">
-                                    {% if selected_tipo == 'penalidad' %}Monto de la Penalidad{% else %}Monto de la Reserva{% endif %}
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted">$</span>
-                                    <input type="text" id="id_monto_display" class="form-control bg-light" readonly placeholder="Selecciona una reserva para ver el valor" value="">
+
+                        <!-- ── C. Subida de Archivo y Previsualización ── -->
+                        <div class="mb-3.5">
+                            <label for="id_imagen_comprobante" class="form-label fw-bold text-dark small mb-1">
+                                <i class="bi bi-file-earmark-arrow-up text-success me-1"></i>Soporte / Comprobante de Pago <span class="text-danger">*</span>
+                            </label>
+                            
+                            <div class="border border-2 border-dashed rounded-4 p-3.5 p-md-4 text-center bg-light bg-opacity-50 position-relative transition-all">
+                                <input type="file" name="imagen_comprobante" class="form-control" accept="image/png, image/jpeg, image/webp, application/pdf" required id="id_imagen_comprobante" title="Selecciona o arrastra tu comprobante">
+                                <div class="mt-2 text-muted small">
+                                    <i class="bi bi-shield-check text-success me-1"></i>Formatos admitidos: <strong>PNG, JPG, JPEG, WebP, PDF</strong> (Tamaño máximo: 10 MB).
                                 </div>
-                                <small class="form-text text-muted"><i class="bi bi-shield-check text-success me-1"></i>Monto verificado y fijado automáticamente.</small>
-                            </div>
-                            <div class="form-group col-md-6 mb-3">
-                                <label for="id_imagen_comprobante" class="form-label requiredField">Imagen o Captura del Comprobante<span class="asteriskField">*</span></label>
-                                <input type="file" name="imagen_comprobante" class="clearablefileinput form-control" accept="image/png, image/jpeg, image/webp, application/pdf" required id="id_imagen_comprobante">
-                                <small class="form-text text-muted">Archivos permitidos: PNG, JPG, JPEG, WebP, PDF (Máx. 10 MB).</small>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="form-group col-md-12 mb-3">
-                                <label for="id_descripcion" class="form-label">Notas o Detalles Adicionales</label>
-                                <textarea name="descripcion" cols="40" rows="3" class="textarea form-control" id="id_descripcion"></textarea>
-                                <small class="form-text text-muted">Si seleccionaste "Otro" en banco, especifícalo aquí.</small>
-                            </div>
+
+                        <!-- ── D. Notas Adicionales ── -->
+                        <div class="mb-4">
+                            <label for="id_descripcion" class="form-label fw-bold text-dark small mb-1">
+                                <i class="bi bi-chat-left-text text-success me-1"></i>Notas o Detalles Adicionales <span class="text-muted fw-normal small">(Opcional)</span>
+                            </label>
+                            <textarea name="descripcion" cols="40" rows="2" class="form-control rounded-3" id="id_descripcion" placeholder="Indica observaciones adicionales, titular de la cuenta o detalles del depósito..." title="Notas adicionales para el equipo de revisión"></textarea>
                         </div>
-                        <hr>
-                        <div class="row">
-                            <div class="col-md-5 ms-auto mt-3">
-                                <button type="submit" class="btn btn-success w-100 rounded-pill py-3 fw-bold shadow-sm">Enviar Reporte</button>
-                            </div>
+
+                        <!-- ── E. Botones de Acción (Responsive) ── -->
+                        <div class="pt-3 border-top d-flex flex-column-reverse flex-sm-row justify-content-between align-items-center gap-3">
+                            <a href="{% url 'mis_reservas_usuario' %}" class="btn btn-outline-secondary rounded-pill px-4 py-2.5 fw-semibold w-100 w-sm-auto text-center" title="Volver al panel de Mis Reservas">
+                                <i class="bi bi-arrow-left me-1"></i> Volver a Mis Reservas
+                            </a>
+                            <button type="submit" class="btn btn-success rounded-pill px-5 py-2.5 fw-bold shadow-sm w-100 w-sm-auto d-inline-flex align-items-center justify-content-center gap-2" title="Confirmar y enviar comprobante de pago">
+                                <i class="bi bi-send-fill"></i>
+                                <span>Enviar Comprobante</span>
+                            </button>
                         </div>
+
                     </form>
                 </div>
             </div>
+
+            <!-- ── 4. Guía Informativa de Canales Autorizados Monagua ── -->
+            <div class="card border-0 shadow-sm rounded-4 mt-4 bg-white p-3.5">
+                <div class="d-flex align-items-center gap-3 flex-wrap justify-content-between">
+                    <div class="d-flex align-items-center gap-2.5">
+                        <div class="bg-success bg-opacity-10 text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                            <i class="bi bi-info-circle-fill fs-5"></i>
+                        </div>
+                        <div>
+                            <span class="fw-bold text-dark small d-block">¿Aún no has realizado tu transferencia?</span>
+                            <span class="text-muted small">Aceptamos transferencias por Bancolombia, Nequi y Daviplata para confirmar tu reserva.</span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <span class="badge bg-light text-dark border rounded-pill px-3 py-1.5 small"><i class="bi bi-shield-lock-fill text-success me-1"></i>Pago Seguro</span>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 

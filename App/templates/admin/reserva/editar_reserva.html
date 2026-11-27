@@ -10,7 +10,7 @@
 <div class="container py-4">
     <!-- Botón volver & Cabecera -->
     <div class="mb-4">
-        <a href="{% url 'gestion_reservas' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 mb-3 fw-semibold shadow-sm">
+        <a href="{% url 'gestion_reservas' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 mb-3 fw-semibold shadow-sm" title="Volver al listado de gestión de reservas">
             <i class="bi bi-arrow-left me-1"></i> Volver a Gestión de Reservas
         </a>
         <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
@@ -162,7 +162,7 @@
                                 {% if nc.porcentaje_penalidad > 0 %}(Penalidad {{ nc.porcentaje_penalidad|floatformat:0 }}%){% endif %}
                             </div>
                             <div class="mt-2">
-                                <a href="{% url 'ver_nota_credito' nc.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                <a href="{% url 'ver_nota_credito' nc.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3" title="Ver detalle de la nota de crédito #{{ nc.id }}">
                                     <i class="bi bi-file-earmark-text me-1"></i> Ver Nota de Crédito
                                 </a>
                             </div>
@@ -181,7 +181,7 @@
                         <i class="bi bi-pencil-square fs-5"></i>
                         <h6 class="mb-0 fw-bold text-white">Editar Reserva</h6>
                     </div>
-                    <span class="badge bg-white text-success fw-bold px-2.5 py-1 rounded-pill small">#{{ reserva.id }}</span>
+                    <span class="badge bg-black text-black fw-bold px-2.5 py-1 rounded-pill small">#{{ reserva.id }}</span>
                 </div>
 
                 <div class="card-body p-4">
@@ -217,12 +217,12 @@
 
                         <div class="row g-2 pt-2 border-top">
                             <div class="col-6">
-                                <a href="{% url 'gestion_reservas' %}" class="btn btn-outline-secondary rounded-pill w-100 py-2 fw-semibold">
+                                <a href="{% url 'gestion_reservas' %}" class="btn btn-outline-secondary rounded-pill w-100 py-2 fw-semibold" title="Cancelar cambios y volver a gestión de reservas">
                                     <i class="bi bi-x-circle me-1"></i> Cancelar
                                 </a>
                             </div>
                             <div class="col-6">
-                                <button type="submit" class="btn btn-success rounded-pill w-100 py-2 fw-bold shadow-sm">
+                                <button type="submit" class="btn btn-success rounded-pill w-100 py-2 fw-bold shadow-sm" title="Guardar cambios realizados en la reserva">
                                     <i class="bi bi-check-circle me-1"></i> Guardar
                                 </button>
                             </div>

@@ -126,6 +126,7 @@ def enviar_comprobante(request):
         'form': form,
         'reservas_elegibles': reservas_elegibles,
         'selected_reserva_id': selected_reserva_id,
+        'selected_reserva': selected_reserva,
         'selected_tipo': selected_tipo,
         'total_pendientes': total_pendientes,
         'total_aprobados': total_aprobados,
