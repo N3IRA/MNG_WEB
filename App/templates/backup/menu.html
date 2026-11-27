@@ -210,29 +210,45 @@
   </div>
 </div>
 
-<div class="modal fade" id="confirmarRestauracion" tabindex="-1" aria-labelledby="tituloConfirmacion" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg rounded-4">
-      <div class="modal-header border-0 pb-0">
-        <div class="rounded-circle bg-warning-subtle text-warning d-flex align-items-center justify-content-center fs-4" style="width:48px;height:48px">
-          <i class="bi bi-exclamation-triangle-fill"></i>
+<div class="modal fade" id="confirmarRestauracion" tabindex="-1" aria-labelledby="tituloConfirmacion" aria-hidden="true" style="z-index: 1085 !important;">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+    <div class="modal-content border-0 shadow-lg rounded-4 text-center p-4">
+      <div class="modal-body p-2">
+        <!-- Icono animado/destacado institucional -->
+        <div class="d-inline-flex align-items-center justify-content-center bg-warning text-white rounded-circle shadow-sm mb-3" style="width: 72px; height: 72px; background-color: #f59e0b !important;">
+          <i class="bi bi-exclamation-triangle-fill text-white" style="font-size: 2.25rem;"></i>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body px-4 pt-3">
-        <h5 class="fw-bold" id="tituloConfirmacion">Confirmar restauración</h5>
-        <p class="text-muted mb-2">Estás a punto de restaurar:</p>
-        <div class="alert alert-light border d-flex align-items-center mb-0">
-          <i class="bi bi-file-earmark-code text-success fs-4 me-3"></i>
-          <strong id="nombreArchivoConfirmacion" class="text-break"></strong>
+
+        <!-- Título -->
+        <h5 class="fw-bold text-dark mb-2" id="tituloConfirmacion">
+          ¿Confirmar Restauración?
+        </h5>
+
+        <!-- Mensaje descriptivo -->
+        <p class="text-muted small mb-3 px-2">
+          ¿Estás seguro de restaurar la base de datos? Esta acción reemplazará los datos actuales del sistema.
+        </p>
+
+        <!-- Detalle del archivo -->
+        <div class="alert alert-light border border-secondary-subtle d-flex align-items-center justify-content-center p-2 mb-3 rounded-3 text-start">
+          <i class="bi bi-file-earmark-code-fill text-success fs-4 me-2 flex-shrink-0"></i>
+          <span id="nombreArchivoConfirmacion" class="text-break small fw-bold text-dark"></span>
         </div>
-        <p class="small text-danger mt-3 mb-0"><i class="bi bi-info-circle-fill me-1"></i>Esta acción puede reemplazar o eliminar datos actuales.</p>
-      </div>
-      <div class="modal-footer border-0 px-4 pb-4">
-        <button type="button" class="btn btn-light rounded-3" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-warning rounded-3 px-4" id="botonConfirmarRestauracion">
-          <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar ahora
-        </button>
+
+        <div class="alert alert-danger bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-3 text-danger p-2 small mb-4 text-start">
+          <i class="bi bi-shield-exclamation me-1"></i>
+          <strong>Advertencia de integridad:</strong> La información existente en la base de datos será sobrescrita.
+        </div>
+
+        <!-- Acciones -->
+        <div class="d-flex justify-content-center gap-2">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-semibold shadow-sm" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
+          <button type="button" class="btn btn-warning rounded-pill px-4 fw-bold shadow-sm" id="botonConfirmarRestauracion" style="background-color: #f59e0b; border-color: #f59e0b; color: #fff;">
+            <i class="bi bi-arrow-counterclockwise me-1"></i> Sí, restaurar
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -250,6 +266,9 @@
   </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
 {% if db_conectada %}
 <script>
 (function () {
@@ -268,17 +287,23 @@
   if (!zona || !input || !modalElement || !abrirConfirmacion) return;
 
   let archivoSeleccionado = null;
-  let confirmarModal = null;
-  if (window.bootstrap && window.bootstrap.Modal) {
-    confirmarModal = new bootstrap.Modal(modalElement);
+
+  function obtenerModalInstancia() {
+    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+      return bootstrap.Modal.getOrCreateInstance(modalElement);
+    }
+    return null;
   }
 
-  function mostrarToast(tipo, titulo, mensaje) {
-    const toastElement = document.getElementById('toastBackup');
-    if (!toastElement) {
-      window.alert(mensaje);
+  function mostrarNotificacion(tipo, titulo, mensaje) {
+    if (typeof window.mostrarToast === 'function') {
+      const tipoMapeado = tipo === 'exito' ? 'success' : (tipo === 'warning' ? 'warning' : 'error');
+      window.mostrarToast(tipoMapeado, titulo, mensaje, 5000);
       return;
     }
+
+    const toastElement = document.getElementById('toastBackup');
+    if (!toastElement) return;
 
     const icono = document.getElementById('toastIcono');
     document.getElementById('toastTitulo').textContent = titulo;
@@ -294,8 +319,6 @@
 
     if (window.bootstrap && window.bootstrap.Toast) {
       new bootstrap.Toast(toastElement, { delay: 7000 }).show();
-    } else {
-      window.alert(titulo + ': ' + mensaje);
     }
   }
 
@@ -314,13 +337,13 @@
 
     const nombreValido = archivo.name.toLowerCase().endsWith('.sql');
     if (!nombreValido) {
-      mostrarToast('error', 'Archivo no válido', 'Selecciona un archivo con extensión .sql.');
+      mostrarNotificacion('error', 'Archivo no válido', 'Selecciona un archivo con extensión .sql.');
       limpiarArchivo();
       return;
     }
 
     if (archivo.size > 100 * 1024 * 1024) {
-      mostrarToast('error', 'Archivo demasiado grande', 'El tamaño máximo permitido es 100 MB.');
+      mostrarNotificacion('error', 'Archivo demasiado grande', 'El tamaño máximo permitido es 100 MB.');
       limpiarArchivo();
       return;
     }
@@ -328,7 +351,9 @@
     archivoSeleccionado = archivo;
     nombreArchivo.textContent = archivo.name;
     tamanoArchivo.textContent = (archivo.size / (1024 * 1024)).toFixed(2) + ' MB';
-    nombreArchivoModal.textContent = archivo.name;
+    if (nombreArchivoModal) {
+      nombreArchivoModal.textContent = archivo.name;
+    }
     panelArchivo.classList.remove('d-none');
     panelArchivo.classList.add('d-flex');
     abrirConfirmacion.disabled = false;
@@ -361,24 +386,30 @@
     quitarArchivo.addEventListener('click', limpiarArchivo);
   }
 
-  abrirConfirmacion.addEventListener('click', function () {
+  abrirConfirmacion.addEventListener('click', function (e) {
+    e.preventDefault();
     if (!archivoSeleccionado) {
-      mostrarToast('error', 'Archivo requerido', 'Selecciona primero un archivo SQL.');
+      mostrarNotificacion('error', 'Archivo requerido', 'Selecciona primero un archivo SQL antes de restaurar.');
       return;
     }
 
-    nombreArchivoModal.textContent = archivoSeleccionado.name;
-    if (confirmarModal) {
-      confirmarModal.show();
-    } else if (window.confirm('¿Estás seguro de restaurar la base de datos? Esta acción reemplazará los datos actuales.')) {
-      subirArchivo();
+    if (nombreArchivoModal) {
+      nombreArchivoModal.textContent = archivoSeleccionado.name;
+    }
+
+    const modal = obtenerModalInstancia();
+    if (modal) {
+      modal.show();
     }
   });
 
   function subirArchivo() {
     if (!archivoSeleccionado) return;
 
-    if (confirmarModal) confirmarModal.hide();
+    const modal = obtenerModalInstancia();
+    if (modal) {
+      modal.hide();
+    }
 
     const indicador = document.createElement('div');
     indicador.id = 'indicador-restauracion';
@@ -408,23 +439,25 @@
       abrirConfirmacion.disabled = false;
 
       if (data.exito) {
-        mostrarToast('exito', 'Restauración completada', data.mensaje || 'La base de datos fue restaurada correctamente.');
+        mostrarNotificacion('exito', 'Restauración completada', data.mensaje || 'La base de datos fue restaurada correctamente.');
         limpiarArchivo();
         setTimeout(function () { location.reload(); }, 1800);
       } else {
-        mostrarToast('error', 'No se pudo restaurar', data.error || 'Ocurrió un error al restaurar la base de datos.');
+        mostrarNotificacion('error', 'No se pudo restaurar', data.error || 'Ocurrió un error al restaurar la base de datos.');
       }
     })
     .catch(function (error) {
       const indicadorActivo = document.getElementById('indicador-restauracion');
       if (indicadorActivo) indicadorActivo.remove();
       abrirConfirmacion.disabled = false;
-      mostrarToast('error', 'Error de conexión', 'No fue posible enviar el archivo: ' + error.message);
+      mostrarNotificacion('error', 'Error de conexión', 'No fue posible enviar el archivo: ' + error.message);
     });
   }
 
   if (botonConfirmar) {
-    botonConfirmar.addEventListener('click', subirArchivo);
+    botonConfirmar.addEventListener('click', function () {
+      subirArchivo();
+    });
   }
 
   if (formBackup) {
@@ -461,9 +494,9 @@
         enlace.click();
         enlace.remove();
         URL.revokeObjectURL(url);
-        mostrarToast('exito', 'Respaldo descargado', 'El archivo SQL fue generado correctamente.');
+        mostrarNotificacion('exito', 'Respaldo descargado', 'El archivo SQL fue generado correctamente.');
       }).catch(function (error) {
-        mostrarToast('error', 'No se pudo descargar', error.message);
+        mostrarNotificacion('error', 'No se pudo descargar', error.message);
       }).finally(function () {
         boton.disabled = false;
         boton.innerHTML = contenidoOriginal;
