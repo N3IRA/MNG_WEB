@@ -71,6 +71,7 @@ class CategoriaCreateView(StaffRequiredMixin, CreateView):
             tipo="Categoría",
             prioridad="media"
         )
+        messages.success(self.request, f"Categoría '{self.object.nombre}' creada exitosamente.", extra_tags='categoria')
         return response
 
 
@@ -106,6 +107,7 @@ class CategoriaUpdateView(StaffRequiredMixin, UpdateView):
             prioridad="media"
             
         )
+        messages.success(self.request, f"Categoría '{self.object.nombre}' actualizada exitosamente.", extra_tags='categoria')
         return response
 
 
@@ -128,6 +130,7 @@ def toggle_estado_categoria(request, pk):
         tipo="Categoría",
         prioridad="media"
     )
+    messages.success(request, f"La categoría '{categoria.nombre}' ha sido {estado_texto} correctamente.", extra_tags='categoria')
     return redirect('listar_categorias')
 
 
@@ -162,5 +165,6 @@ class CategoriaDeleteView(StaffRequiredMixin, DeleteView):
             tipo="Categoría",
             prioridad="media"
         )
+        messages.success(self.request, f"La categoría '{nombre_categoria}' fue eliminada exitosamente.", extra_tags='categoria')
         return response
 

@@ -159,7 +159,7 @@ class PaqueteCreateView(StaffRequiredMixin, CreateView):
             tipo="Paquete",
             prioridad="media"
         )
-        messages.success(self.request, f"Paquete '{self.object.nombre}' creado exitosamente.")
+        messages.success(self.request, f"Paquete '{self.object.nombre}' creado exitosamente.", extra_tags='paquete')
         return response
 
 
@@ -196,7 +196,7 @@ class PaqueteUpdateView(StaffRequiredMixin, UpdateView):
             tipo="Paquete",
             prioridad="media"
         )
-        messages.success(self.request, f"Cambios guardados en el paquete '{self.object.nombre}'.")
+        messages.success(self.request, f"Cambios guardados en el paquete '{self.object.nombre}'.", extra_tags='paquete')
         return response
 
 
@@ -346,7 +346,7 @@ def toggle_estado_paquete(request, pk):
         tipo="Paquete",
         prioridad="media"
     )
-    messages.success(request, f"El paquete '{paquete.nombre}' ha sido {estado_texto} correctamente.")
+    messages.success(request, f"El paquete '{paquete.nombre}' ha sido {estado_texto} correctamente.", extra_tags='paquete')
     return redirect('listar_paquetes')
 
 
@@ -387,7 +387,7 @@ class PaqueteDeleteView(StaffRequiredMixin, DeleteView):
             tipo="Paquete",
             prioridad="media"
         )
-        messages.success(self.request, f"El paquete '{nombre_paquete}' fue eliminado permanentemente.")
+        messages.success(self.request, f"El paquete '{nombre_paquete}' fue eliminado permanentemente.", extra_tags='paquete')
         return response
 
 

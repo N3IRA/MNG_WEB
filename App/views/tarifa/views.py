@@ -86,6 +86,7 @@ class TarifaCreateView(StaffRequiredMixin, CreateView):
             prioridad="media",
             
             )
+        messages.success(self.request, f"Tarifa para '{self.object.paquete.nombre}' en temporada '{self.object.temporada.nombre}' creada exitosamente.", extra_tags='tarifa')
         return response
 
 
@@ -120,6 +121,7 @@ class TarifaUpdateView(StaffRequiredMixin, UpdateView):
               tipo="Tarifa",
               prioridad="media",
         )
+        messages.success(self.request, f"Tarifa para '{self.object.paquete.nombre}' actualizada exitosamente.", extra_tags='tarifa')
         return response
 
 
@@ -142,6 +144,7 @@ def toggle_estado_tarifa(request, pk):
         tipo="Tarifa",
         prioridad="media"
     )
+    messages.success(request, f"La tarifa del paquete '{tarifa.paquete.nombre}' ha sido {estado_texto} correctamente.", extra_tags='tarifa')
     return redirect('listar_tarifas')
 
 
@@ -170,5 +173,6 @@ class TarifaDeleteView(StaffRequiredMixin, DeleteView):
             tipo="Tarifa",
             prioridad="media"
         )
+        messages.success(self.request, f"La tarifa para '{nombre_paquete}' fue eliminada exitosamente.", extra_tags='tarifa')
         return response
 

@@ -81,6 +81,7 @@ class ActividadesCreateView(StaffRequiredMixin, CreateView):
             tipo="Actividad",
             prioridad="media"
         )
+        messages.success(self.request, f"Actividad '{self.object.nombre}' registrada exitosamente.", extra_tags='actividad')
         return response
 
 
@@ -116,6 +117,7 @@ class ActividadesUpdateView(StaffRequiredMixin, UpdateView):
             prioridad="media",
             
         )
+        messages.success(self.request, f"Actividad '{self.object.nombre}' actualizada exitosamente.", extra_tags='actividad')
         return response
 
 
@@ -138,6 +140,7 @@ def toggle_estado_actividad(request, pk):
         tipo="Actividad",
         prioridad="media"
     )
+    messages.success(request, f"La actividad '{actividad.nombre}' ha sido {estado_texto} correctamente.", extra_tags='actividad')
     return redirect('listar_actividades')
 
 
@@ -173,4 +176,5 @@ class ActividadesDeleteView(StaffRequiredMixin, DeleteView):
             tipo="Actividad",
             prioridad="media"
         )
+        messages.success(self.request, f"La actividad '{nombre_actividad}' fue eliminada exitosamente.", extra_tags='actividad')
         return response

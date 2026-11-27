@@ -93,12 +93,44 @@
         colorBarra: '#475569'
       },
       paquete: {
-        titulo: '¡Aventura / Paquete!',
+        titulo: '¡Gestión de Paquete!',
         colorTexto: '#14532d',
+        colorFondoIcono: 'rgba(44, 110, 60, 0.14)',
+        colorIcono: '#2c6e3c',
+        icono: 'bi-backpack-fill',
+        colorBarra: '#2c6e3c'
+      },
+      categoria: {
+        titulo: '¡Gestión de Categoría!',
+        colorTexto: '#14532d',
+        colorFondoIcono: 'rgba(21, 128, 61, 0.14)',
+        colorIcono: '#15803d',
+        icono: 'bi-tags-fill',
+        colorBarra: '#15803d'
+      },
+      actividad: {
+        titulo: '¡Gestión de Actividad!',
+        colorTexto: '#0f766e',
+        colorFondoIcono: 'rgba(13, 148, 136, 0.14)',
+        colorIcono: '#0d9488',
+        icono: 'bi-compass-fill',
+        colorBarra: '#0d9488'
+      },
+      tarifa: {
+        titulo: '¡Gestión de Tarifa!',
+        colorTexto: '#15803d',
         colorFondoIcono: 'rgba(22, 163, 74, 0.14)',
         colorIcono: '#16a34a',
-        icono: 'bi-compass-fill',
+        icono: 'bi-currency-exchange',
         colorBarra: '#16a34a'
+      },
+      temporada: {
+        titulo: '¡Gestión de Temporada!',
+        colorTexto: '#0369a1',
+        colorFondoIcono: 'rgba(2, 132, 199, 0.14)',
+        colorIcono: '#0284c7',
+        icono: 'bi-calendar3-range-fill',
+        colorBarra: '#0284c7'
       },
       pqrs: {
         titulo: '¡Atención y PQRS!',
