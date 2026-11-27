@@ -1146,6 +1146,10 @@ def editar_cancelacion_admin(request, reserva_id):
     monto_reembolso_automatico = politica['reembolso']
 
     if request.method == 'POST':
+        if reserva.estado_cancelacion == 'aprobada':
+            messages.warning(request, "Esta cancelación ya fue aprobada formalmente y no puede ser modificada.")
+            return redirect('editar_cancelacion_admin', reserva_id=reserva.id)
+
         estado = request.POST.get('estado_cancelacion')
         motivo_resolucion = (request.POST.get('motivo_resolucion_cancelacion') or '').strip()
         estado_reembolso = (request.POST.get('estado_reembolso') or '').strip()
@@ -1374,6 +1378,10 @@ def registrar_reembolso_admin(request, reembolso_id):
     )
 
     if request.method == 'POST':
+        if reembolso.estado == 'completado':
+            messages.warning(request, "Este reembolso ya fue completado y su comprobante bancario no puede ser modificado.")
+            return redirect('listar_reembolsos_admin')
+
         if 'imagen_comprobante' in request.FILES:
             valido, err = validar_archivo_subido(request.FILES['imagen_comprobante'], validar_comprobante_pago)
             if not valido:

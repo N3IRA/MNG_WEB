@@ -232,10 +232,12 @@
                         <!-- Acciones -->
                         <td class="text-center text-nowrap">
                             <div class="d-inline-flex align-items-center gap-1">
-                                <button type="button" class="btn btn-sm {% if r.estado == 'pendiente' %}btn-outline-warning{% else %}btn-outline-secondary{% endif %} shadow-sm" data-bs-toggle="modal" data-bs-target="#modalRegistrarDesembolso{{ r.id }}" title="{% if r.estado == 'pendiente' %}Registrar Transferencia Bancaria{% else %}Editar Transferencia Bancaria{% endif %}">
-                                    <i class="bi bi-upload"></i>
-                                </button>
-                                <a href="{% url 'editar_cancelacion_admin' r.reserva.id %}" class="btn btn-sm btn-outline-danger shadow-sm" title="Ver Cancelación de la Reserva">
+                                {% if r.estado == 'pendiente' %}
+                                    <button type="button" class="btn btn-sm btn-outline-success shadow-sm" data-bs-toggle="modal" data-bs-target="#modalRegistrarDesembolso{{ r.id }}" title="Registrar Transferencia Bancaria">
+                                        <i class="bi bi-upload"></i>
+                                    </button>
+                                {% endif %}
+                                <a href="{% url 'editar_cancelacion_admin' r.reserva.id %}" class="btn btn-sm btn-outline-warning shadow-sm" title="Ver / Revisar Cancelación de la Reserva">
                                     <i class="bi bi-x-circle"></i>
                                 </a>
                             </div>
@@ -305,7 +307,8 @@
     </div>
     {% endif %}
 
-    <!-- Modal para Registrar / Actualizar Desembolso de Reembolso -->
+    <!-- Modal para Registrar Desembolso de Reembolso (Solo para transferencias pendientes) -->
+    {% if r.estado == 'pendiente' %}
     <div class="modal fade" id="modalRegistrarDesembolso{{ r.id }}" tabindex="-1" aria-labelledby="modalRegistrarLabel{{ r.id }}" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 rounded-4 shadow">
@@ -374,5 +377,6 @@
             </div>
         </div>
     </div>
+    {% endif %}
 {% endfor %}
 {% endblock %}

@@ -176,11 +176,23 @@
                                 <p class="mb-0 text-white-50 small">Define el estado, ajusta la penalidad y registra el comprobante de transferencia bancaria</p>
                             </div>
                         </div>
-                        <span class="badge bg-white text-success fw-bold px-3 py-1 rounded-pill small">#{{ reserva.id }}</span>
+                
                     </div>
                 </div>
 
                 <div class="card-body p-4 p-md-5">
+                    {% if reserva.estado_cancelacion == 'aprobada' %}
+                        <div class="alert alert-info border-info border-opacity-25 bg-info bg-opacity-10 rounded-4 p-3 mb-4 d-flex align-items-center gap-3 shadow-sm">
+                            <div class="bg-info bg-opacity-25 text-info rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px;">
+                                <i class="bi bi-shield-lock-fill fs-5"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Cancelación Aprobada y Bloqueada</h6>
+                                <p class="text-secondary small mb-0">Esta solicitud de cancelación ya fue aprobada formalmente. Sus valores, penalidad calculada y dictamen son inmutables para garantizar la transparencia contable y auditoría del sistema.</p>
+                            </div>
+                        </div>
+                    {% endif %}
+
                     <form method="POST" enctype="multipart/form-data" id="formEditarCancelacion">
                         {% csrf_token %}
 
@@ -189,7 +201,7 @@
                             <label class="form-label fw-bold text-dark small">
                                 <i class="bi bi-check2-circle text-success me-1"></i> Dictamen de la Solicitud <span class="text-danger">*</span>
                             </label>
-                            <select name="estado_cancelacion" id="selectEstadoCancelacion" class="form-select rounded-3 py-2 fw-semibold" required>
+                            <select name="estado_cancelacion" id="selectEstadoCancelacion" class="form-select rounded-3 py-2 fw-semibold" required {% if reserva.estado_cancelacion == 'aprobada' %}disabled{% endif %}>
                                 <option value="pendiente" {% if reserva.estado_cancelacion == 'pendiente' %}selected{% endif %}>
                                      Pendiente de Revisión (Requiere verificación)
                                 </option>
@@ -201,7 +213,11 @@
                                 </option>
                             </select>
                             <div class="form-text small text-muted mt-1">
-                                Al <strong>Aprobar</strong>, la reserva se anula definitivamente y se procesa el reembolso correspondiente. Al <strong>Rechazar</strong>, la reserva se reactiva en el itinerario.
+                                {% if reserva.estado_cancelacion == 'aprobada' %}
+                                    <span class="text-success fw-semibold"><i class="bi bi-check-circle-fill me-1"></i>Esta solicitud ya fue aprobada y la reserva se encuentra anulada.</span>
+                                {% else %}
+                                    Al <strong>Aprobar</strong>, la reserva se anula definitivamente y se procesa el reembolso correspondiente. Al <strong>Rechazar</strong>, la reserva se reactiva en el itinerario.
+                                {% endif %}
                             </div>
                         </div>
 
@@ -299,37 +315,50 @@
 
                             <div class="row g-3">
                                 <div class="col-12">
-                                    <label class="form-label fw-bold text-dark small mb-1">
+                                    <label for="id_imagen_comprobante" class="form-label fw-bold text-dark small mb-1">
                                         <i class="bi bi-upload text-success me-1"></i> Adjuntar Captura de la Transferencia Bancaria
                                     </label>
-                                    <input type="file" name="imagen_comprobante" class="form-control form-control-sm rounded-3" accept="image/png, image/jpeg, image/webp, application/pdf">
-                                    <div class="form-text small text-muted">
-                                        Formatos admitidos: JPG, PNG o WEBP. Si no se adjunta ahora, el reembolso quedará pendiente en el módulo de Reembolsos.
-                                    </div>
+                                    {% if reserva.estado_cancelacion == 'aprobada' %}
+                                        <div class="p-3 bg-light rounded-4 border text-center text-muted small">
+                                            <i class="bi bi-lock-fill text-secondary me-1"></i> Los datos y soportes bancarios están cerrados y protegidos contra modificaciones tras la aprobación de la cancelación.
+                                        </div>
+                                    {% else %}
+                                        <div class="border border-2 border-dashed rounded-4 p-3 text-center bg-light bg-opacity-50 position-relative">
+                                            <input type="file" name="imagen_comprobante" id="id_imagen_comprobante" class="form-control form-control-sm rounded-3" accept="image/png, image/jpeg, image/webp, application/pdf">
+                                            <div class="form-text small text-muted mt-2 mb-0">
+                                                Formatos admitidos: <strong>JPG, PNG, WEBP o PDF</strong>. Si no se adjunta ahora, el reembolso quedará pendiente en el módulo de Reembolsos.
+                                            </div>
+                                        </div>
+                                        <div id="previewContainer" class="mt-3 d-none"></div>
+                                    {% endif %}
                                 </div>
                                 <div class="col-sm-6">
                                     <label class="form-label text-muted small mb-1">Banco / Billetera Emisora (Monagua):</label>
                                     <input type="text" name="banco_emisor" class="form-control form-control-sm rounded-3"
                                            placeholder="Ej. Bancolombia Monagua, Nequi..."
-                                           value="{{ reembolso.banco_emisor|default:'' }}">
+                                           value="{{ reembolso.banco_emisor|default:'' }}"
+                                           {% if reserva.estado_cancelacion == 'aprobada' %}readonly disabled{% endif %}>
                                 </div>
                                 <div class="col-sm-6">
                                     <label class="form-label text-muted small mb-1">Banco / Billetera Destino (Turista):</label>
                                     <input type="text" name="banco_destino" class="form-control form-control-sm rounded-3"
                                            placeholder="Ej. Nequi, Daviplata, Bancolombia..."
-                                           value="{{ reembolso.banco_destino|default:'' }}">
+                                           value="{{ reembolso.banco_destino|default:'' }}"
+                                           {% if reserva.estado_cancelacion == 'aprobada' %}readonly disabled{% endif %}>
                                 </div>
                                 <div class="col-sm-6">
                                     <label class="form-label text-muted small mb-1">Cuenta o Teléfono del Turista:</label>
                                     <input type="text" name="cuenta_o_telefono" class="form-control form-control-sm rounded-3"
                                            placeholder="Ej. 3001234567..."
-                                           value="{{ reembolso.cuenta_o_telefono|default:'' }}">
+                                           value="{{ reembolso.cuenta_o_telefono|default:'' }}"
+                                           {% if reserva.estado_cancelacion == 'aprobada' %}readonly disabled{% endif %}>
                                 </div>
                                 <div class="col-sm-6">
                                     <label class="form-label text-muted small mb-1">N° de Referencia / Aprobación:</label>
                                     <input type="text" name="referencia_transferencia" class="form-control form-control-sm rounded-3"
                                            placeholder="Ej. 0987654321..."
-                                           value="{{ reembolso.referencia_transferencia|default:'' }}">
+                                           value="{{ reembolso.referencia_transferencia|default:'' }}"
+                                           {% if reserva.estado_cancelacion == 'aprobada' %}readonly disabled{% endif %}>
                                 </div>
                             </div>
                         </div>
@@ -340,7 +369,8 @@
                                 <i class="bi bi-chat-text text-success me-1"></i> Mensaje de Resolución para el Turista
                             </label>
                             <textarea name="nota_admin" class="form-control rounded-3" rows="3"
-                                      placeholder="Explica al turista las razones de la resolución, instrucciones para el cobro de la transferencia o soporte de la decisión...">{{ reembolso.notas_admin|default:'' }}</textarea>
+                                      placeholder="Explica al turista las razones de la resolución, instrucciones para el cobro de la transferencia o soporte de la decisión..."
+                                      {% if reserva.estado_cancelacion == 'aprobada' %}readonly disabled{% endif %}>{{ reembolso.notas_admin|default:'' }}</textarea>
                             <div class="form-text small text-muted">
                                 Este mensaje se incluirá automáticamente en la notificación del sistema y en el correo electrónico enviado al cliente.
                             </div>
@@ -349,11 +379,17 @@
                         <!-- Botones de Acción -->
                         <div class="d-flex justify-content-end align-items-center gap-2 pt-3 border-top">
                             <a href="{% url 'listar_cancelaciones' %}" class="btn btn-outline-secondary px-4 rounded-pill fw-semibold">
-                                <i class="bi bi-x-circle me-1"></i> Cancelar
+                                <i class="bi bi-arrow-left me-1"></i> Volver a Cancelaciones
                             </a>
-                            <button type="submit" class="btn btn-success px-4 rounded-pill shadow-sm fw-bold">
-                                <i class="bi bi-check-circle me-1"></i> Guardar Dictamen y Procesar
-                            </button>
+                            {% if reserva.estado_cancelacion != 'aprobada' %}
+                                <button type="submit" class="btn btn-success px-4 rounded-pill shadow-sm fw-bold">
+                                    <i class="bi bi-check-circle me-1"></i> Guardar Dictamen y Procesar
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-secondary px-4 rounded-pill fw-semibold" disabled title="La cancelación ya fue aprobada y no puede ser modificada">
+                                    <i class="bi bi-lock-fill me-1"></i> Dictamen Aprobado (Inmutable)
+                                </button>
+                            {% endif %}
                         </div>
                     </form>
                 </div>
@@ -412,4 +448,8 @@
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/enviar_comprobante.js' %}"></script>
 {% endblock %}

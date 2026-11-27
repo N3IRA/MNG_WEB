@@ -262,9 +262,15 @@
                         <!-- Acciones -->
                         <td class="text-center text-nowrap">
                             <div class="d-inline-flex align-items-center gap-1">
-                                <a href="{% url 'editar_cancelacion_admin' item.id %}" class="btn btn-sm btn-outline-secondary shadow-sm" title="Editar y Gestionar Cancelación">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
+                                {% if item.estado_cancelacion == 'aprobada' or item.estado_cancelacion == 'confirmada' %}
+                                    <a href="{% url 'editar_cancelacion_admin' item.id %}" class="btn btn-sm btn-outline-info shadow-sm" title="Ver Dictamen de Cancelación Aprobada (Solo Lectura)">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'editar_cancelacion_admin' item.id %}" class="btn btn-sm btn-outline-secondary shadow-sm" title="Editar y Gestionar Cancelación">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>

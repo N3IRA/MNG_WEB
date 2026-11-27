@@ -619,7 +619,7 @@ function inicializarVisorComprobante() {
     }
 }
 
-// Función auxiliar para copiar referencia
+// Función auxiliar para copiar referencia con notificación dinámica de bitácora
 function copiarReferencia(texto) {
     if (!navigator.clipboard) {
         const dummy = document.createElement("input");
@@ -631,7 +631,11 @@ function copiarReferencia(texto) {
     } else {
         navigator.clipboard.writeText(texto);
     }
-    alert("Referencia copiada: " + texto);
+    if (typeof window.mostrarToast === 'function') {
+        window.mostrarToast('copiar', 'Referencia Copiada', 'La referencia #' + texto + ' fue copiada al portapapeles.', 3000);
+    } else {
+        alert("Referencia copiada: " + texto);
+    }
 }
 </script>
 {% endblock %}
