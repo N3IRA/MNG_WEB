@@ -151,32 +151,33 @@
             </div>
 
             <!-- Dropdown nativo Bootstrap 5 para Exportación -->
-            <div class="dropdown" title="Exportar listado a Excel, PDF o imprimir">
+            <div class="dropdown">
                 <button class="btn btn-outline-success btn-sm rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-2 shadow-sm dropdown-toggle" 
                         type="button" 
                         id="dropdownExportarCalificaciones" 
                         data-bs-toggle="dropdown" 
-                        aria-expanded="false">
+                        aria-expanded="false"
+                        title="Exportar listado a Excel, PDF o imprimir">
                     <i class="bi bi-cloud-arrow-down-fill text-success"></i>
                     <span>Exportar</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 py-2 mt-1" aria-labelledby="dropdownExportarCalificaciones" style="min-width: 220px;">
                     <li><h6 class="dropdown-header text-uppercase small text-muted px-3 pb-1" style="font-size: 0.72rem; letter-spacing: 0.05em;">Descargar Datos</h6></li>
                     <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-excel-trigger">
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-excel-trigger" title="Descargar listado de calificaciones en Excel">
                             <i class="bi bi-file-earmark-excel-fill text-success fs-6"></i>
                             <span class="small fw-semibold">Documento Excel (.xlsx)</span>
                         </button>
                     </li>
                     <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-pdf-trigger">
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-pdf-trigger" title="Descargar listado de calificaciones en PDF">
                             <i class="bi bi-file-earmark-pdf-fill text-danger fs-6"></i>
                             <span class="small fw-semibold">Documento PDF (.pdf)</span>
                         </button>
                     </li>
                     <li><hr class="dropdown-divider my-1"></li>
                     <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-print-trigger">
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2.5 py-2 px-3 text-secondary btn-export-print-trigger" title="Imprimir tabla de calificaciones">
                             <i class="bi bi-printer-fill text-primary fs-6"></i>
                             <span class="small fw-semibold">Imprimir tabla</span>
                         </button>
@@ -336,7 +337,7 @@
                 <h6 class="modal-title fw-bold d-flex align-items-center gap-2">
                     <i class="bi bi-chat-left-dots-fill"></i> Respuesta Oficial a Calificación #{{ c.id }}
                 </h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" title="Cerrar ventana"></button>
             </div>
             <form method="post" action="{% url 'responder_calificacion' c.id %}">
                 {% csrf_token %}
@@ -357,8 +358,8 @@
                     <textarea name="admin_respuesta" class="form-control rounded-3" rows="4" placeholder="Escribe la respuesta que será visible públicamente para esta opinión..." required>{{ c.admin_respuesta|default:'' }}</textarea>
                 </div>
                 <div class="modal-footer border-top p-3">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success text-white rounded-pill px-4 fw-semibold shadow-sm">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal" title="Cancelar y cerrar ventana">Cancelar</button>
+                    <button type="submit" class="btn btn-success text-white rounded-pill px-4 fw-semibold shadow-sm" title="Guardar y publicar la respuesta oficial">
                         <i class="bi bi-save me-1"></i> Guardar Respuesta
                     </button>
                 </div>

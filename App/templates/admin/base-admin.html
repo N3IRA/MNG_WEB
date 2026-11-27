@@ -35,7 +35,7 @@
       rel="stylesheet"
       href="{% static 'css/librerias/fuente_poppins.css' %}"
     />
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2.5" />
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2.6" />
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=2.0" />
     <script src="{% static 'js/librerias/htmx.min.js' %}"></script>
     <style>
@@ -109,6 +109,27 @@
       .btn-outline-success:hover *,
       .btn-outline-success:active * {
         color: #ffffff !important;
+      }
+
+      /* Campos de formulario: siempre texto oscuro sobre fondo claro
+         (evita heredar el blanco de las reglas con "*" anteriores) */
+      body .form-control:not(.form-control-plaintext):not(.text-white),
+      body .form-select:not(.form-control-plaintext):not(.text-white),
+      body textarea:not(.form-control-plaintext):not(.text-white),
+      body select:not(.form-control-plaintext):not(.text-white) {
+        color: #212529 !important;
+        -webkit-text-fill-color: #212529 !important;
+      }
+      body .form-control:not(.text-white)::placeholder,
+      body textarea:not(.text-white)::placeholder {
+        color: #6c757d !important;
+        -webkit-text-fill-color: #6c757d !important;
+        opacity: 1;
+      }
+      body .form-select option,
+      body select option {
+        color: #212529 !important;
+        background-color: #ffffff !important;
       }
     </style>
 

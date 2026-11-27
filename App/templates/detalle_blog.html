@@ -17,6 +17,7 @@
         href="{% url 'blog' %}"
         class="btn btn-light border rounded-pill px-3 px-sm-4 py-2
                shadow-sm text-dark d-inline-flex align-items-center gap-2"
+        title="Volver al listado de artículos del blog"
       >
         <i class="bi bi-arrow-left text-success"></i>
         <span class="fw-semibold">Regresar al blog</span>
@@ -196,6 +197,7 @@
               href="{% url 'blog' %}"
               class="text-decoration-none text-success fw-bold
                      d-inline-flex align-items-center gap-1"
+              title="Ver todas las publicaciones del blog"
             >
               <span>Ver más crónicas</span>
               <i class="bi bi-arrow-right"></i>
@@ -234,6 +236,7 @@
                 class="btn btn-success rounded-pill py-2.5 fw-semibold
                        shadow-sm d-inline-flex align-items-center
                        justify-content-center gap-2 w-100"
+                title="Compartir este artículo por WhatsApp"
               >
                 <i class="bi bi-whatsapp fs-5"></i>
                 <span>Compartir en WhatsApp</span>
@@ -243,6 +246,7 @@
                 class="btn btn-outline-dark rounded-pill py-2.5 fw-semibold
                        border d-inline-flex align-items-center
                        justify-content-center gap-2 w-100"
+                title="Compartir este artículo por correo electrónico"
               >
                 <i class="bi bi-envelope-fill"></i>
                 <span>Compartir por correo</span>
@@ -271,6 +275,7 @@
               class="btn btn-success fw-bold rounded-pill py-2.5 w-100
                      shadow-sm d-inline-flex align-items-center
                      justify-content-center gap-2"
+              title="Explorar paquetes y tours disponibles en Mongua"
             >
               <i class="bi bi-map-fill"></i>
               <span>Ver tours disponibles</span>
@@ -299,6 +304,7 @@
             href="{% url 'blog' %}"
             class="btn btn-outline-success btn-sm rounded-pill px-3 py-2
                    fw-semibold align-self-start align-self-sm-auto"
+            title="Ver todos los artículos del blog"
           >
             Ver todo el blog
           </a>
@@ -342,6 +348,7 @@
                       class="btn btn-outline-success btn-sm rounded-pill
                              px-3 py-1.5 fw-semibold stretched-link
                              text-decoration-none"
+                      title="Leer artículo: {{ otro.titulo }}"
                     >
                       Leer artículo <i class="bi bi-arrow-right ms-1"></i>
                     </a>

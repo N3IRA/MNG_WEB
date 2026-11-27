@@ -9,14 +9,14 @@
     <nav aria-label="breadcrumb" class="bg-white rounded-pill px-4 py-2 shadow-sm border border-light d-inline-block">
         <ol class="breadcrumb mb-0 align-items-center small fw-medium">
             <li class="breadcrumb-item">
-                <a href="{% url 'index' %}" class="text-decoration-none text-muted hover-success d-inline-flex align-items-center gap-1 transition-all">
+                <a href="{% url 'index' %}" class="text-decoration-none text-muted hover-success d-inline-flex align-items-center gap-1 transition-all" title="Volver a la página de inicio">
                     <i class="bi bi-house-door-fill text-success"></i>
                     <span>Inicio</span>
                 </a>
             </li>
             {% if request.GET.from == 'panel' or 'panel-rapido' in request.META.HTTP_REFERER %}
             <li class="breadcrumb-item">
-                <a href="{% url 'panel_rapido' %}" class="text-decoration-none text-muted hover-success d-inline-flex align-items-center gap-1 transition-all">
+                <a href="{% url 'panel_rapido' %}" class="text-decoration-none text-muted hover-success d-inline-flex align-items-center gap-1 transition-all" title="Ir al panel rápido">
                     <i class="bi bi-compass-fill text-success"></i>
                     <span>Panel Rápido</span>
                 </a>
@@ -32,9 +32,9 @@
 
     <div id="carouselTours" class="carousel slide carousel-fade shadow-lg" data-bs-ride="carousel" data-bs-interval="5000">
         <div class="carousel-indicators mb-4">
-            <button type="button" data-bs-target="#carouselTours" data-bs-slide-to="0" class="active" aria-current="true"></button>
-            <button type="button" data-bs-target="#carouselTours" data-bs-slide-to="1"></button>
-            <button type="button" data-bs-target="#carouselTours" data-bs-slide-to="2"></button>
+            <button type="button" data-bs-target="#carouselTours" data-bs-slide-to="0" class="active" aria-current="true" title="Ver Laguna Negra"></button>
+            <button type="button" data-bs-target="#carouselTours" data-bs-slide-to="1" title="Ver Páramo de Ocetá"></button>
+            <button type="button" data-bs-target="#carouselTours" data-bs-slide-to="2" title="Ver Historia y Cultura"></button>
         </div>
 
         <div class="carousel-inner">
@@ -67,11 +67,11 @@
             </div>
         </div>
 
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselTours" data-bs-slide="prev">
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselTours" data-bs-slide="prev" title="Imagen anterior">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Anterior</span>
         </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselTours" data-bs-slide="next">
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselTours" data-bs-slide="next" title="Imagen siguiente">
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Siguiente</span>
         </button>
@@ -119,7 +119,7 @@
         </div>
         
         <div class="col-md-3">
-            <button class="btn btn-success btn-lg w-100 shadow-sm fw-bold btn-hover-scale" type="submit">
+            <button class="btn btn-success btn-lg w-100 shadow-sm fw-bold btn-hover-scale" type="submit" title="Buscar tours con los filtros seleccionados">
                 <i class="bi bi-search me-1"></i> BUSCAR
             </button>
         </div>
@@ -153,7 +153,7 @@
     </div>
 
     <div class="mt-3 text-center text-md-start">
-        <a href="{% url 'tours' %}" class="text-decoration-none small text-muted hover-success transition-all d-inline-flex align-items-center gap-1">
+        <a href="{% url 'tours' %}" class="text-decoration-none small text-muted hover-success transition-all d-inline-flex align-items-center gap-1" title="Restablecer todos los filtros de búsqueda">
             <i class="bi bi-x-circle"></i> Limpiar filtros
         </a>
     </div>
@@ -285,15 +285,16 @@
                             <div class="d-flex gap-2 mt-2">
                                 <button type="button" class="btn btn-light text-success btn-lg w-100 rounded-pill fw-bold border fs-6 shadow-sm btn-hover-scale" 
                                         data-bs-toggle="modal" 
-                                        data-bs-target="#modalActividades-{{ tour.id }}">
+                                        data-bs-target="#modalActividades-{{ tour.id }}"
+                                        title="Ver itinerario y detalles de {{ tour.nombre }}">
                                     <i class="bi bi-info-circle me-1"></i> Detalles
                                 </button>
                                 {% if not user.is_authenticated or user.es_turista %}
-                                    <a href="{% url 'reservas' %}?paquete_id={{ tour.id }}" class="btn btn-success btn-lg w-100 rounded-pill fw-bold fs-6 shadow-sm btn-hover-scale">
+                                    <a href="{% url 'reservas' %}?paquete_id={{ tour.id }}" class="btn btn-success btn-lg w-100 rounded-pill fw-bold fs-6 shadow-sm btn-hover-scale" title="Reservar el tour {{ tour.nombre }}">
                                         <i class="bi bi-calendar2-check me-1"></i> RESERVAR
                                     </a>
                                 {% elif user.es_admin %}
-                                    <a href="{% url 'editar_paquete' tour.id %}" class="btn btn-outline-primary btn-lg w-100 rounded-pill fw-bold fs-6 shadow-sm btn-hover-scale">
+                                    <a href="{% url 'editar_paquete' tour.id %}" class="btn btn-outline-primary btn-lg w-100 rounded-pill fw-bold fs-6 shadow-sm btn-hover-scale" title="Editar el paquete {{ tour.nombre }}">
                                         <i class="bi bi-pencil-square me-1"></i> Editar
                                     </a>
                                 {% endif %}
@@ -320,7 +321,7 @@
         {% endfor %}
 
         <div class="text-center mt-4">
-            <button id="btn-ver-mas-tours" type="button" class="btn btn-success btn-lg rounded-pill fw-bold px-4 shadow-sm tour-load-more d-none">
+            <button id="btn-ver-mas-tours" type="button" class="btn btn-success btn-lg rounded-pill fw-bold px-4 shadow-sm tour-load-more d-none" title="Mostrar más tours disponibles">
                 <i class="bi bi-chevron-down me-2"></i>Ver más
             </button>
         </div>

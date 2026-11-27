@@ -1,11 +1,9 @@
-import io
 import logging
+from pathlib import Path
+from django.conf import settings
 from django.shortcuts import render
-from django.http import HttpResponse
-from django.template.loader import render_to_string
+from django.http import FileResponse, Http404
 from django.utils import timezone
-from xhtml2pdf import pisa
-from App.utils import get_image_base64
 
 logger = logging.getLogger(__name__)
 
@@ -39,32 +37,18 @@ def manual_usuario_view(request):
 
 def manual_usuario_pdf_view(request):
     """
-    Genera y sirve el documento PDF del Manual de Usuario y Guía de Ayuda de Monagua.
+    Sirve el documento PDF oficial del Manual de Usuario de Monagua Turismo.
     Si se pasa ?ver=1 en la URL se muestra inline en el navegador; de lo contrario se descarga.
     """
-    logo_base64 = get_image_base64('static/img/logo_monagua.webp')
-    
-    context = {
-        'fecha_generacion': timezone.now().strftime('%d/%m/%Y'),
-        'logo_base64': logo_base64,
-        'anio': timezone.now().year,
-    }
-    
-    try:
-        html_string = render_to_string('usuario/soporte/manual_usuario_pdf.html', context)
-        pdf_temp = io.BytesIO()
-        pisa_status = pisa.pisaDocument(io.BytesIO(html_string.encode("UTF-8")), pdf_temp)
-        
-        if pisa_status.err:
-            logger.error("Error al renderizar el manual de usuario PDF con xhtml2pdf")
-            return HttpResponse("Error al generar el manual en PDF. Intente nuevamente.", status=500)
-            
-        pdf_bytes = pdf_temp.getvalue()
-        response = HttpResponse(pdf_bytes, content_type='application/pdf')
-        
-        disposicion = 'inline' if request.GET.get('ver') == '1' else 'attachment'
-        response['Content-Disposition'] = f'{disposicion}; filename="Manual_Usuario_Monagua.pdf"'
-        return response
-    except Exception as e:
-        logger.error(f"Error generando el manual de usuario PDF: {e}", exc_info=True)
-        return HttpResponse("No fue posible generar el documento en este momento.", status=500)
+    pdf_path = Path(settings.BASE_DIR) / 'static' / 'docs' / 'Manual_de_Usuario_Monagua_Turismo.pdf'
+    if not pdf_path.is_file():
+        logger.error("No se encontró el archivo PDF del manual de usuario en: %s", pdf_path)
+        raise Http404("El archivo del Manual de Usuario en PDF no se encuentra disponible.")
+
+    ver_en_navegador = request.GET.get('ver') == '1'
+    return FileResponse(
+        pdf_path.open('rb'),
+        as_attachment=not ver_en_navegador,
+        filename='Manual_de_Usuario_Monagua_Turismo.pdf',
+        content_type='application/pdf',
+    )

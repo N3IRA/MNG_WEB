@@ -77,7 +77,7 @@
               <div class="form-text text-muted">Solo puedes calificar paquetes que hayas reservado y confirmado.</div>
               {% if not paquetes_reservados %}
               <div class="alert alert-warning rounded-3 mt-3 mb-0 py-2" role="alert">
-                No tienes paquetes confirmados disponibles para calificar. Visita <a href="{% url 'mis_reservas_usuario' %}" class="alert-link">Mis Reservas</a> y confirma tu reserva para calificar el servicio.
+                No tienes paquetes confirmados disponibles para calificar. Visita <a href="{% url 'mis_reservas_usuario' %}" class="alert-link" title="Ir a Mis Reservas para revisar y confirmar tus reservas">Mis Reservas</a> y confirma tu reserva para calificar el servicio.
               </div>
               {% endif %}
             </div>

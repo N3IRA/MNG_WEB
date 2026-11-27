@@ -33,10 +33,10 @@
         
         <!-- Grupo de Botones de Acción (Reutilizando estilos nativos del proyecto) -->
         <div class="d-flex flex-wrap align-items-center gap-2 gap-sm-3 mb-4 hero-anim-item">
-          <a href="{% url 'tours' %}" class="btn btn-success rounded-pill px-4 py-2.5 shadow-sm fw-semibold d-inline-flex align-items-center gap-2 btn-hover-scale hover-slide-right" data-bs-toggle="tooltip" data-bs-placement="top" title="Explorar rutas turísticas y reservas">
+          <a href="{% url 'tours' %}" class="btn btn-success rounded-pill px-4 py-2.5 shadow-sm fw-semibold d-inline-flex align-items-center gap-2 btn-hover-scale hover-slide-right" title="Explorar rutas turísticas y reservas">
             <i class="bi bi-compass"></i> Explorar Rutas <span>→</span>
           </a>
-          <a href="#destinos-mongua" class="btn btn-outline-dark rounded-pill px-4 py-2.5 fw-semibold d-inline-flex align-items-center gap-2 btn-hover-scale" data-bs-toggle="tooltip" data-bs-placement="top" title="Descubrir destinos y atractivos de Mongua">
+          <a href="#explorar-destinos" id="btnDescubrirMongua" class="btn btn-outline-dark rounded-pill px-4 py-2.5 fw-semibold d-inline-flex align-items-center gap-2 btn-hover-scale" title="Descubrir destinos y atractivos de Mongua">
             <i class="bi bi-arrow-down-short fs-5"></i> Descubrir Mongua
           </a>
         </div>
@@ -331,7 +331,7 @@
 </section>
 
 <!-- SECCIÓN DE EXPLORACIÓN DE DESTINOS (PANELES DESPLEGABLES PREMIUM) -->
-<div class="scroller-wrapper">
+<div class="scroller-wrapper" id="explorar-destinos">
     <div class="scroll-indicator">
         <span>Desplázate para explorar</span>
         <div class="scroll-line"></div>
@@ -344,7 +344,7 @@
         <div class="content-box">
             <div class="panel-badge panel-badge-naturaleza"><i class="fa-solid fa-mountain"></i> Aventura</div>
             <h1 class="panel-title">Explora la majestuosidad de la Laguna Negra y sus leyendas sagradas</h1>
-            <a href="{% url 'tours' %}" class="panel-btn-action" data-bs-toggle="tooltip" data-bs-placement="top" title="Ver tours a la Laguna Negra" aria-label="Descubrir Laguna Negra">Descubrir Laguna Negra</a>
+            <a href="{% url 'tours' %}" class="panel-btn-action" title="Ver tours a la Laguna Negra" aria-label="Descubrir Laguna Negra">Descubrir Laguna Negra</a>
         </div>
     </section>
 
@@ -355,7 +355,7 @@
         <div class="content-box">
             <div class="panel-badge panel-badge-replastic"><i class="fa-solid fa-leaf"></i> Páramo</div>
             <h1 class="panel-title">Camina entre gigantes de agua en el místico Páramo de Ocetá</h1>
-            <a href="{% url 'tours' %}" class="panel-btn-action" data-bs-toggle="tooltip" data-bs-placement="top" title="Ver tours al Páramo de Ocetá" aria-label="Explorar Páramo">Explorar Páramo</a>
+            <a href="{% url 'tours' %}" class="panel-btn-action" title="Ver tours al Páramo de Ocetá" aria-label="Explorar Páramo">Explorar Páramo</a>
         </div>
     </section>
 
@@ -366,7 +366,7 @@
         <div class="content-box">
             <div class="panel-badge panel-badge-urbano"><i class="fa-solid fa-monument"></i> Historia</div>
             <h1 class="panel-title">Descubre las pictografías ancestrales y el legado arqueológico</h1>
-            <a href="{% url 'tours' %}" class="panel-btn-action" data-bs-toggle="tooltip" data-bs-placement="top" title="Ver tours a las Pictografías" aria-label="Ver Pictografías">Ver Pictografías</a>
+            <a href="{% url 'tours' %}" class="panel-btn-action" title="Ver tours a las Pictografías" aria-label="Ver Pictografías">Ver Pictografías</a>
         </div>
     </section>
 
@@ -377,7 +377,7 @@
         <div class="content-box">
             <div class="panel-badge panel-badge-golf"><i class="fa-solid fa-church"></i> Cultura</div>
             <h1 class="panel-title">Recorre las calles coloniales y la historia del Templo Parroquial</h1>
-            <a href="{% url 'tours' %}" class="panel-btn-action" data-bs-toggle="tooltip" data-bs-placement="top" title="Ver recorridos culturales por Mongua" aria-label="Conocer Mongua">Conocer Mongua</a>
+            <a href="{% url 'tours' %}" class="panel-btn-action" title="Ver recorridos culturales por Mongua" aria-label="Conocer Mongua">Conocer Mongua</a>
         </div>
     </section>
 
@@ -388,7 +388,7 @@
         <div class="content-box">
             <div class="panel-badge panel-badge-detalles"><i class="fa-solid fa-palette"></i> Tradición</div>
             <h1 class="panel-title">Maravíllate con el arte del tejido en lana y las artesanías de Mongua</h1>
-            <a href="{% url 'tours' %}" class="panel-btn-action" data-bs-toggle="tooltip" data-bs-placement="top" title="Ver experiencias de artesanías" aria-label="Ver Artesanías">Ver Artesanías</a>
+            <a href="{% url 'tours' %}" class="panel-btn-action" title="Ver experiencias de artesanías" aria-label="Ver Artesanías">Ver Artesanías</a>
         </div>
     </section>
 </div>
@@ -435,13 +435,11 @@
                             </div>
                         </div>
 
-                        <!-- Botón para abrir en Google Maps app/web con tooltip -->
+                        <!-- Botón para abrir en Google Maps app/web con tooltip nativo -->
                         <a href="https://maps.google.com/?q=Mongua,+Boyac%C3%A1,+Colombia" 
                            target="_blank" 
                            rel="noopener noreferrer" 
                            class="btn btn-outline-success btn-sm rounded-pill px-3 py-1.5 fw-medium d-inline-flex align-items-center gap-1.5 btn-hover-scale" 
-                           data-bs-toggle="tooltip" 
-                           data-bs-placement="top" 
                            title="Abrir ubicación detallada en Google Maps">
                             <i class="bi bi-box-arrow-up-right"></i> Cómo llegar en Google Maps
                         </a>
@@ -486,6 +484,7 @@
             <div class="col-12 col-md-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter }}00">
                 <div class="card h-100 border-0 rounded-4 p-3 text-white shadow-sm" 
                      style="background-color: #1A261F; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;" 
+                     title="Leer artículo: {{ post.titulo }}"
                      onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)';" 
                      onmouseout="this.style.transform='none'; this.style.boxShadow='none';" 
                      onclick="location.href='{{ post.get_absolute_url }}'">
@@ -534,6 +533,7 @@
             <div class="col-12 col-md-4" data-aos="fade-up" data-aos-delay="100">
                 <div class="card h-100 border-0 rounded-4 p-3 text-white shadow-sm" 
                      style="background-color: #1A261F; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;" 
+                     title="Ver artículo en el blog"
                      onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)';" 
                      onmouseout="this.style.transform='none'; this.style.boxShadow='none';" 
                      onclick="location.href='{% url 'blog' %}'">
@@ -559,6 +559,7 @@
             <div class="col-12 col-md-4" data-aos="fade-up" data-aos-delay="200">
                 <div class="card h-100 border-0 rounded-4 p-3 text-white shadow-sm" 
                      style="background-color: #1A261F; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;" 
+                     title="Ver artículo en el blog"
                      onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)';" 
                      onmouseout="this.style.transform='none'; this.style.boxShadow='none';" 
                      onclick="location.href='{% url 'blog' %}'">
@@ -584,6 +585,7 @@
             <div class="col-12 col-md-4" data-aos="fade-up" data-aos-delay="300">
                 <div class="card h-100 border-0 rounded-4 p-3 text-white shadow-sm" 
                      style="background-color: #1A261F; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;" 
+                     title="Ver artículo en el blog"
                      onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)';" 
                      onmouseout="this.style.transform='none'; this.style.boxShadow='none';" 
                      onclick="location.href='{% url 'blog' %}'">
@@ -611,7 +613,7 @@
         <div class="row mt-5" data-aos="zoom-in" data-aos-delay="400">
             <div class="col-12 text-center">
                 <a href="{% url 'blog' %}" class="btn rounded-pill px-4 py-2 text-uppercase fw-normal hover-slide-right" 
-                   data-bs-toggle="tooltip" data-bs-placement="top" title="Ir al blog oficial de Monagua"
+                   title="Ir al blog oficial de Monagua"
                    style="font-size: 0.7rem; letter-spacing: 1.2px; border: 1px solid #bcbbb4; color: #1c1c1a; background-color: transparent;">
                     Ver más en el blog <span class="ms-1" style="font-size: 0.85rem; vertical-align: middle;">→</span>
                 </a>
@@ -629,4 +631,21 @@
 <script src="{% static 'js/librerias/jquery.min.js' %}"></script>
 <script src="{% static 'js/librerias/jquery.ripples.min.js' %}"></script>
 <script src="{% static 'js/hero_agua.js' %}"></script>
+<script>
+  // Botón "Descubrir Mongua": baja suavemente hasta el carrusel de destinos
+  (function () {
+    var btn = document.getElementById('btnDescubrirMongua');
+    var destino = document.getElementById('explorar-destinos');
+    if (!btn || !destino) return;
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      // Si GSAP fijó (pin) la sección, se usa su contenedor para calcular la posición real
+      var ref = destino.parentElement && destino.parentElement.classList.contains('pin-spacer')
+        ? destino.parentElement
+        : destino;
+      var top = ref.getBoundingClientRect().top + window.pageYOffset;
+      window.scrollTo({ top: top, behavior: 'smooth' });
+    });
+  })();
+</script>
 {% endblock content %}

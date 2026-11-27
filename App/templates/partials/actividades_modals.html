@@ -133,7 +133,7 @@
                         <h3 class="modal-title fw-black mb-2 display-5" style="font-weight: 800; letter-spacing: -1px;">{{ destino.nombre }}</h3>
                         <p class="mb-0 text-white-50 fs-6 fw-light"><i class="bi bi-geo-alt-fill me-2"></i>Descubre cada paso de esta gran aventura</p>
                     </div>
-                    <button type="button" class="btn-close btn-close-white shadow-sm rounded-circle p-2 opacity-75" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white shadow-sm rounded-circle p-2 opacity-75" data-bs-dismiss="modal" aria-label="Close" title="Cerrar ventana"></button>
                 </div>
             </div>
             
@@ -226,16 +226,16 @@
             </div>
             
             <div class="modal-footer border-0 p-4 bg-white d-flex justify-content-between align-items-center shadow-lg">
-                <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" data-bs-dismiss="modal" title="Cerrar y regresar a los destinos">
                     <i class="bi bi-arrow-left me-1"></i> Regresar
                 </button>
                 
                 {% if not user.is_authenticated or user.es_turista %}
-                    <a href="{% url 'reservas' %}?paquete_id={{ destino.id }}" class="btn btn-success rounded-pill px-5 py-2 fw-bold shadow">
+                    <a href="{% url 'reservas' %}?paquete_id={{ destino.id }}" class="btn btn-success rounded-pill px-5 py-2 fw-bold shadow" title="Reservar el destino {{ destino.nombre }}">
                         <i class="bi bi-calendar-check me-2"></i>Reservar Destino
                     </a>
                 {% elif user.es_admin %}
-                    <a href="{% url 'editar_paquete' destino.id %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow">
+                    <a href="{% url 'editar_paquete' destino.id %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow" title="Editar y gestionar {{ destino.nombre }}">
                         <i class="bi bi-pencil-square me-2"></i>Gestionar Destino
                     </a>
                 {% endif %}

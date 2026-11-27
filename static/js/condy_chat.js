@@ -159,6 +159,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // Exponer función global para abrir el chat de Cóndy desde botones externos (ej. Soporte)
+  globalThis.abrirChatCondy = function () {
+    toggleChat(true);
+  };
+
   // Manejar input de texto
   input.addEventListener("input", function() {
     btnSend.disabled = this.value.trim().length === 0;

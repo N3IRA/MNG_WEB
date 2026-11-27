@@ -3,7 +3,7 @@
         <nav aria-label="breadcrumb" class="breadcrumb-shell d-inline-flex align-items-center bg-white rounded-pill px-3 py-2 shadow-sm border border-light-subtle" style="margin-top: 0; margin-bottom: 0;">
             <ol class="breadcrumb mb-0 align-items-center small fw-medium flex-wrap" style="margin-left: 0; padding-left: 0; display: flex;">
                 <li class="breadcrumb-item">
-                    <a href="{% url 'index' %}" class="text-decoration-none text-muted hover-success d-inline-flex align-items-center gap-1 transition-all">
+                    <a href="{% url 'index' %}" class="text-decoration-none text-muted hover-success d-inline-flex align-items-center gap-1 transition-all" title="Volver a la página de inicio">
                         <i class="bi bi-house-door-fill text-success"></i>
                         <span>Inicio</span>
                     </a>
@@ -11,7 +11,7 @@
 
                 {% if show_panel or request.GET.from == 'panel' or 'panel-rapido' in request.META.HTTP_REFERER %}
                 <li class="breadcrumb-item">
-                    <a href="{% url 'panel_rapido' %}" class="text-decoration-none text-muted hover-success d-inline-flex align-items-center gap-1 transition-all">
+                    <a href="{% url 'panel_rapido' %}" class="text-decoration-none text-muted hover-success d-inline-flex align-items-center gap-1 transition-all" title="Ir al panel rápido">
                         <i class="bi bi-compass-fill text-success"></i>
                         <span>Panel Rápido</span>
                     </a>

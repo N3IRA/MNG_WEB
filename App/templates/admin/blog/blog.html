@@ -55,6 +55,7 @@
             class="btn btn-success rounded-pill px-4 py-2.5 py-sm-3
                    fw-bold shadow-sm d-inline-flex align-items-center
                    justify-content-center gap-2"
+            title="Desplazarse a los artículos publicados"
           >
             <i class="bi bi-book-half"></i>
             <span>Explorar artículos</span>
@@ -64,6 +65,7 @@
             class="btn btn-outline-light rounded-pill px-4 py-2.5 py-sm-3
                    fw-semibold d-inline-flex align-items-center
                    justify-content-center gap-2"
+            title="Explorar todos los tours disponibles en Mongua"
           >
             <i class="bi bi-compass"></i>
             <span>Ver tours disponibles</span>
@@ -188,6 +190,7 @@
                              px-3 py-2 fw-bold d-inline-flex
                              align-items-center gap-1 stretched-link
                              text-decoration-none"
+                      title="Leer artículo completo: {{ post.titulo }}"
                     >
                       <span>Leer historia</span>
                       <i class="bi bi-arrow-right"></i>
@@ -223,6 +226,7 @@
               <a
                 href="{% url 'tours' %}"
                 class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm"
+                title="Explorar catálogo de tours disponibles"
               >
                 <i class="bi bi-compass me-1"></i> Explorar tours
               </a>
@@ -246,6 +250,7 @@
                          border shadow-sm fw-semibold"
                   href="?page={{ blogs.previous_page_number }}#historias"
                   aria-label="Anterior"
+                  title="Ir a la página anterior"
                 >
                   <i class="bi bi-chevron-left me-1"></i> Anterior
                 </a>
@@ -277,6 +282,7 @@
                     class="page-link rounded-circle px-3 py-2 text-dark
                            border bg-white shadow-sm fw-semibold"
                     href="?page={{ num }}#historias"
+                    title="Ir a la página {{ num }}"
                   >
                     {{ num }}
                   </a>
@@ -291,6 +297,7 @@
                          border shadow-sm fw-semibold"
                   href="?page={{ blogs.next_page_number }}#historias"
                   aria-label="Siguiente"
+                  title="Ir a la página siguiente"
                 >
                   Siguiente <i class="bi bi-chevron-right ms-1"></i>
                 </a>

@@ -3736,3 +3736,23 @@ body:has(.menu-hamburguesa-premium.show) {
   z-index: 0 !important;
   pointer-events: none;
 }
+
+/* ══════════════ FIX CONTRASTE: TEXTO DE CAMPOS DE FORMULARIO ══════════════ */
+/* Los campos tienen fondo claro forzado (#fdfdfd), así que el texto debe ser
+   siempre oscuro, aunque un contenedor padre fuerce color blanco. */
+body .form-control:not(.form-control-plaintext):not(.text-white),
+body .form-select:not(.form-control-plaintext):not(.text-white) {
+    color: #212529 !important;
+    -webkit-text-fill-color: #212529 !important;
+}
+
+body .form-control:not(.text-white)::placeholder {
+    color: #6c757d !important;
+    -webkit-text-fill-color: #6c757d !important;
+    opacity: 1;
+}
+
+body .form-select option {
+    color: #212529 !important;
+    background-color: #ffffff !important;
+}
